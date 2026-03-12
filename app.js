@@ -469,9 +469,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <a href="${finalUrl}" target="_blank" class="kakao-link-btn">
-                    카카오맵에서 평점/정보 확인
-                </a>
+                <div class="map-link-container">
+                    <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="naver-link-btn">
+                        네이버 지도
+                    </a>
+                    <a href="${finalUrl}" target="_blank" class="kakao-link-btn">
+                        카카오맵
+                    </a>
+                </div>
             </div>
         `;
     }
@@ -847,6 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="card-footer">
+                <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="naver-link">Naver Map</a>
                 ${item.map_url ? `<a href="${item.map_url}" target="_blank" class="map-link">Kakao Map</a>` : ''}
             </div>
         `;
