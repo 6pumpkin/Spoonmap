@@ -69,44 +69,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const container = document.getElementById('kakao-map');
-        
-        // If already loading or loaded, don't inject again
-        if (document.getElementById('kakao-sdk')) {
-            checkAndInit();
-            return;
-        }
-
-        console.log("Dynamically loading Kakao SDK...");
-        const script = document.createElement('script');
-        script.id = 'kakao-sdk';
-        script.type = 'text/javascript';
-        // Force HTTPS and use autoload=false for maximum stability
-        script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services&autoload=false';
-        
-        script.onload = () => {
-            console.log("SDK script loaded to DOM. Initializing...");
-            checkAndInit();
-        };
-
-        script.onerror = () => {
-            console.error("Failed to load Kakao SDK script. Possible network/blocking issue.");
-            alert("카카오 지도 파일을 불러오지 못했습니다. 인터넷 연결이나 보안 설정을 확인해주세요.");
-        };
-
-        document.head.appendChild(script);
+        checkAndInit();
 
         function checkAndInit() {
             let attempts = 0;
             const timer = setInterval(() => {
-                if (typeof kakao !== 'undefined' && kakao.maps) {
+                if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
                     clearInterval(timer);
                     kakao.maps.load(() => {
-                        console.log("Kakao Maps logic initialized.");
                         initializeActualMap();
                     });
-                } else if (attempts > 20) {
+                } else if (attempts > 50) {
                     clearInterval(timer);
                     console.error("Kakao object still not found after library load.");
+                    alert("카카오 지도API를 불러오지 못했습니다. 도메인 등록 상태나 인터넷 연결을 확인해주세요.");
                 }
                 attempts++;
             }, 100);
