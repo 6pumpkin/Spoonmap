@@ -519,6 +519,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Add map search reset button listener
+    document.getElementById('map-reset-btn').addEventListener('click', () => {
+        const input = document.getElementById('map-search-input');
+        input.value = '';
+        window.currCategory = '';
+        window.currSubKeyword = '';
+        document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
+        document.getElementById('map-results-list').style.display = 'block';
+        document.getElementById('map-place-detail').style.display = 'none';
+        updateMapMarkers();
+    });
+
     // Helper to get filtered data for map
     function getFilteredData() {
         const useName = document.getElementById('search-name').checked;
