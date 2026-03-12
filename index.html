@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoonmap - 나의 식당 대사전</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="light-theme">
+    <div class="glass-bg"></div>
+
+    <header>
+        <div class="logo">
+            <a href="#" onclick="document.querySelector('.tab-btn[data-tab=list]').click(); return false;" style="display:inline-block; line-height:0;">
+                <img src="logo.png" alt="Spoonmap" style="height: 68px; width: auto; display: block;">
+            </a>
+        </div>
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="restaurant-search" placeholder="식당 검색...">
+            </div>
+            <div class="search-filters">
+                <label><input type="checkbox" id="search-name" checked> 이름</label>
+                <label><input type="checkbox" id="search-category" checked> 카테고리</label>
+                <label><input type="checkbox" id="search-subloc" checked> 지역(소)</label>
+                <label><input type="checkbox" id="search-menu" checked> 주요 메뉴</label>
+            </div>
+        </div>
+    </header>
+
+    <nav class="main-tabs">
+        <button class="tab-btn active" data-tab="list">목록 보기</button>
+        <button class="tab-btn" data-tab="map">지도 보기</button>
+    </nav>
+
+    <main>
+        <div id="list-view" class="tab-content active">
+            <aside class="sidebar">
+                <section class="filter-section">
+                    <h3>카테고리</h3>
+                    <div class="filter-group" id="category-filters">
+                        <button class="filter-btn active" data-filter="category" data-value="all">전체</button>
+                    </div>
+                </section>
+
+                <section class="filter-section">
+                    <h3>수저 평점</h3>
+                    <div class="filter-group" id="rate-filters">
+                        <button class="filter-btn active" data-filter="rate" data-value="all">전체</button>
+                        <button class="filter-btn" data-filter="rate" data-value="🥄">🥄 1개</button>
+                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄">🥄 2개</button>
+                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄">🥄 3개</button>
+                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄">🥄 4개</button>
+                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄🥄">🥄 5개</button>
+                    </div>
+                </section>
+
+                <section class="filter-section">
+                    <h3>지역 (대분류)</h3>
+                    <div class="filter-group" id="location-large-filters">
+                        <button class="filter-btn active" data-filter="location_large" data-value="all">전체</button>
+                    </div>
+                    <div id="location-more-container" class="more-container">
+                        <button id="btn-more-location" class="more-btn">더보기 <i class="icon-chevron-down"></i></button>
+                        <button id="btn-collapse-location" class="more-btn" style="display:none;">접기 <i
+                                class="icon-chevron-up"></i></button>
+                    </div>
+                </section>
+
+                <section class="filter-section" id="small-location-section" style="display:none;">
+                    <h3>지역 (소분류)</h3>
+                    <div class="filter-group" id="location-small-filters">
+                        <button class="filter-btn active" data-filter="location_small" data-value="all">전체</button>
+                    </div>
+                </section>
+
+                <section class="filter-section">
+                    <h3>정렬</h3>
+                    <div class="filter-group">
+                        <button class="sort-btn active" data-sort="default">기본</button>
+                        <button class="sort-btn" data-sort="rate-desc">수저 높은순</button>
+                        <button class="sort-btn" data-sort="name-asc">이름순</button>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="content">
+                <div class="restaurant-grid" id="restaurant-grid">
+                    <!-- Cards will be injected here -->
+                </div>
+            </section>
+        </div>
+
+        <div id="map-view" class="tab-content">
+            <div class="map-layout">
+                <div class="map-canvas">
+                    <div id="kakao-map" style="width:100%; height:100%;"></div>
+                    <button id="btn-research" class="research-btn">현 위치에서 재검색</button> 
+                    <ul id="category-menu">
+                        <li id="FD6" data-order="0" class="has-sub">
+                            <i class="icon-restaurant"></i> 음식점
+                            <button class="sub-menu-toggle">⌄</button>
+                            <ul class="sub-menu">
+                                <li data-keyword="음식점">🍴 전체</li>
+                                <li data-keyword="간식">🍪 간식</li>
+                                <li data-keyword="분식">🍢 분식</li>
+                                <li data-keyword="뷔페">🍽️ 뷔페</li>
+                                <li data-keyword="술집">🍺 술집</li>
+                                <li data-keyword="아시아음식">🍜 아시아음식</li>
+                                <li data-keyword="양식">🍝 양식</li>
+                                <li data-keyword="일식">🍣 일식</li>
+                                <li data-keyword="중식">🥢 중식</li>
+                                <li data-keyword="패스트푸드">🍔 패스트푸드</li>
+                                <li data-keyword="패밀리레스토랑">🍴 패밀리레스토랑</li>
+                                <li data-keyword="피자">🍕 피자</li>
+                                <li data-keyword="치킨">🍗 치킨</li>
+                                <li data-keyword="한식">🍚 한식</li>
+                            </ul>
+                        </li>
+                        <li id="CE7" data-order="1"><i class="icon-cafe"></i> 카페</li>
+                    </ul>
+                    <div class="map-overlay">
+                        <p><i class="icon-info"></i> 카카오 지도 서비스를 이용하려면 JavaScript API 키가 필요합니다.</p>
+                    </div>
+                </div>
+                <aside class="map-sidebar">
+                    <div class="map-search-box">
+                        <input type="text" id="map-search-input" placeholder="🔍 현 화면에서 검색">
+                    </div>
+                    <div id="map-results-list" class="map-results-list">
+                        <!-- Search results items will be injected here -->
+                        <div class="map-empty-state">
+                            <i class="icon-search"></i>
+                            <p>검색어를 입력하여 대사전에서 찾아보세요</p>
+                        </div>
+                    </div>
+                    <div id="map-place-detail" class="map-place-detail" style="display:none;">
+                        <!-- Place details will be injected here -->
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
