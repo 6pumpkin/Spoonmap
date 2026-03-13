@@ -268,13 +268,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (status === kakao.maps.services.Status.OK) {
                     data.forEach(place => {
-                        const item = {
+                        // Check if this Kakao result matches a saved place → mark as visited
+                        const savedMatch = restaurantData.find(r => {
+                            const rn = r.name.replace(/\s/g, '').toLowerCase();
+                            const pn = place.place_name.replace(/\s/g, '').toLowerCase();
+                            return pn.includes(rn) || rn.includes(pn);
+                        });
+                        const item = savedMatch || {
                             name: place.place_name,
                             category: place.category_name.split(' > ').pop(),
                             location_large: place.address_name,
                             rate: '카카오맵 데이터'
                         };
-                        renderSearchResult(item, place, false, catSearchBounds);
+                        renderSearchResult(item, place, !!savedMatch, catSearchBounds);
                     });
 
                     if (pagination.hasNextPage) {
@@ -486,37 +492,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key !== 'Enter') return;
         
         const query = e.target.value.trim();
+        // Sync with top search input
+        if (searchInput) searchInput.value = query;
+        currentFilters.searchQuery = query.toLowerCase();
+
         document.getElementById('map-results-list').style.display = 'block';
         document.getElementById('map-place-detail').style.display = 'none';
         
-        if (!query) {
-            updateMapMarkers();
-            return;
-        }
-
-        const psLocal = new kakao.maps.services.Places();
-        
-        // Search globally first to see if it's a known region/place
-        psLocal.keywordSearch(query, (data, status) => {
-            if (status === kakao.maps.services.Status.OK) {
-                // If found, move map there
-                const bounds = new kakao.maps.LatLngBounds();
-                for (let i = 0; i < data.length; i++) {
-                    bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
-                }
-                map.setBounds(bounds);
-                
-                // Then immediately search for restaurants within these new bounds
-                // Timeout ensures the map move is registered before bounds are fetched again
-                setTimeout(() => {
-                    updateMapMarkers();
-                }, 300);
-            } else {
-                // If not found globally (like a very specific menu/restaurant name), 
-                // just search within current map viewport
-                updateMapMarkers();
-            }
-        });
+        updateMapMarkers();
     });
 
     // Add map search reset button listener
@@ -650,12 +633,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupSearch() {
         searchInput.addEventListener('keydown', (e) => {
             if (e.key !== 'Enter') return;
-            const query = e.target.value.toLowerCase();
-            currentFilters.searchQuery = query;
+            const query = e.target.value.trim();
+            currentFilters.searchQuery = query.toLowerCase();
 
             // If map view is active, search saved places on the map
             const mapView = document.getElementById('map-view');
             if (mapView && mapView.classList.contains('active') && map) {
+                // Sync with sidebar search input
+                const sidebarInput = document.getElementById('map-search-input');
+                if (sidebarInput) sidebarInput.value = query;
+                
                 searchSavedPlacesOnMap(query);
                 return;
             }
@@ -706,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ps = new kakao.maps.services.Places();
         const bounds = new kakao.maps.LatLngBounds();
+        const currentMapBounds = map.getBounds(); // Get current screen bounds
         let processed = 0;
 
         matched.forEach(item => {
@@ -713,11 +701,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ps.keywordSearch(query, (data, status) => {
                 processed++;
                 if (status === kakao.maps.services.Status.OK) {
-                    renderSearchResult(item, data[0], true, bounds);
+                    const placeCoords = new kakao.maps.LatLng(data[0].y, data[0].x);
+                    // Only show if the place is within the current visible map area
+                    if (currentMapBounds.contains(placeCoords)) {
+                        renderSearchResult(item, data[0], true, bounds);
+                    }
                 }
-                if (processed === matched.length && markers.length > 0) {
-                    map.setBounds(bounds);
-                }
+                // Removed map.setBounds(bounds) to keep view fixed as requested
             });
         });
     }
