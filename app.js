@@ -117,6 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateMapMarkers();
                 });
 
+                // Global Search Toggle logic
+                window.isGlobalSearchActive = false;
+                const globalToggleBtn = document.getElementById('btn-global-toggle');
+                globalToggleBtn.addEventListener('click', () => {
+                    window.isGlobalSearchActive = !window.isGlobalSearchActive;
+                    globalToggleBtn.classList.toggle('active', window.isGlobalSearchActive);
+                    
+                    if (window.isGlobalSearchActive) {
+                        researchBtn.style.display = 'none';
+                    }
+                });
+
                 // Map drag: auto re-search for both category and keyword search
                 let dragDebounceTimer = null;
                 kakao.maps.event.addListener(map, 'dragend', () => {
@@ -244,12 +256,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const ps = new kakao.maps.services.Places();
             const keyword = window.currSubKeyword ? `${window.currSubKeyword}` : '';
             
-            // Use map's current visible bounds for maximum coverage
-            const mapBounds = map.getBounds();
+            // Base options
             const options = {
-                bounds: mapBounds,
                 sort: kakao.maps.services.SortBy.ACCURACY
             };
+
+            // Only restrict to current view if global search is OFF
+            if (!window.isGlobalSearchActive) {
+                options.bounds = map.getBounds();
+            }
 
             const catSearchBounds = new kakao.maps.LatLngBounds();
 
@@ -280,8 +295,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             location_large: place.address_name,
                             rate: '카카오맵 데이터'
                         };
-                        renderSearchResult(item, place, !!savedMatch, catSearchBounds);
+                        // Pass global toggle state to extend bounds if active
+                        renderSearchResult(item, place, !!savedMatch, catSearchBounds, window.isGlobalSearchActive);
                     });
+
+                    // Move map if global search is active
+                    if (window.isGlobalSearchActive) {
+                        finalizeSearch(data.length, data.length, catSearchBounds, true);
+                    }
 
                     if (pagination.hasNextPage) {
                         const moreBtn = document.createElement('button');
@@ -317,9 +338,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Mode: Keyword Search (Kakao results only, visited places marked) ---
         if (mapSearchValue) {
             const searchOptions = {
-                bounds: map.getBounds(),
                 sort: kakao.maps.services.SortBy.ACCURACY
             };
+
+            if (!window.isGlobalSearchActive) {
+                searchOptions.bounds = map.getBounds();
+            }
+
+            const keywordSearchBounds = new kakao.maps.LatLngBounds();
 
             ps.keywordSearch(mapSearchValue, (data, status, pagination) => {
                 // On first page - clear previous
@@ -346,8 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             location_large: place.address_name,
                             rate: '카카오맵 데이터'
                         };
-                        renderSearchResult(item, place, !!savedMatch, bounds);
+                        // Use the correctly scoped keywordSearchBounds
+                        renderSearchResult(item, place, !!savedMatch, keywordSearchBounds, window.isGlobalSearchActive);
                     });
+
+                    // Update map view if global search is on
+                    finalizeSearch(data.length, data.length, keywordSearchBounds, window.isGlobalSearchActive);
 
                     if (pagination.hasNextPage) {
                         const moreBtn = document.createElement('button');
@@ -374,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderSearchResult(item, place, isSaved, bounds) {
+    function renderSearchResult(item, place, isSaved, bounds, shouldExtendBounds = false) {
         const resultsList = document.getElementById('map-results-list');
         const coords = new kakao.maps.LatLng(place.y, place.x);
         
@@ -394,7 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: isSaved ? 1 : 0.6
         });
         markers.push(marker);
-        bounds.extend(coords);
+        
+        // Only extend bounds if we want to move the map (Global Search active)
+        if (shouldExtendBounds) {
+            bounds.extend(coords);
+        }
 
         const focusOnPlace = () => {
             map.setCenter(coords);
@@ -708,11 +742,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 processed++;
                 if (status === kakao.maps.services.Status.OK) {
                     // Global search for visited: no currentMapBounds restriction
-                    renderSearchResult(item, data[0], true, bounds);
+                    renderSearchResult(item, data[0], true, bounds, true);
                 }
                 // Center map to show ALL matched visited places across the country
                 if (processed === matched.length && markers.length > 0) {
-                    map.setBounds(bounds);
+                    if (!bounds.isEmpty()) {
+                        map.setBounds(bounds);
+                    }
                 }
             });
         });

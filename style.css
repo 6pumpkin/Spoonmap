@@ -950,3 +950,62 @@ main {
         text-align: center;
     }
 }
+
+/* Map Action Buttons */
+.research-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: none;
+    transition: all 0.2s ease;
+}
+
+.global-search-btn {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 2px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #555;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(4px);
+}
+
+.global-search-btn:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.global-search-btn.active {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.global-search-btn.active::after {
+    content: ' (ON)';
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
