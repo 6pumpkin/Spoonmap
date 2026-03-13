@@ -361,10 +361,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (status === kakao.maps.services.Status.OK) {
                     data.forEach(place => {
                         // Check if this Kakao result matches a saved place → mark as visited
+                        // Use stricter matching: exact name or name + location overlap
                         const savedMatch = restaurantData.find(r => {
                             const rn = r.name.replace(/\s/g, '').toLowerCase();
                             const pn = place.place_name.replace(/\s/g, '').toLowerCase();
-                            return pn.includes(rn) || rn.includes(pn);
+                            
+                            // Exact name match is good
+                            if (rn === pn) return true;
+                            
+                            // If names are similar, check address/location to avoid false positives (e.g. McDonald's)
+                            const nameMatch = pn.includes(rn) || rn.includes(pn);
+                            if (nameMatch) {
+                                const ra = (r.location_large + ' ' + r.location_small).replace(/\s/g, '').toLowerCase();
+                                const pa = (place.road_address_name || place.address_name || '').replace(/\s/g, '').toLowerCase();
+                                // Check if address contains our broad location or vice versa
+                                return pa.includes(ra) || ra.includes(pa) || pa.includes(r.location_small.replace(/\s/g, '').toLowerCase());
+                            }
+                            return false;
                         });
                         const item = savedMatch || {
                             name: place.place_name,
