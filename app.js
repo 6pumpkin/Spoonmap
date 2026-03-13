@@ -492,8 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key !== 'Enter') return;
         
         const query = e.target.value.trim();
-        // Sync with top search input
-        if (searchInput) searchInput.value = query;
+        // REMOVED sync with top search input as requested
         currentFilters.searchQuery = query.toLowerCase();
 
         document.getElementById('map-results-list').style.display = 'block';
@@ -639,10 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // If map view is active, search saved places on the map
             const mapView = document.getElementById('map-view');
             if (mapView && mapView.classList.contains('active') && map) {
-                // Sync with sidebar search input
-                const sidebarInput = document.getElementById('map-search-input');
-                if (sidebarInput) sidebarInput.value = query;
-                
+                // REMOVED sync with sidebar search input
                 searchSavedPlacesOnMap(query);
                 return;
             }
@@ -670,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Filter saved places
-        const matched = restaurantData.filter(item => {
+        let matched = restaurantData.filter(item => {
             if (useName && item.name.toLowerCase().includes(query)) return true;
             if (useCat && item.category && item.category.toLowerCase().includes(query)) return true;
             if (useSub && item.location_small && item.location_small.toLowerCase().includes(query)) return true;
@@ -686,6 +682,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         });
 
+        // Deduplicate: If same restaurant (name + large location), keep only the first one
+        const seen = new Set();
+        matched = matched.filter(item => {
+            const key = `${item.name}|${item.location_large}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
         if (matched.length === 0) {
             resultsList.innerHTML = `<div class="map-empty-state"><p>내가 갔던 곳 중 일치하는 결과가 없습니다.</p></div>`;
             return;
@@ -693,7 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ps = new kakao.maps.services.Places();
         const bounds = new kakao.maps.LatLngBounds();
-        const currentMapBounds = map.getBounds(); // Get current screen bounds
         let processed = 0;
 
         matched.forEach(item => {
@@ -701,13 +705,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ps.keywordSearch(query, (data, status) => {
                 processed++;
                 if (status === kakao.maps.services.Status.OK) {
-                    const placeCoords = new kakao.maps.LatLng(data[0].y, data[0].x);
-                    // Only show if the place is within the current visible map area
-                    if (currentMapBounds.contains(placeCoords)) {
-                        renderSearchResult(item, data[0], true, bounds);
-                    }
+                    // Global search for visited: no currentMapBounds restriction
+                    renderSearchResult(item, data[0], true, bounds);
                 }
-                // Removed map.setBounds(bounds) to keep view fixed as requested
+                // Center map to show ALL matched visited places across the country
+                if (processed === matched.length && markers.length > 0) {
+                    map.setBounds(bounds);
+                }
             });
         });
     }
