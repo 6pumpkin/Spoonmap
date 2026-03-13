@@ -441,10 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // If it's a saved item, show Spoon scores. If not, explain that rating is on Kakao Map.
         const ratingHtml = isSaved 
             ? `<label>맛집 등급 (나의 평점)</label><span>${item.rate} 수저 (종합 포인트)</span>`
-            : `<label>별점 (카카오맵 데이터)</label><span style="color:var(--accent-color); font-weight:700;">카카오맵 상세페이지에서 확인 가능</span>`;
+            : `<label>별점 (카카오맵 데이터)</label><span style="color:var(--accent-color); font-weight:700;">별점/리뷰는 아래 상세 버튼을 눌러 확인해 주세요.</span>`;
 
         // Get category emoji
         const categoryEmoji = getEmoji(placeData?.category_name || item.category);
+        // Use detailed category for new places if available
+        const displayCategory = placeData?.category_name || item.category;
 
         detailPanel.innerHTML = `
             <div class="detail-header-img" style="background-color: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 5rem;">
@@ -457,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
                 <h3>${item.name}</h3>
                 <div class="detail-tags">
-                    <span class="tag">${item.category}</span>
+                    <span class="tag">${displayCategory}</span>
                     <span class="tag">${item.location_large}</span>
                 </div>
                 
