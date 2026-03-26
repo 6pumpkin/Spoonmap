@@ -816,9 +816,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSmallLocationFilters(largeValue) {
         locationSmallFilterGroup.innerHTML = '';
-        const allBtn = createFilterBtn('location_small', 'all');
-        allBtn.classList.add('active');
+        
+        // Re-create the "All" button properly to keep event listener
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn active';
+        allBtn.dataset.filter = 'location_small';
+        allBtn.dataset.value = 'all';
         allBtn.textContent = '전체';
+        allBtn.addEventListener('click', () => handleFilterClick('location_small', 'all', allBtn));
         locationSmallFilterGroup.appendChild(allBtn);
         
         if (largeValue === 'all') {
