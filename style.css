@@ -1316,22 +1316,25 @@ main {
 
     /* Map buttons adjust for mobile: compact, no overlap */
     .global-search-btn {
-        font-size: 0.6rem;
+        font-size: 0.55rem;
         padding: 4px 8px;
-        top: 8px;
+        top: 6px;
         left: 50%;
         transform: translateX(-50%);
-        gap: 3px;
-        border-radius: 16px;
+        gap: 2px;
+        border-radius: 14px;
         border-width: 1px;
         white-space: nowrap;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .research-btn {
-        font-size: 0.6rem;
-        padding: 4px 10px;
-        bottom: 8px;
-        border-radius: 16px;
+        font-size: 0.55rem;
+        padding: 4px 8px;
+        bottom: 6px;
+        border-radius: 14px;
+        border-width: 1px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     /* Category menu on mobile: top-left corner */
