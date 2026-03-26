@@ -129,18 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Map drag: auto re-search for both category and keyword search
-                let dragDebounceTimer = null;
+                // Map drag: show "현 위치에서 재검색" button instead of auto re-searching
                 kakao.maps.event.addListener(map, 'dragend', () => {
+                    // Only show the button if the user has an active search or category
                     const hasKeyword = document.getElementById('map-search-input')?.value.trim();
-                    if (window.currCategory || hasKeyword) {
-                        // Debounced re-search in the new visible area
-                        clearTimeout(dragDebounceTimer);
-                        dragDebounceTimer = setTimeout(() => {
-                            window.mapDragTriggered = true;
-                            updateMapMarkers();
-                        }, 400);
-                    } else {
+                    if (!window.isGlobalSearchActive && (window.currCategory || hasKeyword)) {
+                        researchBtn.style.display = 'flex';
+                    } else if (!window.currCategory && !hasKeyword) {
                         researchBtn.style.display = 'flex';
                     }
                 });
@@ -272,9 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Remove old 'more' button
                 const oldMoreBtn = document.getElementById('map-load-more');
                 if (oldMoreBtn) oldMoreBtn.remove();
+                
+                const isFirstPage = !isNextPage && (!pagination || pagination.current === 1);
 
                 // On first page, clear existing results and markers
-                if (!isNextPage && pagination.current === 1) {
+                if (isFirstPage) {
                     resultsList.innerHTML = '';
                     markers.forEach(m => m.setMap(null));
                     markers = [];
@@ -304,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         finalizeSearch(data.length, data.length, catSearchBounds, true);
                     }
 
-                    if (pagination.hasNextPage) {
+                    if (pagination && pagination.hasNextPage) {
                         const moreBtn = document.createElement('button');
                         moreBtn.id = 'map-load-more';
                         moreBtn.className = 'map-more-btn';
@@ -317,8 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                         resultsList.appendChild(moreBtn);
                     }
-                } else if (markers.length === 0) {
+                } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
+                } else if (status === kakao.maps.services.Status.ERROR && isFirstPage) {
+                    resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 웹 서버를 실행해주세요.</p></div>`;
                 }
             };
 
@@ -348,8 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const keywordSearchBounds = new kakao.maps.LatLngBounds();
 
             ps.keywordSearch(mapSearchValue, (data, status, pagination) => {
-                // On first page - clear previous
-                if (pagination.current === 1) {
+                // Safely determine current page (if pagination doesn't exist, assume first page/error)
+                const isFirstPage = !pagination || pagination.current === 1;
+
+                // On first page or error - clear previous
+                if (isFirstPage) {
                     resultsList.innerHTML = '';
                     markers.forEach(m => m.setMap(null));
                     markers = [];
@@ -392,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update map view if global search is on
                     finalizeSearch(data.length, data.length, keywordSearchBounds, window.isGlobalSearchActive);
 
-                    if (pagination.hasNextPage) {
+                    if (pagination && pagination.hasNextPage) {
                         const moreBtn = document.createElement('button');
                         moreBtn.id = 'map-load-more';
                         moreBtn.className = 'map-more-btn';
@@ -404,8 +406,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                         resultsList.appendChild(moreBtn);
                     }
-                } else if (pagination.current === 1) {
+                } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
+                } else if (status === kakao.maps.services.Status.ERROR && isFirstPage) {
+                    resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 서버를 실행해주세요.</p></div>`;
                 }
             }, searchOptions);
         }
