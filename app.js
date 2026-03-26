@@ -119,12 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const overlay = document.querySelector('.map-overlay');
                 if (overlay) overlay.style.display = 'none';
                 
-                // Add Controls
-                const mapTypeControl = new kakao.maps.MapTypeControl();
-                map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+                // Add Controls (desktop only)
+                if (window.innerWidth > 768) {
+                    const mapTypeControl = new kakao.maps.MapTypeControl();
+                    map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
-                const zoomControl = new kakao.maps.ZoomControl();
-                map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                    const zoomControl = new kakao.maps.ZoomControl();
+                    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                }
 
                 updateMapMarkers();
 

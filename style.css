@@ -1270,21 +1270,24 @@ main {
         min-height: 200px;
     }
 
-    /* Map buttons adjust for mobile */
+    /* Map buttons adjust for mobile: compact, no overlap */
     .global-search-btn {
         font-size: 0.6rem;
         padding: 4px 8px;
         top: 8px;
-        gap: 4px;
-        border-radius: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 3px;
+        border-radius: 16px;
         border-width: 1px;
+        white-space: nowrap;
     }
 
     .research-btn {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         padding: 4px 10px;
         bottom: 8px;
-        border-radius: 20px;
+        border-radius: 16px;
     }
 
     /* Category menu on mobile: top-left corner */
