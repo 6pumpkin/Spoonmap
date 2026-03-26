@@ -1266,47 +1266,51 @@ main {
         flex: none;
         min-width: 0;
         width: 100%;
-        height: 45vh;
-        min-height: 280px;
+        height: 38vh;
+        min-height: 200px;
     }
 
     /* Map buttons adjust for mobile */
     .global-search-btn {
-        font-size: 0.75rem;
-        padding: 7px 14px;
-        top: 10px;
+        font-size: 0.6rem;
+        padding: 4px 8px;
+        top: 8px;
+        gap: 4px;
+        border-radius: 20px;
+        border-width: 1px;
     }
 
     .research-btn {
-        font-size: 0.8rem;
-        padding: 8px 14px;
-        bottom: 10px;
+        font-size: 0.65rem;
+        padding: 4px 10px;
+        bottom: 8px;
+        border-radius: 20px;
     }
 
-    /* Category menu on mobile: horizontal strip */
+    /* Category menu on mobile: top-left corner */
     #category-menu {
         flex-direction: row;
-        top: auto;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 6px 8px;
-        gap: 6px;
-        border-radius: 30px;
+        top: 8px;
+        left: 8px;
+        bottom: auto;
+        transform: none;
+        padding: 4px 6px;
+        gap: 4px;
+        border-radius: 20px;
         background: rgba(255,255,255,0.97);
     }
 
     #category-menu li {
-        width: 50px;
-        height: 50px;
-        font-size: 0.65rem;
-        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 0.55rem;
+        border-radius: 8px;
     }
 
-    /* Sub-menu opens upward on mobile */
+    /* Sub-menu opens downward on mobile (since menu is at top) */
     #category-menu .sub-menu {
-        top: auto;
-        bottom: calc(100% + 15px);
+        top: calc(100% + 8px);
+        bottom: auto;
         left: 0;
     }
 
