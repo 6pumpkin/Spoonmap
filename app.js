@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupTabs() {
         const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
-        const mobileTabText = document.getElementById('mobile-current-tab');
         const mobileTabsMenu = document.getElementById('mobile-tabs-menu');
+        const mobileFilterBtn = document.getElementById('mobile-filter-toggle-btn');
 
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Update mobile toggle text
-                if (mobileTabText) {
-                    mobileTabText.textContent = targetTab === 'list' ? '목록 보기' : '지도 보기';
+                // Toggle filter button visibility (only show in list view)
+                if (mobileFilterBtn) {
+                    mobileFilterBtn.style.display = targetTab === 'list' ? 'block' : 'none';
                 }
                 
                 // Close dropdown on mobile
