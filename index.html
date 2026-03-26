@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=202603261704">
+    <link rel="stylesheet" href="style.css?v=202603261709">
 </head>
 
 <body class="light-theme">
@@ -40,10 +40,25 @@
         </div>
     </header>
 
-    <nav class="main-tabs">
-        <button class="tab-btn active" data-tab="list">목록 보기</button>
-        <button class="tab-btn" data-tab="map">지도 보기</button>
-    </nav>
+    <div class="tabs-container">
+        <!-- Desktop Tabs -->
+        <nav class="main-tabs" id="desktop-tabs">
+            <button class="tab-btn active" data-tab="list">목록 보기</button>
+            <button class="tab-btn" data-tab="map">지도 보기</button>
+        </nav>
+
+        <!-- Mobile Dropdown Tabs -->
+        <div class="mobile-tabs-dropdown" id="mobile-tabs">
+            <button class="mobile-tabs-toggle" onclick="document.getElementById('mobile-tabs-menu').classList.toggle('open')">
+                <span id="mobile-current-tab">목록 보기</span>
+                <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="mobile-tabs-menu" id="mobile-tabs-menu">
+                <button class="mobile-tab-btn active" data-tab="list">목록 보기</button>
+                <button class="mobile-tab-btn" data-tab="map">지도 보기</button>
+            </div>
+        </div>
+    </div>
 
     <main>
         <div id="list-view" class="tab-content active">
@@ -173,8 +188,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202603261704"></script>
-    <script src="app.js?v=202603261704"></script>
+    <script src="data.js?v=202603261709"></script>
+    <script src="app.js?v=202603261709"></script>
 </body>
 
 </html>

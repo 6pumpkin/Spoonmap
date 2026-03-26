@@ -34,15 +34,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupTabs() {
-        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const mobileTabText = document.getElementById('mobile-current-tab');
+        const mobileTabsMenu = document.getElementById('mobile-tabs-menu');
 
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetTab = btn.dataset.tab;
                 
-                tabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+                // Set active state for all buttons corresponding to this tab
+                tabBtns.forEach(b => {
+                    if (b.dataset.tab === targetTab) {
+                        b.classList.add('active');
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+
+                // Update mobile toggle text
+                if (mobileTabText) {
+                    mobileTabText.textContent = targetTab === 'list' ? '목록 보기' : '지도 보기';
+                }
+                
+                // Close dropdown on mobile
+                if (mobileTabsMenu) {
+                    mobileTabsMenu.classList.remove('open');
+                }
 
                 tabContents.forEach(content => {
                     content.classList.remove('active');

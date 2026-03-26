@@ -148,6 +148,13 @@ header {
     margin-top: -5px;
 }
 
+.tabs-container {
+    position: sticky;
+    top: 90px;
+    z-index: 999;
+    background: transparent;
+}
+
 .main-tabs {
     display: flex;
     justify-content: center;
@@ -155,10 +162,11 @@ header {
     padding: 1rem 0;
     background: #FAFBF5;
     border-bottom: 1px solid var(--glass-border);
-    position: sticky;
-    top: 90px;
-    z-index: 999;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.mobile-tabs-dropdown {
+    display: none; /* hidden on desktop */
 }
 
 /* Main Tabs Cleaning (No icons) */
@@ -1047,11 +1055,83 @@ main {
         display: flex;
     }
 
+    /* Tabs Container */
+    .tabs-container {
+        top: 70px;
+        background: #FAFBF5;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
     /* Tabs */
     .main-tabs {
-        top: 70px;
-        gap: 0.5rem;
-        padding: 0.6rem 0;
+        display: none !important; /* Hide desktop tabs */
+    }
+
+    .mobile-tabs-dropdown {
+        display: block;
+        margin: 0.8rem 4% 0.8rem 4%;
+        position: relative;
+    }
+
+    .mobile-tabs-toggle {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        border: 1px solid var(--glass-border);
+        color: var(--accent-color);
+        padding: 0.8rem 1.2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .mobile-tabs-toggle .toggle-arrow {
+        font-size: 0.8rem;
+        transition: transform 0.2s;
+    }
+
+    .mobile-tabs-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    .mobile-tabs-menu.open {
+        display: block;
+    }
+
+    .mobile-tab-btn {
+        width: 100%;
+        text-align: left;
+        padding: 1rem 1.2rem;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .mobile-tab-btn:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-tab-btn.active {
+        background: #fdf0f1;
+        color: var(--accent-color);
     }
 
     /* ── List View ── */
