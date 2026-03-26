@@ -1060,10 +1060,15 @@ main {
         display: none !important;
     }
 
+    /* Main layout */
+    main {
+        padding: 0;
+    }
+
     /* Mobile Control Bar (Unified Tabs + Filter Toggle) */
     .mobile-control-bar {
         position: sticky;
-        top: 118px; /* Below header */
+        top: 60px; /* Right below header */
         z-index: 98;
         display: flex;
         justify-content: space-between;
