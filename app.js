@@ -876,8 +876,9 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(createCard(item));
         });
 
-        // Sync map markers if map exists
-        if (map) updateMapMarkers();
+        // Sync map markers only if map tab is currently active
+        const mapView = document.getElementById('map-view');
+        if (map && mapView && mapView.classList.contains('active')) updateMapMarkers();
     }
 
     function getFilteredData() {

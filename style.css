@@ -183,7 +183,6 @@ header {
 }
 
 #map-view {
-    display: flex;
     padding: 2rem;
     flex-direction: column;
     align-items: center;
@@ -232,8 +231,12 @@ header {
     color: var(--text-secondary);
 }
 
+#map-view:not(.active) {
+    display: none !important;
+}
+
 #map-view.tab-content.active {
-    display: block; /* Ensure it expands to full width */
+    display: flex;
     width: 100%;
 }
 
