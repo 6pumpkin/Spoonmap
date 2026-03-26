@@ -1260,3 +1260,137 @@ main {
     font-size: 0.8rem;
     opacity: 0.9;
 }
+/* ─── Mobile Card Detail Overlay ─────────────────── */
+#mobile-card-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#mobile-card-overlay.open {
+    display: flex;
+}
+
+#mobile-card-detail {
+    background: #fff;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 1.2rem 1.2rem 2rem;
+    position: relative;
+    animation: slideUpSheet 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.mobile-overlay-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f0f0f0;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+}
+
+#mobile-card-detail-content .overlay-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+    padding-right: 2rem;
+}
+
+#mobile-card-detail-content .overlay-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+}
+
+#mobile-card-detail-content .overlay-meta span {
+    background: #fdf0f1;
+    color: var(--accent-color);
+    padding: 0.2rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+#mobile-card-detail-content .overlay-location {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#mobile-card-detail-content .overlay-links {
+    display: flex;
+    gap: 0.7rem;
+}
+
+#mobile-card-detail-content .overlay-links a {
+    flex: 1;
+    padding: 0.9rem 0;
+    text-align: center;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+#mobile-card-detail-content .overlay-naver {
+    background: rgba(3, 199, 90, 0.1);
+    color: #03C75A;
+}
+
+#mobile-card-detail-content .overlay-kakao {
+    background: rgba(200, 124, 120, 0.12);
+    color: var(--accent-color);
+}
+
+/* Compact mobile card: hide location & footer, keep only essentials */
+@media (max-width: 768px) {
+    .restaurant-card .location-info,
+    .restaurant-card .card-footer {
+        display: none;
+    }
+
+    .restaurant-card {
+        cursor: pointer;
+        gap: 0.4rem;
+        padding: 0.8rem;
+        border-radius: 12px;
+        min-height: 80px;
+    }
+
+    .restaurant-card .card-body h2 {
+        font-size: 0.95rem;
+        margin-bottom: 0;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: keep-all;
+    }
+
+    .restaurant-card:active {
+        transform: scale(0.97);
+        background: #fff5f6;
+    }
+}

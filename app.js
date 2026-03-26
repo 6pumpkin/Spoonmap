@@ -918,6 +918,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${item.map_url ? `<a href="${item.map_url}" target="_blank" class="map-link">Kakao Map</a>` : ''}
             </div>
         `;
+
+        // Mobile: tap opens bottom-sheet overlay instead of navigating
+        card.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                openMobileOverlay(item);
+            }
+        });
+
         return card;
     }
 
@@ -928,3 +936,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+
+// ─── Mobile Card Overlay Functions (global scope) ────
+function openMobileOverlay(item) {
+    const overlay = document.getElementById('mobile-card-overlay');
+    const content = document.getElementById('mobile-card-detail-content');
+    const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
+    const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+
+    content.innerHTML = `
+        <p class="overlay-name">${item.name}</p>
+        <div class="overlay-meta">
+            <span>${item.category || '기타'}</span>
+            <span>${item.rate}</span>
+        </div>
+        <p class="overlay-location">
+            📍 ${item.location_large}${item.location_small ? ' · ' + item.location_small : ''}
+        </p>
+        <div class="overlay-links">
+            <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="overlay-naver">Naver Map</a>
+            <a href="${kakaoUrl}" target="_blank" class="overlay-kakao">Kakao Map</a>
+        </div>
+    `;
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMobileOverlay() {
+    document.getElementById('mobile-card-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
