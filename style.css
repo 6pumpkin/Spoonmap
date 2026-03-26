@@ -1102,12 +1102,11 @@ main {
         display: flex;
     }
 
-    /* Filters: horizontal scrollable chips */
+    /* Filters: wrap to new lines instead of horizontal scroll */
     .filter-group {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.2rem;
+        flex-wrap: wrap;
+        overflow-x: visible;
+        padding-bottom: 0;
     }
 
     .filter-group::-webkit-scrollbar {
