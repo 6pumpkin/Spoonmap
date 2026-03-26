@@ -452,9 +452,11 @@ header {
     transition: background 0.15s;
 }
 
-#category-menu .sub-menu li:hover {
+#category-menu .sub-menu li:hover,
+#category-menu .sub-menu li.active {
     background: #fff5f6;
     color: var(--accent-color);
+    font-weight: 700;
 }
 
 .map-layout {

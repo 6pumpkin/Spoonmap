@@ -234,6 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const id = this.id;
+                
+                // Clear any sub-category active state when clicking main category
+                document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
+
                 if (this.classList.contains('on')) {
                     window.currCategory = '';
                     window.currSubKeyword = ''; 
@@ -258,6 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.currSubKeyword = keyword === '음식점' ? '' : keyword;
                     
                     document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
+                    
+                    // Manage active state for sub-menu items
+                    document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
+                    sub.classList.add('active');
+
                     newItem.classList.add('on');
                     newItem.classList.remove('sub-open');
                     
