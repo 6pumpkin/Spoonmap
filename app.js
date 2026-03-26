@@ -815,7 +815,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSmallLocationFilters(largeValue) {
-        locationSmallFilterGroup.innerHTML = '<button class="filter-btn active" data-filter="location_small" data-value="all">전체</button>';
+        locationSmallFilterGroup.innerHTML = '';
+        const allBtn = createFilterBtn('location_small', 'all');
+        allBtn.classList.add('active');
+        allBtn.textContent = '전체';
+        locationSmallFilterGroup.appendChild(allBtn);
         
         if (largeValue === 'all') {
             smallLocSection.style.display = 'none';
