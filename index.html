@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=202603261809">
+    <link rel="stylesheet" href="style.css?v=202603261816">
 </head>
 
 <body class="light-theme">
@@ -162,6 +162,10 @@
                     </div>
                 </div>
                 <aside class="map-sidebar">
+                    <div class="map-search-box">
+                        <input type="text" id="map-search-input" placeholder="🔍 현 화면에서 검색">
+                        <button id="map-reset-btn" class="map-reset-btn" title="검색 초기화">🔄</button>
+                    </div>
                     <div id="map-results-list" class="map-results-list">
                         <!-- Search results items will be injected here -->
                         <div class="map-empty-state">
@@ -172,10 +176,6 @@
                     <div id="map-place-detail" class="map-place-detail" style="display:none;">
                         <!-- Place details will be injected here -->
                     </div>
-                    <div class="map-search-box">
-                        <input type="text" id="map-search-input" placeholder="🔍 현 화면에서 검색">
-                        <button id="map-reset-btn" class="map-reset-btn" title="검색 초기화">🔄</button>
-                    </div>
                 </aside>
             </div>
         </div>
@@ -184,8 +184,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202603261809"></script>
-    <script src="app.js?v=202603261809"></script>
+    <script src="data.js?v=202603261816"></script>
+    <script src="app.js?v=202603261816"></script>
 </body>
 
 </html>
