@@ -1055,6 +1055,11 @@ main {
         display: flex;
     }
 
+    /* Hide Desktop Tabs on Mobile */
+    .main-tabs {
+        display: none !important;
+    }
+
     /* Mobile Control Bar (Unified Tabs + Filter Toggle) */
     .mobile-control-bar {
         position: sticky;
