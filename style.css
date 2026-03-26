@@ -1371,6 +1371,12 @@ main {
         box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     }
 
+    #category-menu .sub-menu li {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        white-space: nowrap;
+    }
+
     /* Map search input */
     .map-search-box {
         padding: 0.5rem 0.8rem;
