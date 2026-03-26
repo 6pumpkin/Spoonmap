@@ -1034,8 +1034,8 @@ main {
 }
 
 /* ─── Mobile: 768px ──────────────────────────────── */
-/* Mobile filter toggle bar: hidden on desktop */
-#mobile-filter-toggle-bar {
+/* Hide mobile specific elements on desktop */
+.mobile-control-bar {
     display: none;
 }
 
