@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=202603261650">
+    <link rel="stylesheet" href="style.css?v=202603261657">
 </head>
 
 <body class="light-theme">
@@ -23,8 +23,13 @@
             </a>
         </div>
         <div class="search-container">
-            <div class="search-box">
-                <input type="text" id="restaurant-search" placeholder="식당 검색...">
+            <div class="search-wrapper">
+                <div class="search-box">
+                    <input type="text" id="restaurant-search" placeholder="식당 검색...">
+                </div>
+                <button id="search-filter-toggle" class="search-filter-toggle-btn" aria-label="검색 설정" onclick="document.querySelector('.search-filters').classList.toggle('open')" title="검색 대상 설정">
+                    ⚙️
+                </button>
             </div>
             <div class="search-filters">
                 <label><input type="checkbox" id="search-name" checked> 이름</label>
@@ -168,8 +173,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202603261650"></script>
-    <script src="app.js?v=202603261650"></script>
+    <script src="data.js?v=202603261657"></script>
+    <script src="app.js?v=202603261657"></script>
 </body>
 
 </html>
