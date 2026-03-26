@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=202603261620">
+    <link rel="stylesheet" href="style.css?v=202603261632">
 </head>
 
 <body class="light-theme">
@@ -42,6 +42,12 @@
 
     <main>
         <div id="list-view" class="tab-content active">
+            <!-- Mobile filter toggle button (only visible on mobile) -->
+            <div id="mobile-filter-toggle-bar">
+                <button id="mobile-filter-toggle-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+                    🔽 필터 보기
+                </button>
+            </div>
             <aside class="sidebar">
                 <section class="filter-section">
                     <h3>카테고리</h3>
@@ -154,8 +160,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202603261620"></script>
-    <script src="app.js?v=202603261620"></script>
+    <script src="data.js?v=202603261632"></script>
+    <script src="app.js?v=202603261632"></script>
 </body>
 
 </html>
