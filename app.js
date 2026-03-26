@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     let currentFilters = {
-        category: 'all',
-        location_large: 'all',
-        location_small: 'all',
-        rate: 'all',
+        category: [],
+        location_large: [],
+        location_small: [],
+        rate: [],
         searchQuery: ''
     };
     let currentSort = 'default';
@@ -599,12 +599,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const useSub = document.getElementById('search-subloc').checked;
 
         return restaurantData.filter(item => {
-            const catMatch = currentFilters.category === 'all' || 
-                           (item.category && item.category.includes(currentFilters.category));
-            const largeMatch = currentFilters.location_large === 'all' || 
-                             item.location_large === currentFilters.location_large;
-            const smallMatch = currentFilters.location_small === 'all' || 
-                             item.location_small === currentFilters.location_small;
+            const catMatch = currentFilters.category.length === 0 || 
+                           currentFilters.category.some(c => item.category && item.category.includes(c));
+            const largeMatch = currentFilters.location_large.length === 0 || 
+                             currentFilters.location_large.includes(item.location_large);
+            const smallMatch = currentFilters.location_small.length === 0 || 
+                             currentFilters.location_small.includes(item.location_small);
             
             let searchMatch = true;
             if (currentFilters.searchQuery) {
@@ -658,10 +658,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Rate Filter Event Handlers
         document.querySelectorAll('#rate-filters .filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('#rate-filters .filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilters.rate = btn.dataset.value;
-                render();
+                const isAll = btn.dataset.value === 'all';
+                handleFilterClick('rate', isAll ? 'all' : btn.dataset.value, btn);
             });
         });
 
@@ -692,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toShow = sortedLocationsLarge.slice(0, locationLargeVisibleCount);
         toShow.forEach(loc => {
             const btn = createFilterBtn('location_large', loc);
-            if (currentFilters.location_large === loc) btn.classList.add('active');
+            if (currentFilters.location_large.includes(loc)) btn.classList.add('active');
             locationLargeFilterGroup.appendChild(btn);
         });
 
@@ -809,21 +807,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFilterClick(type, value, btn) {
         const group = btn.parentElement;
-        group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // IMPORTANT FIX: If value is 'all', reset specific filter
-        currentFilters[type] = value;
+        
+        if (value === 'all') {
+            currentFilters[type] = [];
+            group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        } else {
+            const index = currentFilters[type].indexOf(value);
+            if (index > -1) {
+                currentFilters[type].splice(index, 1);
+                btn.classList.remove('active');
+            } else {
+                currentFilters[type].push(value);
+                btn.classList.add('active');
+            }
+            
+            if (currentFilters[type].length === 0) {
+                group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = group.querySelector('.filter-btn[data-value="all"]');
+                if (allBtn) allBtn.classList.add('active');
+            } else {
+                const allBtn = group.querySelector('.filter-btn[data-value="all"]');
+                if (allBtn) allBtn.classList.remove('active');
+            }
+        }
 
         if (type === 'location_large') {
-            currentFilters.location_small = 'all';
-            updateSmallLocationFilters(value);
+            currentFilters.location_small = [];
+            updateSmallLocationFilters(currentFilters.location_large);
         }
 
         render();
     }
 
-    function updateSmallLocationFilters(largeValue) {
+    function updateSmallLocationFilters(largeValuesArray) {
         locationSmallFilterGroup.innerHTML = '';
         
         // Re-create the "All" button properly to keep event listener
@@ -835,14 +852,14 @@ document.addEventListener('DOMContentLoaded', () => {
         allBtn.addEventListener('click', () => handleFilterClick('location_small', 'all', allBtn));
         locationSmallFilterGroup.appendChild(allBtn);
         
-        if (largeValue === 'all') {
+        if (!Array.isArray(largeValuesArray) || largeValuesArray.length === 0) {
             smallLocSection.style.display = 'none';
             return;
         }
 
         const smallLocs = new Set();
         restaurantData.forEach(item => {
-            if (item.location_large === largeValue && item.location_small) {
+            if (largeValuesArray.includes(item.location_large) && item.location_small) {
                 smallLocs.add(item.location_small);
             }
         });
@@ -850,7 +867,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (smallLocs.size > 0) {
             smallLocSection.style.display = 'block';
             Array.from(smallLocs).sort().forEach(loc => {
-                locationSmallFilterGroup.appendChild(createFilterBtn('location_small', loc));
+                const btn = createFilterBtn('location_small', loc);
+                if (currentFilters.location_small.includes(loc)) btn.classList.add('active');
+                locationSmallFilterGroup.appendChild(btn);
             });
         } else {
             smallLocSection.style.display = 'none';
@@ -868,14 +887,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Exclude items without kakao map links
             if (!item.map_url) return false;
 
-            const catMatch = currentFilters.category === 'all' || 
-                           (item.category && item.category.includes(currentFilters.category));
-            const largeMatch = currentFilters.location_large === 'all' || 
-                             item.location_large === currentFilters.location_large;
-            const smallMatch = currentFilters.location_small === 'all' || 
-                             item.location_small === currentFilters.location_small;
-            const rateMatch = currentFilters.rate === 'all' ||
-                            item.rate === currentFilters.rate;
+            const catMatch = currentFilters.category.length === 0 || 
+                           currentFilters.category.some(c => item.category && item.category.includes(c));
+            const largeMatch = currentFilters.location_large.length === 0 || 
+                             currentFilters.location_large.includes(item.location_large);
+            const smallMatch = currentFilters.location_small.length === 0 || 
+                             currentFilters.location_small.includes(item.location_small);
+            const rateMatch = currentFilters.rate.length === 0 ||
+                            currentFilters.rate.includes(item.rate);
             
             let searchMatch = true;
             if (currentFilters.searchQuery) {
