@@ -520,9 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayCategory = placeData?.category_name || item.category;
 
         detailPanel.innerHTML = `
-            <div class="detail-header-img" style="background-color: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 5rem;">
-                ${categoryEmoji}
-            </div>
             <div class="detail-body">
                 <button onclick="document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none';" 
                         style="border:none; background:none; color:var(--accent-color); cursor:pointer; margin-bottom:15px; font-size:0.9rem; font-weight:600; padding:0;">
