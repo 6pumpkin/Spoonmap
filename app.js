@@ -753,13 +753,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    window.currentGalleryPhotos = [];
+    window.switchGalleryPhoto = function(index) {
+        const photo = window.currentGalleryPhotos[index];
+        if (!photo) return;
+        
+        const heroImg = document.getElementById('gallery-main-img');
+        if (!heroImg) return;
+        
+        document.querySelectorAll('.photo-thumb-list .thumb-img').forEach((t, i) => {
+            if (i === index) t.classList.add('active');
+            else t.classList.remove('active');
+        });
+
+        heroImg.onerror = function() {
+            this.onerror = null;
+            this.src = photo.thumbnail_url;
+        };
+
+        heroImg.src = photo.image_url || photo.thumbnail_url;
+    };
+
     function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
         if (!containerEl) return;
-        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 대표 음식 사진 찾는 중...</div>`;
+        containerEl.style.display = 'block';
+        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 맛있는 음식 사진 찾는 중...</div>`;
 
         const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
-        const query = `${cleanName} 음식`.trim();
-        const url = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=5`;
+        const catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타/g, '');
+        
+        // Refined query for precise food photos (e.g. "을밀대 냉면 맛집")
+        const query = `${cleanName} ${catTag} 맛집`.replace(/\s+/g, ' ').trim();
+        const url = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=12`;
 
         fetch(url, {
             headers: {
@@ -769,8 +794,20 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data && data.documents && data.documents.length > 0) {
-                const docs = data.documents;
-                const mainImgUrl = docs[0].image_url || docs[0].thumbnail_url;
+                // Filter out non-food images (menu boards, receipts, maps, building signs)
+                let docs = data.documents.filter(doc => {
+                    const urlStr = (doc.doc_url + ' ' + doc.image_url).toLowerCase();
+                    if (urlStr.includes('menu') || urlStr.includes('영수증') || urlStr.includes('receipt') || urlStr.includes('map') || urlStr.includes('signboard')) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (docs.length === 0) docs = data.documents;
+                docs = docs.slice(0, 5); // Take top 5 food photos
+
+                window.currentGalleryPhotos = docs;
+                const firstImg = docs[0];
 
                 let thumbsHtml = '';
                 if (docs.length > 1) {
@@ -780,12 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
                                      src="${doc.thumbnail_url}" 
                                      alt="음식 사진 ${idx + 1}"
-                                     onclick="
-                                         const hero = this.closest('.detail-photo-gallery').querySelector('.main-photo-hero img');
-                                         if(hero) hero.src = '${doc.image_url || doc.thumbnail_url}';
-                                         this.parentElement.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));
-                                         this.classList.add('active');
-                                     ">
+                                     onclick="window.switchGalleryPhoto(${idx})">
                             `).join('')}
                         </div>
                     `;
@@ -793,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 containerEl.innerHTML = `
                     <div class="main-photo-hero">
-                        <img id="gallery-main-img" src="${mainImgUrl}" alt="${placeName} 대표 사진" onerror="this.src='${docs[0].thumbnail_url}'">
+                        <img id="gallery-main-img" src="${firstImg.image_url || firstImg.thumbnail_url}" alt="${placeName} 음식 사진" onerror="this.onerror=null; this.src='${firstImg.thumbnail_url}';">
                     </div>
                     ${thumbsHtml}
                 `;
