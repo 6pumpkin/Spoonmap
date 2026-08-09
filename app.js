@@ -777,14 +777,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
         if (!containerEl) return;
         containerEl.style.display = 'block';
-        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 고화질 음식 사진 찾는 중...</div>`;
+        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 대표 음식 사진 찾는 중...</div>`;
 
         const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
-        const catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타/g, '');
-        const query = `${cleanName} ${catTag} 맛집`.replace(/\s+/g, ' ').trim();
+        let catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타|맛집/g, '');
+        
+        // Strict food dish query (e.g. "을밀대 냉면" or "토속촌 삼계탕") -> eliminates storefront/parking/exterior blog post photos!
+        const query = catTag ? `${cleanName} ${catTag}`.trim() : `${cleanName} 음식`;
         const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
-
-        // Query Daum Image Search API directly for original high-resolution full images
         const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=15`;
 
         fetch(imgUrl, { headers })
@@ -792,10 +792,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 let photos = [];
                 if (data && data.documents && data.documents.length > 0) {
-                    // Filter out non-food images (menus, receipts, maps, signs, interior without food)
+                    // Filter out non-food images (building exterior, entrance, menu board, receipt, map, interior)
                     const filtered = data.documents.filter(doc => {
                         const str = (doc.doc_url + ' ' + doc.image_url + ' ' + doc.display_sitename).toLowerCase();
-                        if (str.includes('menu') || str.includes('영수증') || str.includes('receipt') || str.includes('map') || str.includes('signboard')) {
+                        if (str.includes('menu') || str.includes('영수증') || str.includes('receipt') || 
+                            str.includes('map') || str.includes('signboard') || str.includes('간판') || 
+                            str.includes('외관') || str.includes('입구') || str.includes('가격표')) {
                             return false;
                         }
                         return true;
@@ -806,7 +808,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     docsToUse.forEach(doc => {
                         const hdCdnUrl = doc.thumbnail_url ? doc.thumbnail_url.replace(/130x130_\d+_c/, '800x800_85_c') : '';
                         photos.push({
-                            // Prioritize original high-res image URL (e.g. 1920x1080), fallback to 800x800 Kakao CDN
                             image_url: doc.image_url || hdCdnUrl,
                             fallback_url: hdCdnUrl || doc.thumbnail_url,
                             thumbnail_url: doc.thumbnail_url
