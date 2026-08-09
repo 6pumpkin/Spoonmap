@@ -876,13 +876,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data && data.documents && data.documents.length > 0) {
                     const doc = data.documents[0];
                     const cleanTitle = doc.title.replace(/<[^>]+>/g, '').trim();
-                    const cleanContents = doc.contents.replace(/<[^>]+>/g, '').trim().slice(0, 110) + '...';
+                    const cleanContents = doc.contents.replace(/<[^>]+>/g, '').trim().slice(0, 100) + '...';
                     
                     containerEl.innerHTML = `
                         <div class="blog-review-box">
                             <div class="blog-review-title">" ${cleanTitle} "</div>
                             <div class="blog-review-body">${cleanContents}</div>
-                            <div class="blog-review-meta">출처: ${doc.blogname || 'Daum 블로그 리뷰'}</div>
+                            <div class="blog-review-meta">
+                                출처: <a href="${doc.url}" target="_blank" class="blog-link" rel="noopener noreferrer">${doc.blogname || 'Daum 블로그 리뷰'} ↗</a>
+                            </div>
                         </div>
                     `;
                 } else {
@@ -930,10 +932,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 
                 <div class="detail-info-list">
-                    <div class="info-item">
-                        <div class="info-label">주소</div>
-                        <div class="info-val">${preciseAddress || displayAddress}</div>
-                    </div>
                     <div class="info-item">
                         ${ratingHtml}
                     </div>

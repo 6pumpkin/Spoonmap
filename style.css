@@ -941,6 +941,17 @@ main {
     font-weight: 600;
 }
 
+.blog-link {
+    color: var(--coral-main);
+    text-decoration: underline;
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+}
+
+.blog-link:hover {
+    opacity: 0.8;
+}
+
 .tag-category {
     background: #FFF0F2;
     color: #FF4757;
