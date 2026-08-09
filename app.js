@@ -2020,7 +2020,7 @@ Available Live Kakao Places:
 ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_name, category: p.category_name, url: p.place_url })))}
 `;
 
-            const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+            const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
             function attemptModel(idx) {
                 if (idx >= modelsToTry.length) {
                     fallbackParserEngine(kakaoPlaces);
