@@ -1,3 +1,29 @@
+function getSpoonBadgeHtml(item) {
+    const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+    const visits = item.visit_count || 1;
+    
+    let tierClass = '';
+    let visitTagHtml = '';
+
+    if (visits >= 10) {
+        tierClass = 'visit-tier-3';
+        visitTagHtml = `<span class="visit-count-tag">👑 ${visits}회</span>`;
+    } else if (visits >= 5) {
+        tierClass = 'visit-tier-2';
+        visitTagHtml = `<span class="visit-count-tag">🔥 ${visits}회</span>`;
+    } else if (visits >= 2) {
+        tierClass = 'visit-tier-1';
+        visitTagHtml = `<span class="visit-count-tag">🔥 ${visits}회</span>`;
+    }
+
+    return `
+        <span class="spoon-badge rate-${spoonCount} ${tierClass}" title="수저 평점 ${spoonCount}개${visits >= 2 ? ` · 또간집 ${visits}회 방문` : ''}">
+            <span class="spoon-icons">🥄 ${spoonCount}개</span>
+            ${visitTagHtml}
+        </span>
+    `;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     let currentFilters = {
         category: [],
@@ -6,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rate: [],
         searchQuery: ''
     };
-    let currentSort = 'default';
+    let currentSorts = [];
     let locationLargePageSize = 10;
     let locationLargeVisibleCount = 10;
     let sortedLocationsLarge = [];
@@ -520,45 +546,42 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // If it's a saved item, show Spoon scores. If not, explain that rating is on Kakao Map.
         const ratingHtml = isSaved 
-            ? `<label>맛집 등급 (나의 평점)</label><span>${item.rate} 수저 (종합 포인트)</span>`
-            : `<label>별점 (카카오맵 데이터)</label><span style="color:var(--accent-color); font-weight:700;">별점/리뷰는 아래 상세 버튼을 눌러 확인해 주세요.</span>`;
+            ? `<div class="info-label">맛집 등급 (나의 평점 & 또간집 횟수)</div>
+               <div class="info-val rating-val" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                   ${getSpoonBadgeHtml(item)}
+               </div>`
+            : `<div class="info-label">별점 (카카오맵 데이터)</div><div class="info-val rating-notice">별점/리뷰는 아래 상세 버튼을 눌러 확인해 주세요.</div>`;
 
-        // Get category emoji
-        const categoryEmoji = getEmoji(placeData?.category_name || item.category);
-        // Use detailed category for new places if available
-        const displayCategory = placeData?.category_name || item.category;
+        // Detailed category
+        const displayCategory = placeData?.category_name || item.category || '기타';
+        const displayAddress = placeData?.address_name || item.location_large || preciseAddress;
 
         detailPanel.innerHTML = `
             <div class="detail-body">
-                <button onclick="document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none';" 
-                        style="border:none; background:none; color:var(--accent-color); cursor:pointer; margin-bottom:15px; font-size:0.9rem; font-weight:600; padding:0;">
+                <button class="back-to-list-btn" onclick="document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none';">
                     ← 목록으로 돌아가기
                 </button>
-                <h3>${item.name}</h3>
+                <h3 class="detail-title">${item.name}</h3>
                 <div class="detail-tags">
-                    <span class="tag">${displayCategory}</span>
-                    <span class="tag">${item.location_large}</span>
+                    <span class="detail-tag tag-category">${displayCategory}</span>
+                    ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
                 </div>
                 
                 <div class="detail-info-list">
                     <div class="info-item">
-                        <div class="info-text">
-                            <label>주소</label>
-                            <span>${preciseAddress}</span>
-                        </div>
+                        <div class="info-label">주소</div>
+                        <div class="info-val">${preciseAddress || displayAddress}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-text">
-                            ${ratingHtml}
-                        </div>
+                        ${ratingHtml}
                     </div>
                 </div>
 
                 <div class="map-link-container">
-                    <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="naver-link-btn">
+                    <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="detail-naver-btn">
                         네이버 지도
                     </a>
-                    <a href="${finalUrl}" target="_blank" class="kakao-link-btn">
+                    <a href="${finalUrl}" target="_blank" class="detail-kakao-btn">
                         카카오맵
                     </a>
                 </div>
@@ -671,12 +694,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Event listeners for sorting
+        // Event listeners for sorting (multi-selection supported!)
         document.querySelectorAll('.sort-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentSort = btn.dataset.sort;
+                const sortVal = btn.dataset.sort;
+                if (sortVal === 'default') {
+                    currentSorts = [];
+                    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                } else {
+                    const idx = currentSorts.indexOf(sortVal);
+                    if (idx > -1) {
+                        currentSorts.splice(idx, 1);
+                        btn.classList.remove('active');
+                    } else {
+                        currentSorts.push(sortVal);
+                        btn.classList.add('active');
+                    }
+
+                    const defaultBtn = document.querySelector('.sort-btn[data-sort="default"]');
+                    if (currentSorts.length === 0) {
+                        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                        if (defaultBtn) defaultBtn.classList.add('active');
+                    } else {
+                        if (defaultBtn) defaultBtn.classList.remove('active');
+                    }
+                }
                 render();
             });
         });
@@ -917,11 +960,24 @@ document.addEventListener('DOMContentLoaded', () => {
             return catMatch && largeMatch && smallMatch && rateMatch && searchMatch;
         });
 
-        // Sort
-        if (currentSort === 'rate-desc') {
-            filtered.sort((a, b) => b.rate.length - a.rate.length);
-        } else if (currentSort === 'name-asc') {
-            filtered.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+        // Multi-level Sort Execution
+        if (currentSorts.length > 0) {
+            filtered.sort((a, b) => {
+                for (const sortType of currentSorts) {
+                    let res = 0;
+                    if (sortType === 'visit-desc') {
+                        res = (b.visit_count || 1) - (a.visit_count || 1);
+                    } else if (sortType === 'rate-desc') {
+                        const aRate = (a.rate ? (a.rate.match(/🥄/g) || []).length : 0);
+                        const bRate = (b.rate ? (b.rate.match(/🥄/g) || []).length : 0);
+                        res = bRate - aRate;
+                    } else if (sortType === 'name-asc') {
+                        res = a.name.localeCompare(b.name, 'ko');
+                    }
+                    if (res !== 0) return res;
+                }
+                return 0;
+            });
         }
 
         // Grid
@@ -955,21 +1011,36 @@ document.addEventListener('DOMContentLoaded', () => {
     function createCard(item) {
         const card = document.createElement('div');
         card.className = 'restaurant-card';
+        
+        // Count spoons or format rate
+        const spoonCount = (item.rate.match(/🥄/g) || []).length || 1;
+        const menuTagsHtml = item.menu && item.menu.length > 0 
+            ? item.menu.slice(0, 3).map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
+            : '';
+
+        const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
+        const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+
         card.innerHTML = `
             <div class="card-header">
                 <span class="category-badge">${item.category || '기타'}</span>
-                <span class="spoons">${item.rate}</span>
+                ${getSpoonBadgeHtml(item)}
             </div>
             <div class="card-body">
-                <h2>${item.name}</h2>
+                <h2 class="card-title">${item.name}</h2>
                 <div class="location-info">
-                    <span class="loc-badge">${item.location_large}</span>
-                    <span class="loc-badge">${item.location_small || ''}</span>
+                    <span class="loc-badge loc-large">${item.location_large}</span>
+                    ${item.location_small ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
                 </div>
+                ${menuTagsHtml ? `<div class="card-menu-list">${menuTagsHtml}</div>` : ''}
             </div>
             <div class="card-footer">
-                <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="naver-link">Naver Map</a>
-                ${item.map_url ? `<a href="${item.map_url}" target="_blank" class="map-link">Kakao Map</a>` : ''}
+                <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="map-link-btn naver-link" onclick="event.stopPropagation()">
+                    <span>Naver</span> 🗺️
+                </a>
+                <a href="${kakaoUrl}" target="_blank" class="map-link-btn kakao-link" onclick="event.stopPropagation()">
+                    <span>Kakao</span> 📍
+                </a>
             </div>
         `;
 
@@ -984,8 +1055,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Add listener for search checkboxes
-    ['search-name', 'search-category', 'search-subloc'].forEach(id => {
-        document.getElementById(id).addEventListener('change', render);
+    ['search-name', 'search-category', 'search-subloc', 'search-menu'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', render);
     });
 
     init();
@@ -997,19 +1069,23 @@ function openMobileOverlay(item) {
     const content = document.getElementById('mobile-card-detail-content');
     const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
     const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+    const menuTagsHtml = item.menu && item.menu.length > 0 
+        ? item.menu.map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
+        : '';
 
     content.innerHTML = `
         <p class="overlay-name">${item.name}</p>
         <div class="overlay-meta">
-            <span>${item.category || '기타'}</span>
-            <span>${item.rate}</span>
+            <span class="category-badge">${item.category || '기타'}</span>
+            ${getSpoonBadgeHtml(item)}
         </div>
         <p class="overlay-location">
             📍 ${item.location_large}${item.location_small ? ' · ' + item.location_small : ''}
         </p>
+        ${menuTagsHtml ? `<div class="overlay-menu-list">${menuTagsHtml}</div>` : ''}
         <div class="overlay-links">
-            <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="overlay-naver">Naver Map</a>
-            <a href="${kakaoUrl}" target="_blank" class="overlay-kakao">Kakao Map</a>
+            <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="overlay-naver">네이버 지도에서 보기</a>
+            <a href="${kakaoUrl}" target="_blank" class="overlay-kakao">카카오맵에서 보기</a>
         </div>
     `;
 

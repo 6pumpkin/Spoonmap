@@ -1,15 +1,2 @@
 @echo off
-chcp 65001 > nul
-echo ===================================================
-echo   Spoonmap GitHub 자동 업데이트기
-echo ===================================================
-echo.
-
-echo 1. 업데이트 및 캐시 초기화 진행 중...
-powershell -ExecutionPolicy Bypass -File Update-Site.ps1
-echo.
-
-echo ===================================================
-echo   업데이트가 완료되었습니다! (창을 닫으셔도 됩니다)
-echo ===================================================
-pause
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& { $Host.UI.RawUI.WindowTitle = 'Spoonmap GitHub Updater'; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host ''; Write-Host '  ====================================' -ForegroundColor Cyan; Write-Host '   Spoonmap GitHub 자동 업데이트 중...' -ForegroundColor Cyan; Write-Host '  ====================================' -ForegroundColor Cyan; Write-Host ''; & '%~dp0Update-Site.ps1'; Write-Host ''; Write-Host '  [아무 키나 누르면 창이 닫힙니다]' -ForegroundColor Gray; $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') }"
