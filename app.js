@@ -753,6 +753,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
+        if (!containerEl) return;
+        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 대표 음식 사진 찾는 중...</div>`;
+
+        const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
+        const query = `${cleanName} 음식`.trim();
+        const url = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=5`;
+
+        fetch(url, {
+            headers: {
+                'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.documents && data.documents.length > 0) {
+                const docs = data.documents;
+                const mainImgUrl = docs[0].image_url || docs[0].thumbnail_url;
+
+                let thumbsHtml = '';
+                if (docs.length > 1) {
+                    thumbsHtml = `
+                        <div class="photo-thumb-list">
+                            ${docs.map((doc, idx) => `
+                                <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
+                                     src="${doc.thumbnail_url}" 
+                                     alt="음식 사진 ${idx + 1}"
+                                     onclick="
+                                         const hero = this.closest('.detail-photo-gallery').querySelector('.main-photo-hero img');
+                                         if(hero) hero.src = '${doc.image_url || doc.thumbnail_url}';
+                                         this.parentElement.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));
+                                         this.classList.add('active');
+                                     ">
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                containerEl.innerHTML = `
+                    <div class="main-photo-hero">
+                        <img id="gallery-main-img" src="${mainImgUrl}" alt="${placeName} 대표 사진" onerror="this.src='${docs[0].thumbnail_url}'">
+                    </div>
+                    ${thumbsHtml}
+                `;
+            } else {
+                containerEl.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching food photo:', err);
+            containerEl.style.display = 'none';
+        });
+    }
+
     function showPlaceDetail(item, preciseAddress, isSaved, placeUrl, placeData) {
         const detailPanel = document.getElementById('map-place-detail');
         const resultsList = document.getElementById('map-results-list');
@@ -781,6 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="back-to-list-btn" onclick="document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none';">
                     ← 목록으로 돌아가기
                 </button>
+                <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
                 <h3 class="detail-title">${item.name}</h3>
                 <div class="detail-tags">
                     <span class="detail-tag tag-category">${displayCategory}</span>
@@ -807,6 +862,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
+        // Trigger Daum Image Search API to fetch representative food photos!
+        const photoGalleryEl = document.getElementById('detail-photo-gallery');
+        fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl);
     }
 
     // Add map search input event listener - search on Enter key
