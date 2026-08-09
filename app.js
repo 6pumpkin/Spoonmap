@@ -860,6 +860,40 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
+    function fetchUnvisitedBlogReview(placeName, locationName, containerEl) {
+        if (!containerEl) return;
+        containerEl.innerHTML = `<span class="review-loading" style="font-size:0.82rem; color:var(--text-muted);">💬 방문자 후기 읽는 중...</span>`;
+
+        const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
+        const locTag = (locationName || '').split(' ').slice(0, 2).join(' ');
+        const query = `${cleanName} ${locTag} 맛집`.replace(/\s+/g, ' ').trim();
+        const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
+        const blogUrl = `https://dapi.kakao.com/v2/search/blog?query=${encodeURIComponent(query)}&size=3`;
+
+        fetch(blogUrl, { headers })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.documents && data.documents.length > 0) {
+                    const doc = data.documents[0];
+                    const cleanTitle = doc.title.replace(/<[^>]+>/g, '').trim();
+                    const cleanContents = doc.contents.replace(/<[^>]+>/g, '').trim().slice(0, 110) + '...';
+                    
+                    containerEl.innerHTML = `
+                        <div class="blog-review-box">
+                            <div class="blog-review-title">" ${cleanTitle} "</div>
+                            <div class="blog-review-body">${cleanContents}</div>
+                            <div class="blog-review-meta">출처: ${doc.blogname || 'Daum 블로그 리뷰'}</div>
+                        </div>
+                    `;
+                } else {
+                    containerEl.innerHTML = `<div class="rating-notice">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</div>`;
+                }
+            })
+            .catch(() => {
+                containerEl.innerHTML = `<div class="rating-notice">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</div>`;
+            });
+    }
+
     function showPlaceDetail(item, preciseAddress, isSaved, placeUrl, placeData) {
         const detailPanel = document.getElementById('map-place-detail');
         const resultsList = document.getElementById('map-results-list');
@@ -871,13 +905,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Prefer specifically passed placeUrl, then item.map_url, then fallback to search
         const finalUrl = placeUrl || item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
         
-        // If it's a saved item, show Spoon scores. If not, explain that rating is on Kakao Map.
+        // If it's a saved item, show Spoon scores. If unvisited, fetch real Daum Blog review snippet!
         const ratingHtml = isSaved 
             ? `<div class="info-label">맛집 등급 (나의 평점 & 또간집 횟수)</div>
                <div class="info-val rating-val" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                    ${getSpoonBadgeHtml(item)}
                </div>`
-            : `<div class="info-label">별점 (카카오맵 데이터)</div><div class="info-val rating-notice">별점/리뷰는 아래 상세 버튼을 눌러 확인해 주세요.</div>`;
+            : `<div class="info-label">💬 실제 방문자 후기 한줄평</div><div id="unvisited-blog-review-box" class="info-val"></div>`;
 
         // Detailed category
         const displayCategory = placeData?.category_name || item.category || '기타';
@@ -919,6 +953,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Trigger Daum Image Search API to fetch representative food photos!
         const photoGalleryEl = document.getElementById('detail-photo-gallery');
         fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl);
+
+        // If unvisited, fetch real blog review summary snippet via Daum Blog API!
+        if (!isSaved) {
+            const reviewBoxEl = document.getElementById('unvisited-blog-review-box');
+            fetchUnvisitedBlogReview(item.name, displayAddress, reviewBoxEl);
+        }
     }
 
     // Add map search input event listener - search on Enter key
