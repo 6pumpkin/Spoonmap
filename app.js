@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     initMap();
                 } else if (targetTab === 'insights') {
                     computeAndRenderFoodInsights();
+                } else if (targetTab === 'sommelier') {
+                    initSommelierTab();
                 }
             });
         });
@@ -1800,4 +1802,244 @@ function computeAndRenderFoodInsights() {
             `;
         }).join('');
     }
+}
+
+// ─── AI Sommelier Chatbot Engine (global scope) ────
+let sommelierInitialized = false;
+
+window.sendSommelierQuickPrompt = function(promptText) {
+    const input = document.getElementById('sommelier-user-input');
+    if (input) {
+        input.value = promptText;
+        handleSommelierSend();
+    }
+};
+
+function initSommelierTab() {
+    if (sommelierInitialized) return;
+    sommelierInitialized = true;
+
+    const thread = document.getElementById('sommelier-chat-thread');
+    const input = document.getElementById('sommelier-user-input');
+    const sendBtn = document.getElementById('btn-send-sommelier');
+
+    if (!thread || !input || !sendBtn) return;
+
+    // Initial AI Welcome Message with Time Context
+    const now = new Date();
+    const hour = now.getHours();
+    let timeGreeting = '오늘의 미식 탐방';
+    if (hour >= 6 && hour < 11) timeGreeting = '🥪 기분 좋은 아침/브런치 시간대';
+    else if (hour >= 11 && hour < 14) timeGreeting = '🍚 든든한 점심 식사 시간대';
+    else if (hour >= 14 && hour < 17) timeGreeting = '☕ 여유로운 오후 카페 시간대';
+    else if (hour >= 17 && hour < 21) timeGreeting = '🥩 시원한 반주와 맛있는 저녁 시간대';
+    else timeGreeting = '🍺 출출한 야식 & 술 한잔 시간대';
+
+    thread.innerHTML = `
+        <div class="chat-msg ai-msg">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+                안녕하세요! 1,100개 미식 데이터를 학습한 <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
+                지금은 <b>${timeGreeting}</b>이네요!<br>
+                원하시는 식사 분위기, 1차+2차 코스 제안, 지역이나 카테고리, 특정 메뉴를 말씀해 주시면 딱 맞는 맛집을 큐레이션 해드립니다.<br><br>
+                💡 상단의 빠른 질문 칩을 누르시거나 하단 창에 자유롭게 물어보세요!
+            </div>
+        </div>
+    `;
+
+    sendBtn.addEventListener('click', handleSommelierSend);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSommelierSend();
+    });
+}
+
+function handleSommelierSend() {
+    const thread = document.getElementById('sommelier-chat-thread');
+    const input = document.getElementById('sommelier-user-input');
+    if (!input || !thread) return;
+
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Render User Message
+    const userMsgDiv = document.createElement('div');
+    userMsgDiv.className = 'chat-msg user-msg';
+    userMsgDiv.innerHTML = `
+        <div class="chat-avatar">👤</div>
+        <div class="chat-bubble">${escapeHtml(text)}</div>
+    `;
+    thread.appendChild(userMsgDiv);
+    input.value = '';
+    thread.scrollTop = thread.scrollHeight;
+
+    // AI Typing Indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-msg ai-msg';
+    typingDiv.id = 'ai-typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">🍷 미식 데이터 분석 중...</div>
+    `;
+    thread.appendChild(typingDiv);
+    thread.scrollTop = thread.scrollHeight;
+
+    setTimeout(() => {
+        const indicator = document.getElementById('ai-typing-indicator');
+        if (indicator) indicator.remove();
+
+        // Process query with AI Engine
+        const replyObj = processSommelierQuery(text);
+        
+        const aiMsgDiv = document.createElement('div');
+        aiMsgDiv.className = 'chat-msg ai-msg';
+        aiMsgDiv.innerHTML = `
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+                ${replyObj.html}
+            </div>
+        `;
+        thread.appendChild(aiMsgDiv);
+        thread.scrollTop = thread.scrollHeight;
+    }, 600);
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function processSommelierQuery(query) {
+    const q = query.toLowerCase();
+    const isCourse = q.includes('코스') || q.includes('1차') || q.includes('2차') || q.includes('데이트') || q.includes('회식');
+    const isWeather = q.includes('날씨') || q.includes('비') || q.includes('더움') || q.includes('추움');
+
+    // 1. Detect Location
+    let targetLoc = null;
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로'];
+    for (const loc of locations) {
+        if (q.includes(loc.toLowerCase())) {
+            targetLoc = loc;
+            break;
+        }
+    }
+
+    // 2. Detect Category
+    let targetCat = null;
+    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식'];
+    for (const cat of categories) {
+        if (q.includes(cat.toLowerCase())) {
+            targetCat = cat;
+            break;
+        }
+    }
+
+    // Filter candidate dataset
+    let pool = restaurantData.filter(item => {
+        if (!item.map_url) return false;
+        if (targetLoc && !item.location_large.includes(targetLoc) && (!item.location_small || !item.location_small.includes(targetLoc))) return false;
+        if (targetCat) {
+            const catMatches = (item.category && item.category.toLowerCase().includes(targetCat)) ||
+                               (item.menu && item.menu.some(m => m.toLowerCase().includes(targetCat))) ||
+                               (item.name.toLowerCase().includes(targetCat));
+            if (!catMatches) return false;
+        }
+        if (q.includes('4수저') || q.includes('4개')) {
+            const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+            if (spoonCount < 4) return false;
+        }
+        if (q.includes('또간집') || q.includes('단골')) {
+            if ((item.visit_count || 1) < 2) return false;
+        }
+        return true;
+    });
+
+    // Fallback pool if strict filter is empty
+    if (pool.length === 0) {
+        pool = restaurantData.filter(item => {
+            if (targetLoc && !item.location_large.includes(targetLoc)) return false;
+            return true;
+        });
+    }
+    if (pool.length === 0) pool = [...restaurantData];
+
+    // Sort candidates by visit count & rate
+    pool.sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
+
+    // Handle Course Generation (1차 식당 + 2차 카페/술집)
+    if (isCourse) {
+        const foodCandidate = pool.find(item => !item.category || (!item.category.includes('카페') && !item.category.includes('술집'))) || pool[0];
+        const secondCandidate = restaurantData.find(item => {
+            if (foodCandidate && item.name === foodCandidate.name) return false;
+            if (targetLoc && !item.location_large.includes(targetLoc)) return false;
+            return item.category && (item.category.includes('카페') || item.category.includes('술집') || item.category.includes('간식'));
+        }) || pool[1] || pool[0];
+
+        const courseHtml = `
+            🍷 <b>요청하신 맞춤 1차+2차 미식 코스 제안입니다!</b><br><br>
+            <div class="sommelier-rec-grid">
+                <div class="sommelier-rec-card">
+                    <span class="course-step-tag">1차 든든한 식사</span>
+                    <strong style="font-size:1.05rem; color:var(--text-primary); margin-top:2px;">${foodCandidate.name}</strong>
+                    <div style="font-size:0.82rem; color:var(--text-muted);">
+                        📍 ${foodCandidate.location_large} ${foodCandidate.location_small ? '· ' + foodCandidate.location_small : ''}
+                    </div>
+                    <div style="margin-top:4px;">${getSpoonBadgeHtml(foodCandidate)}</div>
+                    <div style="font-size:0.85rem; color:var(--coral-main); font-weight:700; margin-top:4px;">
+                        💡 소믈리에 팁: ${foodCandidate.menu && foodCandidate.menu[0] ? foodCandidate.menu[0] + ' 추천!' : '인기 단골 맛집입니다.'}
+                    </div>
+                </div>
+
+                <div class="sommelier-rec-card">
+                    <span class="course-step-tag" style="background:linear-gradient(90deg, #10B981, #059669);">2차 디저트 & 마무리</span>
+                    <strong style="font-size:1.05rem; color:var(--text-primary); margin-top:2px;">${secondCandidate.name}</strong>
+                    <div style="font-size:0.82rem; color:var(--text-muted);">
+                        📍 ${secondCandidate.location_large} ${secondCandidate.location_small ? '· ' + secondCandidate.location_small : ''}
+                    </div>
+                    <div style="margin-top:4px;">${getSpoonBadgeHtml(secondCandidate)}</div>
+                    <div style="font-size:0.85rem; color:#10B981; font-weight:700; margin-top:4px;">
+                        💡 소믈리에 팁: 1차 식사 후 이동하여 감성 대화를 나누기 완벽한 장소입니다.
+                    </div>
+                </div>
+            </div>
+        `;
+        return { html: courseHtml };
+    }
+
+    // Standard Curated Recommendations (Top 3)
+    const top3 = pool.slice(0, 3);
+    let introText = `🍷 <b>요청 조건에 딱 들어맞는 큐레이션 추천 TOP ${top3.length}</b>입니다:`;
+    if (isWeather) {
+        introText = `🌧️ <b>오늘처럼 비 오거나 운치 있는 날씨에 특히 돋보이는 큐레이션 추천</b>입니다:`;
+    }
+
+    const cardsHtml = top3.map((item, idx) => {
+        const visits = item.visit_count || 1;
+        const menuStr = item.menu && item.menu.length > 0 ? item.menu.slice(0, 2).join(', ') : '대표 맛집';
+
+        return `
+            <div class="sommelier-rec-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="font-size:1.02rem; color:var(--text-primary);">#${idx + 1} ${item.name}</strong>
+                    ${getSpoonBadgeHtml(item)}
+                </div>
+                <div style="font-size:0.82rem; color:var(--text-muted);">
+                    📍 ${item.location_large} ${item.location_small ? '· ' + item.location_small : ''} | 🏷️ ${item.category || '기타'}
+                </div>
+                <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
+                    🏷️ 주요 메뉴: ${menuStr}
+                </div>
+                <div style="font-size:0.82rem; color:var(--coral-main); font-weight:700; margin-top:4px; background:#FFF0F2; padding:6px 10px; border-radius:10px;">
+                    💡 AI 추천 이유: ${visits >= 2 ? `나의 찐 단골집(${visits}회 방문)으로 맛과 만족도가 보장된 곳입니다!` : `해당 지역에서 수저 평점이 높아 추천하는 명품 맛집입니다.`}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return {
+        html: `
+            ${introText}<br>
+            <div class="sommelier-rec-grid">
+                ${cardsHtml}
+            </div>
+        `
+    };
 }

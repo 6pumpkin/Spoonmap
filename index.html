@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608092235">
+    <link rel="stylesheet" href="style.css?v=202608092247">
 </head>
 
 <body class="light-theme">
@@ -48,6 +48,7 @@
             <button class="tab-btn" data-tab="map"><span>🗺️</span> 지도 보기</button>
             <button class="tab-btn" data-tab="recommend"><span>🎲</span> 오늘 뭐 먹지?</button>
             <button class="tab-btn" data-tab="insights"><span>📊</span> 푸드 인사이트</button>
+            <button class="tab-btn" data-tab="sommelier"><span>🤖</span> AI 소믈리에</button>
         </div>
     </nav>
 
@@ -63,6 +64,7 @@
                     <button class="mobile-tab-btn" data-tab="map">지도 보기</button>
                     <button class="mobile-tab-btn" data-tab="recommend">오늘 뭐 먹지?</button>
                     <button class="mobile-tab-btn" data-tab="insights">푸드 인사이트</button>
+                    <button class="mobile-tab-btn" data-tab="sommelier">🤖 AI 소믈리에</button>
                 </div>
             </div>
             
@@ -243,6 +245,43 @@
             </div>
         </div>
 
+        <!-- AI Gourmet Sommelier Dedicated Tab Content -->
+        <div id="sommelier-view" class="tab-content">
+            <div class="sommelier-container">
+                <div class="sommelier-hero">
+                    <div class="hero-badge">🤖 AI GOURMET SOMMELIER</div>
+                    <h2>나만의 AI 미식 소믈리에</h2>
+                    <p>나의 709개 미식 데이터와 실시간 상황(날씨/시간/코스)을 반영하여 딱 맞는 맛집과 1-2차 코스를 제안합니다!</p>
+                </div>
+
+                <!-- Quick Prompt Chips -->
+                <div class="sommelier-chips-wrapper">
+                    <span class="chips-label">💡 빠른 추천 질문:</span>
+                    <div class="chips-list">
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌧️ 오늘 날씨와 시간대에 어울리는 미식 추천해줘!')">🌧️ 오늘 날씨 & 시간대 찰떡 맛집</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍷 1차 식당 + 2차 카페/술집 완벽 미식 코스 짜줘!')">🗺️ 1차+2차 완벽 미식 코스</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('⭐ 4수저 이상 실패 없는 찐 단골 또간집 3선 추천해줘')">🔥 4수저 이상 찐 단골집 TOP 3</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🥩 마포구 고기나 술 한잔하기 좋은 식당 어디 있어?')">🥩 마포구 고기 & 술집 추천</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍜 혼밥하기에도 좋고 시원한 국물 맛집 찾아줘')">🍜 혼밥 & 국물 맛집</button>
+                    </div>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="sommelier-chat-card">
+                    <div id="sommelier-chat-thread" class="chat-thread">
+                        <!-- Initial AI welcome message will be rendered via JS -->
+                    </div>
+
+                    <div class="chat-input-bar">
+                        <input type="text" id="sommelier-user-input" placeholder="예: 연남동근처 4수저 이상 분위기 좋은 맛집이랑 2차 카페 추천해줘..." autocomplete="off">
+                        <button id="btn-send-sommelier" class="chat-send-btn">
+                            <span>보내기</span> 🚀
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Food Insights Dedicated Tab Content -->
         <div id="insights-view" class="tab-content">
             <div class="insights-container">
@@ -380,8 +419,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608092235"></script>
-    <script src="app.js?v=202608092235"></script>
+    <script src="data.js?v=202608092247"></script>
+    <script src="app.js?v=202608092247"></script>
 </body>
 
 </html>
