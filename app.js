@@ -1931,13 +1931,106 @@ function cleanMarkdownText(str) {
     if (!str) return '';
     return str
         .replace(/```html/gi, '')
-        .replace(/```/gi, '')
-        .replace(/---/g, '')
-        .replace(/###/g, '')
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        .replace(/\*(.*?)\*/g, '$1')
-        .replace(/#+/g, '')
+        .replace(/```/g, '')
+        .replace(/\*\*/g, '')          // remove **
+        .replace(/\*/g, '')           // remove *
+        .replace(/###/g, '')          // remove ###
+        .replace(/##/g, '')           // remove ##
+        .replace(/#/g, '')            // remove #
+        .replace(/---/g, '')          // remove ---
         .trim();
+}
+
+function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
+    const cleanTag = cleanMarkdownText(tagText);
+    const cleanTitle = cleanMarkdownText(placeName);
+    const cleanAddr = cleanMarkdownText(addr);
+    const cleanDesc = cleanMarkdownText(desc);
+    const url = mapUrl || `https://map.kakao.com/link/search/${encodeURIComponent(cleanTitle)}`;
+
+    return `
+        <div class="rec-card-standard">
+            <span class="rec-tag-pill">${cleanTag}</span>
+            <h4 class="rec-place-title">${cleanTitle}</h4>
+            <div class="rec-place-meta">📍 <b>위치:</b> ${cleanAddr}</div>
+            <p class="rec-place-desc">${cleanDesc}</p>
+            <a href="${url}" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
+        </div>
+    `;
+}
+
+function handleSommelierSend() {
+    const thread = document.getElementById('sommelier-chat-thread');
+    const input = document.getElementById('sommelier-user-input');
+    const sendBtn = document.getElementById('btn-send-sommelier');
+    if (!input || !thread) return;
+
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Render User Message
+    const userMsgDiv = document.createElement('div');
+    userMsgDiv.className = 'chat-msg user-msg';
+    userMsgDiv.innerHTML = `
+        <div class="chat-avatar">👤</div>
+        <div class="chat-bubble">${escapeHtml(text)}</div>
+    `;
+    thread.appendChild(userMsgDiv);
+    input.value = '';
+    thread.scrollTop = thread.scrollHeight;
+
+    // AI Typing Indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-msg ai-msg';
+    typingDiv.id = 'ai-typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">🍷 요청 조건(개수·출처·코스) 정밀 분석 중...</div>
+    `;
+    thread.appendChild(typingDiv);
+    thread.scrollTop = thread.scrollHeight;
+
+    if (sendBtn) sendBtn.disabled = true;
+
+    let responded = false;
+    const safeCallback = (replyObj) => {
+        if (responded) return;
+        responded = true;
+
+        if (sendBtn) sendBtn.disabled = false;
+        const indicator = document.getElementById('ai-typing-indicator');
+        if (indicator) indicator.remove();
+
+        const aiMsgDiv = document.createElement('div');
+        aiMsgDiv.className = 'chat-msg ai-msg';
+        aiMsgDiv.innerHTML = `
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+                ${replyObj.html}
+            </div>
+        `;
+        thread.appendChild(aiMsgDiv);
+        thread.scrollTop = thread.scrollHeight;
+    };
+
+    // 8-second safety fallback timeout so questions NEVER get stuck
+    setTimeout(() => {
+        if (!responded) {
+            console.warn('Sommelier query timeout, triggering fallback engine...');
+            processSommelierFallbackOnly(text, safeCallback);
+        }
+    }, 8000);
+
+    try {
+        processSommelierQuery(text, safeCallback);
+    } catch (e) {
+        console.error('Error in processSommelierQuery:', e);
+        processSommelierFallbackOnly(text, safeCallback);
+    }
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function processSommelierQuery(query, callback) {
@@ -1963,7 +2056,7 @@ function processSommelierQuery(query, callback) {
 
     // 3. Detect Location & Category
     let targetLoc = null;
-    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로'];
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동'];
     for (const loc of locations) {
         if (q.includes(loc.toLowerCase())) {
             targetLoc = loc;
@@ -1972,7 +2065,7 @@ function processSommelierQuery(query, callback) {
     }
 
     let targetCat = null;
-    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식'];
+    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식'];
     for (const cat of categories) {
         if (q.includes(cat.toLowerCase())) {
             targetCat = cat;
@@ -1982,7 +2075,6 @@ function processSommelierQuery(query, callback) {
 
     // ─── Direct Gemini LLM API Logic (if key present) ───
     if (geminiKey) {
-        const cleanKey = geminiKey.trim();
         const localCandidates = restaurantData.filter(i => (!targetLoc || i.location_large.includes(targetLoc))).slice(0, 5);
         const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
 
@@ -1990,23 +2082,6 @@ function processSommelierQuery(query, callback) {
             const promptContext = `
 You are Spoonmap AI Gourmet Sommelier (미식 소믈리에).
 Answer the user's prompt in polite Korean.
-
-CRITICAL UI & FORMATTING RULES:
-1. DO NOT output markdown symbols like '***', '###', '---', or '#'.
-2. Wrap your initial introduction in: <div class="sommelier-intro-text">...intro...</div>
-3. Wrap all restaurant recommendation cards in: <div class="sommelier-rec-grid">...cards...</div>
-4. For EACH recommended place, you MUST use this EXACT clean card structure (Image 2 style):
-
-<div class="sommelier-rec-card">
-    <span class="sommelier-card-badge">추천 [번호 또는 구분]</span>
-    <h3 class="sommelier-card-title">[식당 이름]</h3>
-    <div class="sommelier-card-info">📍 위치: [위치 정보]</div>
-    <div class="sommelier-card-desc">[식당 특징 및 메뉴/분위기 추천 이유]</div>
-    <div class="sommelier-card-action">
-        <a href="[카카오맵 URL]" target="_blank" class="sommelier-card-link">👉 카카오맵에서 보기</a>
-    </div>
-</div>
-
 User Question: "${query}"
 
 User Constraints to strictly enforce:
@@ -2018,33 +2093,43 @@ ${JSON.stringify(localCandidates.map(c => ({ name: c.name, location: c.location_
 
 Available Live Kakao Places:
 ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_name, category: p.category_name, url: p.place_url })))}
+
+STRICT FORMATTING RULES:
+1. Do NOT use any markdown characters like **, ###, ##, #, or ---.
+2. Put intro message inside <div class="sommelier-intro-p">intro text here</div>.
+3. For each recommended restaurant, use EXACTLY this card HTML structure:
+<div class="rec-card-standard">
+    <span class="rec-tag-pill">Tag Text (e.g. 추천 1 (실시간 인기))</span>
+    <h4 class="rec-place-title">Restaurant Name</h4>
+    <div class="rec-place-meta">📍 위치: Address</div>
+    <p class="rec-place-desc">Descriptive recommendation rationale...</p>
+    <a href="KakaoMapUrl" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
+</div>
 `;
 
-            const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+            const modelsToTry = ['gemini-3.5-flash', 'gemini-3-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
             function attemptModel(idx) {
                 if (idx >= modelsToTry.length) {
-                    fallbackParserEngine(kakaoPlaces);
+                    processSommelierFallbackOnly(query, callback);
                     return;
                 }
                 const model = modelsToTry[idx];
-                fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`, {
+                fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: promptContext }] }] })
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                         let textRes = data.candidates[0].content.parts[0].text;
                         textRes = cleanMarkdownText(textRes);
                         callback({ html: textRes });
                     } else {
-                        console.warn(`Model ${model} invalid response:`, data);
                         attemptModel(idx + 1);
                     }
                 })
-                .catch(err => {
-                    console.error(`Model ${model} fetch failed:`, err);
+                .catch(() => {
                     attemptModel(idx + 1);
                 });
             }
@@ -2063,18 +2148,57 @@ ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_
         return;
     }
 
-    // ─── Smart Intent & Constraint Parser (No Key Fallback) ───
+    processSommelierFallbackOnly(query, callback);
+}
+
+function processSommelierFallbackOnly(query, callback) {
+    const q = query.toLowerCase();
+
+    const m1 = query.match(/1차\s*([0-9]+)\s*곳/i) || query.match(/1차\s*([0-9]+)\s*개/i);
+    const m2 = query.match(/2차\s*([0-9]+)\s*곳/i) || query.match(/2차\s*([0-9]+)\s*개/i);
+    const mTotal = query.match(/([0-9]+)\s*곳/i) || query.match(/([0-9]+)\s*개/i) || query.match(/([0-9]+)\s*선/i);
+
+    const step1Req = m1 ? parseInt(m1[1], 10) : null;
+    const step2Req = m2 ? parseInt(m2[1], 10) : null;
+    const totalReq = mTotal ? parseInt(mTotal[1], 10) : 3;
+
+    const hasKakaoKeywords = q.includes('카카오') || q.includes('실시간') || q.includes('안가본') || q.includes('새로운');
+    const hasLocalKeywords = q.includes('내 맛집') || q.includes('내가 간') || q.includes('단골') || q.includes('저장된') || q.includes('내 데이터');
+    
+    let sourcePref = 'both';
+    if (hasKakaoKeywords && !hasLocalKeywords) sourcePref = 'kakao_only';
+    else if (hasLocalKeywords && !hasKakaoKeywords) sourcePref = 'local_only';
+
+    let targetLoc = null;
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동'];
+    for (const loc of locations) {
+        if (q.includes(loc.toLowerCase())) {
+            targetLoc = loc;
+            break;
+        }
+    }
+
+    let targetCat = null;
+    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식'];
+    for (const cat of categories) {
+        if (q.includes(cat.toLowerCase())) {
+            targetCat = cat;
+            break;
+        }
+    }
+
     const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
+
     if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
         const ps = new kakao.maps.services.Places();
         ps.keywordSearch(searchKeyword, (data, status) => {
-            fallbackParserEngine(status === kakao.maps.services.Status.OK ? data : []);
+            generateFallbackCards(status === kakao.maps.services.Status.OK ? data : []);
         });
     } else {
-        fallbackParserEngine([]);
+        generateFallbackCards([]);
     }
 
-    function fallbackParserEngine(kakaoPlaces = []) {
+    function generateFallbackCards(kakaoPlaces = []) {
         let localPool = restaurantData.filter(item => {
             if (!item.map_url) return false;
             if (targetLoc && !item.location_large.includes(targetLoc) && (!item.location_small || !item.location_small.includes(targetLoc))) return false;
@@ -2091,134 +2215,80 @@ ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_
         if (localPool.length === 0) localPool = [...restaurantData];
         localPool.sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
 
-        const renderStepCards = (list, defaultTag) => list.map((item, idx) => `
-            <div class="sommelier-rec-card">
-                <span class="sommelier-card-badge">${defaultTag || '추천 ' + (idx + 1)}</span>
-                <h3 class="sommelier-card-title">${item.name}</h3>
-                <div class="sommelier-card-info">📍 위치: ${item.addr}</div>
-                <div class="sommelier-card-desc">카테고리: ${item.cat} · ${item.isKakao ? '카카오 지도 실시간 인기 추천 식당입니다.' : '내가 다녀온 찐 단골 검증 맛집입니다.'}</div>
-                ${item.url ? `
-                    <div class="sommelier-card-action">
-                        <a href="${item.url}" target="_blank" class="sommelier-card-link">👉 카카오맵에서 보기</a>
-                    </div>
-                ` : ''}
-            </div>
-        `).join('');
+        let cardsHtml = '';
+        let introText = `안녕하세요! 맛있는 일상을 안내하는 AI 미식 소믈리에입니다. 요청하신 조건에 맞는 엄선된 맛집입니다.`;
 
         if (step1Req || step2Req) {
-            const count1 = step1Req || 2;
-            const count2 = step2Req || 2;
+            const count1 = step1Req || 1;
+            const count2 = step2Req || 1;
 
-            let step1List = [];
-            let step2List = [];
+            let s1Cards = [];
+            let s2Cards = [];
 
             if (sourcePref === 'kakao_only') {
                 const foodPlaces = kakaoPlaces.filter(p => !p.category_name || (!p.category_name.includes('카페') && !p.category_name.includes('술집')));
-                const cafePlaces = kakaoPlaces.filter(p => p.category_name && (p.category_name.includes('카페') || p.category_name.includes('술집') || p.category_name.includes('주점')));
-                
-                step1List = (foodPlaces.length >= count1 ? foodPlaces : kakaoPlaces).slice(0, count1).map(p => ({
-                    name: p.place_name,
-                    addr: p.road_address_name || p.address_name,
-                    cat: p.category_name ? p.category_name.split('>').pop().trim() : '음식점',
-                    url: p.place_url || `https://map.kakao.com/link/map/${p.id}`,
-                    isKakao: true
-                }));
+                const cafePlaces = kakaoPlaces.filter(p => p.category_name && (p.category_name.includes('카페') || p.category_name.includes('술집')));
 
-                step2List = (cafePlaces.length >= count2 ? cafePlaces : kakaoPlaces.slice(count1)).slice(0, count2).map(p => ({
-                    name: p.place_name,
-                    addr: p.road_address_name || p.address_name,
-                    cat: p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집',
-                    url: p.place_url || `https://map.kakao.com/link/map/${p.id}`,
-                    isKakao: true
-                }));
-            } else if (sourcePref === 'local_only') {
-                step1List = localPool.slice(0, count1).map(item => ({
-                    name: item.name,
-                    addr: `${item.location_large} ${item.location_small || ''}`,
-                    cat: item.category || '한식',
-                    url: item.map_url,
-                    isKakao: false
-                }));
-                step2List = localPool.slice(count1, count1 + count2).map(item => ({
-                    name: item.name,
-                    addr: `${item.location_large} ${item.location_small || ''}`,
-                    cat: item.category || '카페/술집',
-                    url: item.map_url,
-                    isKakao: false
-                }));
+                const p1 = (foodPlaces.length >= count1 ? foodPlaces : kakaoPlaces).slice(0, count1);
+                const p2 = (cafePlaces.length >= count2 ? cafePlaces : kakaoPlaces.slice(count1)).slice(0, count2);
+
+                s1Cards = p1.map((p, i) => renderCardStandard(`1차: ${p.category_name ? p.category_name.split('>').pop().trim() : '식사'}`, p.place_name, p.road_address_name || p.address_name, `${targetLoc || '요청 지역'} 인근에서 맛과 품질로 입소문난 인기 1차 추천 장소입니다.`, p.place_url));
+                s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `1차 식사 후 분위기 있는 대화를 나누기 완벽한 2차 마무리 장소입니다.`, p.place_url));
             } else {
-                step1List = localPool.slice(0, count1).map(item => ({
-                    name: item.name,
-                    addr: `${item.location_large} ${item.location_small || ''}`,
-                    cat: item.category || '식당',
-                    url: item.map_url,
-                    isKakao: false
-                }));
-                step2List = kakaoPlaces.slice(0, count2).map(p => ({
-                    name: p.place_name,
-                    addr: p.road_address_name || p.address_name,
-                    cat: p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집',
-                    url: p.place_url || `https://map.kakao.com/link/map/${p.id}`,
-                    isKakao: true
-                }));
+                const l1 = localPool.slice(0, count1);
+                const p2 = kakaoPlaces.slice(0, count2);
+
+                s1Cards = l1.map((item, i) => renderCardStandard(`1차: ${item.category || '식사'}`, item.name, `${item.location_large} ${item.location_small || ''}`, `나의 찐 단골 기록이 보장하는 1차 대표 맛집입니다.`, item.map_url));
+                s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `이동하여 편안한 시간을 보내기 좋은 2차 추천 장소입니다.`, p.place_url));
             }
 
-            const html = `
-                <div class="sommelier-intro-text">
-                    안녕하세요! 요청하신 조건에 맞춰 <b>1차 식당 ${step1List.length}곳 + 2차 카페/술집 ${step2List.length}곳</b>으로 구성된 미식 코스를 추천해 드립니다.
-                </div>
-                <div class="sommelier-rec-grid">
-                    ${renderStepCards(step1List, '1차 식사 코스')}
-                    ${renderStepCards(step2List, '2차 디저트/술집 코스')}
-                </div>
-            `;
-            callback({ html });
-            return;
-        }
-
-        const targetCount = totalReq;
-        let chosenList = [];
-
-        if (sourcePref === 'kakao_only') {
-            chosenList = kakaoPlaces.slice(0, targetCount).map(p => ({
-                name: p.place_name,
-                addr: p.road_address_name || p.address_name,
-                cat: p.category_name ? p.category_name.split('>').pop().trim() : '음식점',
-                url: p.place_url || `https://map.kakao.com/link/map/${p.id}`,
-                isKakao: true
-            }));
-        } else if (sourcePref === 'local_only') {
-            chosenList = localPool.slice(0, targetCount).map(item => ({
-                name: item.name,
-                addr: `${item.location_large} ${item.location_small || ''}`,
-                cat: item.category || '기타',
-                url: item.map_url,
-                isKakao: false
-            }));
+            introText = `안녕하세요! AI 미식 소믈리에입니다. 요청하신 1차 ${count1}곳과 2차 ${count2}곳의 완벽 미식 코스를 추천해 드립니다.`;
+            cardsHtml = [...s1Cards, ...s2Cards].join('');
         } else {
-            const localPart = localPool.slice(0, Math.ceil(targetCount / 2)).map(item => ({
-                name: item.name,
-                addr: `${item.location_large} ${item.location_small || ''}`,
-                cat: item.category || '기타',
-                url: item.map_url,
-                isKakao: false
-            }));
-            const kakaoPart = kakaoPlaces.slice(0, Math.floor(targetCount / 2)).map(p => ({
-                name: p.place_name,
-                addr: p.road_address_name || p.address_name,
-                cat: p.category_name ? p.category_name.split('>').pop().trim() : '음식점',
-                url: p.place_url || `https://map.kakao.com/link/map/${p.id}`,
-                isKakao: true
-            }));
-            chosenList = [...localPart, ...kakaoPart];
+            const count = totalReq;
+            let chosen = [];
+            if (sourcePref === 'kakao_only') {
+                chosen = kakaoPlaces.slice(0, count).map((p, i) => ({
+                    tag: `추천 ${i + 1} (실시간 인기 ${targetCat || '맛집'})`,
+                    name: p.place_name,
+                    addr: p.road_address_name || p.address_name,
+                    desc: `${targetLoc || '요청 지역'} 인근에 위치해 있어 신속한 접근과 뛰어난 맛을 자랑하는 추천 식당입니다.`,
+                    url: p.place_url
+                }));
+            } else if (sourcePref === 'local_only') {
+                chosen = localPool.slice(0, count).map((item, i) => ({
+                    tag: `추천 ${i + 1} (내 데이터 찐 단골)`,
+                    name: item.name,
+                    addr: `${item.location_large} ${item.location_small || ''}`,
+                    desc: `나의 미식 데이터베이스에서 높은 평점과 방문 횟수를 기록한 검증된 맛집입니다.`,
+                    url: item.map_url
+                }));
+            } else {
+                const half1 = localPool.slice(0, Math.ceil(count / 2)).map((item, i) => ({
+                    tag: `추천 ${i + 1} (내 데이터 찐 단골)`,
+                    name: item.name,
+                    addr: `${item.location_large} ${item.location_small || ''}`,
+                    desc: `나의 미식 데이터베이스에서 검증된 대표 맛집입니다.`,
+                    url: item.map_url
+                }));
+                const half2 = kakaoPlaces.slice(0, Math.floor(count / 2)).map((p, i) => ({
+                    tag: `추천 ${half1.length + i + 1} (실시간 인기)`,
+                    name: p.place_name,
+                    addr: p.road_address_name || p.address_name,
+                    desc: `카카오 지도 실시간 탐색 추천 인기 맛집입니다.`,
+                    url: p.place_url
+                }));
+                chosen = [...half1, ...half2];
+            }
+
+            introText = `안녕하세요! AI 미식 소믈리에입니다. ${targetLoc || ''} ${targetCat || ''} 추천 맛집 ${chosen.length}곳을 엄선해 드립니다.`;
+            cardsHtml = chosen.map(c => renderCardStandard(c.tag, c.name, c.addr, c.desc, c.url)).join('');
         }
 
         const html = `
-            <div class="sommelier-intro-text">
-                안녕하세요! 요청하신 조건에 맞춰 <b>추천 맛집 ${chosenList.length}곳</b>을 엄선해드립니다.
-            </div>
+            <div class="sommelier-intro-p">${introText}</div>
             <div class="sommelier-rec-grid">
-                ${renderStepCards(chosenList, null)}
+                ${cardsHtml}
             </div>
         `;
         callback({ html });
