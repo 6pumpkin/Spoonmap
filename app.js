@@ -1927,8 +1927,17 @@ function handleSommelierSend() {
     });
 }
 
-function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function cleanMarkdownText(str) {
+    if (!str) return '';
+    return str
+        .replace(/```html/gi, '')
+        .replace(/```/gi, '')
+        .replace(/---/g, '')
+        .replace(/###/g, '')
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/#+/g, '')
+        .trim();
 }
 
 function processSommelierQuery(query, callback) {
@@ -1979,7 +1988,24 @@ function processSommelierQuery(query, callback) {
         function queryGemini(kakaoPlaces = []) {
             const promptContext = `
 You are Spoonmap AI Gourmet Sommelier (미식 소믈리에).
-Answer the user's prompt in polite Korean markdown/HTML.
+Answer the user's prompt in polite Korean.
+
+CRITICAL UI & FORMATTING RULES:
+1. DO NOT output markdown symbols like '***', '###', '---', or '#'.
+2. Wrap your initial introduction in: <div class="sommelier-intro-text">...intro...</div>
+3. Wrap all restaurant recommendation cards in: <div class="sommelier-rec-grid">...cards...</div>
+4. For EACH recommended place, you MUST use this EXACT clean card structure (Image 2 style):
+
+<div class="sommelier-rec-card">
+    <span class="sommelier-card-badge">추천 [번호 또는 구분]</span>
+    <h3 class="sommelier-card-title">[식당 이름]</h3>
+    <div class="sommelier-card-info">📍 위치: [위치 정보]</div>
+    <div class="sommelier-card-desc">[식당 특징 및 메뉴/분위기 추천 이유]</div>
+    <div class="sommelier-card-action">
+        <a href="[카카오맵 URL]" target="_blank" class="sommelier-card-link">👉 카카오맵에서 보기</a>
+    </div>
+</div>
+
 User Question: "${query}"
 
 User Constraints to strictly enforce:
@@ -1991,10 +2017,6 @@ ${JSON.stringify(localCandidates.map(c => ({ name: c.name, location: c.location_
 
 Available Live Kakao Places:
 ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_name, category: p.category_name, url: p.place_url })))}
-
-Instructions:
-Strictly follow the user's requested numbers (e.g. if asked for 3 places for 1차 and 3 places for 2차, output EXACTLY 3 places for step 1 and 3 places for step 2).
-Format output in clean HTML with cards!
 `;
 
             const modelsToTry = ['gemini-3.5-flash', 'gemini-3-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
@@ -2013,7 +2035,7 @@ Format output in clean HTML with cards!
                 .then(data => {
                     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                         let textRes = data.candidates[0].content.parts[0].text;
-                        textRes = textRes.replace(/```html/g, '').replace(/```/g, '');
+                        textRes = cleanMarkdownText(textRes);
                         callback({ html: textRes });
                     } else {
                         attemptModel(idx + 1);
@@ -2050,7 +2072,6 @@ Format output in clean HTML with cards!
     }
 
     function fallbackParserEngine(kakaoPlaces = []) {
-        // Filter local dataset
         let localPool = restaurantData.filter(item => {
             if (!item.map_url) return false;
             if (targetLoc && !item.location_large.includes(targetLoc) && (!item.location_small || !item.location_small.includes(targetLoc))) return false;
@@ -2067,7 +2088,20 @@ Format output in clean HTML with cards!
         if (localPool.length === 0) localPool = [...restaurantData];
         localPool.sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
 
-        // 1. Explicit 1차 / 2차 Multi-Step Request (e.g. 1차 3곳, 2차 3곳)
+        const renderStepCards = (list, defaultTag) => list.map((item, idx) => `
+            <div class="sommelier-rec-card">
+                <span class="sommelier-card-badge">${defaultTag || '추천 ' + (idx + 1)}</span>
+                <h3 class="sommelier-card-title">${item.name}</h3>
+                <div class="sommelier-card-info">📍 위치: ${item.addr}</div>
+                <div class="sommelier-card-desc">카테고리: ${item.cat} · ${item.isKakao ? '카카오 지도 실시간 인기 추천 식당입니다.' : '내가 다녀온 찐 단골 검증 맛집입니다.'}</div>
+                ${item.url ? `
+                    <div class="sommelier-card-action">
+                        <a href="${item.url}" target="_blank" class="sommelier-card-link">👉 카카오맵에서 보기</a>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+
         if (step1Req || step2Req) {
             const count1 = step1Req || 2;
             const count2 = step2Req || 2;
@@ -2099,23 +2133,22 @@ Format output in clean HTML with cards!
                     name: item.name,
                     addr: `${item.location_large} ${item.location_small || ''}`,
                     cat: item.category || '한식',
-                    spoon: getSpoonBadgeHtml(item),
+                    url: item.map_url,
                     isKakao: false
                 }));
                 step2List = localPool.slice(count1, count1 + count2).map(item => ({
                     name: item.name,
                     addr: `${item.location_large} ${item.location_small || ''}`,
                     cat: item.category || '카페/술집',
-                    spoon: getSpoonBadgeHtml(item),
+                    url: item.map_url,
                     isKakao: false
                 }));
             } else {
-                // Both
                 step1List = localPool.slice(0, count1).map(item => ({
                     name: item.name,
                     addr: `${item.location_large} ${item.location_small || ''}`,
                     cat: item.category || '식당',
-                    spoon: getSpoonBadgeHtml(item),
+                    url: item.map_url,
                     isKakao: false
                 }));
                 step2List = kakaoPlaces.slice(0, count2).map(p => ({
@@ -2127,41 +2160,19 @@ Format output in clean HTML with cards!
                 }));
             }
 
-            const renderStepCards = (list, tagTitle, tagColor) => list.map(item => `
-                <div class="sommelier-rec-card" style="${item.isKakao ? 'border-color:#93C5FD; background:#F8FAFC;' : ''}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="course-step-tag" style="background:${tagColor};">${tagTitle}</span>
-                        ${item.isKakao ? '<span class="category-badge" style="background:#EFF6FF; color:#1D4ED8;">카카오 지도</span>' : (item.spoon || '')}
-                    </div>
-                    <strong style="font-size:1.02rem; color:${item.isKakao ? '#1D4ED8' : 'var(--text-primary)'}; margin-top:4px;">
-                        ${item.isKakao ? '🌐 ' : '🔥 '}${item.name}
-                    </strong>
-                    <div style="font-size:0.82rem; color:var(--text-muted);">📍 ${item.addr} | 🏷️ ${item.cat}</div>
-                    ${item.url ? `<div style="margin-top:4px; text-align:right;"><a href="${item.url}" target="_blank" style="font-size:0.8rem; font-weight:800; color:#2563EB;">카카오맵에서 보기 ↗</a></div>` : ''}
-                </div>
-            `).join('');
-
             const html = `
-                🍷 <b>요청하신 exact 수량 [1차 ${step1List.length}곳 + 2차 ${step2List.length}곳] 추천입니다!</b><br><br>
-                <div style="font-size:0.88rem; font-weight:800; color:var(--coral-main); margin-bottom:6px;">
-                    🍱 1차 추천 식당 (${step1List.length}곳)
+                <div class="sommelier-intro-text">
+                    안녕하세요! 요청하신 조건에 맞춰 <b>1차 식당 ${step1List.length}곳 + 2차 카페/술집 ${step2List.length}곳</b>으로 구성된 미식 코스를 추천해 드립니다.
                 </div>
                 <div class="sommelier-rec-grid">
-                    ${renderStepCards(step1List, '1차 식사', 'linear-gradient(90deg, var(--coral-main), #FF6B81)')}
-                </div>
-
-                <div style="font-size:0.88rem; font-weight:800; color:#10B981; margin-top:1.2rem; margin-bottom:6px;">
-                    ☕ 2차 추천 카페 & 술집 (${step2List.length}곳)
-                </div>
-                <div class="sommelier-rec-grid">
-                    ${renderStepCards(step2List, '2차 코스', 'linear-gradient(90deg, #10B981, #059669)')}
+                    ${renderStepCards(step1List, '1차 식사 코스')}
+                    ${renderStepCards(step2List, '2차 디저트/술집 코스')}
                 </div>
             `;
             callback({ html });
             return;
         }
 
-        // 2. Specific Count Single Step Request (e.g. 5곳, 3곳)
         const targetCount = totalReq;
         let chosenList = [];
 
@@ -2178,7 +2189,7 @@ Format output in clean HTML with cards!
                 name: item.name,
                 addr: `${item.location_large} ${item.location_small || ''}`,
                 cat: item.category || '기타',
-                spoon: getSpoonBadgeHtml(item),
+                url: item.map_url,
                 isKakao: false
             }));
         } else {
@@ -2186,7 +2197,7 @@ Format output in clean HTML with cards!
                 name: item.name,
                 addr: `${item.location_large} ${item.location_small || ''}`,
                 cat: item.category || '기타',
-                spoon: getSpoonBadgeHtml(item),
+                url: item.map_url,
                 isKakao: false
             }));
             const kakaoPart = kakaoPlaces.slice(0, Math.floor(targetCount / 2)).map(p => ({
@@ -2199,24 +2210,12 @@ Format output in clean HTML with cards!
             chosenList = [...localPart, ...kakaoPart];
         }
 
-        const cardsHtml = chosenList.map((item, idx) => `
-            <div class="sommelier-rec-card" style="${item.isKakao ? 'border-color:#93C5FD; background:#F8FAFC;' : ''}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="font-size:1.02rem; color:${item.isKakao ? '#1D4ED8' : 'var(--text-primary)'};">
-                        #${idx + 1} ${item.isKakao ? '🌐 ' : '🔥 '}${item.name}
-                    </strong>
-                    ${item.isKakao ? '<span class="category-badge" style="background:#EFF6FF; color:#1D4ED8;">카카오 지도</span>' : (item.spoon || '')}
-                </div>
-                <div style="font-size:0.82rem; color:var(--text-muted);">📍 ${item.addr} | 🏷️ ${item.cat}</div>
-                ${item.url ? `<div style="margin-top:4px; text-align:right;"><a href="${item.url}" target="_blank" style="font-size:0.8rem; font-weight:800; color:#2563EB;">카카오맵에서 보기 ↗</a></div>` : ''}
-            </div>
-        `).join('');
-
-        const sourceTitleStr = sourcePref === 'kakao_only' ? '🌐 카카오 지도 실시간 추천' : sourcePref === 'local_only' ? '🔥 내가 다녀온 인증 맛집' : '🔥 내 맛집 + 🌐 카카오 지도 조합';
         const html = `
-            🍷 <b>요청하신 exact 수량 [${chosenList.length}곳] (${sourceTitleStr})</b>입니다:<br><br>
+            <div class="sommelier-intro-text">
+                안녕하세요! 요청하신 조건에 맞춰 <b>추천 맛집 ${chosenList.length}곳</b>을 엄선해드립니다.
+            </div>
             <div class="sommelier-rec-grid">
-                ${cardsHtml}
+                ${renderStepCards(chosenList, null)}
             </div>
         `;
         callback({ html });
