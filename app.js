@@ -777,65 +777,49 @@ document.addEventListener('DOMContentLoaded', () => {
     function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
         if (!containerEl) return;
         containerEl.style.display = 'block';
-        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 고화질 대표 음식 사진 찾는 중...</div>`;
+        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 고화질 음식 사진 찾는 중...</div>`;
 
         const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
         const catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타/g, '');
         const query = `${cleanName} ${catTag} 맛집`.replace(/\s+/g, ' ').trim();
         const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
 
-        // 1. Daum Blog Search API (retrieves real food blog post thumbnails)
-        const blogUrl = `https://dapi.kakao.com/v2/search/blog?query=${encodeURIComponent(query)}&size=8`;
+        // Query Daum Image Search API directly for original high-resolution full images
+        const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=15`;
 
-        fetch(blogUrl, { headers })
+        fetch(imgUrl, { headers })
             .then(res => res.json())
-            .then(blogData => {
+            .then(data => {
                 let photos = [];
-
-                if (blogData && blogData.documents) {
-                    blogData.documents.forEach(doc => {
-                        if (doc.thumbnail) {
-                            // Transform 130x130 thumbnail to 800x800 High-Def Kakao CDN image!
-                            const hdUrl = doc.thumbnail.replace(/130x130_\d+_c/, '800x800_85_c');
-                            photos.push({
-                                image_url: hdUrl,
-                                thumbnail_url: doc.thumbnail,
-                                title: doc.title.replace(/<[^>]+>/g, '')
-                            });
+                if (data && data.documents && data.documents.length > 0) {
+                    // Filter out non-food images (menus, receipts, maps, signs, interior without food)
+                    const filtered = data.documents.filter(doc => {
+                        const str = (doc.doc_url + ' ' + doc.image_url + ' ' + doc.display_sitename).toLowerCase();
+                        if (str.includes('menu') || str.includes('영수증') || str.includes('receipt') || str.includes('map') || str.includes('signboard')) {
+                            return false;
                         }
+                        return true;
+                    });
+
+                    const docsToUse = filtered.length > 0 ? filtered : data.documents;
+
+                    docsToUse.forEach(doc => {
+                        const hdCdnUrl = doc.thumbnail_url ? doc.thumbnail_url.replace(/130x130_\d+_c/, '800x800_85_c') : '';
+                        photos.push({
+                            // Prioritize original high-res image URL (e.g. 1920x1080), fallback to 800x800 Kakao CDN
+                            image_url: doc.image_url || hdCdnUrl,
+                            fallback_url: hdCdnUrl || doc.thumbnail_url,
+                            thumbnail_url: doc.thumbnail_url
+                        });
                     });
                 }
 
-                // 2. If fewer than 5 photos, supplement with Daum Image Search API
-                if (photos.length < 5) {
-                    const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=8`;
-                    return fetch(imgUrl, { headers })
-                        .then(res => res.json())
-                        .then(imgData => {
-                            if (imgData && imgData.documents) {
-                                imgData.documents.forEach(doc => {
-                                    if (doc.thumbnail_url) {
-                                        const hdUrl = doc.thumbnail_url.replace(/130x130_\d+_c/, '800x800_85_c');
-                                        photos.push({
-                                            image_url: hdUrl,
-                                            thumbnail_url: doc.thumbnail_url,
-                                            title: placeName
-                                        });
-                                    }
-                                });
-                            }
-                            return photos;
-                        });
-                }
-                return photos;
-            })
-            .then(photos => {
-                // Deduplicate and select top 5 HD food photos
+                // Deduplicate and take top 5 photos
                 const uniquePhotos = [];
-                const seenUrls = new Set();
+                const seen = new Set();
                 for (const p of photos) {
-                    if (!seenUrls.has(p.image_url)) {
-                        seenUrls.add(p.image_url);
+                    if (!seen.has(p.image_url)) {
+                        seen.add(p.image_url);
                         uniquePhotos.push(p);
                     }
                     if (uniquePhotos.length >= 5) break;
@@ -861,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     containerEl.innerHTML = `
                         <div class="main-photo-hero">
-                            <img id="gallery-main-img" src="${firstImg.image_url}" alt="${placeName} 고화질 음식 사진" onerror="this.onerror=null; this.src='${firstImg.thumbnail_url}';">
+                            <img id="gallery-main-img" src="${firstImg.image_url}" alt="${placeName} 고화질 음식 사진" onerror="this.onerror=null; this.src='${firstImg.fallback_url}';">
                         </div>
                         ${thumbsHtml}
                     `;
