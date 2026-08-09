@@ -1561,7 +1561,7 @@ function computeAndRenderFoodInsights() {
     const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]);
     const btnReg = document.getElementById('btn-toggle-regions');
     if (btnReg) {
-        btnReg.textContent = showAllRegions ? '접기 ▲' : `전체 지역 보기 (${sortedRegions.length}개) ▼`;
+        btnReg.textContent = showAllRegions ? '접기 ▲' : '전체 ▼';
     }
     const displayRegions = showAllRegions ? sortedRegions : sortedRegions.slice(0, 5);
     const regionContainer = document.getElementById('insights-region-list');
@@ -1585,7 +1585,7 @@ function computeAndRenderFoodInsights() {
     // 3. Category List (Top 5 vs All)
     const btnCat = document.getElementById('btn-toggle-categories');
     if (btnCat) {
-        btnCat.textContent = showAllCategories ? '접기 ▲' : `전체 카테고리 보기 (${sortedCats.length}개) ▼`;
+        btnCat.textContent = showAllCategories ? '접기 ▲' : '전체 ▼';
     }
     const displayCategories = showAllCategories ? sortedCats : sortedCats.slice(0, 5);
     const categoryContainer = document.getElementById('insights-category-list');
@@ -1631,7 +1631,7 @@ function computeAndRenderFoodInsights() {
     const visitedOnlyPlaces = topVisitedItems.filter(item => (item.visit_count || 1) >= 2);
     const btnTop = document.getElementById('btn-toggle-top-places');
     if (btnTop) {
-        btnTop.textContent = showAllTopPlaces ? '접기 ▲' : `전체 또간집 랭킹 보기 (${visitedOnlyPlaces.length}곳) ▼`;
+        btnTop.textContent = showAllTopPlaces ? '접기 ▲' : '전체 ▼';
     }
     const displayPlaces = showAllTopPlaces ? visitedOnlyPlaces : visitedOnlyPlaces.slice(0, 5);
     const topPlacesContainer = document.getElementById('insights-top-places-list');
