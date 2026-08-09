@@ -1267,38 +1267,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupSearch() {
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key !== 'Enter') return;
-            const query = e.target.value.trim();
-            currentFilters.searchQuery = query.toLowerCase();
-
-            // If map view is active, search saved places on the map
+        const handleSearchUpdate = (query) => {
+            currentFilters.searchQuery = query.trim().toLowerCase();
             const mapView = document.getElementById('map-view');
             if (mapView && mapView.classList.contains('active') && map) {
-                // REMOVED sync with sidebar search input
-                searchSavedPlacesOnMap(query);
+                searchSavedPlacesOnMap(query.trim());
                 return;
             }
             render();
+        };
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                handleSearchUpdate(e.target.value);
+            });
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    handleSearchUpdate(e.target.value);
+                }
+            });
+        }
+
+        const mapSearchInput = document.getElementById('map-search-input');
+        const mapResetBtn = document.getElementById('map-reset-btn');
+
+        if (mapSearchInput) {
+            mapSearchInput.addEventListener('input', (e) => {
+                searchSavedPlacesOnMap(e.target.value.trim());
+            });
+            mapSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    searchSavedPlacesOnMap(e.target.value.trim());
+                }
+            });
+        }
+
+        if (mapResetBtn) {
+            mapResetBtn.addEventListener('click', () => {
+                if (mapSearchInput) mapSearchInput.value = '';
+                if (searchInput) searchInput.value = '';
+                currentFilters.searchQuery = '';
+                if (map) updateMapMarkers();
+                render();
+            });
+        }
+
+        ['search-name', 'search-category', 'search-subloc', 'search-menu'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    const q = searchInput ? searchInput.value.trim() : '';
+                    if (q) handleSearchUpdate(q);
+                    else render();
+                });
+            }
         });
     }
 
     function searchSavedPlacesOnMap(query) {
         const resultsList = document.getElementById('map-results-list');
-        const useName = document.getElementById('search-name').checked;
-        const useCat = document.getElementById('search-category').checked;
-        const useSub = document.getElementById('search-subloc').checked;
-        const useMenu = document.getElementById('search-menu').checked;
+        if (!resultsList) return;
 
-        // Clear existing markers and results
+        const useName = document.getElementById('search-name') ? document.getElementById('search-name').checked : true;
+        const useCat = document.getElementById('search-category') ? document.getElementById('search-category').checked : true;
+        const useSub = document.getElementById('search-subloc') ? document.getElementById('search-subloc').checked : true;
+        const useMenu = document.getElementById('search-menu') ? document.getElementById('search-menu').checked : true;
+
         markers.forEach(m => m.setMap(null));
         markers = [];
         resultsList.innerHTML = '';
-        document.getElementById('map-place-detail').style.display = 'none';
+        const detailEl = document.getElementById('map-place-detail');
+        if (detailEl) detailEl.style.display = 'none';
         resultsList.style.display = 'block';
 
-        if (!query) {
+        const q = (query || '').trim().toLowerCase();
+
+        if (!q) {
             resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
+            if (map) updateMapMarkers();
             return;
         }
 
