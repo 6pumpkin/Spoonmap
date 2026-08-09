@@ -1833,7 +1833,7 @@ function initSommelierTab() {
     if (keyInput) keyInput.value = savedKey;
     if (keyStatus) {
         keyStatus.innerHTML = savedKey 
-            ? `<b style="color:#10B981;">✅ Gemini LLM (gemini-2.5-flash) 활성화됨</b>`
+            ? `<b style="color:#10B981;">✅ Google Gemini AI 연동 완료</b>`
             : `💡 API Key 미입력 시에도 스마트 의도 파서가 개수/출처/코스를 동적 분석합니다.`;
     }
 
@@ -1843,7 +1843,7 @@ function initSommelierTab() {
             if (val) {
                 localStorage.setItem('spoonmap_gemini_key', val);
                 alert('🔑 Gemini API Key가 저장되었습니다! 이제 자유 대화형 LLM으로 동작합니다.');
-                if (keyStatus) keyStatus.innerHTML = `<b style="color:#10B981;">✅ Gemini LLM (gemini-2.5-flash) 활성화됨</b>`;
+                if (keyStatus) keyStatus.innerHTML = `<b style="color:#10B981;">✅ Google Gemini AI 연동 완료</b>`;
             } else {
                 localStorage.removeItem('spoonmap_gemini_key');
                 alert('API Key가 제거되었습니다. 기본 스마트 파서 모드로 전환됩니다.');
@@ -1862,12 +1862,11 @@ function initSommelierTab() {
     else if (hour >= 17 && hour < 21) timeGreeting = '🥩 시원한 반주와 맛있는 저녁 시간대';
     else timeGreeting = '🍺 출출한 야식 & 술 한잔 시간대';
 
-    const llmBadge = savedKey ? ' (Gemini 2.5 LLM)' : '';
     thread.innerHTML = `
         <div class="chat-msg ai-msg">
             <div class="chat-avatar">🤖</div>
             <div class="chat-bubble">
-                안녕하세요! 1,100개 미식 데이터 및 카카오 지도 API와 연동된 <b>AI 미식 소믈리에${llmBadge}</b>입니다 🍷✨<br><br>
+                안녕하세요! 1,100개 미식 데이터 및 카카오 지도 API와 연동된 <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
                 원하시는 <b>개수(예: 1차 3곳, 2차 3곳), 추천 출처(내 맛집만 vs 카카오 지도 실시간), 코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br><br>
                 💡 상단의 추천 샘플 질문을 누르시거나 하단 창에 원하는 질문을 입력하세요!
