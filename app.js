@@ -1,5 +1,8 @@
 function getSpoonBadgeHtml(item) {
-    const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+    if (!item || item.isExternal || item.visit_count === 0 || !item.rate) {
+        return '';
+    }
+    const spoonCount = (item.rate.match(/🥄/g) || []).length || 1;
     const visits = item.visit_count || 1;
     
     let tierClass = '';
@@ -56,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupFilters();
         setupSearch();
         setupTabs();
+        initRecommendTab();
         render();
     }
 
@@ -100,6 +104,222 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+    }
+
+    let currentWinnerItem = null;
+
+    function initRecommendTab() {
+        const catSelect = document.getElementById('rec-category-select');
+        const locSelect = document.getElementById('rec-location-select');
+        const rateSelect = document.getElementById('rec-rate-select');
+        const visitedCheck = document.getElementById('rec-visited-only');
+        const kakaoAllCheck = document.getElementById('rec-kakao-all');
+        const spinBtn = document.getElementById('btn-spin-roulette');
+        const reSpinBtn = document.getElementById('btn-re-spin');
+        const viewOnMapBtn = document.getElementById('btn-view-on-map');
+        const windowEl = document.getElementById('roulette-window');
+        const reel = document.getElementById('roulette-reel');
+        const winnerContainer = document.getElementById('winner-result-container');
+        const winnerBody = document.getElementById('winner-card-body');
+
+        if (!spinBtn) return;
+
+        // Mutual Exclusivity for Checkboxes
+        if (visitedCheck && kakaoAllCheck) {
+            visitedCheck.addEventListener('change', () => {
+                if (visitedCheck.checked) {
+                    kakaoAllCheck.checked = false;
+                    rateSelect.disabled = false;
+                    rateSelect.style.opacity = '1';
+                }
+            });
+
+            kakaoAllCheck.addEventListener('change', () => {
+                if (kakaoAllCheck.checked) {
+                    visitedCheck.checked = false;
+                    rateSelect.disabled = true;
+                    rateSelect.style.opacity = '0.5';
+                } else {
+                    rateSelect.disabled = false;
+                    rateSelect.style.opacity = '1';
+                }
+            });
+        }
+
+        // Populate Category select options
+        const categories = new Set();
+        restaurantData.forEach(item => {
+            if (item.category) {
+                item.category.split(',').forEach(c => categories.add(c.trim()));
+            }
+        });
+        Array.from(categories).sort().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
+        });
+
+        // Populate Location select options
+        const locations = new Set();
+        restaurantData.forEach(item => {
+            if (item.location_large) locations.add(item.location_large);
+        });
+        Array.from(locations).sort().forEach(loc => {
+            const opt = document.createElement('option');
+            opt.value = loc;
+            opt.textContent = loc;
+            locSelect.appendChild(opt);
+        });
+
+        // Execute Spin Reel Animation
+        function runSpinAnimation(candidates) {
+            const winner = candidates[Math.floor(Math.random() * candidates.length)];
+            currentWinnerItem = winner;
+
+            // Prepare slot reel items (random dummy items + winner at end)
+            const reelItems = [];
+            const itemCount = Math.min(22, Math.max(15, candidates.length * 2));
+            for (let i = 0; i < itemCount - 1; i++) {
+                const randomDummy = candidates[Math.floor(Math.random() * candidates.length)];
+                reelItems.push(randomDummy);
+            }
+            reelItems.push(winner);
+
+            // Render reel
+            reel.style.transition = 'none';
+            reel.style.transform = 'translateY(0)';
+            reel.innerHTML = '';
+            
+            reelItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'reel-item';
+                div.innerHTML = `
+                    <h3 class="reel-name">${item.name}</h3>
+                    <div class="reel-meta">
+                        <span class="category-badge">${item.category || '기타'}</span>
+                        <span class="loc-badge">${item.location_large}</span>
+                        ${getSpoonBadgeHtml(item)}
+                    </div>
+                `;
+                reel.appendChild(div);
+            });
+
+            // Force reflow
+            void reel.offsetHeight;
+
+            // UI state
+            winnerContainer.style.display = 'none';
+            windowEl.style.display = 'flex';
+            spinBtn.disabled = true;
+            const spinTextEl = spinBtn.querySelector('.spin-text');
+            if (spinTextEl) spinTextEl.textContent = '🎲 맛집 추첨 중...';
+
+            // Start animation
+            const targetY = (reelItems.length - 1) * 180;
+            reel.style.transition = 'transform 2.6s cubic-bezier(0.12, 0.8, 0.25, 1)';
+            reel.style.transform = `translateY(-${targetY}px)`;
+
+            setTimeout(() => {
+                spinBtn.disabled = false;
+                if (spinTextEl) spinTextEl.textContent = '오늘 뭐 먹지? 뽑기!';
+                
+                // Show winner card
+                windowEl.style.display = 'none';
+                winnerContainer.style.display = 'block';
+                winnerBody.innerHTML = '';
+                winnerBody.appendChild(createCard(winner));
+            }, 2700);
+        }
+
+        // Spin Function Entry Point
+        function startSpin() {
+            const selectedCat = catSelect.value;
+            const selectedLoc = locSelect.value;
+            const minRate = parseInt(rateSelect.value, 10) || 0;
+            const onlyVisited = visitedCheck ? visitedCheck.checked : false;
+            const isKakaoAll = kakaoAllCheck ? kakaoAllCheck.checked : false;
+
+            if (isKakaoAll) {
+                // Search Kakao Map Places API live
+                if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
+                    alert('카카오 지도 API를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                    return;
+                }
+
+                const spinTextEl = spinBtn.querySelector('.spin-text');
+                if (spinTextEl) spinTextEl.textContent = '🔍 카카오 지도 탐색 중...';
+                spinBtn.disabled = true;
+
+                const locText = selectedLoc !== 'all' ? selectedLoc : '서울';
+                const catText = selectedCat !== 'all' ? selectedCat : '맛집';
+                const searchKeyword = `${locText} ${catText}`.trim();
+
+                const ps = new kakao.maps.services.Places();
+                ps.keywordSearch(searchKeyword, (data, status) => {
+                    spinBtn.disabled = false;
+                    if (spinTextEl) spinTextEl.textContent = '오늘 뭐 먹지? 뽑기!';
+
+                    if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                        const candidates = data.map(place => ({
+                            name: place.place_name,
+                            category: place.category_name ? place.category_name.split('>').pop().trim() : (selectedCat !== 'all' ? selectedCat : '음식점'),
+                            location_large: place.address_name ? place.address_name.split(' ').slice(0, 2).join(' ') : (selectedLoc !== 'all' ? selectedLoc : '지역 정보'),
+                            location_small: place.road_address_name || place.address_name || '',
+                            rate: '',
+                            map_url: place.place_url || `https://map.kakao.com/link/map/${place.id}`,
+                            visit_count: 0,
+                            isExternal: true,
+                            menu: [place.phone ? `📞 ${place.phone}` : '카카오 지도 추천 식당']
+                        }));
+                        runSpinAnimation(candidates);
+                    } else {
+                        alert(`'${searchKeyword}' 카카오 지도 검색 결과가 없습니다. 지역이나 카테고리를 변경해 보세요!`);
+                    }
+                });
+                return;
+            }
+
+            // Normal search from visited places (restaurantData)
+            let candidates = restaurantData.filter(item => {
+                if (!item.map_url) return false;
+                if (selectedCat !== 'all' && (!item.category || !item.category.includes(selectedCat))) return false;
+                if (selectedLoc !== 'all' && item.location_large !== selectedLoc) return false;
+                
+                const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+                if (spoonCount < minRate) return false;
+                if (onlyVisited && (item.visit_count || 1) < 2) return false;
+                
+                return true;
+            });
+
+            if (candidates.length === 0) {
+                alert('앗! 조건에 맞는 맛집이 없습니다. 카테고리, 지역 또는 평점의 필터 범위를 넓혀보세요!');
+                return;
+            }
+
+            runSpinAnimation(candidates);
+        }
+
+        spinBtn.addEventListener('click', startSpin);
+        if (reSpinBtn) reSpinBtn.addEventListener('click', startSpin);
+
+        // View on map action
+        if (viewOnMapBtn) {
+            viewOnMapBtn.addEventListener('click', () => {
+                if (!currentWinnerItem) return;
+                const mapTabBtn = document.querySelector('.tab-btn[data-tab="map"], .mobile-tab-btn[data-tab="map"]');
+                if (mapTabBtn) mapTabBtn.click();
+
+                setTimeout(() => {
+                    const searchInput = document.getElementById('map-search-input');
+                    if (searchInput) {
+                        searchInput.value = currentWinnerItem.name;
+                        searchSavedPlacesOnMap(currentWinnerItem.name);
+                    }
+                }, 300);
+            });
+        }
     }
 
     let map = null;

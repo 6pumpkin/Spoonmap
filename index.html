@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608092031">
+    <link rel="stylesheet" href="style.css?v=202608092101">
 </head>
 
 <body class="light-theme">
@@ -46,6 +46,7 @@
         <div class="tab-pill-container">
             <button class="tab-btn active" data-tab="list"><span>🍚</span> 목록 보기</button>
             <button class="tab-btn" data-tab="map"><span>🗺️</span> 지도 보기</button>
+            <button class="tab-btn" data-tab="recommend"><span>🎲</span> 오늘 뭐 먹지?</button>
         </div>
     </nav>
 
@@ -59,6 +60,7 @@
                 <div class="mobile-tabs-menu" id="mobile-tabs-menu">
                     <button class="mobile-tab-btn active" data-tab="list">목록 보기</button>
                     <button class="mobile-tab-btn" data-tab="map">지도 보기</button>
+                    <button class="mobile-tab-btn" data-tab="recommend">오늘 뭐 먹지?</button>
                 </div>
             </div>
             
@@ -133,6 +135,84 @@
             </div>
         </div>
 
+        <!-- 오늘 뭐 먹지? Recommendation Tab Content -->
+        <div id="recommend-view" class="tab-content">
+            <div class="recommend-container">
+                <div class="recommend-hero">
+                    <div class="hero-badge">🎲 오늘 뭐 먹지?</div>
+                    <h2>오늘 방문할 맛집 추첨기</h2>
+                </div>
+
+                <div class="recommend-controls-card">
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="rec-category-select"><span>🍚</span> 카테고리</label>
+                            <select id="rec-category-select" class="rec-select">
+                                <option value="all">전체 카테고리</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="rec-location-select"><span>📍</span> 지역</label>
+                            <select id="rec-location-select" class="rec-select">
+                                <option value="all">전체 지역</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="rec-rate-select"><span>🥄</span> 최소 평점</label>
+                            <select id="rec-rate-select" class="rec-select">
+                                <option value="0">상관없음</option>
+                                <option value="3">🥄 3개 이상</option>
+                                <option value="4">🥄 4개 이상</option>
+                                <option value="5">🥄 5개 전설 맛집만</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="check-row-container">
+                        <label class="toggle-checkbox-label">
+                            <input type="checkbox" id="rec-visited-only">
+                            <span class="custom-checkbox"></span>
+                            <span class="label-text">🔥 또간집만 뽑기</span>
+                        </label>
+                        <label class="toggle-checkbox-label">
+                            <input type="checkbox" id="rec-kakao-all">
+                            <span class="custom-checkbox"></span>
+                            <span class="label-text">🌐 카카오 지도 전체에서 뽑기</span>
+                        </label>
+                    </div>
+
+                    <button id="btn-spin-roulette" class="spin-btn">
+                        <span class="spin-icon">🎲</span>
+                        <span class="spin-text">오늘 뭐 먹지? 뽑기!</span>
+                    </button>
+                </div>
+
+                <div class="roulette-stage-wrapper">
+                    <!-- Initial Slot Machine Window -->
+                    <div id="roulette-window" class="roulette-window">
+                        <div id="roulette-reel" class="roulette-reel">
+                            <div class="reel-item placeholder">
+                                <span class="placeholder-emoji">❓</span>
+                                <p class="placeholder-text">위 버튼을 눌러 오늘 먹을 메뉴를 추천받아보세요!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Winner Result Card Container -->
+                    <div id="winner-result-container" class="winner-result-container" style="display: none;">
+                        <div class="winner-ribbon">🎉 오늘의 당첨 맛집!</div>
+                        <div id="winner-card-body" class="winner-card-body"></div>
+                        <div class="winner-actions">
+                            <button id="btn-re-spin" class="re-spin-btn">🔄 다시 뽑기</button>
+                            <button id="btn-view-on-map" class="map-view-btn">🗺️ 지도에서 위치 보기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="map-view" class="tab-content">
             <div class="map-layout">
                 <div class="map-canvas">
@@ -189,8 +269,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608092031"></script>
-    <script src="app.js?v=202608092031"></script>
+    <script src="data.js?v=202608092101"></script>
+    <script src="app.js?v=202608092101"></script>
 </body>
 
 </html>
