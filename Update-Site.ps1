@@ -1,63 +1,56 @@
-# 0. Find Git Executable Path automatically
-$gitCmd = "git"
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-    $possiblePaths = @(
+# 1. Sync data first
+& "$PSScriptRoot\sync_data.ps1"
+
+# 2. Find Git executable if not in PATH
+$gitCmd = Get-Command git -ErrorAction SilentlyContinue
+if (-not $gitCmd) {
+    $candidates = @(
+        "C:\Users\user\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe",
         "C:\Program Files\Git\cmd\git.exe",
         "C:\Program Files (x86)\Git\cmd\git.exe",
-        "$env:LocalAppData\Programs\Git\cmd\git.exe",
-        "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe"
+        "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"
     )
-    foreach ($path in $possiblePaths) {
-        if (Test-Path $path) {
-            $gitCmd = $path
+    foreach ($cand in $candidates) {
+        if (Test-Path $cand) {
+            $gitDir = Split-Path $cand -Parent
+            $env:PATH = "$gitDir;$env:PATH"
+            Write-Host "Found Git at $cand" -ForegroundColor Gray
             break
         }
     }
 }
 
-# Ensure Git user identity is configured
-& $gitCmd config user.name "Spoonmap User" 2>$null
-& $gitCmd config user.email "user@spoonmap.local" 2>$null
-
-Write-Host "1. Synchronizing CSV data to data.js..." -ForegroundColor Cyan
-& "$PSScriptRoot\sync_data.ps1"
-Write-Host ""
-
+# 3. Cache-busting version update
 $version = Get-Date -Format "yyyyMMddHHmm"
-Write-Host "2. Generating new cache-bust version tag: $version" -ForegroundColor Cyan
+Write-Host "🚀 New version tag generated: $version" -ForegroundColor Cyan
 
 $indexPath = Join-Path $PSScriptRoot "index.html"
 $utf8NoBOM = New-Object System.Text.UTF8Encoding($false)
 $html = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
-
 $updatedHtml = $html -replace '\?v=[\w\d]+', "?v=$version"
+
 if ($html -ne $updatedHtml) {
     [System.IO.File]::WriteAllText($indexPath, $updatedHtml, $utf8NoBOM)
-    Write-Host "index.html version tags updated." -ForegroundColor Green
+    Write-Host "✅ index.html version tags updated." -ForegroundColor Green
 } else {
-    Write-Host "index.html version tags already up to date." -ForegroundColor Yellow
+    Write-Host "ℹ️ index.html version tags up to date." -ForegroundColor Yellow
 }
 
-Write-Host ""
-Write-Host "3. Git Operations starting (using $gitCmd)..." -ForegroundColor Cyan
-
+# 4. Git operations
 Try {
-    Write-Host "  - Staging modified files..." -ForegroundColor Gray
-    & $gitCmd add .
+    Write-Host "📦 Adding files to git..." -ForegroundColor Cyan
+    git add .
     
     $commitMsg = "Update Spoonmap site & data: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Write-Host "  - Committing changes: $commitMsg" -ForegroundColor Gray
-    & $gitCmd commit -m $commitMsg
+    Write-Host "✍️ Committing changes: $commitMsg" -ForegroundColor Cyan
+    git commit -m $commitMsg
     
-    Write-Host "  - Pushing to GitHub (origin main)..." -ForegroundColor Gray
-    & $gitCmd push origin main
+    Write-Host "⬆️ Pushing to GitHub (origin main)..." -ForegroundColor Cyan
+    git push origin main
     
-    Write-Host ""
-    Write-Host "==========================================================" -ForegroundColor Green
-    Write-Host " GitHub 업데이트가 완료되었습니다! (약 1분 후 반영됩니다)" -ForegroundColor Green
-    Write-Host "==========================================================" -ForegroundColor Green
+    Write-Host "`n✨ All updates completed successfully! GitHub Pages will update in 1~2 minutes." -ForegroundColor Green
 } Catch {
-    Write-Host "`nGitHub 업데이트 중 오류가 발생했습니다." -ForegroundColor Red
+    Write-Host "`n❌ An error occurred during git operations." -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
     Exit 1
 }
