@@ -1998,25 +1998,34 @@ Strictly follow the user's requested numbers (e.g. if asked for 3 places for 1ì°
 Format output in clean HTML with cards!
 `;
 
-            fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: promptContext }] }] })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                    let textRes = data.candidates[0].content.parts[0].text;
-                    textRes = textRes.replace(/```html/g, '').replace(/```/g, '');
-                    callback({ html: textRes });
-                } else {
+            const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+            function attemptModel(idx) {
+                if (idx >= modelsToTry.length) {
                     fallbackParserEngine(kakaoPlaces);
+                    return;
                 }
-            })
-            .catch(err => {
-                console.error('Gemini API Error:', err);
-                fallbackParserEngine(kakaoPlaces);
-            });
+                const model = modelsToTry[idx];
+                fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptContext }] }] })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                        let textRes = data.candidates[0].content.parts[0].text;
+                        textRes = textRes.replace(/```html/g, '').replace(/```/g, '');
+                        callback({ html: textRes });
+                    } else {
+                        attemptModel(idx + 1);
+                    }
+                })
+                .catch(err => {
+                    attemptModel(idx + 1);
+                });
+            }
+
+            attemptModel(0);
         }
 
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
