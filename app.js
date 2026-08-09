@@ -1816,9 +1816,6 @@ window.sendSommelierQuickPrompt = function(promptText) {
 };
 
 function initSommelierTab() {
-    if (sommelierInitialized) return;
-    sommelierInitialized = true;
-
     const thread = document.getElementById('sommelier-chat-thread');
     const input = document.getElementById('sommelier-user-input');
     const sendBtn = document.getElementById('btn-send-sommelier');
@@ -1827,6 +1824,8 @@ function initSommelierTab() {
     const keyStatus = document.getElementById('gemini-key-status');
 
     if (!thread || !input || !sendBtn) return;
+    if (sommelierInitialized) return;
+    sommelierInitialized = true;
 
     // Load saved Gemini Key
     const savedKey = localStorage.getItem('spoonmap_gemini_key') || '';
@@ -1874,57 +1873,12 @@ function initSommelierTab() {
         </div>
     `;
 
-    sendBtn.addEventListener('click', handleSommelierSend);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSommelierSend();
-    });
-}
-
-function handleSommelierSend() {
-    const thread = document.getElementById('sommelier-chat-thread');
-    const input = document.getElementById('sommelier-user-input');
-    if (!input || !thread) return;
-
-    const text = input.value.trim();
-    if (!text) return;
-
-    // Render User Message
-    const userMsgDiv = document.createElement('div');
-    userMsgDiv.className = 'chat-msg user-msg';
-    userMsgDiv.innerHTML = `
-        <div class="chat-avatar">👤</div>
-        <div class="chat-bubble">${escapeHtml(text)}</div>
-    `;
-    thread.appendChild(userMsgDiv);
-    input.value = '';
-    thread.scrollTop = thread.scrollHeight;
-
-    // AI Typing Indicator
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'chat-msg ai-msg';
-    typingDiv.id = 'ai-typing-indicator';
-    typingDiv.innerHTML = `
-        <div class="chat-avatar">🤖</div>
-        <div class="chat-bubble">🍷 요청 조건(개수·출처·코스) 정밀 분석 중...</div>
-    `;
-    thread.appendChild(typingDiv);
-    thread.scrollTop = thread.scrollHeight;
-
-    processSommelierQuery(text, (replyObj) => {
-        const indicator = document.getElementById('ai-typing-indicator');
-        if (indicator) indicator.remove();
-
-        const aiMsgDiv = document.createElement('div');
-        aiMsgDiv.className = 'chat-msg ai-msg';
-        aiMsgDiv.innerHTML = `
-            <div class="chat-avatar">🤖</div>
-            <div class="chat-bubble">
-                ${replyObj.html}
-            </div>
-        `;
-        thread.appendChild(aiMsgDiv);
-        thread.scrollTop = thread.scrollHeight;
-    });
+    if (sendBtn) sendBtn.addEventListener('click', window.handleSommelierSend);
+    if (input) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') window.handleSommelierSend();
+        });
+    }
 }
 
 function cleanMarkdownText(str) {
