@@ -777,66 +777,102 @@ document.addEventListener('DOMContentLoaded', () => {
     function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
         if (!containerEl) return;
         containerEl.style.display = 'block';
-        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 맛있는 음식 사진 찾는 중...</div>`;
+        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 고화질 대표 음식 사진 찾는 중...</div>`;
 
         const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
         const catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타/g, '');
-        
-        // Refined query for precise food photos (e.g. "을밀대 냉면 맛집")
         const query = `${cleanName} ${catTag} 맛집`.replace(/\s+/g, ' ').trim();
-        const url = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=12`;
+        const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
 
-        fetch(url, {
-            headers: {
-                'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.documents && data.documents.length > 0) {
-                // Filter out non-food images (menu boards, receipts, maps, building signs)
-                let docs = data.documents.filter(doc => {
-                    const urlStr = (doc.doc_url + ' ' + doc.image_url).toLowerCase();
-                    if (urlStr.includes('menu') || urlStr.includes('영수증') || urlStr.includes('receipt') || urlStr.includes('map') || urlStr.includes('signboard')) {
-                        return false;
-                    }
-                    return true;
-                });
+        // 1. Daum Blog Search API (retrieves real food blog post thumbnails)
+        const blogUrl = `https://dapi.kakao.com/v2/search/blog?query=${encodeURIComponent(query)}&size=8`;
 
-                if (docs.length === 0) docs = data.documents;
-                docs = docs.slice(0, 5); // Take top 5 food photos
+        fetch(blogUrl, { headers })
+            .then(res => res.json())
+            .then(blogData => {
+                let photos = [];
 
-                window.currentGalleryPhotos = docs;
-                const firstImg = docs[0];
-
-                let thumbsHtml = '';
-                if (docs.length > 1) {
-                    thumbsHtml = `
-                        <div class="photo-thumb-list">
-                            ${docs.map((doc, idx) => `
-                                <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
-                                     src="${doc.thumbnail_url}" 
-                                     alt="음식 사진 ${idx + 1}"
-                                     onclick="window.switchGalleryPhoto(${idx})">
-                            `).join('')}
-                        </div>
-                    `;
+                if (blogData && blogData.documents) {
+                    blogData.documents.forEach(doc => {
+                        if (doc.thumbnail) {
+                            // Transform 130x130 thumbnail to 800x800 High-Def Kakao CDN image!
+                            const hdUrl = doc.thumbnail.replace(/130x130_\d+_c/, '800x800_85_c');
+                            photos.push({
+                                image_url: hdUrl,
+                                thumbnail_url: doc.thumbnail,
+                                title: doc.title.replace(/<[^>]+>/g, '')
+                            });
+                        }
+                    });
                 }
 
-                containerEl.innerHTML = `
-                    <div class="main-photo-hero">
-                        <img id="gallery-main-img" src="${firstImg.image_url || firstImg.thumbnail_url}" alt="${placeName} 음식 사진" onerror="this.onerror=null; this.src='${firstImg.thumbnail_url}';">
-                    </div>
-                    ${thumbsHtml}
-                `;
-            } else {
+                // 2. If fewer than 5 photos, supplement with Daum Image Search API
+                if (photos.length < 5) {
+                    const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=8`;
+                    return fetch(imgUrl, { headers })
+                        .then(res => res.json())
+                        .then(imgData => {
+                            if (imgData && imgData.documents) {
+                                imgData.documents.forEach(doc => {
+                                    if (doc.thumbnail_url) {
+                                        const hdUrl = doc.thumbnail_url.replace(/130x130_\d+_c/, '800x800_85_c');
+                                        photos.push({
+                                            image_url: hdUrl,
+                                            thumbnail_url: doc.thumbnail_url,
+                                            title: placeName
+                                        });
+                                    }
+                                });
+                            }
+                            return photos;
+                        });
+                }
+                return photos;
+            })
+            .then(photos => {
+                // Deduplicate and select top 5 HD food photos
+                const uniquePhotos = [];
+                const seenUrls = new Set();
+                for (const p of photos) {
+                    if (!seenUrls.has(p.image_url)) {
+                        seenUrls.add(p.image_url);
+                        uniquePhotos.push(p);
+                    }
+                    if (uniquePhotos.length >= 5) break;
+                }
+
+                if (uniquePhotos.length > 0) {
+                    window.currentGalleryPhotos = uniquePhotos;
+                    const firstImg = uniquePhotos[0];
+
+                    let thumbsHtml = '';
+                    if (uniquePhotos.length > 1) {
+                        thumbsHtml = `
+                            <div class="photo-thumb-list">
+                                ${uniquePhotos.map((doc, idx) => `
+                                    <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
+                                         src="${doc.thumbnail_url}" 
+                                         alt="음식 사진 ${idx + 1}"
+                                         onclick="window.switchGalleryPhoto(${idx})">
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    containerEl.innerHTML = `
+                        <div class="main-photo-hero">
+                            <img id="gallery-main-img" src="${firstImg.image_url}" alt="${placeName} 고화질 음식 사진" onerror="this.onerror=null; this.src='${firstImg.thumbnail_url}';">
+                        </div>
+                        ${thumbsHtml}
+                    `;
+                } else {
+                    containerEl.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching food photos:', err);
                 containerEl.style.display = 'none';
-            }
-        })
-        .catch(err => {
-            console.error('Error fetching food photo:', err);
-            containerEl.style.display = 'none';
-        });
+            });
     }
 
     function showPlaceDetail(item, preciseAddress, isSaved, placeUrl, placeData) {
