@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608100004">
+    <link rel="stylesheet" href="style.css?v=202608100006">
 </head>
 
 <body class="light-theme">
@@ -282,8 +282,8 @@
                     </div>
 
                     <div class="chat-input-bar">
-                        <input type="text" id="sommelier-user-input" placeholder="예: 카카오 지도 실시간 1차 3곳, 2차 3곳 추천해줘..." autocomplete="off">
-                        <button id="btn-send-sommelier" class="chat-send-btn">
+                        <input type="text" id="sommelier-user-input" placeholder="예: 카카오 지도 실시간 1차 3곳, 2차 3곳 추천해줘..." autocomplete="off" onkeydown="if(event.key==='Enter') handleSommelierSend()">
+                        <button id="btn-send-sommelier" class="chat-send-btn" onclick="handleSommelierSend()">
                             <span>보내기</span> 🚀
                         </button>
                     </div>
@@ -428,8 +428,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608100004"></script>
-    <script src="app.js?v=202608100004"></script>
+    <script src="data.js?v=202608100006"></script>
+    <script src="app.js?v=202608100006"></script>
 </body>
 
 </html>

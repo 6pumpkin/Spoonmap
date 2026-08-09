@@ -1959,7 +1959,7 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
     `;
 }
 
-function handleSommelierSend() {
+window.handleSommelierSend = function handleSommelierSend() {
     const thread = document.getElementById('sommelier-chat-thread');
     const input = document.getElementById('sommelier-user-input');
     const sendBtn = document.getElementById('btn-send-sommelier');
@@ -1967,6 +1967,8 @@ function handleSommelierSend() {
 
     const text = input.value.trim();
     if (!text) return;
+
+    if (sendBtn) sendBtn.disabled = false;
 
     // Render User Message
     const userMsgDiv = document.createElement('div');
@@ -1989,8 +1991,6 @@ function handleSommelierSend() {
     `;
     thread.appendChild(typingDiv);
     thread.scrollTop = thread.scrollHeight;
-
-    if (sendBtn) sendBtn.disabled = true;
 
     let responded = false;
     const safeCallback = (replyObj) => {
@@ -2027,7 +2027,7 @@ function handleSommelierSend() {
         console.error('Error in processSommelierQuery:', e);
         processSommelierFallbackOnly(text, safeCallback);
     }
-}
+};
 
 function extractLocation(q) {
     if (!q) return null;
