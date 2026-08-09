@@ -2033,18 +2033,50 @@ function escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function parseKoreanNumber(text) {
+    if (!text) return null;
+    const numMatch = text.match(/([0-9]+)/);
+    if (numMatch) return parseInt(numMatch[1], 10);
+
+    if (text.includes('한') || text.includes('하나')) return 1;
+    if (text.includes('두') || text.includes('둘')) return 2;
+    if (text.includes('세') || text.includes('셋')) return 3;
+    if (text.includes('네') || text.includes('넷')) return 4;
+    if (text.includes('다섯')) return 5;
+    return null;
+}
+
 function processSommelierQuery(query, callback) {
     const q = query.toLowerCase();
     const geminiKey = localStorage.getItem('spoonmap_gemini_key');
 
-    // 1. Detect Requested Counts
-    const m1 = query.match(/1차\s*([0-9]+)\s*곳/i) || query.match(/1차\s*([0-9]+)\s*개/i);
-    const m2 = query.match(/2차\s*([0-9]+)\s*곳/i) || query.match(/2차\s*([0-9]+)\s*개/i);
-    const mTotal = query.match(/([0-9]+)\s*곳/i) || query.match(/([0-9]+)\s*개/i) || query.match(/([0-9]+)\s*선/i);
+    // 1. Detect Requested Counts (Supports both Arabic numbers & Korean words: 두곳, 세곳, 네곳...)
+    const m1 = query.match(/1차\s*([가-힣a-zA-Z0-9]+)\s*(곳|개)/i);
+    const m2 = query.match(/2차\s*([가-힣a-zA-Z0-9]+)\s*(곳|개)/i);
+    const mTotal = query.match(/([가-힣a-zA-Z0-9]+)\s*(곳|개|선)/i);
 
-    const step1Req = m1 ? parseInt(m1[1], 10) : null;
-    const step2Req = m2 ? parseInt(m2[1], 10) : null;
-    const totalReq = mTotal ? parseInt(mTotal[1], 10) : 3;
+    const step1Req = m1 ? parseKoreanNumber(m1[1]) : (query.includes('1차') ? 2 : null);
+    const step2Req = m2 ? parseKoreanNumber(m2[1]) : (query.includes('2차') ? 2 : null);
+    const totalReq = mTotal ? (parseKoreanNumber(mTotal[1]) || 3) : 3;
+
+    // Detect Categories for 1차 and 2차
+    let cat1 = null;
+    let cat2 = null;
+
+    const categories = ['한식', '일식', '양식', '중식', '고기', '돼지고기', '삼겹살', '소고기', '갈비', '냉면', '카페', '디저트', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식', '이자카야', '맥주', '와인'];
+
+    if (query.includes('1차')) {
+        const after1 = query.split('1차')[1] || '';
+        for (const cat of categories) {
+            if (after1.includes(cat)) { cat1 = cat; break; }
+        }
+    }
+    if (query.includes('2차')) {
+        const after2 = query.split('2차')[1] || '';
+        for (const cat of categories) {
+            if (after2.includes(cat)) { cat2 = cat; break; }
+        }
+    }
 
     // 2. Detect Source Preference
     const hasKakaoKeywords = q.includes('카카오') || q.includes('실시간') || q.includes('안가본') || q.includes('새로운');
@@ -2054,9 +2086,9 @@ function processSommelierQuery(query, callback) {
     if (hasKakaoKeywords && !hasLocalKeywords) sourcePref = 'kakao_only';
     else if (hasLocalKeywords && !hasKakaoKeywords) sourcePref = 'local_only';
 
-    // 3. Detect Location & Category
+    // 3. Detect Location
     let targetLoc = null;
-    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동'];
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동', '역삼동', '합정'];
     for (const loc of locations) {
         if (q.includes(loc.toLowerCase())) {
             targetLoc = loc;
@@ -2064,19 +2096,20 @@ function processSommelierQuery(query, callback) {
         }
     }
 
-    let targetCat = null;
-    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식'];
-    for (const cat of categories) {
-        if (q.includes(cat.toLowerCase())) {
-            targetCat = cat;
-            break;
+    let mainCat = cat1 || cat2;
+    if (!mainCat) {
+        for (const cat of categories) {
+            if (q.includes(cat.toLowerCase())) {
+                mainCat = cat;
+                break;
+            }
         }
     }
 
     // ─── Direct Gemini LLM API Logic (if key present) ───
     if (geminiKey) {
-        const localCandidates = restaurantData.filter(i => (!targetLoc || i.location_large.includes(targetLoc))).slice(0, 5);
-        const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
+        const localCandidates = restaurantData.filter(i => (!targetLoc || i.location_large.includes(targetLoc))).slice(0, 8);
+        const searchKeyword = `${targetLoc || '서울'} ${mainCat || '맛집'}`.trim();
 
         function queryGemini(kakaoPlaces = []) {
             const promptContext = `
@@ -2086,7 +2119,9 @@ User Question: "${query}"
 
 User Constraints to strictly enforce:
 - Requested Source: ${sourcePref}
-- Step 1 count: ${step1Req || 'N/A'}, Step 2 count: ${step2Req || 'N/A'}, Total count: ${totalReq}
+- Step 1 Category: ${cat1 || '식사'}, Step 1 Count: ${step1Req || 'N/A'}
+- Step 2 Category: ${cat2 || '카페/술집'}, Step 2 Count: ${step2Req || 'N/A'}
+- Total Count: ${totalReq}
 
 Available Local Saved Dataset:
 ${JSON.stringify(localCandidates.map(c => ({ name: c.name, location: c.location_large, category: c.category, visits: c.visit_count })))}
@@ -2094,15 +2129,16 @@ ${JSON.stringify(localCandidates.map(c => ({ name: c.name, location: c.location_
 Available Live Kakao Places:
 ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_name, category: p.category_name, url: p.place_url })))}
 
-STRICT FORMATTING RULES:
+STRICT FORMATTING & STYLE RULES:
 1. Do NOT use any markdown characters like **, ###, ##, #, or ---.
-2. Put intro message inside <div class="sommelier-intro-p">intro text here</div>.
-3. For each recommended restaurant, use EXACTLY this card HTML structure:
+2. Provide a warm, polite intro paragraph inside <div class="sommelier-intro-p">intro text here</div>.
+3. For EACH recommended place, write a detailed, rich, 2-3 sentence recommendation rationale (explaining the atmosphere, taste, and why it fits).
+4. Use EXACTLY this standard card HTML component structure for EVERY recommended place:
 <div class="rec-card-standard">
-    <span class="rec-tag-pill">Tag Text (e.g. 추천 1 (실시간 인기))</span>
+    <span class="rec-tag-pill">Pill Tag (e.g. 1차: 카페 또는 추천 1 (실시간 인기))</span>
     <h4 class="rec-place-title">Restaurant Name</h4>
-    <div class="rec-place-meta">📍 위치: Address</div>
-    <p class="rec-place-desc">Descriptive recommendation rationale...</p>
+    <div class="rec-place-meta">📍 <b>위치:</b> Address</div>
+    <p class="rec-place-desc">Rich detailed 2-3 sentence description...</p>
     <a href="KakaoMapUrl" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
 </div>
 `;
@@ -2154,13 +2190,13 @@ STRICT FORMATTING RULES:
 function processSommelierFallbackOnly(query, callback) {
     const q = query.toLowerCase();
 
-    const m1 = query.match(/1차\s*([0-9]+)\s*곳/i) || query.match(/1차\s*([0-9]+)\s*개/i);
-    const m2 = query.match(/2차\s*([0-9]+)\s*곳/i) || query.match(/2차\s*([0-9]+)\s*개/i);
-    const mTotal = query.match(/([0-9]+)\s*곳/i) || query.match(/([0-9]+)\s*개/i) || query.match(/([0-9]+)\s*선/i);
+    const m1 = query.match(/1차\s*([가-힣a-zA-Z0-9]+)\s*(곳|개)/i);
+    const m2 = query.match(/2차\s*([가-힣a-zA-Z0-9]+)\s*(곳|개)/i);
+    const mTotal = query.match(/([가-힣a-zA-Z0-9]+)\s*(곳|개|선)/i);
 
-    const step1Req = m1 ? parseInt(m1[1], 10) : null;
-    const step2Req = m2 ? parseInt(m2[1], 10) : null;
-    const totalReq = mTotal ? parseInt(mTotal[1], 10) : 3;
+    const step1Req = m1 ? parseKoreanNumber(m1[1]) : (query.includes('1차') ? 2 : null);
+    const step2Req = m2 ? parseKoreanNumber(m2[1]) : (query.includes('2차') ? 2 : null);
+    const totalReq = mTotal ? (parseKoreanNumber(mTotal[1]) || 3) : 3;
 
     const hasKakaoKeywords = q.includes('카카오') || q.includes('실시간') || q.includes('안가본') || q.includes('새로운');
     const hasLocalKeywords = q.includes('내 맛집') || q.includes('내가 간') || q.includes('단골') || q.includes('저장된') || q.includes('내 데이터');
@@ -2170,7 +2206,7 @@ function processSommelierFallbackOnly(query, callback) {
     else if (hasLocalKeywords && !hasKakaoKeywords) sourcePref = 'local_only';
 
     let targetLoc = null;
-    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동'];
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동', '역삼동', '합정'];
     for (const loc of locations) {
         if (q.includes(loc.toLowerCase())) {
             targetLoc = loc;
@@ -2178,34 +2214,87 @@ function processSommelierFallbackOnly(query, callback) {
         }
     }
 
-    let targetCat = null;
-    const categories = ['한식', '일식', '양식', '중식', '고기', '갈비', '삼겹살', '냉면', '카페', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식'];
-    for (const cat of categories) {
-        if (q.includes(cat.toLowerCase())) {
-            targetCat = cat;
-            break;
+    let cat1 = null;
+    let cat2 = null;
+    const categories = ['한식', '일식', '양식', '중식', '고기', '돼지고기', '삼겹살', '소고기', '갈비', '냉면', '카페', '디저트', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식', '이자카야', '맥주', '와인'];
+
+    if (query.includes('1차')) {
+        const after1 = query.split('1차')[1] || '';
+        for (const cat of categories) {
+            if (after1.includes(cat)) { cat1 = cat; break; }
+        }
+    }
+    if (query.includes('2차')) {
+        const after2 = query.split('2차')[1] || '';
+        for (const cat of categories) {
+            if (after2.includes(cat)) { cat2 = cat; break; }
         }
     }
 
-    const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
+    let mainCat = cat1 || cat2;
+    if (!mainCat) {
+        for (const cat of categories) {
+            if (q.includes(cat.toLowerCase())) {
+                mainCat = cat;
+                break;
+            }
+        }
+    }
+
+    const searchKeyword = `${targetLoc || '서울'} ${mainCat || '맛집'}`.trim();
 
     if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
         const ps = new kakao.maps.services.Places();
+        
+        // Multi-keyword Kakao search for 1차 and 2차 categories!
+        if (cat1 && cat2) {
+            const kw1 = `${targetLoc || '서울'} ${cat1}`;
+            const kw2 = `${targetLoc || '서울'} ${cat2}`;
+            ps.keywordSearch(kw1, (d1, s1) => {
+                ps.keywordSearch(kw2, (d2, s2) => {
+                    const places1 = s1 === kakao.maps.services.Status.OK ? d1 : [];
+                    const places2 = s2 === kakao.maps.services.Status.OK ? d2 : [];
+                    generateFallbackCardsMulti(places1, places2);
+                });
+            });
+            return;
+        }
+
         ps.keywordSearch(searchKeyword, (data, status) => {
-            generateFallbackCards(status === kakao.maps.services.Status.OK ? data : []);
+            generateFallbackCardsSingle(status === kakao.maps.services.Status.OK ? data : []);
         });
     } else {
-        generateFallbackCards([]);
+        generateFallbackCardsSingle([]);
     }
 
-    function generateFallbackCards(kakaoPlaces = []) {
+    function generateFallbackCardsMulti(places1, places2) {
+        const count1 = step1Req || 2;
+        const count2 = step2Req || 2;
+
+        const p1 = places1.slice(0, count1);
+        const p2 = places2.slice(0, count2);
+
+        const s1Cards = p1.map((p, i) => renderCardStandard(`1차: ${cat1 || '식사'}`, p.place_name, p.road_address_name || p.address_name, `${targetLoc || '요청 하신'} 지역에서 입소문이 자자한 ${cat1 || '대표'} 맛집입니다. 풍미 깊은 요리와 쾌적한 분위기로 1차 식사를 시작하기 제격입니다.`, p.place_url));
+        const s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${cat2 || '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `1차 식사 후 가볍게 이동하여 담소를 나누거나 기분 좋게 마무리하기 완벽한 ${cat2 || '인기'} 추천 장소입니다.`, p.place_url));
+
+        const introText = `안녕하세요! AI 미식 소믈리에입니다. ${targetLoc || '요청하신'} 지역에서 1차 ${cat1 || '식사'} ${s1Cards.length}곳과 2차 ${cat2 || '장소'} ${s2Cards.length}곳의 코스를 엄선하여 추천해 드립니다.`;
+        const html = `
+            <div class="sommelier-intro-p">${introText}</div>
+            <div class="sommelier-rec-grid">
+                ${[...s1Cards, ...s2Cards].join('')}
+            </div>
+        `;
+        callback({ html });
+    }
+
+    function generateFallbackCardsSingle(kakaoPlaces = []) {
         let localPool = restaurantData.filter(item => {
             if (!item.map_url) return false;
             if (targetLoc && !item.location_large.includes(targetLoc) && (!item.location_small || !item.location_small.includes(targetLoc))) return false;
-            if (targetCat) {
-                const catMatches = (item.category && item.category.toLowerCase().includes(targetCat)) ||
-                                   (item.menu && item.menu.some(m => m.toLowerCase().includes(targetCat))) ||
-                                   (item.name.toLowerCase().includes(targetCat));
+            if (mainCat) {
+                const catMatches = (item.category && item.category.toLowerCase().includes(mainCat)) ||
+                                   (item.menu && item.menu.some(m => m.toLowerCase().includes(mainCat))) ||
+                                   (item.name.toLowerCase().includes(mainCat));
                 if (!catMatches) return false;
             }
             return true;
@@ -2216,43 +2305,29 @@ function processSommelierFallbackOnly(query, callback) {
         localPool.sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
 
         let cardsHtml = '';
-        let introText = `안녕하세요! 맛있는 일상을 안내하는 AI 미식 소믈리에입니다. 요청하신 조건에 맞는 엄선된 맛집입니다.`;
+        let introText = `안녕하세요! 맛있는 일상을 안내하는 AI 미식 소믈리에입니다. 요청하신 조건에 맞춰 엄선한 대표 맛집입니다.`;
 
         if (step1Req || step2Req) {
-            const count1 = step1Req || 1;
-            const count2 = step2Req || 1;
+            const count1 = step1Req || 2;
+            const count2 = step2Req || 2;
 
-            let s1Cards = [];
-            let s2Cards = [];
+            const p1 = (kakaoPlaces.filter(p => !p.category_name || !p.category_name.includes('카페'))).slice(0, count1);
+            const p2 = (kakaoPlaces.filter(p => p.category_name && p.category_name.includes('카페'))).slice(0, count2);
 
-            if (sourcePref === 'kakao_only') {
-                const foodPlaces = kakaoPlaces.filter(p => !p.category_name || (!p.category_name.includes('카페') && !p.category_name.includes('술집')));
-                const cafePlaces = kakaoPlaces.filter(p => p.category_name && (p.category_name.includes('카페') || p.category_name.includes('술집')));
+            const s1Cards = p1.map((p, i) => renderCardStandard(`1차: ${cat1 || '식사'}`, p.place_name, p.road_address_name || p.address_name, `${targetLoc || '요청'} 지역에서 식사하기 좋은 1차 추천 맛집입니다.`, p.place_url));
+            const s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${cat2 || '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `1차 후 이동하여 감성 대화를 나누기 완벽한 장소입니다.`, p.place_url));
 
-                const p1 = (foodPlaces.length >= count1 ? foodPlaces : kakaoPlaces).slice(0, count1);
-                const p2 = (cafePlaces.length >= count2 ? cafePlaces : kakaoPlaces.slice(count1)).slice(0, count2);
-
-                s1Cards = p1.map((p, i) => renderCardStandard(`1차: ${p.category_name ? p.category_name.split('>').pop().trim() : '식사'}`, p.place_name, p.road_address_name || p.address_name, `${targetLoc || '요청 지역'} 인근에서 맛과 품질로 입소문난 인기 1차 추천 장소입니다.`, p.place_url));
-                s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `1차 식사 후 분위기 있는 대화를 나누기 완벽한 2차 마무리 장소입니다.`, p.place_url));
-            } else {
-                const l1 = localPool.slice(0, count1);
-                const p2 = kakaoPlaces.slice(0, count2);
-
-                s1Cards = l1.map((item, i) => renderCardStandard(`1차: ${item.category || '식사'}`, item.name, `${item.location_large} ${item.location_small || ''}`, `나의 찐 단골 기록이 보장하는 1차 대표 맛집입니다.`, item.map_url));
-                s2Cards = p2.map((p, i) => renderCardStandard(`2차: ${p.category_name ? p.category_name.split('>').pop().trim() : '카페/술집'}`, p.place_name, p.road_address_name || p.address_name, `이동하여 편안한 시간을 보내기 좋은 2차 추천 장소입니다.`, p.place_url));
-            }
-
-            introText = `안녕하세요! AI 미식 소믈리에입니다. 요청하신 1차 ${count1}곳과 2차 ${count2}곳의 완벽 미식 코스를 추천해 드립니다.`;
+            introText = `안녕하세요! AI 미식 소믈리에입니다. 요청하신 1차 ${s1Cards.length}곳과 2차 ${s2Cards.length}곳의 완벽 코스를 추천해 드립니다.`;
             cardsHtml = [...s1Cards, ...s2Cards].join('');
         } else {
             const count = totalReq;
             let chosen = [];
             if (sourcePref === 'kakao_only') {
                 chosen = kakaoPlaces.slice(0, count).map((p, i) => ({
-                    tag: `추천 ${i + 1} (실시간 인기 ${targetCat || '맛집'})`,
+                    tag: `추천 ${i + 1} (실시간 인기 ${mainCat || '맛집'})`,
                     name: p.place_name,
                     addr: p.road_address_name || p.address_name,
-                    desc: `${targetLoc || '요청 지역'} 인근에 위치해 있어 신속한 접근과 뛰어난 맛을 자랑하는 추천 식당입니다.`,
+                    desc: `${targetLoc || '요청'} 인근에 위치해 맛과 분위기를 두루 갖춘 실시간 핫플레이스 맛집입니다.`,
                     url: p.place_url
                 }));
             } else if (sourcePref === 'local_only') {
@@ -2260,7 +2335,7 @@ function processSommelierFallbackOnly(query, callback) {
                     tag: `추천 ${i + 1} (내 데이터 찐 단골)`,
                     name: item.name,
                     addr: `${item.location_large} ${item.location_small || ''}`,
-                    desc: `나의 미식 데이터베이스에서 높은 평점과 방문 횟수를 기록한 검증된 맛집입니다.`,
+                    desc: `나의 미식 기록 데이터베이스에서 높은 평점과 방문 횟수를 기록한 검증된 단골 맛집입니다.`,
                     url: item.map_url
                 }));
             } else {
@@ -2281,7 +2356,7 @@ function processSommelierFallbackOnly(query, callback) {
                 chosen = [...half1, ...half2];
             }
 
-            introText = `안녕하세요! AI 미식 소믈리에입니다. ${targetLoc || ''} ${targetCat || ''} 추천 맛집 ${chosen.length}곳을 엄선해 드립니다.`;
+            introText = `안녕하세요! AI 미식 소믈리에입니다. ${targetLoc || ''} ${mainCat || ''} 추천 맛집 ${chosen.length}곳을 엄선해 드립니다.`;
             cardsHtml = chosen.map(c => renderCardStandard(c.tag, c.name, c.addr, c.desc, c.url)).join('');
         }
 
