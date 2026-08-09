@@ -1878,18 +1878,16 @@ function handleSommelierSend() {
     typingDiv.id = 'ai-typing-indicator';
     typingDiv.innerHTML = `
         <div class="chat-avatar">🤖</div>
-        <div class="chat-bubble">🍷 미식 데이터 분석 중...</div>
+        <div class="chat-bubble">🍷 내 미식 기록 + 카카오 지도 탐색 분석 중...</div>
     `;
     thread.appendChild(typingDiv);
     thread.scrollTop = thread.scrollHeight;
 
-    setTimeout(() => {
+    // Process query with AI Engine (supports live Kakao Places search)
+    processSommelierQuery(text, (replyObj) => {
         const indicator = document.getElementById('ai-typing-indicator');
         if (indicator) indicator.remove();
 
-        // Process query with AI Engine
-        const replyObj = processSommelierQuery(text);
-        
         const aiMsgDiv = document.createElement('div');
         aiMsgDiv.className = 'chat-msg ai-msg';
         aiMsgDiv.innerHTML = `
@@ -1900,14 +1898,14 @@ function handleSommelierSend() {
         `;
         thread.appendChild(aiMsgDiv);
         thread.scrollTop = thread.scrollHeight;
-    }, 600);
+    });
 }
 
 function escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function processSommelierQuery(query) {
+function processSommelierQuery(query, callback) {
     const q = query.toLowerCase();
     const isCourse = q.includes('코스') || q.includes('1차') || q.includes('2차') || q.includes('데이트') || q.includes('회식');
     const isWeather = q.includes('날씨') || q.includes('비') || q.includes('더움') || q.includes('추움');
@@ -1932,7 +1930,7 @@ function processSommelierQuery(query) {
         }
     }
 
-    // Filter candidate dataset
+    // Filter candidate local dataset (restaurantData)
     let pool = restaurantData.filter(item => {
         if (!item.map_url) return false;
         if (targetLoc && !item.location_large.includes(targetLoc) && (!item.location_small || !item.location_small.includes(targetLoc))) return false;
@@ -1952,94 +1950,102 @@ function processSommelierQuery(query) {
         return true;
     });
 
-    // Fallback pool if strict filter is empty
-    if (pool.length === 0) {
-        pool = restaurantData.filter(item => {
-            if (targetLoc && !item.location_large.includes(targetLoc)) return false;
-            return true;
-        });
+    if (pool.length === 0 && targetLoc) {
+        pool = restaurantData.filter(item => item.location_large.includes(targetLoc));
     }
     if (pool.length === 0) pool = [...restaurantData];
 
-    // Sort candidates by visit count & rate
     pool.sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
+    const savedTop = pool.slice(0, 2);
 
-    // Handle Course Generation (1차 식당 + 2차 카페/술집)
-    if (isCourse) {
-        const foodCandidate = pool.find(item => !item.category || (!item.category.includes('카페') && !item.category.includes('술집'))) || pool[0];
-        const secondCandidate = restaurantData.find(item => {
-            if (foodCandidate && item.name === foodCandidate.name) return false;
-            if (targetLoc && !item.location_large.includes(targetLoc)) return false;
-            return item.category && (item.category.includes('카페') || item.category.includes('술집') || item.category.includes('간식'));
-        }) || pool[1] || pool[0];
+    // Keyword for external Kakao Places search
+    const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
 
-        const courseHtml = `
-            🍷 <b>요청하신 맞춤 1차+2차 미식 코스 제안입니다!</b><br><br>
-            <div class="sommelier-rec-grid">
+    function finish(kakaoPlaces = []) {
+        const savedCardsHtml = savedTop.map((item, idx) => {
+            const visits = item.visit_count || 1;
+            const menuStr = item.menu && item.menu.length > 0 ? item.menu.slice(0, 2).join(', ') : '대표 맛집';
+            return `
                 <div class="sommelier-rec-card">
-                    <span class="course-step-tag">1차 든든한 식사</span>
-                    <strong style="font-size:1.05rem; color:var(--text-primary); margin-top:2px;">${foodCandidate.name}</strong>
-                    <div style="font-size:0.82rem; color:var(--text-muted);">
-                        📍 ${foodCandidate.location_large} ${foodCandidate.location_small ? '· ' + foodCandidate.location_small : ''}
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="font-size:1.02rem; color:var(--text-primary);">🔥 ${item.name}</strong>
+                        ${getSpoonBadgeHtml(item)}
                     </div>
-                    <div style="margin-top:4px;">${getSpoonBadgeHtml(foodCandidate)}</div>
-                    <div style="font-size:0.85rem; color:var(--coral-main); font-weight:700; margin-top:4px;">
-                        💡 소믈리에 팁: ${foodCandidate.menu && foodCandidate.menu[0] ? foodCandidate.menu[0] + ' 추천!' : '인기 단골 맛집입니다.'}
+                    <div style="font-size:0.82rem; color:var(--text-muted);">
+                        📍 ${item.location_large} ${item.location_small ? '· ' + item.location_small : ''} | 🏷️ ${item.category || '기타'}
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
+                        🏷️ 주요 메뉴: ${menuStr}
+                    </div>
+                    <div style="font-size:0.82rem; color:var(--coral-main); font-weight:700; margin-top:4px; background:#FFF0F2; padding:6px 10px; border-radius:10px;">
+                        💡 내 데이터 검증: ${visits >= 2 ? `나의 찐 단골집(${visits}회 방문)으로 검증된 맛집입니다!` : `수저 평점이 높은 추천 맛집입니다.`}
                     </div>
                 </div>
+            `;
+        }).join('');
 
-                <div class="sommelier-rec-card">
-                    <span class="course-step-tag" style="background:linear-gradient(90deg, #10B981, #059669);">2차 디저트 & 마무리</span>
-                    <strong style="font-size:1.05rem; color:var(--text-primary); margin-top:2px;">${secondCandidate.name}</strong>
-                    <div style="font-size:0.82rem; color:var(--text-muted);">
-                        📍 ${secondCandidate.location_large} ${secondCandidate.location_small ? '· ' + secondCandidate.location_small : ''}
+        let externalCardsHtml = '';
+        if (kakaoPlaces.length > 0) {
+            const externalTop = kakaoPlaces.slice(0, 2);
+            externalCardsHtml = externalTop.map((place) => {
+                const mapUrl = place.place_url || `https://map.kakao.com/link/map/${place.id}`;
+                const catName = place.category_name ? place.category_name.split('>').pop().trim() : '음식점';
+                return `
+                    <div class="sommelier-rec-card" style="border-color:#93C5FD; background:#F8FAFC;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong style="font-size:1.02rem; color:#1D4ED8;">🌐 ${place.place_name}</strong>
+                            <span class="category-badge" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">카카오 지도 추천</span>
+                        </div>
+                        <div style="font-size:0.82rem; color:var(--text-muted);">
+                            📍 ${place.road_address_name || place.address_name || ''} | 🏷️ ${catName}
+                        </div>
+                        <div style="font-size:0.82rem; color:#2563EB; font-weight:700; margin-top:4px; background:#EFF6FF; padding:6px 10px; border-radius:10px;">
+                            💡 AI 신규 추천: 카카오 지도 실시간 탐색 추천 맛집입니다!
+                        </div>
+                        <div style="margin-top:6px; text-align:right;">
+                            <a href="${mapUrl}" target="_blank" style="font-size:0.8rem; font-weight:800; color:#2563EB; text-decoration:underline;">카카오맵에서 보기 ↗</a>
+                        </div>
                     </div>
-                    <div style="margin-top:4px;">${getSpoonBadgeHtml(secondCandidate)}</div>
-                    <div style="font-size:0.85rem; color:#10B981; font-weight:700; margin-top:4px;">
-                        💡 소믈리에 팁: 1차 식사 후 이동하여 감성 대화를 나누기 완벽한 장소입니다.
-                    </div>
-                </div>
+                `;
+            }).join('');
+        }
+
+        let introText = `🍷 <b>AI 소믈리에가 엄선한 [내 인증 맛집 + 카카오 지도 신규 추천]</b>입니다:`;
+        if (isCourse) {
+            introText = `🍷 <b>요청하신 [내 데이터 1차 식당 + 카카오 지도 추천 2차 코스]</b>입니다:`;
+        }
+
+        const html = `
+            ${introText}<br><br>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--coral-main); margin-bottom:6px;">
+                🔥 내가 다녀온 인증 맛집 (${savedTop.length}곳)
             </div>
+            <div class="sommelier-rec-grid">
+                ${savedCardsHtml}
+            </div>
+            ${externalCardsHtml ? `
+                <div style="font-size:0.85rem; font-weight:800; color:#2563EB; margin-top:1.2rem; margin-bottom:6px;">
+                    🌐 카카오 지도 실시간 추천 (안 가본 맛집)
+                </div>
+                <div class="sommelier-rec-grid">
+                    ${externalCardsHtml}
+                </div>
+            ` : ''}
         `;
-        return { html: courseHtml };
+
+        callback({ html });
     }
 
-    // Standard Curated Recommendations (Top 3)
-    const top3 = pool.slice(0, 3);
-    let introText = `🍷 <b>요청 조건에 딱 들어맞는 큐레이션 추천 TOP ${top3.length}</b>입니다:`;
-    if (isWeather) {
-        introText = `🌧️ <b>오늘처럼 비 오거나 운치 있는 날씨에 특히 돋보이는 큐레이션 추천</b>입니다:`;
+    if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
+        const ps = new kakao.maps.services.Places();
+        ps.keywordSearch(searchKeyword, (data, status) => {
+            if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                finish(data);
+            } else {
+                finish([]);
+            }
+        });
+    } else {
+        finish([]);
     }
-
-    const cardsHtml = top3.map((item, idx) => {
-        const visits = item.visit_count || 1;
-        const menuStr = item.menu && item.menu.length > 0 ? item.menu.slice(0, 2).join(', ') : '대표 맛집';
-
-        return `
-            <div class="sommelier-rec-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="font-size:1.02rem; color:var(--text-primary);">#${idx + 1} ${item.name}</strong>
-                    ${getSpoonBadgeHtml(item)}
-                </div>
-                <div style="font-size:0.82rem; color:var(--text-muted);">
-                    📍 ${item.location_large} ${item.location_small ? '· ' + item.location_small : ''} | 🏷️ ${item.category || '기타'}
-                </div>
-                <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
-                    🏷️ 주요 메뉴: ${menuStr}
-                </div>
-                <div style="font-size:0.82rem; color:var(--coral-main); font-weight:700; margin-top:4px; background:#FFF0F2; padding:6px 10px; border-radius:10px;">
-                    💡 AI 추천 이유: ${visits >= 2 ? `나의 찐 단골집(${visits}회 방문)으로 맛과 만족도가 보장된 곳입니다!` : `해당 지역에서 수저 평점이 높아 추천하는 명품 맛집입니다.`}
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    return {
-        html: `
-            ${introText}<br>
-            <div class="sommelier-rec-grid">
-                ${cardsHtml}
-            </div>
-        `
-    };
 }
