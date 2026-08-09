@@ -1267,84 +1267,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupSearch() {
-        const handleSearchUpdate = (query) => {
-            currentFilters.searchQuery = query.trim().toLowerCase();
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const query = e.target.value.trim();
+            currentFilters.searchQuery = query.toLowerCase();
+
+            // If map view is active, search saved places on the map
             const mapView = document.getElementById('map-view');
             if (mapView && mapView.classList.contains('active') && map) {
-                searchSavedPlacesOnMap(query.trim());
+                // REMOVED sync with sidebar search input
+                searchSavedPlacesOnMap(query);
                 return;
             }
             render();
-        };
-
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                handleSearchUpdate(e.target.value);
-            });
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    handleSearchUpdate(e.target.value);
-                }
-            });
-        }
-
-        const mapSearchInput = document.getElementById('map-search-input');
-        const mapResetBtn = document.getElementById('map-reset-btn');
-
-        if (mapSearchInput) {
-            mapSearchInput.addEventListener('input', (e) => {
-                searchSavedPlacesOnMap(e.target.value.trim());
-            });
-            mapSearchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    searchSavedPlacesOnMap(e.target.value.trim());
-                }
-            });
-        }
-
-        if (mapResetBtn) {
-            mapResetBtn.addEventListener('click', () => {
-                if (mapSearchInput) mapSearchInput.value = '';
-                if (searchInput) searchInput.value = '';
-                currentFilters.searchQuery = '';
-                if (map) updateMapMarkers();
-                render();
-            });
-        }
-
-        ['search-name', 'search-category', 'search-subloc', 'search-menu'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('change', () => {
-                    const q = searchInput ? searchInput.value.trim() : '';
-                    if (q) handleSearchUpdate(q);
-                    else render();
-                });
-            }
         });
     }
 
     function searchSavedPlacesOnMap(query) {
         const resultsList = document.getElementById('map-results-list');
-        if (!resultsList) return;
+        const useName = document.getElementById('search-name').checked;
+        const useCat = document.getElementById('search-category').checked;
+        const useSub = document.getElementById('search-subloc').checked;
+        const useMenu = document.getElementById('search-menu').checked;
 
-        const useName = document.getElementById('search-name') ? document.getElementById('search-name').checked : true;
-        const useCat = document.getElementById('search-category') ? document.getElementById('search-category').checked : true;
-        const useSub = document.getElementById('search-subloc') ? document.getElementById('search-subloc').checked : true;
-        const useMenu = document.getElementById('search-menu') ? document.getElementById('search-menu').checked : true;
-
+        // Clear existing markers and results
         markers.forEach(m => m.setMap(null));
         markers = [];
         resultsList.innerHTML = '';
-        const detailEl = document.getElementById('map-place-detail');
-        if (detailEl) detailEl.style.display = 'none';
+        document.getElementById('map-place-detail').style.display = 'none';
         resultsList.style.display = 'block';
 
-        const q = (query || '').trim().toLowerCase();
-
-        if (!q) {
+        if (!query) {
             resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
-            if (map) updateMapMarkers();
             return;
         }
 
@@ -2028,6 +1982,7 @@ function processSommelierQuery(query, callback) {
 
     // ─── Direct Gemini LLM API Logic (if key present) ───
     if (geminiKey) {
+        const cleanKey = geminiKey.trim();
         const localCandidates = restaurantData.filter(i => (!targetLoc || i.location_large.includes(targetLoc))).slice(0, 5);
         const searchKeyword = `${targetLoc || '서울'} ${targetCat || '맛집'}`.trim();
 
@@ -2065,29 +2020,31 @@ Available Live Kakao Places:
 ${JSON.stringify(kakaoPlaces.map(p => ({ name: p.place_name, address: p.address_name, category: p.category_name, url: p.place_url })))}
 `;
 
-            const modelsToTry = ['gemini-3.5-flash', 'gemini-3-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+            const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
             function attemptModel(idx) {
                 if (idx >= modelsToTry.length) {
                     fallbackParserEngine(kakaoPlaces);
                     return;
                 }
                 const model = modelsToTry[idx];
-                fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+                fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: promptContext }] }] })
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
                         let textRes = data.candidates[0].content.parts[0].text;
                         textRes = cleanMarkdownText(textRes);
                         callback({ html: textRes });
                     } else {
+                        console.warn(`Model ${model} invalid response:`, data);
                         attemptModel(idx + 1);
                     }
                 })
                 .catch(err => {
+                    console.error(`Model ${model} fetch failed:`, err);
                     attemptModel(idx + 1);
                 });
             }
