@@ -1897,6 +1897,59 @@ main {
     color: var(--text-secondary);
 }
 
+.sommelier-api-bar {
+    background: #ffffff;
+    border: 1.5px solid var(--border-hover);
+    border-radius: 20px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.02);
+}
+
+.api-key-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 280px;
+}
+
+.api-key-input {
+    flex: 1;
+    padding: 9px 14px;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.api-key-input:focus {
+    border-color: var(--coral-main);
+}
+
+.api-key-save-btn {
+    padding: 9px 16px;
+    background: var(--coral-main);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.api-key-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
 .sommelier-chips-wrapper {
     margin-bottom: 1.5rem;
     background: #ffffff;

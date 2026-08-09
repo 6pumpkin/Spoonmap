@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608092250">
+    <link rel="stylesheet" href="style.css?v=202608092256">
 </head>
 
 <body class="light-theme">
@@ -249,20 +249,29 @@
         <div id="sommelier-view" class="tab-content">
             <div class="sommelier-container">
                 <div class="sommelier-hero">
-                    <div class="hero-badge">🤖 AI GOURMET SOMMELIER</div>
+                    <div class="hero-badge">🤖 LLM AI GOURMET SOMMELIER</div>
                     <h2>나만의 AI 미식 소믈리에</h2>
-                    <p>나의 709개 미식 데이터와 실시간 상황(날씨/시간/코스)을 반영하여 딱 맞는 맛집과 1-2차 코스를 제안합니다!</p>
+                    <p>요청하신 개수(1차 N곳, 2차 N곳), 추천 출처(내 맛집 / 카카오 지도), 날씨 및 코스를 100% 반영하여 똑똑하게 추천합니다!</p>
                 </div>
 
-                <!-- Quick Prompt Chips -->
+                <!-- Gemini API Key Bar -->
+                <div class="sommelier-api-bar">
+                    <div class="api-key-box">
+                        <span class="api-key-icon">🔑</span>
+                        <input type="password" id="gemini-api-key-input" placeholder="Google Gemini API Key 입력 (선택 사항: 100% 자유 대화 LLM 지원)" class="api-key-input">
+                        <button id="btn-save-gemini-key" class="api-key-save-btn">저장</button>
+                    </div>
+                    <span id="gemini-key-status" class="api-key-status">💡 API Key 미입력 시에도 스마트 의도 파서가 개수/출처/코스를 동적 분석합니다.</span>
+                </div>
+
+                <!-- Dynamic Prompt Chips -->
                 <div class="sommelier-chips-wrapper">
-                    <span class="chips-label">💡 빠른 추천 질문:</span>
+                    <span class="chips-label">💡 동적 수량/출처/코스 추천 질문 샘플:</span>
                     <div class="chips-list">
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌧️ 오늘 날씨와 시간대에 어울리는 미식 추천해줘!')">🌧️ 오늘 날씨 & 시간대 찰떡 맛집</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍷 1차 식당 + 2차 카페/술집 완벽 미식 코스 짜줘!')">🗺️ 1차+2차 완벽 미식 코스</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('⭐ 4수저 이상 실패 없는 찐 단골 또간집 3선 추천해줘')">🔥 4수저 이상 찐 단골집 TOP 3</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🥩 마포구 고기나 술 한잔하기 좋은 식당 어디 있어?')">🥩 마포구 고기 & 술집 추천</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍜 혼밥하기에도 좋고 시원한 국물 맛집 찾아줘')">🍜 혼밥 & 국물 맛집</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌐 카카오 지도 실시간 추천 1차 3곳과 2차 3곳 추천해줘')">🌐 카카오 지도 1차 3곳 + 2차 3곳</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🔥 내 맛집 데이터에서만 5수저 맛집 3곳 추천해줘')">🔥 내 맛집 5수저 3곳만</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌧️ 비 오는 날 연남동 데이트 코스 1차 고기집 1곳, 2차 카페 1곳 추천해줘')">🌧️ 연남동 1차 고기 + 2차 카페</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍺 강남역 근처 카카오 지도 실시간 2차 술집 2곳 추천해줘')">🍺 강남역 2차 술집 2곳 (카카오)</button>
                     </div>
                 </div>
 
@@ -273,7 +282,7 @@
                     </div>
 
                     <div class="chat-input-bar">
-                        <input type="text" id="sommelier-user-input" placeholder="예: 연남동근처 4수저 이상 분위기 좋은 맛집이랑 2차 카페 추천해줘..." autocomplete="off">
+                        <input type="text" id="sommelier-user-input" placeholder="예: 카카오 지도 실시간 1차 3곳, 2차 3곳 추천해줘..." autocomplete="off">
                         <button id="btn-send-sommelier" class="chat-send-btn">
                             <span>보내기</span> 🚀
                         </button>
@@ -419,8 +428,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608092250"></script>
-    <script src="app.js?v=202608092250"></script>
+    <script src="data.js?v=202608092256"></script>
+    <script src="app.js?v=202608092256"></script>
 </body>
 
 </html>
