@@ -2128,13 +2128,20 @@ main {
     margin-bottom: 12px;
 }
 
+.rec-map-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
 .rec-kakao-pill-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #F1F5F9;
-    color: #334155;
-    border: 1px solid #E2E8F0;
+    background: #FFF9E6;
+    color: #92400E;
+    border: 1px solid #FDE68A;
     border-radius: 12px;
     padding: 7px 14px;
     font-weight: 700;
@@ -2144,8 +2151,28 @@ main {
 }
 
 .rec-kakao-pill-btn:hover {
-    background: #E2E8F0;
-    color: #0F172A;
+    background: #FDE68A;
+    color: #78350F;
+}
+
+.rec-naver-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F0FDF4;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+    border-radius: 12px;
+    padding: 7px 14px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.rec-naver-pill-btn:hover {
+    background: #BBF7D0;
+    color: #14532D;
 }
 
 .chat-input-bar {
