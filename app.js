@@ -1467,3 +1467,164 @@ function closeMobileOverlay() {
     document.getElementById('mobile-card-overlay').classList.remove('open');
     document.body.style.overflow = '';
 }
+
+// ─── Food Insights Dashboard Functions (global scope) ────
+window.openFoodInsightsModal = function() {
+    const modal = document.getElementById('food-insights-modal');
+    if (!modal) return;
+    
+    computeAndRenderFoodInsights();
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeFoodInsightsModal = function() {
+    const modal = document.getElementById('food-insights-modal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+function computeAndRenderFoodInsights() {
+    if (typeof restaurantData === 'undefined' || !restaurantData.length) return;
+
+    const totalCount = restaurantData.length;
+    let totalVisitsSum = 0;
+    let reVisitedCount = 0;
+    const regionCounts = {};
+    const categoryCounts = {};
+    const rateCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    const topVisitedItems = [...restaurantData].sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
+
+    restaurantData.forEach(item => {
+        const visits = item.visit_count || 1;
+        totalVisitsSum += visits;
+        if (visits >= 2) reVisitedCount++;
+
+        // Region
+        const reg = item.location_large || '기타';
+        regionCounts[reg] = (regionCounts[reg] || 0) + 1;
+
+        // Category
+        if (item.category) {
+            item.category.split(',').forEach(c => {
+                const cleanC = c.trim();
+                if (cleanC) categoryCounts[cleanC] = (categoryCounts[cleanC] || 0) + 1;
+            });
+        }
+
+        // Spoon Rate
+        const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+        rateCounts[spoonCount] = (rateCounts[spoonCount] || 0) + 1;
+    });
+
+    // 1. Counter Cards
+    const summaryEl = document.getElementById('insights-total-summary');
+    if (summaryEl) {
+        summaryEl.textContent = `총 ${totalCount.toLocaleString()}개의 맛집과 ${totalVisitsSum.toLocaleString()}회의 미식 탐방 기록 분석 완료`;
+    }
+    
+    const countEl = document.getElementById('stat-total-count');
+    if (countEl) countEl.textContent = `${totalCount.toLocaleString()}곳`;
+    
+    const visitedPct = Math.round((reVisitedCount / totalCount) * 100);
+    const visEl = document.getElementById('stat-visited-count');
+    if (visEl) visEl.textContent = `${reVisitedCount}곳 (${visitedPct}%)`;
+
+    const topPlace = topVisitedItems[0];
+    const topPlaceEl = document.getElementById('stat-top-place');
+    if (topPlaceEl) topPlaceEl.textContent = topPlace ? `${topPlace.name} (${topPlace.visit_count || 1}회)` : '-';
+
+    // Top Category
+    const sortedCats = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
+    const topCat = sortedCats[0];
+    const topCatEl = document.getElementById('stat-top-category');
+    if (topCatEl) topCatEl.textContent = topCat ? `${topCat[0]} (${topCat[1]}곳)` : '-';
+
+    // 2. Region TOP 5
+    const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const regionContainer = document.getElementById('insights-region-list');
+    if (regionContainer) {
+        regionContainer.innerHTML = sortedRegions.map(([reg, count]) => {
+            const pct = Math.round((count / totalCount) * 100);
+            return `
+                <div class="bar-item">
+                    <div class="bar-label-row">
+                        <span>📍 ${reg}</span>
+                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${pct}%;"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 3. Category TOP 5
+    const sortedCategoriesTop5 = sortedCats.slice(0, 5);
+    const categoryContainer = document.getElementById('insights-category-list');
+    if (categoryContainer) {
+        categoryContainer.innerHTML = sortedCategoriesTop5.map(([cat, count]) => {
+            const pct = Math.round((count / totalCount) * 100);
+            return `
+                <div class="bar-item">
+                    <div class="bar-label-row">
+                        <span>🍚 ${cat}</span>
+                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${pct}%;"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 4. Rate Distribution
+    const rateContainer = document.getElementById('insights-rate-list');
+    if (rateContainer) {
+        const rateKeys = [5, 4, 3, 2, 1];
+        rateContainer.innerHTML = rateKeys.map(r => {
+            const count = rateCounts[r] || 0;
+            const pct = Math.round((count / totalCount) * 100);
+            return `
+                <div class="bar-item">
+                    <div class="bar-label-row">
+                        <span>🥄 ${r}개 평점</span>
+                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${pct}%;"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 5. Hall of Fame (Top 5 Visited Places)
+    const top5Places = topVisitedItems.slice(0, 5);
+    const topPlacesContainer = document.getElementById('insights-top-places-list');
+    if (topPlacesContainer) {
+        topPlacesContainer.innerHTML = top5Places.map((item, idx) => {
+            const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+            const visits = item.visit_count || 1;
+            return `
+                <div class="rank-item">
+                    <div class="rank-left">
+                        <span class="rank-num">#${idx + 1}</span>
+                        <div>
+                            <div class="rank-name">${item.name}</div>
+                            <div class="rank-meta">${item.location_large} • ${item.category || '기타'}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="spoon-badge visit-tier-${visits >= 10 ? 3 : visits >= 5 ? 2 : 1}">
+                            <span class="spoon-icons">🥄 ${spoonCount}개</span>
+                            <span class="visit-count-tag">🔥 ${visits}회</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}

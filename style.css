@@ -1588,3 +1588,277 @@ main {
 .map-view-btn:hover {
     background: #059669;
 }
+
+/* Insights Trigger Button */
+.insights-trigger-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.insights-trigger-btn:hover {
+    color: var(--coral-main);
+    background: #FFF0F2;
+}
+
+.mobile-insights-btn {
+    color: var(--coral-main) !important;
+    font-weight: 800 !important;
+}
+
+/* Food Insights Modal Overlay */
+.insights-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.insights-modal-overlay.open {
+    display: flex;
+    opacity: 1;
+}
+
+.insights-modal-card {
+    background: #ffffff;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 780px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 2rem 1.8rem;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+}
+
+@keyframes modalPop {
+    0% { transform: scale(0.88); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.insights-modal-close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.5rem;
+    border: none;
+    background: #F5F5F0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.insights-modal-close:hover {
+    background: #FFE4E6;
+    color: var(--coral-main);
+}
+
+.insights-header {
+    text-align: center;
+    margin-bottom: 1.8rem;
+}
+
+.insights-badge {
+    display: inline-block;
+    background: #FFF0F2;
+    color: var(--coral-main);
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+}
+
+.insights-header h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+
+.insights-header p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* 4 Counter Grid */
+.insights-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-canvas-subtle);
+    border: 1.5px solid var(--border-hover);
+    border-radius: 20px;
+    padding: 1.1rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-icon {
+    font-size: 1.8rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.stat-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--coral-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-val.stat-small {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+/* Detailed Insight Sections */
+.insights-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.insights-box {
+    background: #ffffff;
+    border: 1.5px solid var(--border-hover);
+    border-radius: 22px;
+    padding: 1.4rem;
+}
+
+.insights-box.full-width-box {
+    grid-column: 1 / -1;
+}
+
+.insights-box h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.insights-bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.bar-count {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.bar-track {
+    height: 10px;
+    background: #F5F5F0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--coral-main), #FF6B81);
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.12, 0.8, 0.25, 1);
+}
+
+/* Rank List (Top Visited Places) */
+.insights-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.rank-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-canvas-subtle);
+    padding: 10px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+}
+
+.rank-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rank-num {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--coral-main);
+    width: 24px;
+}
+
+.rank-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.rank-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
