@@ -1408,6 +1408,68 @@ main {
     border-color: var(--coral-main);
 }
 
+.location-radius-row {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.location-input-group {
+    flex: 2;
+}
+
+.radius-select-group {
+    flex: 1;
+}
+
+.center-input-wrapper {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.rec-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border-hover);
+    border-radius: 12px;
+    background: #ffffff;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.rec-input:focus {
+    border-color: var(--coral-main);
+}
+
+.rec-loc-btn {
+    padding: 10px 14px;
+    background: #FFF0F2;
+    color: var(--coral-main);
+    border: 1.5px solid var(--coral-main);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.rec-loc-btn:hover {
+    background: var(--coral-main);
+    color: #ffffff;
+}
+
+.rec-center-info {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
 .check-row-container {
     display: flex;
     flex-wrap: wrap;

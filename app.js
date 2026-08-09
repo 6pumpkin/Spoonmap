@@ -125,7 +125,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const winnerContainer = document.getElementById('winner-result-container');
         const winnerBody = document.getElementById('winner-card-body');
 
+        const centerInput = document.getElementById('rec-center-input');
+        const radiusSelect = document.getElementById('rec-radius-select');
+        const myLocBtn = document.getElementById('btn-rec-my-location');
+        const centerInfo = document.getElementById('rec-center-info');
+
         if (!spinBtn) return;
+
+        // Haversine Distance Calculator (meters)
+        function getDistanceMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // GPS Current Location Listener
+        if (myLocBtn) {
+            myLocBtn.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    alert('이 브라우저에서는 GPS 위치 서비스가 지원되지 않습니다.');
+                    return;
+                }
+                myLocBtn.textContent = '⌛ 위치 받는 중...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        myLocBtn.textContent = '📍 내 위치';
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        if (centerInput) {
+                            centerInput.value = '현재 GPS 위치';
+                            centerInput.dataset.lat = lat;
+                            centerInput.dataset.lng = lng;
+                        }
+                        if (centerInfo) {
+                            centerInfo.innerHTML = `🎯 <b>현재 GPS 위치</b>를 기준 지점으로 설정했습니다.`;
+                        }
+                    },
+                    (err) => {
+                        myLocBtn.textContent = '📍 내 위치';
+                        alert('GPS 위치를 불러올 수 없습니다. 건물명이나 역 이름을 직접 입력해보세요!');
+                    }
+                );
+            });
+        }
 
         // Mutual Exclusivity for Checkboxes
         if (visitedCheck && kakaoAllCheck) {
@@ -180,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const winner = candidates[Math.floor(Math.random() * candidates.length)];
             currentWinnerItem = winner;
 
-            // Prepare slot reel items (random dummy items + winner at end)
+            // Prepare slot reel items
             const reelItems = [];
             const itemCount = Math.min(22, Math.max(15, candidates.length * 2));
             for (let i = 0; i < itemCount - 1; i++) {
@@ -201,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3 class="reel-name">${item.name}</h3>
                     <div class="reel-meta">
                         <span class="category-badge">${item.category || '기타'}</span>
-                        <span class="loc-badge">${item.location_large}</span>
+                        <span class="loc-badge">${item.displayDistance ? '📍 ' + item.displayDistance : item.location_large}</span>
                         ${getSpoonBadgeHtml(item)}
                     </div>
                 `;
@@ -243,65 +291,159 @@ document.addEventListener('DOMContentLoaded', () => {
             const onlyVisited = visitedCheck ? visitedCheck.checked : false;
             const isKakaoAll = kakaoAllCheck ? kakaoAllCheck.checked : false;
 
-            if (isKakaoAll) {
-                // Search Kakao Map Places API live
-                if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
-                    alert('카카오 지도 API를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+            const centerText = centerInput ? centerInput.value.trim() : '';
+            const radiusVal = radiusSelect ? radiusSelect.value : 'all';
+            const radiusMeters = radiusVal !== 'all' ? parseInt(radiusVal, 10) : null;
+
+            function proceedSpin(centerCoords) {
+                if (isKakaoAll) {
+                    if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
+                        alert('카카오 지도 API를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                        return;
+                    }
+
+                    const spinTextEl = spinBtn.querySelector('.spin-text');
+                    if (spinTextEl) spinTextEl.textContent = '🔍 카카오 지도 탐색 중...';
+                    spinBtn.disabled = true;
+
+                    const catText = selectedCat !== 'all' ? selectedCat : '맛집';
+                    const searchKeyword = catText;
+                    const ps = new kakao.maps.services.Places();
+
+                    const searchOptions = {};
+                    if (centerCoords && radiusMeters) {
+                        searchOptions.location = new kakao.maps.LatLng(centerCoords.lat, centerCoords.lng);
+                        searchOptions.radius = radiusMeters;
+                    }
+
+                    ps.keywordSearch(searchKeyword, (data, status) => {
+                        spinBtn.disabled = false;
+                        if (spinTextEl) spinTextEl.textContent = '오늘 뭐 먹지? 뽑기!';
+
+                        if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                            const candidates = data.map(place => {
+                                let distText = '';
+                                if (centerCoords) {
+                                    const pLat = parseFloat(place.y);
+                                    const pLng = parseFloat(place.x);
+                                    const d = getDistanceMeters(centerCoords.lat, centerCoords.lng, pLat, pLng);
+                                    distText = d >= 1000 ? `${(d/1000).toFixed(1)}km` : `${Math.round(d)}m`;
+                                }
+                                return {
+                                    name: place.place_name,
+                                    category: place.category_name ? place.category_name.split('>').pop().trim() : (selectedCat !== 'all' ? selectedCat : '음식점'),
+                                    location_large: place.address_name ? place.address_name.split(' ').slice(0, 2).join(' ') : '지역 정보',
+                                    location_small: distText ? `📍 기준지에서 ${distText}` : (place.road_address_name || place.address_name || ''),
+                                    displayDistance: distText ? `${distText} 거리` : '',
+                                    rate: '',
+                                    map_url: place.place_url || `https://map.kakao.com/link/map/${place.id}`,
+                                    visit_count: 0,
+                                    isExternal: true,
+                                    menu: [place.phone ? `📞 ${place.phone}` : '카카오 지도 추천 식당']
+                                };
+                            });
+                            runSpinAnimation(candidates);
+                        } else {
+                            alert(`선택하신 반경 범위 안에서 '${searchKeyword}' 카카오 지도 검색 결과가 없습니다. 반경을 넓히거나 장소를 변경해 보세요!`);
+                        }
+                    }, searchOptions);
                     return;
                 }
 
-                const spinTextEl = spinBtn.querySelector('.spin-text');
-                if (spinTextEl) spinTextEl.textContent = '🔍 카카오 지도 탐색 중...';
-                spinBtn.disabled = true;
+                // Visited dataset candidates
+                let candidates = restaurantData.filter(item => {
+                    if (!item.map_url) return false;
+                    if (selectedCat !== 'all' && (!item.category || !item.category.includes(selectedCat))) return false;
+                    if (selectedLoc !== 'all' && item.location_large !== selectedLoc) return false;
+                    
+                    const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+                    if (spoonCount < minRate) return false;
+                    if (onlyVisited && (item.visit_count || 1) < 2) return false;
+                    
+                    return true;
+                });
 
-                const locText = selectedLoc !== 'all' ? selectedLoc : '서울';
-                const catText = selectedCat !== 'all' ? selectedCat : '맛집';
-                const searchKeyword = `${locText} ${catText}`.trim();
+                if (candidates.length === 0) {
+                    alert('앗! 조건에 맞는 맛집이 없습니다. 카테고리, 지역 또는 평점의 필터 범위를 넓혀보세요!');
+                    return;
+                }
+
+                if (centerCoords && radiusMeters) {
+                    const spinTextEl = spinBtn.querySelector('.spin-text');
+                    if (spinTextEl) spinTextEl.textContent = '📏 거리 반경 계산 중...';
+                    spinBtn.disabled = true;
+
+                    const geocoder = new kakao.maps.services.Geocoder();
+                    let processed = 0;
+                    const radiusCandidates = [];
+
+                    candidates.forEach(item => {
+                        const addrToSearch = item.location_small || item.location_large || item.name;
+                        geocoder.addressSearch(addrToSearch, (res, status) => {
+                            processed++;
+                            if (status === kakao.maps.services.Status.OK && res.length > 0) {
+                                const iLat = parseFloat(res[0].y);
+                                const iLng = parseFloat(res[0].x);
+                                const dist = getDistanceMeters(centerCoords.lat, centerCoords.lng, iLat, iLng);
+                                if (dist <= radiusMeters) {
+                                    const distText = dist >= 1000 ? `${(dist/1000).toFixed(1)}km` : `${Math.round(dist)}m`;
+                                    radiusCandidates.push({
+                                        ...item,
+                                        displayDistance: `${distText} 거리`
+                                    });
+                                }
+                            }
+
+                            if (processed === candidates.length) {
+                                spinBtn.disabled = false;
+                                if (spinTextEl) spinTextEl.textContent = '오늘 뭐 먹지? 뽑기!';
+                                if (radiusCandidates.length === 0) {
+                                    alert(`지정하신 기준 장소에서 반경 ${radiusVal >= 1000 ? (radiusVal/1000)+'km' : radiusVal+'m'} 이내에 맛집이 없습니다. 반경 범위를 넓혀보세요!`);
+                                    return;
+                                }
+                                runSpinAnimation(radiusCandidates);
+                            }
+                        });
+                    });
+                    return;
+                }
+
+                runSpinAnimation(candidates);
+            }
+
+            // Resolve center location
+            if (centerText) {
+                if (centerText === '현재 GPS 위치' && centerInput.dataset.lat && centerInput.dataset.lng) {
+                    const lat = parseFloat(centerInput.dataset.lat);
+                    const lng = parseFloat(centerInput.dataset.lng);
+                    proceedSpin({ lat, lng });
+                    return;
+                }
 
                 const ps = new kakao.maps.services.Places();
-                ps.keywordSearch(searchKeyword, (data, status) => {
+                const spinTextEl = spinBtn.querySelector('.spin-text');
+                if (spinTextEl) spinTextEl.textContent = '🎯 기준 장소 위치 확인 중...';
+                spinBtn.disabled = true;
+
+                ps.keywordSearch(centerText, (data, status) => {
                     spinBtn.disabled = false;
                     if (spinTextEl) spinTextEl.textContent = '오늘 뭐 먹지? 뽑기!';
 
                     if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                        const candidates = data.map(place => ({
-                            name: place.place_name,
-                            category: place.category_name ? place.category_name.split('>').pop().trim() : (selectedCat !== 'all' ? selectedCat : '음식점'),
-                            location_large: place.address_name ? place.address_name.split(' ').slice(0, 2).join(' ') : (selectedLoc !== 'all' ? selectedLoc : '지역 정보'),
-                            location_small: place.road_address_name || place.address_name || '',
-                            rate: '',
-                            map_url: place.place_url || `https://map.kakao.com/link/map/${place.id}`,
-                            visit_count: 0,
-                            isExternal: true,
-                            menu: [place.phone ? `📞 ${place.phone}` : '카카오 지도 추천 식당']
-                        }));
-                        runSpinAnimation(candidates);
+                        const lat = parseFloat(data[0].y);
+                        const lng = parseFloat(data[0].x);
+                        const placeName = data[0].place_name;
+                        if (centerInfo) {
+                            centerInfo.innerHTML = `🎯 <b>${placeName}</b> 기준 반경 검색이 활성화되었습니다.`;
+                        }
+                        proceedSpin({ lat, lng });
                     } else {
-                        alert(`'${searchKeyword}' 카카오 지도 검색 결과가 없습니다. 지역이나 카테고리를 변경해 보세요!`);
+                        alert(`'${centerText}' 위치를 찾을 수 없습니다. 장소명을 다시 확인해 주세요.`);
                     }
                 });
-                return;
+            } else {
+                proceedSpin(null);
             }
-
-            // Normal search from visited places (restaurantData)
-            let candidates = restaurantData.filter(item => {
-                if (!item.map_url) return false;
-                if (selectedCat !== 'all' && (!item.category || !item.category.includes(selectedCat))) return false;
-                if (selectedLoc !== 'all' && item.location_large !== selectedLoc) return false;
-                
-                const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
-                if (spoonCount < minRate) return false;
-                if (onlyVisited && (item.visit_count || 1) < 2) return false;
-                
-                return true;
-            });
-
-            if (candidates.length === 0) {
-                alert('앗! 조건에 맞는 맛집이 없습니다. 카테고리, 지역 또는 평점의 필터 범위를 넓혀보세요!');
-                return;
-            }
-
-            runSpinAnimation(candidates);
         }
 
         spinBtn.addEventListener('click', startSpin);

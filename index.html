@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608092213">
+    <link rel="stylesheet" href="style.css?v=202608092235">
 </head>
 
 <body class="light-theme">
@@ -155,7 +155,7 @@
                         </div>
                         
                         <div class="control-group">
-                            <label for="rec-location-select"><span>📍</span> 지역</label>
+                            <label for="rec-location-select"><span>📍</span> 행정 구역</label>
                             <select id="rec-location-select" class="rec-select">
                                 <option value="all">전체 지역</option>
                             </select>
@@ -170,6 +170,34 @@
                                 <option value="5">🥄 5개 전설 맛집만</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Center Landmark & Radius Distance Row -->
+                    <div class="control-row location-radius-row">
+                        <div class="control-group location-input-group">
+                            <label for="rec-center-input"><span>🎯</span> 반경 추첨 기준 위치 / 장소</label>
+                            <div class="center-input-wrapper">
+                                <input type="text" id="rec-center-input" placeholder="예: 강남역, 홍대입구, 여의도, 특정 건물..." class="rec-input">
+                                <button id="btn-rec-my-location" class="rec-loc-btn" title="현재 GPS 위치 찾기">📍 내 위치</button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group radius-select-group">
+                            <label for="rec-radius-select"><span>📏</span> 검색 반경 범위</label>
+                            <select id="rec-radius-select" class="rec-select">
+                                <option value="500">500m 이내 (도보 7분)</option>
+                                <option value="1000" selected>1km 이내 (도보 15분)</option>
+                                <option value="2000">2km 이내 (도보 30분)</option>
+                                <option value="3000">3km 이내 (차량 10분)</option>
+                                <option value="5000">5km 이내</option>
+                                <option value="10000">10km 이내</option>
+                                <option value="all">거리 제한 없음</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="rec-center-info" class="rec-center-info">
+                        💡 기준 장소 입력 시 해당 지점을 중심으로 선택한 반경 범위 안에서 맛집을 추첨합니다.
                     </div>
 
                     <div class="check-row-container">
@@ -352,8 +380,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608092213"></script>
-    <script src="app.js?v=202608092213"></script>
+    <script src="data.js?v=202608092235"></script>
+    <script src="app.js?v=202608092235"></script>
 </body>
 
 </html>
