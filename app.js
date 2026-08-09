@@ -1998,7 +1998,7 @@ Strictly follow the user's requested numbers (e.g. if asked for 3 places for 1ì°
 Format output in clean HTML with cards!
 `;
 
-            const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+            const modelsToTry = ['gemini-3.5-flash', 'gemini-3-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
             function attemptModel(idx) {
                 if (idx >= modelsToTry.length) {
                     fallbackParserEngine(kakaoPlaces);
