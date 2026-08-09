@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupSearch();
         setupTabs();
         initRecommendTab();
+        initFoodInsightsTab();
         render();
     }
 
@@ -101,6 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (targetTab === 'map') {
                     initMap();
+                } else if (targetTab === 'insights') {
+                    computeAndRenderFoodInsights();
                 }
             });
         });
@@ -1468,21 +1471,35 @@ function closeMobileOverlay() {
     document.body.style.overflow = '';
 }
 
-// ─── Food Insights Dashboard Functions (global scope) ────
-window.openFoodInsightsModal = function() {
-    const modal = document.getElementById('food-insights-modal');
-    if (!modal) return;
-    
-    computeAndRenderFoodInsights();
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-};
+// ─── Food Insights Dashboard Functions ────
+let showAllRegions = false;
+let showAllCategories = false;
+let showAllTopPlaces = false;
 
-window.closeFoodInsightsModal = function() {
-    const modal = document.getElementById('food-insights-modal');
-    if (modal) modal.classList.remove('open');
-    document.body.style.overflow = '';
-};
+function initFoodInsightsTab() {
+    const btnReg = document.getElementById('btn-toggle-regions');
+    const btnCat = document.getElementById('btn-toggle-categories');
+    const btnTop = document.getElementById('btn-toggle-top-places');
+
+    if (btnReg) {
+        btnReg.addEventListener('click', () => {
+            showAllRegions = !showAllRegions;
+            computeAndRenderFoodInsights();
+        });
+    }
+    if (btnCat) {
+        btnCat.addEventListener('click', () => {
+            showAllCategories = !showAllCategories;
+            computeAndRenderFoodInsights();
+        });
+    }
+    if (btnTop) {
+        btnTop.addEventListener('click', () => {
+            showAllTopPlaces = !showAllTopPlaces;
+            computeAndRenderFoodInsights();
+        });
+    }
+}
 
 function computeAndRenderFoodInsights() {
     if (typeof restaurantData === 'undefined' || !restaurantData.length) return;
@@ -1517,7 +1534,7 @@ function computeAndRenderFoodInsights() {
         rateCounts[spoonCount] = (rateCounts[spoonCount] || 0) + 1;
     });
 
-    // 1. Counter Cards
+    // 1. Counter Cards (Full value, no truncation)
     const summaryEl = document.getElementById('insights-total-summary');
     if (summaryEl) {
         summaryEl.textContent = `총 ${totalCount.toLocaleString()}개의 맛집과 ${totalVisitsSum.toLocaleString()}회의 미식 탐방 기록 분석 완료`;
@@ -1540,11 +1557,16 @@ function computeAndRenderFoodInsights() {
     const topCatEl = document.getElementById('stat-top-category');
     if (topCatEl) topCatEl.textContent = topCat ? `${topCat[0]} (${topCat[1]}곳)` : '-';
 
-    // 2. Region TOP 5
-    const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    // 2. Region List (Top 5 vs All)
+    const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]);
+    const btnReg = document.getElementById('btn-toggle-regions');
+    if (btnReg) {
+        btnReg.textContent = showAllRegions ? '접기 ▲' : `전체 지역 보기 (${sortedRegions.length}개) ▼`;
+    }
+    const displayRegions = showAllRegions ? sortedRegions : sortedRegions.slice(0, 5);
     const regionContainer = document.getElementById('insights-region-list');
     if (regionContainer) {
-        regionContainer.innerHTML = sortedRegions.map(([reg, count]) => {
+        regionContainer.innerHTML = displayRegions.map(([reg, count]) => {
             const pct = Math.round((count / totalCount) * 100);
             return `
                 <div class="bar-item">
@@ -1560,11 +1582,15 @@ function computeAndRenderFoodInsights() {
         }).join('');
     }
 
-    // 3. Category TOP 5
-    const sortedCategoriesTop5 = sortedCats.slice(0, 5);
+    // 3. Category List (Top 5 vs All)
+    const btnCat = document.getElementById('btn-toggle-categories');
+    if (btnCat) {
+        btnCat.textContent = showAllCategories ? '접기 ▲' : `전체 카테고리 보기 (${sortedCats.length}개) ▼`;
+    }
+    const displayCategories = showAllCategories ? sortedCats : sortedCats.slice(0, 5);
     const categoryContainer = document.getElementById('insights-category-list');
     if (categoryContainer) {
-        categoryContainer.innerHTML = sortedCategoriesTop5.map(([cat, count]) => {
+        categoryContainer.innerHTML = displayCategories.map(([cat, count]) => {
             const pct = Math.round((count / totalCount) * 100);
             return `
                 <div class="bar-item">
@@ -1601,11 +1627,16 @@ function computeAndRenderFoodInsights() {
         }).join('');
     }
 
-    // 5. Hall of Fame (Top 5 Visited Places)
-    const top5Places = topVisitedItems.slice(0, 5);
+    // 5. Hall of Fame (Top 5 vs All Visited Places)
+    const visitedOnlyPlaces = topVisitedItems.filter(item => (item.visit_count || 1) >= 2);
+    const btnTop = document.getElementById('btn-toggle-top-places');
+    if (btnTop) {
+        btnTop.textContent = showAllTopPlaces ? '접기 ▲' : `전체 또간집 랭킹 보기 (${visitedOnlyPlaces.length}곳) ▼`;
+    }
+    const displayPlaces = showAllTopPlaces ? visitedOnlyPlaces : visitedOnlyPlaces.slice(0, 5);
     const topPlacesContainer = document.getElementById('insights-top-places-list');
     if (topPlacesContainer) {
-        topPlacesContainer.innerHTML = top5Places.map((item, idx) => {
+        topPlacesContainer.innerHTML = displayPlaces.map((item, idx) => {
             const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
             const visits = item.visit_count || 1;
             return `

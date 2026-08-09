@@ -1589,100 +1589,19 @@ main {
     background: #059669;
 }
 
-/* Insights Trigger Button */
-.insights-trigger-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: var(--radius-full);
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-    background: transparent;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* Dedicated Food Insights Tab Styles */
+.insights-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem 1rem;
 }
 
-.insights-trigger-btn:hover {
-    color: var(--coral-main);
-    background: #FFF0F2;
-}
-
-.mobile-insights-btn {
-    color: var(--coral-main) !important;
-    font-weight: 800 !important;
-}
-
-/* Food Insights Modal Overlay */
-.insights-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(5px);
-    z-index: 3000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.insights-modal-overlay.open {
-    display: flex;
-    opacity: 1;
-}
-
-.insights-modal-card {
-    background: #ffffff;
-    border-radius: 28px;
-    width: 100%;
-    max-width: 780px;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 2rem 1.8rem;
-    position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25);
-}
-
-@keyframes modalPop {
-    0% { transform: scale(0.88); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.insights-modal-close {
-    position: absolute;
-    top: 1.2rem;
-    right: 1.5rem;
-    border: none;
-    background: #F5F5F0;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.insights-modal-close:hover {
-    background: #FFE4E6;
-    color: var(--coral-main);
-}
-
-.insights-header {
+.insights-hero {
     text-align: center;
-    margin-bottom: 1.8rem;
+    margin-bottom: 2rem;
 }
 
-.insights-badge {
+.hero-badge {
     display: inline-block;
     background: #FFF0F2;
     color: var(--coral-main);
@@ -1694,44 +1613,47 @@ main {
     margin-bottom: 0.4rem;
 }
 
-.insights-header h2 {
-    font-size: 1.75rem;
+.insights-hero h2 {
+    font-size: 1.8rem;
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 0.4rem;
 }
 
-.insights-header p {
-    font-size: 0.9rem;
+.insights-hero p {
+    font-size: 0.95rem;
     color: var(--text-secondary);
 }
 
 /* 4 Counter Grid */
 .insights-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
 .stat-card {
-    background: var(--bg-canvas-subtle);
+    background: #ffffff;
     border: 1.5px solid var(--border-hover);
     border-radius: 20px;
-    padding: 1.1rem 1rem;
+    padding: 1.2rem 1.1rem;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
 }
 
 .stat-icon {
-    font-size: 1.8rem;
+    font-size: 2rem;
+    flex-shrink: 0;
 }
 
 .stat-info {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: 2px;
+    min-width: 0;
 }
 
 .stat-label {
@@ -1744,20 +1666,24 @@ main {
     font-size: 1.25rem;
     font-weight: 800;
     color: var(--coral-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: keep-all;
+    line-height: 1.25;
 }
 
 .stat-val.stat-small {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: var(--text-primary);
+    font-weight: 800;
+    white-space: normal;
+    word-break: keep-all;
+    line-height: 1.3;
 }
 
 /* Detailed Insight Sections */
 .insights-sections {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 1.5rem;
 }
 
@@ -1765,21 +1691,43 @@ main {
     background: #ffffff;
     border: 1.5px solid var(--border-hover);
     border-radius: 22px;
-    padding: 1.4rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
 }
 
 .insights-box.full-width-box {
     grid-column: 1 / -1;
 }
 
-.insights-box h3 {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: 1.2rem;
+.box-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+}
+
+.box-header h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.insights-toggle-btn {
+    background: #FFF0F2;
+    color: var(--coral-main);
+    border: 1px solid var(--border-hover);
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.insights-toggle-btn:hover {
+    background: var(--coral-main);
+    color: #ffffff;
 }
 
 .insights-bar-list {
@@ -1791,13 +1739,13 @@ main {
 .bar-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
 }
 
 .bar-label-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -1833,7 +1781,7 @@ main {
     align-items: center;
     justify-content: space-between;
     background: var(--bg-canvas-subtle);
-    padding: 10px 16px;
+    padding: 12px 18px;
     border-radius: 16px;
     border: 1px solid var(--border-subtle);
 }
@@ -1841,13 +1789,27 @@ main {
 .rank-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .rank-num {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 800;
     color: var(--coral-main);
+    width: 28px;
+}
+
+.rank-name {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.rank-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
     width: 24px;
 }
 
