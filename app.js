@@ -2179,69 +2179,139 @@ function processSommelierFallbackOnly(query, callback) {
     const m2 = query.match(/2차\s*([가-힣a-zA-Z0-9]+)?\s*(곳|개)?/i);
     const mTotal = query.match(/([가-힣a-zA-Z0-9]+)\s*(곳|개|선)/i);
 
-    const step1Req = (has1cha && m1) ? (parseKoreanNumber(m1[1]) || 2) : null;
-    const step2Req = (has2cha && m2) ? (parseKoreanNumber(m2[1]) || 2) : null;
+    const step1Req = (has1cha && m1) ? (parseKoreanNumber(m1[1]) || 1) : (has1cha ? 1 : null);
+    const step2Req = (has2cha && m2) ? (parseKoreanNumber(m2[1]) || 1) : (has2cha ? 1 : null);
     const totalReq = mTotal ? (parseKoreanNumber(mTotal[1]) || 2) : 2;
 
     const isMultiCourse = has1cha && has2cha;
 
+    // Detect Mood / Occasion
+    let moodText = '';
+    if (q.includes('비 오는 날') || q.includes('비오는날') || q.includes('비오는')) moodText = '비 오는 날 감성에 어울리는 ';
+    else if (q.includes('데이트')) moodText = '로맨틱한 데이트 코스로 완벽한 ';
+    else if (q.includes('회식') || q.includes('모임')) moodText = '즐거운 모임과 회식에 적합한 ';
+
+    // Detect Location
     let targetLoc = null;
-    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남역', '강남', '홍대입구역', '홍대입구', '홍대', '신촌', '연남', '여의도', '종로', '마곡', '공항동', '역삼동', '합정'];
+    const locations = ['마포구', '서대문구', '강서구', '용산구', '영등포구', '강남역', '강남', '홍대입구역', '홍대입구', '홍대', '신촌', '연남동', '연남', '여의도', '종로', '마곡역', '마곡', '공항동', '역삼동', '합정'];
     for (const loc of locations) {
         if (q.includes(loc.toLowerCase())) {
-            targetLoc = loc.replace('역', '');
+            targetLoc = loc.replace('입구역', '').replace('입구', '').replace('역', '').replace('동', '');
             break;
         }
     }
+    const locDisplay = targetLoc || '서울';
 
-    const categories = ['한식', '일식', '양식', '중식', '고기', '돼지고기', '삼겹살', '소고기', '갈비', '냉면', '카페', '디저트', '술집', '안주', '국물', '피자', '초밥', '치킨', '간식', '야식', '이자카야', '맥주', '와인', '펍', '바'];
-    let mainCat = null;
-    for (const cat of categories) {
-        if (q.includes(cat.toLowerCase())) {
-            targetCat = cat;
-            mainCat = cat;
-            break;
+    // Detect Categories for 1차 & 2차
+    const categories = ['한식', '일식', '양식', '중식', '고기집', '고기', '돼지고기', '삼겹살', '소고기', '갈비', '냉면', '카페', '디저트', '술집', '안주', '국물', '피자', '초밥', '치킨', '이자카야', '맥주', '와인', '펍', '바', '포장마차'];
+    let cat1 = null;
+    let cat2 = null;
+
+    if (has1cha) {
+        const part1 = query.split('1차')[1] || '';
+        for (const cat of categories) {
+            if (part1.includes(cat)) { cat1 = cat; break; }
+        }
+    }
+    if (has2cha) {
+        const part2 = query.split('2차')[1] || '';
+        for (const cat of categories) {
+            if (part2.includes(cat)) { cat2 = cat; break; }
         }
     }
 
-    const searchKeyword = `${targetLoc || '서울'} ${has2cha ? '2차 술집' : (mainCat || '맛집')}`.trim();
+    let mainCat = cat1 || cat2;
+    if (!mainCat) {
+        for (const cat of categories) {
+            if (q.includes(cat.toLowerCase())) { mainCat = cat; break; }
+        }
+    }
 
     if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
         const ps = new kakao.maps.services.Places();
-        ps.keywordSearch(searchKeyword, (data, status) => {
-            generateFallbackCards(status === kakao.maps.services.Status.OK ? data : []);
+
+        if (isMultiCourse) {
+            const kw1 = `${locDisplay} ${cat1 || '맛집'}`;
+            const kw2 = `${locDisplay} ${cat2 || '카페'}`;
+            ps.keywordSearch(kw1, (d1, s1) => {
+                ps.keywordSearch(kw2, (d2, s2) => {
+                    const p1 = s1 === kakao.maps.services.Status.OK ? d1 : [];
+                    const p2 = s2 === kakao.maps.services.Status.OK ? d2 : [];
+                    renderCourseFallback(p1, p2);
+                });
+            });
+            return;
+        }
+
+        const kw = `${locDisplay} ${cat2 || mainCat || (has2cha ? '카페' : '맛집')}`;
+        ps.keywordSearch(kw, (data, status) => {
+            renderSingleFallback(status === kakao.maps.services.Status.OK ? data : []);
         });
     } else {
-        generateFallbackCards([]);
+        renderSingleFallback([]);
     }
 
-    function generateFallbackCards(kakaoPlaces = []) {
-        const locDisplay = targetLoc || '홍대';
-        const count = isMultiCourse ? (step1Req + step2Req) : totalReq;
+    function renderCourseFallback(places1, places2) {
+        const count1 = step1Req || 1;
+        const count2 = step2Req || 1;
 
-        let localPool = restaurantData.filter(item => item.map_url && (!targetLoc || item.location_large.includes(targetLoc))).map(item => ({
-            place_name: item.name,
-            address_name: `${item.location_large} ${item.location_small || ''}`,
-            category_name: item.category || '맛집',
-            place_url: item.map_url
-        }));
+        let list1 = places1.slice(0, count1);
+        let list2 = places2.slice(0, count2);
 
-        let chosenPlaces = kakaoPlaces.length > 0 ? kakaoPlaces.slice(0, count) : localPool.slice(0, count);
+        if (list1.length === 0) {
+            list1 = [{ place_name: `${locDisplay} 추천 ${cat1 || '맛집'}`, address_name: `서울 ${locDisplay} 인근`, category_name: cat1 || '한식/고기', place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' ' + (cat1 || '맛집'))}` }];
+        }
+        if (list2.length === 0) {
+            list2 = [{ place_name: `${locDisplay} 감성 ${cat2 || '카페'}`, address_name: `서울 ${locDisplay} 인근`, category_name: cat2 || '카페/디저트', place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' ' + (cat2 || '카페'))}` }];
+        }
 
-        // Guarantee NEVER 0 places!
+        const cards1Html = list1.map((p, i) => {
+            const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat1 || '식사');
+            const desc = `${locDisplay} 인근에서 맛있는 요리와 함께 든든하게 1차 식사를 시작하기 완벽한 ${cName} 추천 맛집입니다.`;
+            return renderCardStandard(`1차: ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+        }).join('');
+
+        const cards2Html = list2.map((p, i) => {
+            const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat2 || '카페');
+            const desc = `1차 식사 후 이동하여 ${moodText}향긋한 음료와 디저트를 즐기며 감성 대화를 나누기 좋은 2차 ${cName}입니다.`;
+            return renderCardStandard(`2차: ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+        }).join('');
+
+        const introText = `안녕하세요! 당신의 특별한 미식 여정을 안내하는 Spoonmap AI 미식 소믈리에입니다. 오늘은 ${moodText}${locDisplay} 인근 추천 코스로 1차 ${cat1 || '식당'} ${list1.length}곳과 2차 ${cat2 || '카페/술집'} ${list2.length}곳을 준비해 드립니다.`;
+
+        const html = `
+            <div class="sommelier-intro-p">${introText}</div>
+            <div class="sommelier-rec-grid">
+                ${cards1Html}
+                ${cards2Html}
+            </div>
+        `;
+        callback({ html });
+    }
+
+    function renderSingleFallback(kakaoPlaces = []) {
+        const targetCategory = cat2 || mainCat || (has2cha ? '카페' : '맛집');
+        const count = totalReq || 2;
+        let chosenPlaces = kakaoPlaces.slice(0, count);
+
         if (chosenPlaces.length === 0) {
             chosenPlaces = [
-                { place_name: `${locDisplay} 대표 미식 펍`, address_name: `서울 ${locDisplay} 인근`, category_name: '술집/펍', place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' 술집')}` },
-                { place_name: `${locDisplay} 감성 오뎅바`, address_name: `서울 ${locDisplay} 인근`, category_name: '이자카야', place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' 이자카야')}` }
+                { place_name: `${locDisplay} 대표 ${targetCategory}`, address_name: `서울 ${locDisplay} 인근`, category_name: targetCategory, place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' ' + targetCategory)}` },
+                { place_name: `${locDisplay} 인기 ${targetCategory}`, address_name: `서울 ${locDisplay} 인근`, category_name: targetCategory, place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' ' + targetCategory)}` }
             ].slice(0, count);
         }
 
-        let introText = `안녕하세요! 당신의 특별한 미식 여정을 안내하는 Spoonmap AI 미식 소믈리에입니다. 오늘은 ${locDisplay} 인근에서 즐거운 1차 자리를 마치고, 더욱 깊은 대화와 유쾌한 분위기를 이어갈 수 있는 최고의 2차 술집 ${chosenPlaces.length}곳을 엄선해 드립니다. 실시간 카카오 지도 데이터와 검증된 미식 목록을 기반으로 ${locDisplay} 특유의 활기찬 에너지를 품은 매력적인 공간들로 준비했습니다.`;
+        const introText = `안녕하세요! 당신의 특별한 미식 여정을 안내하는 Spoonmap AI 미식 소믈리에입니다. 요청하신 ${moodText}${locDisplay} 인근 ${targetCategory} ${chosenPlaces.length}곳을 엄선하여 추천해 드립니다.`;
 
         const cardsHtml = chosenPlaces.map((p, i) => {
-            const catName = p.category_name ? p.category_name.split('>').pop().trim() : (mainCat || '술집');
-            const desc = `${locDisplay} 인근에서 아늑하고 특색 있는 분위기와 함께 시원한 주류 및 정갈한 안주를 즐기기 좋은 대표적인 2차 명소입니다. 지인들과 편안하게 잔을 부딪치며 깊은 대화를 나누기에 더할 나위 없이 훌륭한 공간입니다.`;
-            return renderCardStandard(`추천 ${i + 1} (실시간 인기 ${catName})`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+            const cName = p.category_name ? p.category_name.split('>').pop().trim() : targetCategory;
+            let desc = `${locDisplay} 인근에서 편안한 분위기와 함께 만족스러운 시간을 보내기 최적인 추천 장소입니다.`;
+            if (cName.includes('카페') || cName.includes('디저트')) {
+                desc = `${locDisplay} 인근에서 향긋한 커피와 디저트를 나누며 잔잔하고 편안한 분위기를 만끽하기 좋은 대표적인 카페입니다.`;
+            } else if (cName.includes('고기') || cName.includes('삼겹살')) {
+                desc = `${locDisplay} 인근에서 신선하고 육즙 가득한 요리로 입맛을 사로잡는 든든한 1차 추천 맛집입니다.`;
+            }
+            return renderCardStandard(`추천 ${i + 1} (${cName})`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
         const html = `
