@@ -2199,23 +2199,30 @@ function resetAllFilters() {
 
 // ─── Add Diary For Specific Restaurant (Direct Connect from Modal) ────
 function addDiaryForRestaurant(itemOrName) {
-    const name = typeof itemOrName === 'string' ? itemOrName : (itemOrName && itemOrName.name ? itemOrName.name : '');
+    const item = typeof itemOrName === 'object' ? itemOrName : null;
+    const name = item ? item.name : (typeof itemOrName === 'string' ? itemOrName : '');
     if (!name) return;
 
-    // Close Modals
+    // 1. Close Modals
     closeRestaurantDetailModal();
     closeMobileOverlay();
 
-    // Switch to DIARY tab
+    // 2. Switch to DIARY tab
     const diaryTabBtn = document.querySelector('.tab-btn[data-tab="diary"]') || document.querySelector('.mobile-tab-btn[data-tab="diary"]');
     if (diaryTabBtn) {
         diaryTabBtn.click();
     }
 
-    // Open Diary Add Drawer with Pre-filled Data
+    // 3. Open '새 방문 기록 추가' Drawer with Today's Date & Pre-fill Info
     setTimeout(() => {
-        if (typeof openEditDiaryDrawer === 'function') {
-            openEditDiaryDrawer(null, null); // Open in 'Add New' mode
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+
+        if (typeof openDiaryDrawer === 'function') {
+            openDiaryDrawer(todayStr); // Open in 'Add New' mode with today's date
         }
 
         const nameInput = document.getElementById('diary-input-name');
@@ -2224,8 +2231,7 @@ function addDiaryForRestaurant(itemOrName) {
             nameInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
-        if (typeof itemOrName === 'object' && itemOrName) {
-            const item = itemOrName;
+        if (item) {
             if (item.category && notionSelectors.category) {
                 const cats = item.category.split(',').map(c => c.trim()).filter(Boolean);
                 cats.forEach(c => notionSelectors.category.addValue(c));
@@ -2236,16 +2242,26 @@ function addDiaryForRestaurant(itemOrName) {
             if (item.location_small && notionSelectors.location_small) {
                 notionSelectors.location_small.addValue(item.location_small);
             }
+            if (item.menu && notionSelectors.menu) {
+                const menus = Array.isArray(item.menu) ? item.menu : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+                if (menus.length > 0) notionSelectors.menu.addValue(menus[0]);
+            }
             if (item.rate) {
-                const rateSelect = document.getElementById('diary-input-rate');
-                if (rateSelect) rateSelect.value = item.rate;
+                const rateInput = document.getElementById('diary-input-rate');
+                const rateLabel = document.getElementById('diary-rate-label');
+                const spoonCount = (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length || 1;
+                if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+                if (rateLabel && typeof RATE_LABELS !== 'undefined') rateLabel.textContent = RATE_LABELS[spoonCount] || '';
+                document.querySelectorAll('.rate-spoon').forEach((b, i) => {
+                    b.classList.toggle('active', i < spoonCount);
+                });
             }
             if (item.map_url) {
                 const mapInput = document.getElementById('diary-input-map');
                 if (mapInput) mapInput.value = item.map_url;
             }
         }
-    }, 150);
+    }, 100);
 }
 
 // ─── View Mode Switcher Controls (Grid vs Compact) ────
