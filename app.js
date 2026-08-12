@@ -1868,8 +1868,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isCompact = grid.classList.contains('compact-view');
 
-        // 100-Item Pagination for Compact View, 50-Item for Grid View
-        const visibleItems = filtered.slice(0, listDisplayCount);
+        // Auto-adjust page size based on view mode
+        const pageSize = isCompact ? 100 : 50;
+        const visibleItems = filtered.slice(0, Math.max(listDisplayCount, pageSize));
 
         // Total count display
         const totalCountEl = document.getElementById('total-count-num');
@@ -1914,7 +1915,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loadMoreText = document.getElementById('load-more-text');
 
         if (loadMoreContainer) {
-            if (filtered.length > listDisplayCount) {
+            if (filtered.length > visibleItems.length) {
                 loadMoreContainer.style.display = 'flex';
                 if (loadMoreText) {
                     const stepText = isCompact ? '100' : '50';
@@ -2269,6 +2270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             gridBtn.classList.add('active');
             compactBtn.classList.remove('active');
             localStorage.setItem('spoonmap_view_mode', 'grid');
+            if (window._listDisplayCount !== undefined) window._listDisplayCount = 50;
+            if (window.renderApp) window.renderApp();
         });
 
         compactBtn.addEventListener('click', () => {
@@ -2276,6 +2279,8 @@ document.addEventListener('DOMContentLoaded', () => {
             compactBtn.classList.add('active');
             gridBtn.classList.remove('active');
             localStorage.setItem('spoonmap_view_mode', 'compact');
+            if (window._listDisplayCount !== undefined) window._listDisplayCount = 100;
+            if (window.renderApp) window.renderApp();
         });
     }
 });
