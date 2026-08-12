@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608121806">
+    <link rel="stylesheet" href="style.css?v=202608121813">
 </head>
 
 <body class="light-theme">
@@ -401,8 +401,9 @@
                 <div id="diary-add-drawer" class="diary-add-drawer">
                     <div class="drawer-header">
                         <div class="drawer-header-left">
-                            <span class="drawer-icon">&#x270F;&#xFE0F;</span>
-                            <h3>새 방문 기록 추가</h3>
+                            <span class="drawer-icon" id="drawer-title-icon">&#x270F;&#xFE0F;</span>
+                            <h3 id="drawer-title-text">새 방문 기록 추가</h3>
+                            <span id="drawer-visit-badge" class="drawer-visit-badge" style="display:none;"></span>
                         </div>
                         <button class="drawer-close-btn" onclick="closeDiaryDrawer()">&#x2715;</button>
                     </div>
@@ -509,9 +510,11 @@
                                 <label class="drawer-label" for="diary-input-memo">&#x1F4DD; 방문 메모 / 후기</label>
                                 <textarea id="diary-input-memo" class="drawer-input drawer-textarea" placeholder="맛, 분위기, 누구와 갔는지 등의 메모를 적어보세요..." rows="3"></textarea>
                             </div>
+                            <input type="hidden" id="diary-editing-id">
                             <div class="drawer-actions">
+                                <button type="button" id="drawer-delete-btn" class="drawer-delete-btn" style="display:none;" onclick="deleteCurrentDiaryEntry()">삭제</button>
                                 <button type="button" class="drawer-cancel-btn" onclick="closeDiaryDrawer()">취소</button>
-                                <button type="submit" class="drawer-save-btn">저장하기 &#x2713;</button>
+                                <button type="submit" id="drawer-submit-btn" class="drawer-save-btn">저장하기 &#x2713;</button>
                             </div>
                         </form>
                     </div>
@@ -576,8 +579,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608121806"></script>
-    <script src="app.js?v=202608121806"></script>
+    <script src="data.js?v=202608121813"></script>
+    <script src="app.js?v=202608121813"></script>
 </body>
 
 </html>

@@ -3029,6 +3029,82 @@ input[type="date"].drawer-input {
     line-height: 1.4;
 }
 
+/* Visit Badge in Drawer Header */
+.drawer-visit-badge {
+    background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%);
+    color: #9A3412;
+    border: 1px solid #FDBA74;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-left: 0.5rem;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Drawer Actions Delete Button */
+.drawer-delete-btn {
+    padding: 0.7rem;
+    border-radius: 12px;
+    border: 1.5px solid #FCA5A5;
+    background: #FEF2F2;
+    color: #DC2626;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.drawer-delete-btn:hover {
+    background: #DC2626;
+    color: #FFFFFF;
+    border-color: #DC2626;
+}
+
+/* Calendar Card Sub-row & Visit Tag */
+.card-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+.card-visit-tag {
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: var(--coral-main);
+    background: var(--coral-light);
+    border: 1px solid var(--border-hover);
+    padding: 0 4px;
+    border-radius: 4px;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+/* Drag & Drop Feedback Styles */
+.diary-entry-card {
+    cursor: grab;
+}
+
+.diary-entry-card:active {
+    cursor: grabbing;
+}
+
+.diary-entry-card.is-dragging {
+    opacity: 0.4;
+    transform: scale(0.96);
+    border-style: dashed;
+}
+
+.diary-day-cell.drag-over {
+    background: #FFF5F5 !important;
+    border: 2px dashed var(--coral-main) !important;
+    box-shadow: 0 0 12px var(--coral-glow) !important;
+}
+
+
 
 /* ── Responsive ── */
 @media (max-width: 768px) {

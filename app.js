@@ -3262,6 +3262,82 @@ function autoFillRestaurantData(restaurantName) {
             }
         }
     }
+
+    // Update Visit Count Badge in Drawer
+    updateDrawerVisitBadge(restaurantName);
+}
+
+// Calculate total visits and specific visit order for a restaurant
+function getAllVisitsForRestaurant(restaurantName) {
+    if (!restaurantName) return [];
+    const all = [];
+
+    // From CSV diaryData
+    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+        diaryData.forEach((item, idx) => {
+            if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
+                all.push({
+                    id: item.id || `csv-${idx}-${item.date}-${item.name}`,
+                    name: item.name,
+                    date: item.date,
+                    source: 'csv',
+                    data: item
+                });
+            }
+        });
+    }
+
+    // From LocalStorage
+    const local = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    local.forEach(item => {
+        if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
+            all.push({
+                id: item.id,
+                name: item.name,
+                date: item.date,
+                source: 'local',
+                data: item
+            });
+        }
+    });
+
+    // Sort chronologically by date
+    all.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return all;
+}
+
+function updateDrawerVisitBadge(restaurantName, targetDate = null, targetId = null) {
+    const badgeEl = document.getElementById('drawer-visit-badge');
+    if (!badgeEl) return;
+
+    if (!restaurantName) {
+        badgeEl.style.display = 'none';
+        return;
+    }
+
+    const visits = getAllVisitsForRestaurant(restaurantName);
+    const total = visits.length;
+
+    if (total === 0) {
+        badgeEl.style.display = 'none';
+        return;
+    }
+
+    let order = total;
+    if (targetId) {
+        const foundIdx = visits.findIndex(v => String(v.id) === String(targetId));
+        if (foundIdx !== -1) order = foundIdx + 1;
+    } else if (targetDate) {
+        const foundIdx = visits.findIndex(v => v.date === targetDate);
+        if (foundIdx !== -1) order = foundIdx + 1;
+    }
+
+    let icon = '🔥';
+    if (total >= 10) icon = '👑';
+    else if (total >= 5) icon = '🔥';
+
+    badgeEl.innerHTML = `${icon} ${order}회차 방문 (총 ${total}회)`;
+    badgeEl.style.display = 'inline-flex';
 }
 
 function getDiaryEntriesForMonth(year, month) {
@@ -3269,17 +3345,18 @@ function getDiaryEntriesForMonth(year, month) {
 
     // From diaryData (CSV-synced, all visits)
     if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
-        diaryData.forEach(entry => {
+        diaryData.forEach((entry, idx) => {
             if (!entry.date) return;
             const d = new Date(entry.date + 'T00:00:00');
             if (d.getFullYear() === year && d.getMonth() === month) {
                 if (!byDate[entry.date]) byDate[entry.date] = [];
-                byDate[entry.date].push({ ...entry, source: 'csv' });
+                const entryId = entry.id || `csv-${idx}-${entry.date}`;
+                byDate[entry.date].push({ ...entry, id: entryId, source: 'csv' });
             }
         });
     }
 
-    // From localStorage (user-added)
+    // From localStorage (user-added or edited)
     const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
     localEntries.forEach(entry => {
         if (!entry.date) return;
@@ -3292,6 +3369,9 @@ function getDiaryEntriesForMonth(year, month) {
 
     return byDate;
 }
+
+// Drag & Drop State
+let draggedEntryData = null;
 
 function renderDiaryCalendar() {
     const year = currentDiaryYear;
@@ -3329,6 +3409,27 @@ function renderDiaryCalendar() {
         if (dow === 0) cellClass += ' is-sunday';
         if (dow === 6) cellClass += ' is-saturday';
         cell.className = cellClass;
+        cell.dataset.date = dateStr;
+
+        // Cell Drag & Drop Handlers
+        cell.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            cell.classList.add('drag-over');
+        });
+
+        cell.addEventListener('dragleave', () => {
+            cell.classList.remove('drag-over');
+        });
+
+        cell.addEventListener('drop', (e) => {
+            e.preventDefault();
+            cell.classList.remove('drag-over');
+            if (draggedEntryData) {
+                moveDiaryEntryToDate(draggedEntryData, dateStr);
+                draggedEntryData = null;
+            }
+        });
 
         // Date number
         const dateNum = document.createElement('div');
@@ -3345,7 +3446,14 @@ function renderDiaryCalendar() {
             entries.slice(0, MAX_CHIPS).forEach(entry => {
                 const card = document.createElement('div');
                 card.className = `diary-entry-card${entry.source === 'local' ? ' is-local' : ''}`;
-                
+                card.draggable = true;
+
+                // Calculate visit order
+                const visitInfo = getAllVisitsForRestaurant(entry.name);
+                const visitIdx = visitInfo.findIndex(v => String(v.id) === String(entry.id) || v.date === entry.date);
+                const orderNum = visitIdx !== -1 ? visitIdx + 1 : visitInfo.length;
+                const totalCount = visitInfo.length;
+
                 // Parse individual categories (split commas)
                 const catArray = entry.category ? entry.category.split(',').map(c => c.trim()).filter(Boolean) : [];
                 const spoonCount = entry.rate ? (entry.rate.match(/CLR|🥄/g) || entry.rate.match(/🥄/g) || []).length : 0;
@@ -3357,12 +3465,33 @@ function renderDiaryCalendar() {
 
                 card.innerHTML = `
                     <div class="card-name-row">
-                        <span class="card-name">${entry.name}</span>
+                        <span class="card-name" title="${entry.name} (${orderNum}회차 방문)">${entry.name}</span>
                         ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
                     </div>
-                    ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
+                    <div class="card-sub-row">
+                        <span class="card-visit-tag">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>
+                        ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
+                    </div>
                     ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
                 `;
+
+                // Drag Start
+                card.addEventListener('dragstart', (e) => {
+                    draggedEntryData = entry;
+                    card.classList.add('is-dragging');
+                    e.dataTransfer.setData('text/plain', JSON.stringify(entry));
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('is-dragging');
+                    draggedEntryData = null;
+                });
+
+                // Click -> Open Edit Drawer
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditDiaryDrawer(entry);
+                });
 
                 entriesWrap.appendChild(card);
             });
@@ -3391,6 +3520,31 @@ function renderDiaryCalendar() {
     }
 }
 
+// Move Entry to New Date via Drag & Drop
+function moveDiaryEntryToDate(entry, newDate) {
+    if (!entry || !newDate || entry.date === newDate) return;
+
+    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    let foundIdx = localEntries.findIndex(e => String(e.id) === String(entry.id));
+
+    if (foundIdx !== -1) {
+        localEntries[foundIdx].date = newDate;
+    } else {
+        // Promote CSV entry to Local storage with new date
+        const newLocal = {
+            ...entry,
+            id: Date.now(),
+            date: newDate,
+            created_at: new Date().toISOString()
+        };
+        localEntries.push(newLocal);
+    }
+
+    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(localEntries));
+    renderDiaryCalendar();
+    showDiaryToast(`📍 "${entry.name}" 항목이 ${newDate} 날짜로 이동되었습니다!`);
+}
+
 function openDiaryDrawer(dateStr) {
     const overlay = document.getElementById('diary-drawer-overlay');
     const dateInput = document.getElementById('diary-input-date');
@@ -3399,8 +3553,19 @@ function openDiaryDrawer(dateStr) {
     const rateLabel = document.getElementById('diary-rate-label');
     const mapInput = document.getElementById('diary-input-map');
     const memoInput = document.getElementById('diary-input-memo');
+    const editIdInput = document.getElementById('diary-editing-id');
+    const deleteBtn = document.getElementById('drawer-delete-btn');
+    const titleIcon = document.getElementById('drawer-title-icon');
+    const titleText = document.getElementById('drawer-title-text');
+    const badgeEl = document.getElementById('drawer-visit-badge');
 
-    // Reset form & Notion Selectors
+    // Reset drawer state (Add mode)
+    if (titleIcon) titleIcon.textContent = '✏️';
+    if (titleText) titleText.textContent = '새 방문 기록 추가';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    if (badgeEl) badgeEl.style.display = 'none';
+    if (editIdInput) editIdInput.value = '';
+
     if (nameInput) nameInput.value = '';
     if (rateInput) rateInput.value = '';
     if (rateLabel) rateLabel.textContent = '선택 안 함';
@@ -3419,6 +3584,72 @@ function openDiaryDrawer(dateStr) {
     if (nameInput) setTimeout(() => nameInput.focus(), 100);
 }
 
+// Open Edit Drawer for an Existing Entry
+function openEditDiaryDrawer(entry) {
+    const overlay = document.getElementById('diary-drawer-overlay');
+    const dateInput = document.getElementById('diary-input-date');
+    const nameInput = document.getElementById('diary-input-name');
+    const rateInput = document.getElementById('diary-input-rate');
+    const rateLabel = document.getElementById('diary-rate-label');
+    const mapInput = document.getElementById('diary-input-map');
+    const memoInput = document.getElementById('diary-input-memo');
+    const editIdInput = document.getElementById('diary-editing-id');
+    const deleteBtn = document.getElementById('drawer-delete-btn');
+    const titleIcon = document.getElementById('drawer-title-icon');
+    const titleText = document.getElementById('drawer-title-text');
+
+    // Set Edit Mode UI
+    if (titleIcon) titleIcon.textContent = '📝';
+    if (titleText) titleText.textContent = '방문 기록 수정';
+    if (deleteBtn) deleteBtn.style.display = 'inline-block';
+    if (editIdInput) editIdInput.value = entry.id || '';
+
+    if (nameInput) nameInput.value = entry.name || '';
+    if (dateInput) dateInput.value = entry.date || '';
+    if (mapInput) mapInput.value = entry.map_url || '';
+    if (memoInput) memoInput.value = entry.memo || '';
+
+    // Set Notion Tag Selectors
+    if (entry.category) notionSelectors.category.setValues(entry.category);
+    if (entry.menu) notionSelectors.menu.setValues(entry.menu);
+    if (entry.location_large) notionSelectors.location_large.setValues(entry.location_large);
+    if (entry.location_small) notionSelectors.location_small.setValues(entry.location_small);
+
+    // Set Spoon Rate
+    if (entry.rate) {
+        const spoonCount = (entry.rate.match(/CLR|🥄/g) || entry.rate.match(/🥄/g) || []).length || 1;
+        if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+        if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || '';
+        document.querySelectorAll('.rate-spoon').forEach((b, i) => {
+            b.classList.toggle('active', i < spoonCount);
+        });
+    }
+
+    // Update Visit Count Badge
+    updateDrawerVisitBadge(entry.name, entry.date, entry.id);
+
+    if (overlay) {
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function deleteCurrentDiaryEntry() {
+    const editId = document.getElementById('diary-editing-id')?.value;
+    const name = document.getElementById('diary-input-name')?.value || '해당';
+
+    if (!editId) return;
+    if (!confirm(`"${name}" 방문 기록을 정말 삭제하시겠습니까?`)) return;
+
+    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const updated = localEntries.filter(e => String(e.id) !== String(editId));
+    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(updated));
+
+    closeDiaryDrawer();
+    renderDiaryCalendar();
+    showDiaryToast(`🗑️ "${name}" 방문 기록이 삭제되었습니다.`);
+}
+
 function closeDiaryDrawer() {
     const overlay = document.getElementById('diary-drawer-overlay');
     if (overlay) {
@@ -3430,6 +3661,7 @@ function closeDiaryDrawer() {
 }
 
 function saveDiaryEntry() {
+    const editId = document.getElementById('diary-editing-id')?.value;
     const name = document.getElementById('diary-input-name')?.value.trim();
     const date = document.getElementById('diary-input-date')?.value;
     const category = notionSelectors.category ? notionSelectors.category.getValueString() : '';
@@ -3445,28 +3677,54 @@ function saveDiaryEntry() {
     const location_small = notionSelectors.location_small ? notionSelectors.location_small.getValueString() : '';
     const memo = document.getElementById('diary-input-memo')?.value.trim() || '';
 
-    const newEntry = {
-        id: Date.now(),
-        name,
-        date,
-        category,
-        rate,
-        menu,
-        location_large,
-        location_small,
-        map_url: document.getElementById('diary-input-map')?.value.trim() || '',
-        memo,
-        created_at: new Date().toISOString()
-    };
-
     const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
-    existing.push(newEntry);
-    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+
+    if (editId) {
+        // Update mode
+        const idx = existing.findIndex(e => String(e.id) === String(editId));
+        const updatedEntry = {
+            id: isNaN(Number(editId)) ? editId : Number(editId),
+            name,
+            date,
+            category,
+            rate,
+            menu,
+            location_large,
+            location_small,
+            map_url: document.getElementById('diary-input-map')?.value.trim() || '',
+            memo,
+            updated_at: new Date().toISOString()
+        };
+
+        if (idx !== -1) {
+            existing[idx] = updatedEntry;
+        } else {
+            existing.push(updatedEntry);
+        }
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+        showDiaryToast(`✏️ "${name}" 기록이 수정되었습니다!`);
+    } else {
+        // Create mode
+        const newEntry = {
+            id: Date.now(),
+            name,
+            date,
+            category,
+            rate,
+            menu,
+            location_large,
+            location_small,
+            map_url: document.getElementById('diary-input-map')?.value.trim() || '',
+            memo,
+            created_at: new Date().toISOString()
+        };
+        existing.push(newEntry);
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+        showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
+    }
 
     closeDiaryDrawer();
     renderDiaryCalendar();
-
-    showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
 }
 
 function showDiaryToast(msg) {
