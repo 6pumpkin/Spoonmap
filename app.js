@@ -64,51 +64,136 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    function setupTabs() {
+    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier'];
+
+    function parseRoute() {
+        const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
+        const parts = rawHash.split('/');
+        const mainPart = parts[0].split('?')[0];
+        const tab = VALID_TABS.includes(mainPart) ? mainPart : 'list';
+        
+        const subPath = parts[1] ? parts[1].split('?')[0] : '';
+        const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
+        const queryParams = {};
+        if (queryString) {
+            const searchParams = new URLSearchParams(queryString);
+            for (const [key, value] of searchParams.entries()) {
+                queryParams[key] = value;
+            }
+        }
+
+        return { tab, rawHash, subPath, queryParams };
+    }
+    window.parseRoute = parseRoute;
+
+    function switchTabUI(targetTab) {
+        if (!VALID_TABS.includes(targetTab)) targetTab = 'list';
+
         const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         const mobileTabsMenu = document.getElementById('mobile-tabs-menu');
         const mobileFilterBtn = document.getElementById('mobile-filter-toggle-btn');
 
+        tabBtns.forEach(b => {
+            if (b.dataset.tab === targetTab) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        if (mobileFilterBtn) {
+            mobileFilterBtn.style.display = targetTab === 'list' ? 'block' : 'none';
+        }
+        
+        if (mobileTabsMenu) {
+            mobileTabsMenu.classList.remove('open');
+        }
+
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === `${targetTab}-view`) {
+                content.classList.add('active');
+            }
+        });
+
+        if (targetTab === 'map') {
+            initMap();
+        } else if (targetTab === 'insights') {
+            computeAndRenderFoodInsights();
+        } else if (targetTab === 'sommelier') {
+            initSommelierTab();
+        }
+    }
+
+    function handleRoute() {
+        const route = parseRoute();
+
+        // 1. Switch UI tab
+        switchTabUI(route.tab);
+
+        // 2. Handle mobile card overlay
+        const overlay = document.getElementById('mobile-card-overlay');
+        if (route.subPath === 'detail' && route.queryParams.name) {
+            const targetName = decodeURIComponent(route.queryParams.name);
+            if (typeof restaurantData !== 'undefined') {
+                const found = restaurantData.find(r => r.name === targetName);
+                if (found) {
+                    openMobileOverlay(found, false);
+                }
+            }
+        } else {
+            if (overlay && overlay.classList.contains('open')) {
+                overlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // 3. Handle map place detail
+        const mapPlaceDetail = document.getElementById('map-place-detail');
+        const mapResultsList = document.getElementById('map-results-list');
+        if (route.tab === 'map') {
+            if (route.subPath !== 'place') {
+                if (mapPlaceDetail && mapResultsList) {
+                    mapResultsList.style.display = 'block';
+                    mapPlaceDetail.style.display = 'none';
+                }
+            }
+        }
+    }
+
+    function setupTabs() {
+        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
+
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetTab = btn.dataset.tab;
-                
-                // Set active state for all buttons corresponding to this tab
-                tabBtns.forEach(b => {
-                    if (b.dataset.tab === targetTab) {
-                        b.classList.add('active');
-                    } else {
-                        b.classList.remove('active');
-                    }
-                });
+                if (!targetTab) return;
 
-                // Toggle filter button visibility (only show in list view)
-                if (mobileFilterBtn) {
-                    mobileFilterBtn.style.display = targetTab === 'list' ? 'block' : 'none';
-                }
-                
-                // Close dropdown on mobile
-                if (mobileTabsMenu) {
-                    mobileTabsMenu.classList.remove('open');
+                const overlay = document.getElementById('mobile-card-overlay');
+                if (overlay && overlay.classList.contains('open')) {
+                    overlay.classList.remove('open');
+                    document.body.style.overflow = '';
                 }
 
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === `${targetTab}-view`) {
-                        content.classList.add('active');
-                    }
-                });
-
-                if (targetTab === 'map') {
-                    initMap();
-                } else if (targetTab === 'insights') {
-                    computeAndRenderFoodInsights();
-                } else if (targetTab === 'sommelier') {
-                    initSommelierTab();
+                const targetHash = `#${targetTab}`;
+                if (window.location.hash !== targetHash) {
+                    window.location.hash = targetHash;
+                } else {
+                    handleRoute();
                 }
             });
         });
+
+        window.addEventListener('popstate', handleRoute);
+        window.addEventListener('hashchange', handleRoute);
+
+        // Initial route handling
+        const initialRoute = parseRoute();
+        if (!window.location.hash || !VALID_TABS.includes(initialRoute.tab)) {
+            history.replaceState(null, '', `#${initialRoute.tab}`);
+        }
+        handleRoute();
     }
 
     let currentWinnerItem = null;
@@ -1051,6 +1136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsList.style.display = 'none';
         detailPanel.style.display = 'flex';
 
+        const mapDetailHash = `#map/place?name=${encodeURIComponent(item.name)}`;
+        if (window.location.hash !== mapDetailHash) {
+            window.location.hash = mapDetailHash;
+        }
+
         // Prefer specifically passed placeUrl, then item.map_url, then fallback to search
         const finalUrl = placeUrl || item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
         
@@ -1068,7 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         detailPanel.innerHTML = `
             <div class="detail-body">
-                <button class="back-to-list-btn" onclick="document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none';">
+                <button class="back-to-list-btn" onclick="if (window.location.hash.includes('/place')) { window.location.hash = '#map'; } else { document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none'; }">
                     ← 목록으로 돌아가기
                 </button>
                 <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
@@ -1581,9 +1671,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── Mobile Card Overlay Functions (global scope) ────
-function openMobileOverlay(item) {
+function openMobileOverlay(item, updateHash = true) {
     const overlay = document.getElementById('mobile-card-overlay');
     const content = document.getElementById('mobile-card-detail-content');
+    if (!overlay || !content) return;
+
     const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
     const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
     const menuTagsHtml = item.menu && item.menu.length > 0 
@@ -1608,11 +1700,27 @@ function openMobileOverlay(item) {
 
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+
+    if (updateHash) {
+        const route = (typeof parseRoute === 'function') ? parseRoute() : { tab: 'list' };
+        const detailHash = `#${route.tab}/detail?name=${encodeURIComponent(item.name)}`;
+        if (window.location.hash !== detailHash) {
+            window.location.hash = detailHash;
+        }
+    }
 }
 
 function closeMobileOverlay() {
-    document.getElementById('mobile-card-overlay').classList.remove('open');
-    document.body.style.overflow = '';
+    const overlay = document.getElementById('mobile-card-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (window.location.hash.includes('/detail')) {
+        const route = (typeof parseRoute === 'function') ? parseRoute() : { tab: 'list' };
+        window.location.hash = `#${route.tab}`;
+    }
 }
 
 // ─── Food Insights Dashboard Functions ────
