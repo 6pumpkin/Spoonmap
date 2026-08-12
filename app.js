@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
         const parts = rawHash.split('/');
         const mainPart = parts[0].split('?')[0];
-        const tab = VALID_TABS.includes(mainPart) ? mainPart : 'list';
+        const tab = VALID_TABS.includes(mainPart) ? mainPart : 'diary';
         
         const subPath = parts[1] ? parts[1].split('?')[0] : '';
         const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
@@ -1905,8 +1905,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>지역 (대)</span>
                     <span>지역 (소)</span>
                     <span>Rate</span>
-                    <span>Kakao Map</span>
-                    <span>Naver Map</span>
+                    <span>Map</span>
                 `;
                 grid.appendChild(tableHeader);
             }
@@ -1993,11 +1992,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="compact-col-rate">
                     ${'🥄'.repeat(spoonCount)}
                 </div>
-                <div class="compact-col-cell">
-                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn kakao-map-btn" onclick="event.stopPropagation()">Kakao 📍</a>
-                </div>
-                <div class="compact-col-cell">
+                <div class="compact-col-cell compact-map-cell">
                     <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="compact-map-btn naver-map-btn" onclick="event.stopPropagation()">Naver 🗺️</a>
+                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn kakao-map-btn" onclick="event.stopPropagation()">Kakao 📍</a>
                 </div>
             `;
         } else {

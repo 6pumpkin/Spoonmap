@@ -3952,7 +3952,7 @@ input[type="date"].drawer-input {
 
 .restaurant-grid.compact-view .compact-table-header {
     display: grid !important;
-    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr !important;
+    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.8fr !important;
     align-items: center !important;
     padding: 0.65rem 1rem !important;
     background: #FAF8F5 !important;
@@ -3961,12 +3961,12 @@ input[type="date"].drawer-input {
     font-weight: 800 !important;
     color: var(--text-secondary) !important;
     letter-spacing: 0.02em !important;
-    min-width: 920px !important;
+    min-width: 900px !important;
 }
 
 .restaurant-grid.compact-view .compact-card-row {
     display: grid !important;
-    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr !important;
+    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.8fr !important;
     align-items: center !important;
     padding: 0.55rem 1rem !important;
     border-radius: 0 !important;
@@ -3975,7 +3975,7 @@ input[type="date"].drawer-input {
     box-shadow: none !important;
     background: #FFFFFF !important;
     transition: background 0.12s !important;
-    min-width: 920px !important;
+    min-width: 900px !important;
     gap: 8px !important;
     cursor: pointer !important;
     margin: 0 !important;
@@ -4005,7 +4005,7 @@ input[type="date"].drawer-input {
 .compact-col-cell {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -4031,30 +4031,35 @@ input[type="date"].drawer-input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
     font-size: 0.76rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 6px;
     text-decoration: none;
-    transition: all 0.12s;
-}
-
-.compact-map-btn.kakao-map-btn {
-    background: #FEE500;
-    color: #191919;
-    border: 1px solid #FADA0A;
+    transition: all 0.15s ease;
 }
 
 .compact-map-btn.naver-map-btn {
-    background: #03CF5D;
-    color: #FFFFFF;
-    border: 1px solid #02B852;
+    background: #E8F5E9 !important;
+    color: #2E7D32 !important;
+    border: 1px solid #C8E6C9 !important;
 }
 
-.compact-map-btn:hover {
-    opacity: 0.88;
-    transform: translateY(-1px);
+.compact-map-btn.naver-map-btn:hover {
+    background: #2E7D32 !important;
+    color: #FFFFFF !important;
+}
+
+.compact-map-btn.kakao-map-btn {
+    background: #FFF8E1 !important;
+    color: #F57F17 !important;
+    border: 1px solid #FFE082 !important;
+}
+
+.compact-map-btn.kakao-map-btn:hover {
+    background: #F57F17 !important;
+    color: #FFFFFF !important;
 }
 
 /* 4. Empty State UI */
