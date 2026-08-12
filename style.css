@@ -263,10 +263,11 @@ header {
 .tab-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.6rem;
-    font-size: 0.95rem;
-    font-weight: 600;
+    justify-content: center;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
     color: var(--text-secondary);
     background: transparent;
     border: none;
@@ -284,10 +285,10 @@ header {
 }
 
 .tab-btn.active {
-    background: var(--surface-card);
+    background: #FFFFFF;
     color: var(--coral-main);
-    font-weight: 700;
-    box-shadow: var(--shadow-md);
+    font-weight: 900;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* Main Container Layout */
@@ -2620,27 +2621,6 @@ main {
 .diary-day-cell.diary-day-empty {
     background: #FAF8F5;
     pointer-events: none;
-}
-
-/* Previous & Next Month Days (Identical muted style with full entries rendering) */
-.diary-day-cell.is-other-month {
-    background: #FAF8F5;
-}
-
-.diary-day-cell.is-other-month .diary-date-num {
-    color: #A0AEC0;
-}
-
-.diary-day-cell.is-other-month.is-sunday .diary-date-num {
-    color: rgba(197, 48, 48, 0.45);
-}
-
-.diary-day-cell.is-other-month.is-saturday .diary-date-num {
-    color: rgba(43, 108, 176, 0.45);
-}
-
-.diary-day-cell.is-other-month .diary-entry-card {
-    opacity: 0.8;
 }
 
 .diary-day-cell.is-today {

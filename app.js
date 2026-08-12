@@ -3819,29 +3819,24 @@ function renderDiaryCalendar() {
     const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
+    const byDate = getDiaryEntriesForMonth(year, month);
 
-    // Previous month info
-    const prevYear = month === 0 ? year - 1 : year;
-    const prevMonth = month === 0 ? 11 : month - 1;
-    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+    // Empty leading cells
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'diary-day-cell diary-day-empty';
+        grid.appendChild(empty);
+    }
 
-    // Next month info
-    const nextYear = month === 11 ? year + 1 : year;
-    const nextMonth = month === 11 ? 0 : month + 1;
-
-    // Helper to create individual day cell
-    function createDayCell(cellYear, cellMonth, cellDay, isOtherMonth) {
-        const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(cellDay).padStart(2, '0')}`;
-        const isToday = !isOtherMonth && today.getFullYear() === cellYear && today.getMonth() === cellMonth && today.getDate() === cellDay;
-        const dow = new Date(cellYear, cellMonth, cellDay).getDay(); // 0=Sun, 6=Sat
-
-        // Fetch entries for this date
-        const allEntries = getUnifiedDiaryEntries();
-        const entries = allEntries.filter(e => e.date === dateStr);
+    // Day cells
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        const dow = new Date(year, month, day).getDay(); // 0=Sun, 6=Sat
+        const entries = byDate[dateStr] || [];
 
         const cell = document.createElement('div');
         let cellClass = 'diary-day-cell';
-        if (isOtherMonth) cellClass += ' is-other-month';
         if (isToday) cellClass += ' is-today';
         if (dow === 0) cellClass += ' is-sunday';
         if (dow === 6) cellClass += ' is-saturday';
@@ -3871,7 +3866,7 @@ function renderDiaryCalendar() {
         // Date number
         const dateNum = document.createElement('div');
         dateNum.className = 'diary-date-num';
-        dateNum.textContent = cellDay;
+        dateNum.textContent = day;
         cell.appendChild(dateNum);
 
         // Entries cards
@@ -3957,29 +3952,7 @@ function renderDiaryCalendar() {
         });
         cell.appendChild(addBtn);
 
-        cell.addEventListener('click', () => {
-            openDiaryDrawer(dateStr);
-        });
-
-        return cell;
-    }
-
-    // 1) Previous Month Days
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-        const day = daysInPrevMonth - i;
-        grid.appendChild(createDayCell(prevYear, prevMonth, day, true));
-    }
-
-    // 2) Current Month Days
-    for (let day = 1; day <= daysInMonth; day++) {
-        grid.appendChild(createDayCell(year, month, day, false));
-    }
-
-    // 3) Next Month Days (Fill row or complement grid)
-    const totalRendered = firstDayOfWeek + daysInMonth;
-    const nextDaysNeeded = (totalRendered % 7 === 0) ? 0 : (7 - (totalRendered % 7));
-    for (let day = 1; day <= nextDaysNeeded; day++) {
-        grid.appendChild(createDayCell(nextYear, nextMonth, day, true));
+        grid.appendChild(cell);
     }
 }
 
