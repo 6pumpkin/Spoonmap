@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier'];
+    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary'];
 
     function parseRoute() {
         const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
@@ -127,6 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 computeAndRenderFoodInsights();
             } else if (targetTab === 'sommelier') {
                 initSommelierTab();
+            } else if (targetTab === 'diary') {
+                initDiaryTab();
             }
         }
     }
@@ -2784,4 +2786,378 @@ function processSommelierFallbackOnly(query, callback) {
 
         callback({ html: `<div class="sommelier-intro-p">${introText}</div><div class="sommelier-rec-grid">${cardsHtml}</div>` });
     }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ─── 📅 식사 일기 캘린더 ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+
+let diaryInitialized = false;
+let currentDiaryYear = new Date().getFullYear();
+let currentDiaryMonth = new Date().getMonth(); // 0-indexed
+const DIARY_STORAGE_KEY = 'spoonmap_diary';
+
+const DIARY_CATEGORIES = [
+    '🍚한식', '🍣일식', '🍜중식', '🥩고기', '🍙분식', '🥗샐러드',
+    '🍕피자/양식', '☕카페/베이커리', '🍻치킨/호프', '🍷주류/바', '🍱도시락', '🍢기타'
+];
+
+const RATE_LABELS = ['', '별로야 😕', '나쁘지 않아 😐', '맛있어! 😊', '또 가고 싶어 😍', '인생 맛집 🤩'];
+
+function initDiaryTab() {
+    if (diaryInitialized) {
+        renderDiaryCalendar(); // Always refresh on re-enter
+        return;
+    }
+    diaryInitialized = true;
+
+    // Month navigation
+    const prevBtn = document.getElementById('btn-diary-prev');
+    const nextBtn = document.getElementById('btn-diary-next');
+    const todayBtn = document.getElementById('btn-diary-today');
+    const exportBtn = document.getElementById('btn-diary-export');
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        currentDiaryMonth--;
+        if (currentDiaryMonth < 0) { currentDiaryMonth = 11; currentDiaryYear--; }
+        renderDiaryCalendar();
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        currentDiaryMonth++;
+        if (currentDiaryMonth > 11) { currentDiaryMonth = 0; currentDiaryYear++; }
+        renderDiaryCalendar();
+    });
+    if (todayBtn) todayBtn.addEventListener('click', () => {
+        const now = new Date();
+        currentDiaryYear = now.getFullYear();
+        currentDiaryMonth = now.getMonth();
+        renderDiaryCalendar();
+    });
+    if (exportBtn) exportBtn.addEventListener('click', exportDiaryCSV);
+
+    // Populate autocomplete and dropdowns
+    populateDiaryAutocomplete();
+
+    // Setup category pills in drawer
+    const pillContainer = document.getElementById('diary-cat-pills');
+    if (pillContainer) {
+        // Collect from restaurantData + diaryData
+        const catSet = new Set(DIARY_CATEGORIES);
+        if (typeof restaurantData !== 'undefined') {
+            restaurantData.forEach(r => { if (r.category) catSet.add(r.category); });
+        }
+        if (typeof diaryData !== 'undefined') {
+            diaryData.forEach(r => { if (r.category) catSet.add(r.category); });
+        }
+        Array.from(catSet).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'diary-cat-pill';
+            btn.textContent = cat;
+            btn.addEventListener('click', () => {
+                pillContainer.querySelectorAll('.diary-cat-pill').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                const catInput = document.getElementById('diary-input-category');
+                if (catInput) catInput.value = cat;
+            });
+            pillContainer.appendChild(btn);
+        });
+    }
+
+    // Spoon rate picker
+    const ratePicker = document.getElementById('diary-rate-picker');
+    if (ratePicker) {
+        const spoonBtns = ratePicker.querySelectorAll('.rate-spoon');
+        const rateLabel = document.getElementById('diary-rate-label');
+        const rateInput = document.getElementById('diary-input-rate');
+        spoonBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.val);
+                spoonBtns.forEach((b, i) => {
+                    b.classList.toggle('active', i < val);
+                });
+                if (rateInput) rateInput.value = '🥄'.repeat(val);
+                if (rateLabel) rateLabel.textContent = RATE_LABELS[val] || '';
+            });
+        });
+    }
+
+    // Form submit
+    const form = document.getElementById('diary-add-form');
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveDiaryEntry();
+        });
+    }
+
+    renderDiaryCalendar();
+}
+
+function populateDiaryAutocomplete() {
+    // Name autocomplete
+    const nameList = document.getElementById('diary-name-autocomplete');
+    if (nameList && typeof restaurantData !== 'undefined') {
+        const names = new Set(restaurantData.map(r => r.name));
+        if (typeof diaryData !== 'undefined') {
+            diaryData.forEach(r => names.add(r.name));
+        }
+        nameList.innerHTML = Array.from(names).map(n => `<option value="${n}">`).join('');
+    }
+
+    // Location large autocomplete
+    const locLargeList = document.getElementById('diary-loc-large-list');
+    if (locLargeList && typeof restaurantData !== 'undefined') {
+        const locs = new Set(restaurantData.map(r => r.location_large).filter(Boolean));
+        locLargeList.innerHTML = Array.from(locs).sort().map(l => `<option value="${l}">`).join('');
+    }
+}
+
+function getDiaryEntriesForMonth(year, month) {
+    const byDate = {};
+
+    // From diaryData (CSV-synced, all visits)
+    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+        diaryData.forEach(entry => {
+            if (!entry.date) return;
+            const d = new Date(entry.date + 'T00:00:00');
+            if (d.getFullYear() === year && d.getMonth() === month) {
+                if (!byDate[entry.date]) byDate[entry.date] = [];
+                byDate[entry.date].push({ ...entry, source: 'csv' });
+            }
+        });
+    }
+
+    // From localStorage (user-added)
+    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    localEntries.forEach(entry => {
+        if (!entry.date) return;
+        const d = new Date(entry.date + 'T00:00:00');
+        if (d.getFullYear() === year && d.getMonth() === month) {
+            if (!byDate[entry.date]) byDate[entry.date] = [];
+            byDate[entry.date].push({ ...entry, source: 'local' });
+        }
+    });
+
+    return byDate;
+}
+
+function renderDiaryCalendar() {
+    const year = currentDiaryYear;
+    const month = currentDiaryMonth;
+
+    const titleEl = document.getElementById('diary-month-title');
+    if (titleEl) titleEl.textContent = `${year}년 ${month + 1}월`;
+
+    const grid = document.getElementById('diary-calendar-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const byDate = getDiaryEntriesForMonth(year, month);
+
+    // Empty leading cells
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'diary-day-cell diary-day-empty';
+        grid.appendChild(empty);
+    }
+
+    // Day cells
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        const dow = new Date(year, month, day).getDay(); // 0=Sun, 6=Sat
+        const entries = byDate[dateStr] || [];
+
+        const cell = document.createElement('div');
+        let cellClass = 'diary-day-cell';
+        if (isToday) cellClass += ' is-today';
+        if (dow === 0) cellClass += ' is-sunday';
+        if (dow === 6) cellClass += ' is-saturday';
+        cell.className = cellClass;
+
+        // Date number
+        const dateNum = document.createElement('div');
+        dateNum.className = 'diary-date-num';
+        dateNum.textContent = day;
+        cell.appendChild(dateNum);
+
+        // Entries chips
+        if (entries.length > 0) {
+            const entriesWrap = document.createElement('div');
+            entriesWrap.className = 'diary-entries';
+
+            const MAX_CHIPS = 3;
+            entries.slice(0, MAX_CHIPS).forEach(entry => {
+                const chip = document.createElement('div');
+                chip.className = `diary-entry-chip${entry.source === 'local' ? ' is-local' : ''}`;
+                const spoonCount = entry.rate ? (entry.rate.match(/🥄/g) || []).length : 0;
+                const catEmoji = entry.category ? entry.category.match(/[\u{1F000}-\u{1FFFF}]|\p{Emoji}/u)?.[0] || '🍴' : '🍴';
+                chip.innerHTML = `<span class="chip-emoji">${catEmoji}</span><span class="chip-name">${entry.name}</span>${spoonCount > 0 ? `<span class="chip-rate">${'🥄'.repeat(spoonCount)}</span>` : ''}`;
+                entriesWrap.appendChild(chip);
+            });
+
+            if (entries.length > MAX_CHIPS) {
+                const more = document.createElement('div');
+                more.className = 'diary-more-chip';
+                more.textContent = `+${entries.length - MAX_CHIPS}개 더`;
+                entriesWrap.appendChild(more);
+            }
+
+            cell.appendChild(entriesWrap);
+        }
+
+        // Add button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'diary-add-btn';
+        addBtn.textContent = '+ 추가';
+        addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDiaryDrawer(dateStr);
+        });
+        cell.appendChild(addBtn);
+
+        grid.appendChild(cell);
+    }
+}
+
+function openDiaryDrawer(dateStr) {
+    const overlay = document.getElementById('diary-drawer-overlay');
+    const dateInput = document.getElementById('diary-input-date');
+    const nameInput = document.getElementById('diary-input-name');
+    const menuInput = document.getElementById('diary-input-menu');
+    const locLargeInput = document.getElementById('diary-input-loc-large');
+    const locSmallInput = document.getElementById('diary-input-loc-small');
+    const catInput = document.getElementById('diary-input-category');
+    const rateInput = document.getElementById('diary-input-rate');
+    const rateLabel = document.getElementById('diary-rate-label');
+    const mapInput = document.getElementById('diary-input-map');
+
+    // Reset form
+    if (nameInput) nameInput.value = '';
+    if (menuInput) menuInput.value = '';
+    if (locLargeInput) locLargeInput.value = '';
+    if (locSmallInput) locSmallInput.value = '';
+    if (catInput) catInput.value = '';
+    if (rateInput) rateInput.value = '';
+    if (rateLabel) rateLabel.textContent = '선택 안 함';
+    if (mapInput) mapInput.value = '';
+
+    document.querySelectorAll('.diary-cat-pill').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.rate-spoon').forEach(b => b.classList.remove('active'));
+
+    if (dateInput) dateInput.value = dateStr || '';
+
+    // Auto-fill location if restaurant name is already filled (on name blur)
+    if (nameInput) {
+        nameInput.oninput = () => {
+            if (typeof restaurantData !== 'undefined') {
+                const match = restaurantData.find(r => r.name === nameInput.value);
+                if (match) {
+                    if (locLargeInput && !locLargeInput.value) locLargeInput.value = match.location_large || '';
+                    if (locSmallInput && !locSmallInput.value) locSmallInput.value = match.location_small || '';
+                    if (!catInput.value && match.category) {
+                        catInput.value = match.category;
+                        document.querySelectorAll('.diary-cat-pill').forEach(b => {
+                            b.classList.toggle('selected', b.textContent === match.category);
+                        });
+                    }
+                    if (!mapInput.value && match.map_url) mapInput.value = match.map_url;
+                }
+            }
+        };
+    }
+
+    if (overlay) {
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    if (nameInput) setTimeout(() => nameInput.focus(), 100);
+}
+
+function closeDiaryDrawer() {
+    const overlay = document.getElementById('diary-drawer-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function saveDiaryEntry() {
+    const name = document.getElementById('diary-input-name')?.value.trim();
+    const date = document.getElementById('diary-input-date')?.value;
+    const category = document.getElementById('diary-input-category')?.value.trim();
+    const rate = document.getElementById('diary-input-rate')?.value.trim();
+
+    if (!name) { alert('식당명을 입력해주세요.'); return; }
+    if (!date) { alert('방문 날짜를 선택해주세요.'); return; }
+    if (!category) { alert('식당 분류를 선택해주세요.'); return; }
+    if (!rate) { alert('수저 평점을 선택해주세요.'); return; }
+
+    const menuRaw = document.getElementById('diary-input-menu')?.value.trim();
+    const menu = menuRaw ? menuRaw.split(',').map(m => m.trim()).filter(Boolean) : [];
+
+    const newEntry = {
+        id: Date.now(),
+        name,
+        date,
+        category,
+        rate,
+        menu,
+        location_large: document.getElementById('diary-input-loc-large')?.value.trim() || '',
+        location_small: document.getElementById('diary-input-loc-small')?.value.trim() || '',
+        map_url: document.getElementById('diary-input-map')?.value.trim() || '',
+        created_at: new Date().toISOString()
+    };
+
+    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    existing.push(newEntry);
+    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+
+    closeDiaryDrawer();
+    renderDiaryCalendar();
+
+    // Brief success toast
+    showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
+}
+
+function showDiaryToast(msg) {
+    let toast = document.getElementById('diary-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'diary-toast';
+        toast.className = 'diary-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+function exportDiaryCSV() {
+    const entries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    if (entries.length === 0) {
+        alert('내보낼 새 항목이 없습니다.\n사이트에서 직접 추가한 기록만 내보내기 됩니다.');
+        return;
+    }
+    const header = '식당명,Date,Map,Rate,사람,수식,식당 분류,주요 메뉴,지역-대분류,지역-소분류';
+    const rows = entries.map(e => {
+        const menuStr = (e.menu || []).join(', ');
+        return [
+            `"${e.name}"`, `"${e.date}"`, `"${e.map_url || ''}"`, `"${e.rate}"`,
+            '""', '""', `"${e.category}"`, `"${menuStr}"`,
+            `"${e.location_large}"`, `"${e.location_small}"`
+        ].join(',');
+    });
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `spoonmap_diary_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }

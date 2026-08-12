@@ -1,17 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spoonmap - 나의 식당 대사전</title>
+    <title>Spoonmap - ?섏쓽 ?앸떦 ??ъ쟾</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608121723">
+    <link rel="stylesheet" href="style.css?v=202608121744">
 </head>
 
 <body class="light-theme">
@@ -26,29 +26,30 @@
         <div class="search-container">
             <div class="search-wrapper">
                 <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="restaurant-search" placeholder="식당, 메뉴, 지역 검색...">
+                    <span class="search-icon">?뵇</span>
+                    <input type="text" id="restaurant-search" placeholder="?앸떦, 硫붾돱, 吏??寃??..">
                 </div>
-                <button id="search-filter-toggle" class="search-filter-toggle-btn" aria-label="검색 설정" onclick="document.querySelector('.search-filters').classList.toggle('open')" title="검색 대상 설정">
-                    ⚙️
+                <button id="search-filter-toggle" class="search-filter-toggle-btn" aria-label="寃???ㅼ젙" onclick="document.querySelector('.search-filters').classList.toggle('open')" title="寃??????ㅼ젙">
+                    ?숋툘
                 </button>
             </div>
             <div class="search-filters">
-                <label><input type="checkbox" id="search-name" checked> 이름</label>
-                <label><input type="checkbox" id="search-category" checked> 카테고리</label>
-                <label><input type="checkbox" id="search-subloc" checked> 지역(소)</label>
-                <label><input type="checkbox" id="search-menu" checked> 주요 메뉴</label>
+                <label><input type="checkbox" id="search-name" checked> ?대쫫</label>
+                <label><input type="checkbox" id="search-category" checked> 移댄뀒怨좊━</label>
+                <label><input type="checkbox" id="search-subloc" checked> 吏????</label>
+                <label><input type="checkbox" id="search-menu" checked> 二쇱슂 硫붾돱</label>
             </div>
         </div>
     </header>
 
     <nav class="main-tabs" id="desktop-tabs">
         <div class="tab-pill-container">
-            <button class="tab-btn active" data-tab="list"><span>🍚</span> 목록 보기</button>
-            <button class="tab-btn" data-tab="map"><span>🗺️</span> 지도 보기</button>
-            <button class="tab-btn" data-tab="recommend"><span>🎲</span> 오늘 뭐 먹지?</button>
-            <button class="tab-btn" data-tab="insights"><span>📊</span> 푸드 인사이트</button>
-            <button class="tab-btn" data-tab="sommelier"><span>🤖</span> AI 소믈리에</button>
+            <button class="tab-btn active" data-tab="list"><span>?뜗</span> 紐⑸줉 蹂닿린</button>
+            <button class="tab-btn" data-tab="map"><span>?뿺截?/span> 吏??蹂닿린</button>
+            <button class="tab-btn" data-tab="recommend"><span>?렡</span> ?ㅻ뒛 萸?癒뱀??</button>
+            <button class="tab-btn" data-tab="insights"><span>?뱤</span> ?몃뱶 ?몄궗?댄듃</button>
+            <button class="tab-btn" data-tab="sommelier"><span>?쨼</span> AI ?뚮칷由ъ뿉</button>
+            <button class="tab-btn" data-tab="diary"><span>?뱟</span> ?앹궗 ?쇨린</button>
         </div>
     </nav>
 
@@ -57,69 +58,70 @@
         <div class="mobile-control-bar" id="mobile-control-bar">
             <div class="mobile-view-menu-wrapper">
                 <button class="mobile-view-toggle" onclick="document.getElementById('mobile-tabs-menu').classList.toggle('open')">
-                    <span class="icon">☰</span>
+                    <span class="icon">??/span>
                 </button>
                 <div class="mobile-tabs-menu" id="mobile-tabs-menu">
-                    <button class="mobile-tab-btn active" data-tab="list">목록 보기</button>
-                    <button class="mobile-tab-btn" data-tab="map">지도 보기</button>
-                    <button class="mobile-tab-btn" data-tab="recommend">오늘 뭐 먹지?</button>
-                    <button class="mobile-tab-btn" data-tab="insights">푸드 인사이트</button>
-                    <button class="mobile-tab-btn" data-tab="sommelier">🤖 AI 소믈리에</button>
+                    <button class="mobile-tab-btn active" data-tab="list">紐⑸줉 蹂닿린</button>
+                    <button class="mobile-tab-btn" data-tab="map">吏??蹂닿린</button>
+                    <button class="mobile-tab-btn" data-tab="recommend">?ㅻ뒛 萸?癒뱀??</button>
+                    <button class="mobile-tab-btn" data-tab="insights">?몃뱶 ?몄궗?댄듃</button>
+                    <button class="mobile-tab-btn" data-tab="sommelier">?쨼 AI ?뚮칷由ъ뿉</button>
+                    <button class="mobile-tab-btn" data-tab="diary">?뱟 ?앹궗 ?쇨린</button>
                 </div>
             </div>
             
             <button id="mobile-filter-toggle-btn" class="mobile-filter-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
-                🔽 필터 보기
+                ?뵿 ?꾪꽣 蹂닿린
             </button>
         </div>
 
         <div id="list-view" class="tab-content active">
             <aside class="sidebar">
                 <section class="filter-section">
-                    <h3>카테고리</h3>
+                    <h3>移댄뀒怨좊━</h3>
                     <div class="filter-group" id="category-filters">
-                        <button class="filter-btn active" data-filter="category" data-value="all">전체</button>
+                        <button class="filter-btn active" data-filter="category" data-value="all">?꾩껜</button>
                     </div>
                 </section>
 
                 <section class="filter-section">
-                    <h3>수저 평점</h3>
+                    <h3>?섏? ?됱젏</h3>
                     <div class="filter-group" id="rate-filters">
-                        <button class="filter-btn active" data-filter="rate" data-value="all">전체</button>
-                        <button class="filter-btn" data-filter="rate" data-value="🥄">🥄 1개</button>
-                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄">🥄 2개</button>
-                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄">🥄 3개</button>
-                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄">🥄 4개</button>
-                        <button class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄🥄">🥄 5개</button>
+                        <button class="filter-btn active" data-filter="rate" data-value="all">?꾩껜</button>
+                        <button class="filter-btn" data-filter="rate" data-value="?쪊">?쪊 1媛?/button>
+                        <button class="filter-btn" data-filter="rate" data-value="?쪊?쪊">?쪊 2媛?/button>
+                        <button class="filter-btn" data-filter="rate" data-value="?쪊?쪊?쪊">?쪊 3媛?/button>
+                        <button class="filter-btn" data-filter="rate" data-value="?쪊?쪊?쪊?쪊">?쪊 4媛?/button>
+                        <button class="filter-btn" data-filter="rate" data-value="?쪊?쪊?쪊?쪊?쪊">?쪊 5媛?/button>
                     </div>
                 </section>
 
                 <section class="filter-section">
-                    <h3>지역 (대분류)</h3>
+                    <h3>吏??(?遺꾨쪟)</h3>
                     <div class="filter-group" id="location-large-filters">
-                        <button class="filter-btn active" data-filter="location_large" data-value="all">전체</button>
+                        <button class="filter-btn active" data-filter="location_large" data-value="all">?꾩껜</button>
                     </div>
                     <div id="location-more-container" class="more-container">
-                        <button id="btn-more-location" class="more-btn">더보기 <i class="icon-chevron-down"></i></button>
-                        <button id="btn-collapse-location" class="more-btn" style="display:none;">접기 <i
+                        <button id="btn-more-location" class="more-btn">?붾낫湲?<i class="icon-chevron-down"></i></button>
+                        <button id="btn-collapse-location" class="more-btn" style="display:none;">?묎린 <i
                                 class="icon-chevron-up"></i></button>
                     </div>
                 </section>
 
                 <section class="filter-section" id="small-location-section" style="display:none;">
-                    <h3>지역 (소분류)</h3>
+                    <h3>吏??(?뚮텇瑜?</h3>
                     <div class="filter-group" id="location-small-filters">
-                        <button class="filter-btn active" data-filter="location_small" data-value="all">전체</button>
+                        <button class="filter-btn active" data-filter="location_small" data-value="all">?꾩껜</button>
                     </div>
                 </section>
 
                 <section class="filter-section">
-                    <h3>정렬</h3>
+                    <h3>?뺣젹</h3>
                     <div class="filter-group" id="sort-filters">
-                        <button class="sort-btn active" data-sort="default">기본</button>
-                        <button class="sort-btn" data-sort="visit-desc">또간집</button>
-                        <button class="sort-btn" data-sort="rate-desc">수저 높은순</button>
-                        <button class="sort-btn" data-sort="name-asc">이름순</button>
+                        <button class="sort-btn active" data-sort="default">湲곕낯</button>
+                        <button class="sort-btn" data-sort="visit-desc">?먭컙吏?/button>
+                        <button class="sort-btn" data-sort="rate-desc">?섏? ?믪???/button>
+                        <button class="sort-btn" data-sort="name-asc">?대쫫??/button>
                     </div>
                 </section>
             </aside>
@@ -134,42 +136,42 @@
         <!-- Mobile card detail overlay -->
         <div id="mobile-card-overlay" onclick="if(event.target===this)closeMobileOverlay()">
             <div id="mobile-card-detail">
-                <button class="mobile-overlay-close" onclick="closeMobileOverlay()">✕</button>
+                <button class="mobile-overlay-close" onclick="closeMobileOverlay()">??/button>
                 <div id="mobile-card-detail-content"></div>
             </div>
         </div>
 
-        <!-- 오늘 뭐 먹지? Recommendation Tab Content -->
+        <!-- ?ㅻ뒛 萸?癒뱀?? Recommendation Tab Content -->
         <div id="recommend-view" class="tab-content">
             <div class="recommend-container">
                 <div class="recommend-hero">
-                    <div class="hero-badge">🎲 오늘 뭐 먹지?</div>
-                    <h2>오늘 방문할 맛집 추첨기</h2>
+                    <div class="hero-badge">?렡 ?ㅻ뒛 萸?癒뱀??</div>
+                    <h2>?ㅻ뒛 諛⑸Ц??留쏆쭛 異붿꺼湲?/h2>
                 </div>
 
                 <div class="recommend-controls-card">
                     <div class="control-row">
                         <div class="control-group">
-                            <label for="rec-category-select"><span>🍚</span> 카테고리</label>
+                            <label for="rec-category-select"><span>?뜗</span> 移댄뀒怨좊━</label>
                             <select id="rec-category-select" class="rec-select">
-                                <option value="all">전체 카테고리</option>
+                                <option value="all">?꾩껜 移댄뀒怨좊━</option>
                             </select>
                         </div>
                         
                         <div class="control-group">
-                            <label for="rec-location-select"><span>📍</span> 행정 구역</label>
+                            <label for="rec-location-select"><span>?뱧</span> ?됱젙 援ъ뿭</label>
                             <select id="rec-location-select" class="rec-select">
-                                <option value="all">전체 지역</option>
+                                <option value="all">?꾩껜 吏??/option>
                             </select>
                         </div>
 
                         <div class="control-group">
-                            <label for="rec-rate-select"><span>🥄</span> 최소 평점</label>
+                            <label for="rec-rate-select"><span>?쪊</span> 理쒖냼 ?됱젏</label>
                             <select id="rec-rate-select" class="rec-select">
-                                <option value="0">상관없음</option>
-                                <option value="3">🥄 3개 이상</option>
-                                <option value="4">🥄 4개 이상</option>
-                                <option value="5">🥄 5개 전설 맛집만</option>
+                                <option value="0">?곴??놁쓬</option>
+                                <option value="3">?쪊 3媛??댁긽</option>
+                                <option value="4">?쪊 4媛??댁긽</option>
+                                <option value="5">?쪊 5媛??꾩꽕 留쏆쭛留?/option>
                             </select>
                         </div>
                     </div>
@@ -177,47 +179,47 @@
                     <!-- Center Landmark & Radius Distance Row -->
                     <div class="control-row location-radius-row">
                         <div class="control-group location-input-group">
-                            <label for="rec-center-input"><span>🎯</span> 반경 추첨 기준 위치 / 장소</label>
+                            <label for="rec-center-input"><span>?렞</span> 諛섍꼍 異붿꺼 湲곗? ?꾩튂 / ?μ냼</label>
                             <div class="center-input-wrapper">
-                                <input type="text" id="rec-center-input" placeholder="예: 강남역, 홍대입구, 여의도, 특정 건물..." class="rec-input">
-                                <button id="btn-rec-my-location" class="rec-loc-btn" title="현재 GPS 위치 찾기">📍 내 위치</button>
+                                <input type="text" id="rec-center-input" placeholder="?? 媛뺣궓?? ?띾??낃뎄, ?ъ쓽?? ?뱀젙 嫄대Ъ..." class="rec-input">
+                                <button id="btn-rec-my-location" class="rec-loc-btn" title="?꾩옱 GPS ?꾩튂 李얘린">?뱧 ???꾩튂</button>
                             </div>
                         </div>
                         
                         <div class="control-group radius-select-group">
-                            <label for="rec-radius-select"><span>📏</span> 검색 반경 범위</label>
+                            <label for="rec-radius-select"><span>?뱩</span> 寃??諛섍꼍 踰붿쐞</label>
                             <select id="rec-radius-select" class="rec-select">
-                                <option value="500">500m 이내 (도보 7분)</option>
-                                <option value="1000" selected>1km 이내 (도보 15분)</option>
-                                <option value="2000">2km 이내 (도보 30분)</option>
-                                <option value="3000">3km 이내 (차량 10분)</option>
-                                <option value="5000">5km 이내</option>
-                                <option value="10000">10km 이내</option>
-                                <option value="all">거리 제한 없음</option>
+                                <option value="500">500m ?대궡 (?꾨낫 7遺?</option>
+                                <option value="1000" selected>1km ?대궡 (?꾨낫 15遺?</option>
+                                <option value="2000">2km ?대궡 (?꾨낫 30遺?</option>
+                                <option value="3000">3km ?대궡 (李⑤웾 10遺?</option>
+                                <option value="5000">5km ?대궡</option>
+                                <option value="10000">10km ?대궡</option>
+                                <option value="all">嫄곕━ ?쒗븳 ?놁쓬</option>
                             </select>
                         </div>
                     </div>
 
                     <div id="rec-center-info" class="rec-center-info">
-                        💡 기준 장소 입력 시 해당 지점을 중심으로 선택한 반경 범위 안에서 맛집을 추첨합니다.
+                        ?뮕 湲곗? ?μ냼 ?낅젰 ???대떦 吏?먯쓣 以묒떖?쇰줈 ?좏깮??諛섍꼍 踰붿쐞 ?덉뿉??留쏆쭛??異붿꺼?⑸땲??
                     </div>
 
                     <div class="check-row-container">
                         <label class="toggle-checkbox-label">
                             <input type="checkbox" id="rec-visited-only">
                             <span class="custom-checkbox"></span>
-                            <span class="label-text">🔥 또간집만 뽑기</span>
+                            <span class="label-text">?뵦 ?먭컙吏묐쭔 戮묎린</span>
                         </label>
                         <label class="toggle-checkbox-label">
                             <input type="checkbox" id="rec-kakao-all">
                             <span class="custom-checkbox"></span>
-                            <span class="label-text">🌐 카카오 지도 전체에서 뽑기</span>
+                            <span class="label-text">?뙋 移댁뭅??吏???꾩껜?먯꽌 戮묎린</span>
                         </label>
                     </div>
 
                     <button id="btn-spin-roulette" class="spin-btn">
-                        <span class="spin-icon">🎲</span>
-                        <span class="spin-text">오늘 뭐 먹지? 뽑기!</span>
+                        <span class="spin-icon">?렡</span>
+                        <span class="spin-text">?ㅻ뒛 萸?癒뱀?? 戮묎린!</span>
                     </button>
                 </div>
 
@@ -226,19 +228,19 @@
                     <div id="roulette-window" class="roulette-window">
                         <div id="roulette-reel" class="roulette-reel">
                             <div class="reel-item placeholder">
-                                <span class="placeholder-emoji">❓</span>
-                                <p class="placeholder-text">위 버튼을 눌러 오늘 먹을 메뉴를 추천받아보세요!</p>
+                                <span class="placeholder-emoji">??/span>
+                                <p class="placeholder-text">??踰꾪듉???뚮윭 ?ㅻ뒛 癒뱀쓣 硫붾돱瑜?異붿쿇諛쏆븘蹂댁꽭??</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Winner Result Card Container -->
                     <div id="winner-result-container" class="winner-result-container" style="display: none;">
-                        <div class="winner-ribbon">🎉 오늘의 당첨 맛집!</div>
+                        <div class="winner-ribbon">?럦 ?ㅻ뒛???뱀꺼 留쏆쭛!</div>
                         <div id="winner-card-body" class="winner-card-body"></div>
                         <div class="winner-actions">
-                            <button id="btn-re-spin" class="re-spin-btn">🔄 다시 뽑기</button>
-                            <button id="btn-view-on-map" class="map-view-btn">🗺️ 지도에서 위치 보기</button>
+                            <button id="btn-re-spin" class="re-spin-btn">?봽 ?ㅼ떆 戮묎린</button>
+                            <button id="btn-view-on-map" class="map-view-btn">?뿺截?吏?꾩뿉???꾩튂 蹂닿린</button>
                         </div>
                     </div>
                 </div>
@@ -249,29 +251,29 @@
         <div id="sommelier-view" class="tab-content">
             <div class="sommelier-container">
                 <div class="sommelier-hero">
-                    <div class="hero-badge">🤖 LLM AI GOURMET SOMMELIER</div>
-                    <h2>나만의 AI 미식 소믈리에</h2>
-                    <p>요청하신 개수(1차 N곳, 2차 N곳), 추천 출처(내 맛집 / 카카오 지도), 날씨 및 코스를 100% 반영하여 똑똑하게 추천합니다!</p>
+                    <div class="hero-badge">?쨼 LLM AI GOURMET SOMMELIER</div>
+                    <h2>?섎쭔??AI 誘몄떇 ?뚮칷由ъ뿉</h2>
+                    <p>?붿껌?섏떊 媛쒖닔(1李?N怨? 2李?N怨?, 異붿쿇 異쒖쿂(??留쏆쭛 / 移댁뭅??吏??, ?좎뵪 諛?肄붿뒪瑜?100% 諛섏쁺?섏뿬 ?묐삊?섍쾶 異붿쿇?⑸땲??</p>
                 </div>
 
                 <!-- Gemini API Key Bar -->
                 <div class="sommelier-api-bar">
                     <div class="api-key-box">
-                        <span class="api-key-icon">🔑</span>
-                        <input type="password" id="gemini-api-key-input" placeholder="Google Gemini API Key 입력 (선택 사항: 100% 자유 대화 LLM 지원)" class="api-key-input">
-                        <button id="btn-save-gemini-key" class="api-key-save-btn">저장</button>
+                        <span class="api-key-icon">?뵎</span>
+                        <input type="password" id="gemini-api-key-input" placeholder="Google Gemini API Key ?낅젰 (?좏깮 ?ы빆: 100% ?먯쑀 ???LLM 吏??" class="api-key-input">
+                        <button id="btn-save-gemini-key" class="api-key-save-btn">???/button>
                     </div>
-                    <span id="gemini-key-status" class="api-key-status">💡 API Key 미입력 시에도 스마트 의도 파서가 개수/출처/코스를 동적 분석합니다.</span>
+                    <span id="gemini-key-status" class="api-key-status">?뮕 API Key 誘몄엯???쒖뿉???ㅻ쭏???섎룄 ?뚯꽌媛 媛쒖닔/異쒖쿂/肄붿뒪瑜??숈쟻 遺꾩꽍?⑸땲??</span>
                 </div>
 
                 <!-- Dynamic Prompt Chips -->
                 <div class="sommelier-chips-wrapper">
-                    <span class="chips-label">💡 동적 수량/출처/코스 추천 질문 샘플:</span>
+                    <span class="chips-label">?뮕 ?숈쟻 ?섎웾/異쒖쿂/肄붿뒪 異붿쿇 吏덈Ц ?섑뵆:</span>
                     <div class="chips-list">
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌐 카카오 지도 실시간 추천 1차 3곳과 2차 3곳 추천해줘')">🌐 카카오 지도 1차 3곳 + 2차 3곳</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🔥 내 맛집 데이터에서만 5수저 맛집 3곳 추천해줘')">🔥 내 맛집 5수저 3곳만</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌧️ 비 오는 날 연남동 데이트 코스 1차 고기집 1곳, 2차 카페 1곳 추천해줘')">🌧️ 연남동 1차 고기 + 2차 카페</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍺 강남역 근처 카카오 지도 실시간 2차 술집 2곳 추천해줘')">🍺 강남역 2차 술집 2곳 (카카오)</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('?뙋 移댁뭅??吏???ㅼ떆媛?異붿쿇 1李?3怨녠낵 2李?3怨?異붿쿇?댁쨾')">?뙋 移댁뭅??吏??1李?3怨?+ 2李?3怨?/button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('?뵦 ??留쏆쭛 ?곗씠?곗뿉?쒕쭔 5?섏? 留쏆쭛 3怨?異붿쿇?댁쨾')">?뵦 ??留쏆쭛 5?섏? 3怨노쭔</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('?뙢截?鍮??ㅻ뒗 ???곕궓???곗씠??肄붿뒪 1李?怨좉린吏?1怨? 2李?移댄럹 1怨?異붿쿇?댁쨾')">?뙢截??곕궓??1李?怨좉린 + 2李?移댄럹</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('?뜿 媛뺣궓??洹쇱쿂 移댁뭅??吏???ㅼ떆媛?2李??좎쭛 2怨?異붿쿇?댁쨾')">?뜿 媛뺣궓??2李??좎쭛 2怨?(移댁뭅??</button>
                     </div>
                 </div>
 
@@ -282,9 +284,9 @@
                     </div>
 
                     <div class="chat-input-bar">
-                        <input type="text" id="sommelier-user-input" placeholder="예: 카카오 지도 실시간 1차 3곳, 2차 3곳 추천해줘..." autocomplete="off">
+                        <input type="text" id="sommelier-user-input" placeholder="?? 移댁뭅??吏???ㅼ떆媛?1李?3怨? 2李?3怨?異붿쿇?댁쨾..." autocomplete="off">
                         <button id="btn-send-sommelier" class="chat-send-btn">
-                            <span>보내기</span> 🚀
+                            <span>蹂대궡湲?/span> ??
                         </button>
                     </div>
                 </div>
@@ -295,38 +297,38 @@
         <div id="insights-view" class="tab-content">
             <div class="insights-container">
                 <div class="insights-hero">
-                    <div class="hero-badge">📊 FOOD INSIGHTS</div>
-                    <h2>나의 미식 데이터 분석 대시보드</h2>
-                    <p id="insights-total-summary">미식 기록을 분석하고 있습니다...</p>
+                    <div class="hero-badge">?뱤 FOOD INSIGHTS</div>
+                    <h2>?섏쓽 誘몄떇 ?곗씠??遺꾩꽍 ??쒕낫??/h2>
+                    <p id="insights-total-summary">誘몄떇 湲곕줉??遺꾩꽍?섍퀬 ?덉뒿?덈떎...</p>
                 </div>
 
                 <!-- 4 Counter Summary Cards -->
                 <div class="insights-stats-grid">
                     <div class="stat-card">
-                        <span class="stat-icon">🍱</span>
+                        <span class="stat-icon">?뜳</span>
                         <div class="stat-info">
-                            <span class="stat-label">총 기록 맛집</span>
-                            <span class="stat-val" id="stat-total-count">0곳</span>
+                            <span class="stat-label">珥?湲곕줉 留쏆쭛</span>
+                            <span class="stat-val" id="stat-total-count">0怨?/span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-icon">🔥</span>
+                        <span class="stat-icon">?뵦</span>
                         <div class="stat-info">
-                            <span class="stat-label">또간집 비율</span>
+                            <span class="stat-label">?먭컙吏?鍮꾩쑉</span>
                             <span class="stat-val" id="stat-visited-count">0%</span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-icon">👑</span>
+                        <span class="stat-icon">?몣</span>
                         <div class="stat-info">
-                            <span class="stat-label">최다 방문 단골</span>
+                            <span class="stat-label">理쒕떎 諛⑸Ц ?④낏</span>
                             <span class="stat-val stat-small" id="stat-top-place">-</span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-icon">🥇</span>
+                        <span class="stat-icon">?쪍</span>
                         <div class="stat-info">
-                            <span class="stat-label">최애 카테고리</span>
+                            <span class="stat-label">理쒖븷 移댄뀒怨좊━</span>
                             <span class="stat-val stat-small" id="stat-top-category">-</span>
                         </div>
                     </div>
@@ -337,8 +339,8 @@
                     <!-- Region Section -->
                     <div class="insights-box">
                         <div class="box-header">
-                            <h3>📍 미식 정복 지역</h3>
-                            <button id="btn-toggle-regions" class="insights-toggle-btn">전체 ▼</button>
+                            <h3>?뱧 誘몄떇 ?뺣났 吏??/h3>
+                            <button id="btn-toggle-regions" class="insights-toggle-btn">?꾩껜 ??/button>
                         </div>
                         <div id="insights-region-list" class="insights-bar-list"></div>
                     </div>
@@ -346,8 +348,8 @@
                     <!-- Category Section -->
                     <div class="insights-box">
                         <div class="box-header">
-                            <h3>🍚 카테고리별 미식 비율</h3>
-                            <button id="btn-toggle-categories" class="insights-toggle-btn">전체 ▼</button>
+                            <h3>?뜗 移댄뀒怨좊━蹂?誘몄떇 鍮꾩쑉</h3>
+                            <button id="btn-toggle-categories" class="insights-toggle-btn">?꾩껜 ??/button>
                         </div>
                         <div id="insights-category-list" class="insights-bar-list"></div>
                     </div>
@@ -355,7 +357,7 @@
                     <!-- Spoon Rating Distribution -->
                     <div class="insights-box">
                         <div class="box-header">
-                            <h3>🥄 수저 평점 등급 분포</h3>
+                            <h3>?쪊 ?섏? ?됱젏 ?깃툒 遺꾪룷</h3>
                         </div>
                         <div id="insights-rate-list" class="insights-bar-list"></div>
                     </div>
@@ -363,8 +365,8 @@
                     <!-- Hall of Fame Section -->
                     <div class="insights-box full-width-box">
                         <div class="box-header">
-                            <h3>👑 찐 단골집 명예의 전당 (또간집 랭킹)</h3>
-                            <button id="btn-toggle-top-places" class="insights-toggle-btn">전체 ▼</button>
+                            <h3>?몣 李??④낏吏?紐낆삁???꾨떦 (?먭컙吏???궧)</h3>
+                            <button id="btn-toggle-top-places" class="insights-toggle-btn">?꾩껜 ??/button>
                         </div>
                         <div id="insights-top-places-list" class="insights-rank-list"></div>
                     </div>
@@ -372,49 +374,169 @@
             </div>
         </div>
 
+        <!-- ??? ?앹궗 ?쇨린 罹섎┛??????? -->
+        <div id="diary-view" class="tab-content">
+            <div class="diary-container">
+                <!-- Header -->
+                <div class="diary-header">
+                    <div class="diary-nav-group">
+                        <button id="btn-diary-prev" class="diary-nav-btn" title="?댁쟾 ??>&#9664;</button>
+                        <span id="diary-month-title" class="diary-month-title">2025??8??/span>
+                        <button id="btn-diary-next" class="diary-nav-btn" title="?ㅼ쓬 ??>&#9654;</button>
+                        <button id="btn-diary-today" class="diary-today-btn">?ㅻ뒛</button>
+                    </div>
+                    <button id="btn-diary-export" class="diary-export-btn" title="?덈줈 異붽?????ぉ??CSV濡??대낫?닿린">燧?CSV ?대낫?닿린</button>
+                </div>
+
+                <!-- Weekday Headers -->
+                <div class="diary-weekdays">
+                    <div class="diary-weekday is-sunday">??/div>
+                    <div class="diary-weekday">??/div>
+                    <div class="diary-weekday">??/div>
+                    <div class="diary-weekday">??/div>
+                    <div class="diary-weekday">紐?/div>
+                    <div class="diary-weekday">湲?/div>
+                    <div class="diary-weekday is-saturday">??/div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div id="diary-calendar-grid" class="diary-calendar-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- ??? Add Entry Drawer ??? -->
+            <div id="diary-drawer-overlay" class="diary-drawer-overlay" onclick="if(event.target===this)closeDiaryDrawer()">
+                <div id="diary-add-drawer" class="diary-add-drawer">
+                    <div class="drawer-header">
+                        <div class="drawer-header-left">
+                            <span class="drawer-icon">?륅툘</span>
+                            <h3>??諛⑸Ц 湲곕줉 異붽?</h3>
+                        </div>
+                        <button class="drawer-close-btn" onclick="closeDiaryDrawer()">??/button>
+                    </div>
+
+                    <div class="drawer-body">
+                        <form id="diary-add-form" autocomplete="off">
+
+                            <!-- ?앸떦紐?-->
+                            <div class="drawer-field">
+                                <label class="drawer-label" for="diary-input-name">?띂截??앸떦紐?<span class="required">*</span></label>
+                                <div class="drawer-input-wrapper">
+                                    <input type="text" id="diary-input-name" class="drawer-input" placeholder="?앸떦 ?대쫫???낅젰?섏꽭?? list="diary-name-autocomplete">
+                                    <datalist id="diary-name-autocomplete"></datalist>
+                                </div>
+                            </div>
+
+                            <!-- Date -->
+                            <div class="drawer-field">
+                                <label class="drawer-label" for="diary-input-date">?뱟 諛⑸Ц ?좎쭨 <span class="required">*</span></label>
+                                <input type="date" id="diary-input-date" class="drawer-input">
+                            </div>
+
+                            <!-- ?앸떦 遺꾨쪟 -->
+                            <div class="drawer-field">
+                                <label class="drawer-label">?뤇截??앸떦 遺꾨쪟 <span class="required">*</span></label>
+                                <div id="diary-cat-pills" class="diary-cat-pills">
+                                    <!-- Generated by JS from existing categories -->
+                                </div>
+                                <input type="hidden" id="diary-input-category">
+                            </div>
+
+                            <!-- 二쇱슂 硫붾돱 -->
+                            <div class="drawer-field">
+                                <label class="drawer-label" for="diary-input-menu">?뜶 二쇱슂 硫붾돱</label>
+                                <input type="text" id="diary-input-menu" class="drawer-input" placeholder="?? ?쇰찘, 援먯옄 (?쇳몴濡?援щ텇)">
+                            </div>
+
+                            <!-- 吏??(2?? -->
+                            <div class="drawer-row">
+                                <div class="drawer-field">
+                                    <label class="drawer-label" for="diary-input-loc-large">?뱧 吏???遺꾨쪟</label>
+                                    <input type="text" id="diary-input-loc-large" class="drawer-input" placeholder="?? ?쒖슱 留덊룷援? list="diary-loc-large-list">
+                                    <datalist id="diary-loc-large-list"></datalist>
+                                </div>
+                                <div class="drawer-field">
+                                    <label class="drawer-label" for="diary-input-loc-small">?뱦 吏???뚮텇瑜?/label>
+                                    <input type="text" id="diary-input-loc-small" class="drawer-input" placeholder="?? ?좎큿">
+                                </div>
+                            </div>
+
+                            <!-- Rate -->
+                            <div class="drawer-field">
+                                <label class="drawer-label">?쪊 ?섏? ?됱젏 <span class="required">*</span></label>
+                                <div id="diary-rate-picker" class="diary-rate-picker">
+                                    <button type="button" class="rate-spoon" data-val="1">?쪊</button>
+                                    <button type="button" class="rate-spoon" data-val="2">?쪊</button>
+                                    <button type="button" class="rate-spoon" data-val="3">?쪊</button>
+                                    <button type="button" class="rate-spoon" data-val="4">?쪊</button>
+                                    <button type="button" class="rate-spoon" data-val="5">?쪊</button>
+                                    <span id="diary-rate-label" class="rate-label">?좏깮 ????/span>
+                                </div>
+                                <input type="hidden" id="diary-input-rate">
+                            </div>
+
+                            <!-- Map URL -->
+                            <div class="drawer-field">
+                                <label class="drawer-label" for="diary-input-map">?뿺截?移댁뭅?ㅻ㏊ URL</label>
+                                <input type="url" id="diary-input-map" class="drawer-input" placeholder="https://place.map.kakao.com/...">
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="drawer-actions">
+                                <button type="button" class="drawer-cancel-btn" onclick="closeDiaryDrawer()">痍⑥냼</button>
+                                <button type="submit" class="drawer-save-btn">??ν븯湲???/button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ??? /?앹궗 ?쇨린 罹섎┛??????? -->
+
         <div id="map-view" class="tab-content">
             <div class="map-layout">
                 <div class="map-canvas">
                     <div id="kakao-map" style="width:100%; height:100%;"></div>
-                    <button id="btn-research" class="research-btn">현 위치에서 재검색</button> 
-                    <button id="btn-global-toggle" class="global-search-btn">📍 전체 지도에서 검색</button>
+                    <button id="btn-research" class="research-btn">???꾩튂?먯꽌 ?ш???/button> 
+                    <button id="btn-global-toggle" class="global-search-btn">?뱧 ?꾩껜 吏?꾩뿉??寃??/button>
                     <ul id="category-menu">
                         <li id="FD6" data-order="0" class="has-sub">
-                            <i class="icon-restaurant"></i> 음식점
-                            <button class="sub-menu-toggle">⌄</button>
+                            <i class="icon-restaurant"></i> ?뚯떇??
+                            <button class="sub-menu-toggle">??/button>
                             <ul class="sub-menu">
-                                <li data-keyword="음식점">🍴 전체</li>
-                                <li data-keyword="카페" data-catid="CE7">☕ 카페</li>
-                                <li data-keyword="간식">🍪 간식</li>
-                                <li data-keyword="분식">🍢 분식</li>
-                                <li data-keyword="뷔페">🍽️ 뷔페</li>
-                                <li data-keyword="술집">🍺 술집</li>
-                                <li data-keyword="아시아음식">🍜 아시아음식</li>
-                                <li data-keyword="양식">🍝 양식</li>
-                                <li data-keyword="일식">🍣 일식</li>
-                                <li data-keyword="중식">🥢 중식</li>
-                                <li data-keyword="패스트푸드">🍔 패스트푸드</li>
-                                <li data-keyword="패밀리레스토랑">🍴 패밀리레스토랑</li>
-                                <li data-keyword="피자">🍕 피자</li>
-                                <li data-keyword="치킨">🍗 치킨</li>
-                                <li data-keyword="한식">🍚 한식</li>
+                                <li data-keyword="?뚯떇??>?뜶 ?꾩껜</li>
+                                <li data-keyword="移댄럹" data-catid="CE7">??移댄럹</li>
+                                <li data-keyword="媛꾩떇">?뜧 媛꾩떇</li>
+                                <li data-keyword="遺꾩떇">?뜟 遺꾩떇</li>
+                                <li data-keyword="酉뷀럹">?띂截?酉뷀럹</li>
+                                <li data-keyword="?좎쭛">?뜿 ?좎쭛</li>
+                                <li data-keyword="?꾩떆?꾩쓬??>?뜙 ?꾩떆?꾩쓬??/li>
+                                <li data-keyword="?묒떇">?뜚 ?묒떇</li>
+                                <li data-keyword="?쇱떇">?뜠 ?쇱떇</li>
+                                <li data-keyword="以묒떇">?ⅱ 以묒떇</li>
+                                <li data-keyword="?⑥뒪?명뫖??>?뜑 ?⑥뒪?명뫖??/li>
+                                <li data-keyword="?⑤?由щ젅?ㅽ넗??>?뜶 ?⑤?由щ젅?ㅽ넗??/li>
+                                <li data-keyword="?쇱옄">?뜒 ?쇱옄</li>
+                                <li data-keyword="移섑궓">?뜔 移섑궓</li>
+                                <li data-keyword="?쒖떇">?뜗 ?쒖떇</li>
                             </ul>
                         </li>
                     </ul>
                     <div class="map-overlay">
-                        <p><i class="icon-info"></i> 카카오 지도 서비스를 이용하려면 JavaScript API 키가 필요합니다.</p>
+                        <p><i class="icon-info"></i> 移댁뭅??吏???쒕퉬?ㅻ? ?댁슜?섎젮硫?JavaScript API ?ㅺ? ?꾩슂?⑸땲??</p>
                     </div>
                 </div>
                 <aside class="map-sidebar">
                     <div class="map-search-box">
-                        <input type="text" id="map-search-input" placeholder="🔍 현 화면에서 검색">
-                        <button id="map-reset-btn" class="map-reset-btn" title="검색 초기화">🔄</button>
+                        <input type="text" id="map-search-input" placeholder="?뵇 ???붾㈃?먯꽌 寃??>
+                        <button id="map-reset-btn" class="map-reset-btn" title="寃??珥덇린??>?봽</button>
                     </div>
                     <div id="map-results-list" class="map-results-list">
                         <!-- Search results items will be injected here -->
                         <div class="map-empty-state">
                             <i class="icon-search"></i>
-                            <p>검색어를 입력하여 대사전에서 찾아보세요</p>
+                            <p>寃?됱뼱瑜??낅젰?섏뿬 ??ъ쟾?먯꽌 李얠븘蹂댁꽭??/p>
                         </div>
                     </div>
                     <div id="map-place-detail" class="map-place-detail" style="display:none;">
@@ -428,8 +550,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608121723"></script>
-    <script src="app.js?v=202608121723"></script>
+    <script src="data.js?v=202608121744"></script>
+    <script src="app.js?v=202608121744"></script>
 </body>
 
 </html>
