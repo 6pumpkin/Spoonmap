@@ -3111,51 +3111,6 @@ input[type="date"].drawer-input {
     margin-left: 0.4rem;
 }
 
-/* Drawer Actions */
-.drawer-actions {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-subtle);
-}
-
-.drawer-cancel-btn {
-    padding: 0.7rem;
-    border-radius: 12px;
-    border: 1.5px solid var(--border-subtle);
-    background: var(--bg-canvas);
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-}
-.drawer-cancel-btn:hover {
-    border-color: var(--text-muted);
-    color: var(--text-secondary);
-}
-
-.drawer-save-btn {
-    padding: 0.7rem;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(135deg, var(--coral-main) 0%, #FF6B82 100%);
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.15s;
-    box-shadow: 0 4px 14px var(--coral-glow);
-    font-family: inherit;
-}
-.drawer-save-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px var(--coral-glow);
-}
-
 /* ── Toast ── */
 .diary-toast {
     position: fixed;
