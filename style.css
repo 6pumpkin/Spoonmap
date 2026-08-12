@@ -2635,7 +2635,7 @@ main {
 
 /* Date number */
 .diary-date-num {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1;
@@ -2659,7 +2659,7 @@ main {
 .diary-entries {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     flex: 1;
     width: 100%;
     min-width: 0;
@@ -2687,9 +2687,9 @@ main {
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
-/* 1st Row: Restaurant Name */
+/* 1st Row: Restaurant Name (Matched to Date Num Size: 0.88rem) */
 .card-name {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 800;
     color: var(--text-primary);
     white-space: normal;
@@ -2699,7 +2699,7 @@ main {
     width: 100%;
 }
 
-/* 2nd Row: N-Visit Badge & Category Tags */
+/* 2nd Row: N-Visit Badge & Category Tags (Matched to Date Num Size: 0.88rem) */
 .card-sub-row {
     display: flex;
     align-items: center;
@@ -2709,23 +2709,23 @@ main {
 }
 
 .card-visit-tag {
-    font-size: 0.76rem;
+    font-size: 0.88rem;
     font-weight: 800;
     color: var(--coral-main);
     background: var(--coral-light);
     border: 1px solid var(--border-hover);
-    padding: 2px 6px;
+    padding: 2px 7px;
     border-radius: 6px;
-    line-height: 1.2;
+    line-height: 1.25;
     white-space: nowrap;
 }
 
 .diary-mini-tag {
-    font-size: 0.76rem;
+    font-size: 0.88rem;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 2px 7px;
     border-radius: 6px;
-    line-height: 1.2;
+    line-height: 1.25;
     white-space: nowrap;
 }
 
@@ -2737,14 +2737,14 @@ main {
 }
 
 .card-spoon {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
     letter-spacing: 0.5px;
 }
 
 /* Memo Row */
 .card-memo-row {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
