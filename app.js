@@ -1893,13 +1893,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 tableHeader.className = 'compact-table-header';
                 tableHeader.innerHTML = `
                     <span>식당명</span>
-                    <span>식당 분류</span>
+                    <span>분류</span>
                     <span>주요 메뉴</span>
                     <span>지역 (대)</span>
                     <span>지역 (소)</span>
                     <span>Rate</span>
-                    <span>Date</span>
-                    <span>Map</span>
+                    <span>Kakao Map</span>
+                    <span>Naver Map</span>
                 `;
                 grid.appendChild(tableHeader);
             }
@@ -1957,7 +1957,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
 
         if (isCompact) {
-            card.className = 'card compact-card-row';
+            card.className = 'compact-card-row';
             
             const catTag = item.category ? item.category.split(',')[0].trim() : '기타';
             const catColor = getNotionTagColor(catTag);
@@ -1970,30 +1970,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const locSmallColor = item.location_small ? getNotionTagColor(item.location_small) : { bg: '#F1F1EF', color: '#37352F' };
 
             card.innerHTML = `
-                <div class="compact-name-cell" title="${item.name}">
-                    <span>${item.name}</span>
-                </div>
-                <div class="compact-tag-cell">
+                <div class="compact-col-name" title="${item.name}">${item.name}</div>
+                <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${catColor.bg}; color:${catColor.color}">${catTag}</span>
                 </div>
-                <div class="compact-tag-cell">
+                <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${menuColor.bg}; color:${menuColor.color}">${firstMenu}</span>
                 </div>
-                <div class="compact-tag-cell">
+                <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${locLargeColor.bg}; color:${locLargeColor.color}">${item.location_large || '-'}</span>
                 </div>
-                <div class="compact-tag-cell">
+                <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${locSmallColor.bg}; color:${locSmallColor.color}">${item.location_small || '-'}</span>
                 </div>
-                <div class="compact-spoon-cell">
+                <div class="compact-col-rate">
                     ${'🥄'.repeat(spoonCount)}
                 </div>
-                <div class="compact-date-cell">
-                    ${item.date ? item.date.replace(/-/g, '/') : '-'}
+                <div class="compact-col-cell">
+                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn kakao-map-btn" onclick="event.stopPropagation()">Kakao 📍</a>
                 </div>
-                <div class="compact-map-cell">
-                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="compact-map-btn" onclick="event.stopPropagation()">N</a>
-                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn" onclick="event.stopPropagation()">K</a>
+                <div class="compact-col-cell">
+                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="compact-map-btn naver-map-btn" onclick="event.stopPropagation()">Naver 🗺️</a>
                 </div>
             `;
         } else {

@@ -3938,61 +3938,62 @@ input[type="date"].drawer-input {
 
 /* 3. Notion Database Standard Table / Compact Row View (.compact-view) */
 .restaurant-grid.compact-view {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    background: var(--surface-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 12px !important;
+    overflow-x: auto !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
 }
 
 .restaurant-grid.compact-view .compact-table-header {
-    display: grid;
-    grid-template-columns: 2.2fr 1fr 1.2fr 1fr 1fr 0.9fr 1fr 1.1fr;
-    align-items: center;
-    padding: 0.65rem 1rem;
-    background: #FAF8F5;
-    border-bottom: 1.5px solid var(--border-subtle);
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: var(--text-secondary);
-    letter-spacing: 0.02em;
-    min-width: 900px;
+    display: grid !important;
+    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr !important;
+    align-items: center !important;
+    padding: 0.65rem 1rem !important;
+    background: #FAF8F5 !important;
+    border-bottom: 1.5px solid var(--border-subtle) !important;
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    color: var(--text-secondary) !important;
+    letter-spacing: 0.02em !important;
+    min-width: 920px !important;
 }
 
-.restaurant-grid.compact-view .card {
-    display: grid;
-    grid-template-columns: 2.2fr 1fr 1.2fr 1fr 1fr 0.9fr 1fr 1.1fr;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border-radius: 0;
-    border: none;
-    border-bottom: 1px solid var(--border-subtle);
-    box-shadow: none;
-    background: #FFFFFF;
-    transition: background 0.12s;
-    min-width: 900px;
-    gap: 8px;
-    cursor: pointer;
+.restaurant-grid.compact-view .compact-card-row {
+    display: grid !important;
+    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.1fr 1.1fr !important;
+    align-items: center !important;
+    padding: 0.55rem 1rem !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+    transition: background 0.12s !important;
+    min-width: 920px !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 42px !important;
 }
 
-.restaurant-grid.compact-view .card:last-child {
-    border-bottom: none;
+.restaurant-grid.compact-view .compact-card-row:last-child {
+    border-bottom: none !important;
 }
 
-.restaurant-grid.compact-view .card:hover {
-    background: #FFFBF9;
-    transform: none;
-    box-shadow: none;
+.restaurant-grid.compact-view .compact-card-row:hover {
+    background: #FFFBF9 !important;
+    transform: none !important;
 }
 
 /* Compact Row Cell Styles */
-.restaurant-grid.compact-view .compact-name-cell {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.compact-col-name {
     font-size: 0.88rem;
     font-weight: 800;
     color: var(--text-primary);
@@ -4001,55 +4002,59 @@ input[type="date"].drawer-input {
     text-overflow: ellipsis;
 }
 
-.restaurant-grid.compact-view .compact-tag-cell {
+.compact-col-cell {
     display: flex;
     align-items: center;
     gap: 4px;
-    flex-wrap: nowrap;
     overflow: hidden;
-}
-
-.restaurant-grid.compact-view .compact-tag-cell .diary-mini-tag {
-    font-size: 0.74rem;
-    padding: 1px 6px;
-    border-radius: 5px;
     white-space: nowrap;
-}
-
-.restaurant-grid.compact-view .compact-spoon-cell {
-    font-size: 0.78rem;
-    color: var(--text-primary);
-    white-space: nowrap;
-}
-
-.restaurant-grid.compact-view .compact-date-cell {
-    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    font-weight: 600;
-    white-space: nowrap;
 }
 
-.restaurant-grid.compact-view .compact-map-cell {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.restaurant-grid.compact-view .compact-map-btn {
+.compact-col-cell .diary-mini-tag {
     font-size: 0.74rem;
     padding: 2px 7px;
     border-radius: 6px;
-    text-decoration: none;
     font-weight: 700;
-    background: var(--surface-bg);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.compact-col-rate {
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.compact-map-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-decoration: none;
     transition: all 0.12s;
 }
 
-.restaurant-grid.compact-view .compact-map-btn:hover {
-    border-color: var(--coral-main);
-    color: var(--coral-main);
+.compact-map-btn.kakao-map-btn {
+    background: #FEE500;
+    color: #191919;
+    border: 1px solid #FADA0A;
+}
+
+.compact-map-btn.naver-map-btn {
+    background: #03CF5D;
+    color: #FFFFFF;
+    border: 1px solid #02B852;
+}
+
+.compact-map-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
 }
 
 /* 4. Empty State UI */
