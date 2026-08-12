@@ -3541,186 +3541,117 @@ function initDiaryTab() {
     renderDiaryCalendar();
 }
 
-function renderDiaryCalendar() {
-    const year = currentDiaryYear;
-    const month = currentDiaryMonth;
-
-    updateYearMonthPickers();
-
-    const grid = document.getElementById('diary-calendar-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-
-    // Previous month info
-    const prevYear = month === 0 ? year - 1 : year;
-    const prevMonth = month === 0 ? 11 : month - 1;
-    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
-
-    // Next month info
-    const nextYear = month === 11 ? year + 1 : year;
-    const nextMonth = month === 11 ? 0 : month + 1;
-
-    // Helper to render individual day cell
-    function createDayCell(cellYear, cellMonth, cellDay, isOtherMonth) {
-        const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(cellDay).padStart(2, '0')}`;
-        const isToday = !isOtherMonth && today.getFullYear() === cellYear && today.getMonth() === cellMonth && today.getDate() === cellDay;
-        const dow = new Date(cellYear, cellMonth, cellDay).getDay(); // 0=Sun, 6=Sat
-        
-        // Fetch diary entries for this specific date
-        const allEntries = getUnifiedDiaryEntries();
-        const entries = allEntries.filter(e => e.date === dateStr);
-
-        const cell = document.createElement('div');
-        let cellClass = 'diary-day-cell';
-        if (isOtherMonth) cellClass += ' is-other-month';
-        if (isToday) cellClass += ' is-today';
-        if (dow === 0) cellClass += ' is-sunday';
-        if (dow === 6) cellClass += ' is-saturday';
-        cell.className = cellClass;
-        cell.dataset.date = dateStr;
-
-        // Cell Drag & Drop Handlers
-        cell.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            cell.classList.add('drag-over');
-        });
-
-        cell.addEventListener('dragleave', () => {
-            cell.classList.remove('drag-over');
-        });
-
-        cell.addEventListener('drop', (e) => {
-            e.preventDefault();
-            cell.classList.remove('drag-over');
-            if (draggedEntryData) {
-                moveDiaryEntryToDate(draggedEntryData, dateStr);
-                draggedEntryData = null;
-            }
-        });
-
-        // Date number
-        const dateNum = document.createElement('div');
-        dateNum.className = 'diary-date-num';
-        dateNum.textContent = cellDay;
-        cell.appendChild(dateNum);
-
-        // Entries cards
-        if (entries.length > 0) {
-            const entriesWrap = document.createElement('div');
-            entriesWrap.className = 'diary-entries';
-
-            const MAX_CHIPS = 3;
-            entries.slice(0, MAX_CHIPS).forEach(entry => {
-                const card = document.createElement('div');
-                card.className = `diary-entry-card${entry.source === 'local' ? ' is-local' : ''}`;
-                card.draggable = true;
-
-                // Calculate visit order
-                const visitInfo = getAllVisitsForRestaurant(entry.name);
-                const visitIdx = visitInfo.findIndex(v => String(v.id) === String(entry.id) || v.date === entry.date);
-                const orderNum = visitIdx !== -1 ? visitIdx + 1 : visitInfo.length;
-                const totalCount = visitInfo.length;
-
-                // Parse individual categories (split commas)
-                const catArray = entry.category ? entry.category.split(',').map(c => c.trim()).filter(Boolean) : [];
-                const spoonCount = entry.rate ? (entry.rate.match(/CLR|🥄/g) || entry.rate.match(/🥄/g) || []).length : 0;
-
-                const tagsHtml = catArray.map(c => {
-                    const color = getNotionTagColor(c);
-                    return `<span class="diary-mini-tag" style="background:${color.bg}; color:${color.color}">${c}</span>`;
-                }).join('');
-
-                const visitBadgeHtml = (totalCount >= 2 && orderNum >= 2) 
-                    ? `<span class="card-visit-tag">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>` 
-                    : '';
-
-                card.innerHTML = `
-                    <div class="card-name-row">
-                        <span class="card-name" title="${entry.name}">${entry.name}</span>
-                        ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
-                    </div>
-                    <div class="card-sub-row">
-                        ${visitBadgeHtml}
-                        ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
-                    </div>
-                    ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
-                `;
-
-                // Drag Start
-                card.addEventListener('dragstart', (e) => {
-                    draggedEntryData = entry;
-                    card.classList.add('is-dragging');
-                    e.dataTransfer.setData('text/plain', JSON.stringify(entry));
-                });
-
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('is-dragging');
-                });
-
-                // Click to Edit
-                card.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openAddEntryDrawer(dateStr, entry);
-                });
-
-                entriesWrap.appendChild(card);
-            });
-
-            if (entries.length > MAX_CHIPS) {
-                const moreChip = document.createElement('div');
-                moreChip.className = 'diary-more-chip';
-                moreChip.textContent = `+${entries.length - MAX_CHIPS}개 더보기`;
-                moreChip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openAddEntryDrawer(dateStr);
-                });
-                entriesWrap.appendChild(moreChip);
-            }
-
-            cell.appendChild(entriesWrap);
-        }
-
-        // Add button on cell click
-        const addBtn = document.createElement('button');
-        addBtn.className = 'diary-add-btn';
-        addBtn.textContent = '+ 추가';
-        addBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openAddEntryDrawer(dateStr);
-        });
-        cell.appendChild(addBtn);
-
-        cell.addEventListener('click', () => {
-            openAddEntryDrawer(dateStr);
-        });
-
-        return cell;
-    }
-
-    // 1) Leading Days (Previous Month)
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-        const day = daysInPrevMonth - i;
-        grid.appendChild(createDayCell(prevYear, prevMonth, day, true));
-    }
-
-    // 2) Current Month Days
-    for (let day = 1; day <= daysInMonth; day++) {
-        grid.appendChild(createDayCell(year, month, day, false));
-    }
-
-    // 3) Trailing Days (Next Month - complete current row or fill to 35/42)
-    const totalRendered = firstDayOfWeek + daysInMonth;
-    const nextDaysNeeded = (totalRendered % 7 === 0) ? 0 : (7 - (totalRendered % 7));
-    for (let day = 1; day <= nextDaysNeeded; day++) {
-        grid.appendChild(createDayCell(nextYear, nextMonth, day, true));
-    }
+function populateDiaryAutocomplete() {
+    setupDiaryNameSearch();
 }
 
+function setupDiaryNameSearch() {
+    const input = document.getElementById('diary-input-name');
+    const container = document.getElementById('diary-name-suggestions');
+    if (!input || !container) return;
+
+    const getNamesList = () => {
+        const namesSet = new Set();
+        if (typeof restaurantData !== 'undefined') {
+            restaurantData.forEach(r => namesSet.add(r.name));
+        }
+        if (typeof diaryData !== 'undefined') {
+            diaryData.forEach(r => namesSet.add(r.name));
+        }
+        return Array.from(namesSet).sort();
+    };
+
+    const hideSuggestions = () => {
+        container.style.display = 'none';
+        container.innerHTML = '';
+    };
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+        if (!query) {
+            hideSuggestions();
+            return;
+        }
+
+        const allNames = getNamesList();
+        const filtered = allNames.filter(name => name.toLowerCase().includes(query)).slice(0, 10);
+
+        if (filtered.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        container.innerHTML = filtered.map(name => `
+            <div class="name-suggestion-item" data-name="${name}">
+                <span>🍽️ ${name}</span>
+            </div>
+        `).join('');
+
+        container.style.display = 'block';
+
+        container.querySelectorAll('.name-suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const selectedName = item.dataset.name;
+                input.value = selectedName;
+                hideSuggestions();
+                autoFillRestaurantData(selectedName);
+            });
+        });
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(hideSuggestions, 200);
+        if (input.value.trim()) {
+            autoFillRestaurantData(input.value.trim());
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !container.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+}
+
+function autoFillRestaurantData(restaurantName) {
+    if (!restaurantName || typeof restaurantData === 'undefined') return;
+
+    let match = restaurantData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
+    if (!match && typeof diaryData !== 'undefined') {
+        match = diaryData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
+    }
+
+    if (match) {
+        if (match.category) notionSelectors.category.setValues(match.category);
+        if (match.menu) notionSelectors.menu.setValues(match.menu);
+        if (match.location_large) notionSelectors.location_large.setValues(match.location_large);
+        if (match.location_small) notionSelectors.location_small.setValues(match.location_small);
+
+        const mapInput = document.getElementById('diary-input-map');
+        if (mapInput && !mapInput.value && match.map_url) mapInput.value = match.map_url;
+
+        // Auto-fill Spoon Rate (🥄 count)
+        if (match.rate) {
+            const spoonCount = (match.rate.match(/🥄/g) || []).length || 1;
+            const rateInput = document.getElementById('diary-input-rate');
+            const rateLabel = document.getElementById('diary-rate-label');
+            const ratePicker = document.getElementById('diary-rate-picker');
+
+            if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+            if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || '';
+            if (ratePicker) {
+                ratePicker.querySelectorAll('.rate-spoon').forEach((b, i) => {
+                    b.classList.toggle('active', i < spoonCount);
+                });
+            }
+        }
+    }
+
+    // Update Visit Count Badge in Drawer
+    updateDrawerVisitBadge(restaurantName);
+}
+
+// Calculate total visits and specific visit order for a restaurant
 function getAllVisitsForRestaurant(restaurantName) {
     if (!restaurantName) return [];
     const all = [];
@@ -3888,24 +3819,29 @@ function renderDiaryCalendar() {
     const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0=Sun
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
-    const byDate = getDiaryEntriesForMonth(year, month);
 
-    // Empty leading cells
-    for (let i = 0; i < firstDayOfWeek; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'diary-day-cell diary-day-empty';
-        grid.appendChild(empty);
-    }
+    // Previous month info
+    const prevYear = month === 0 ? year - 1 : year;
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
 
-    // Day cells
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-        const dow = new Date(year, month, day).getDay(); // 0=Sun, 6=Sat
-        const entries = byDate[dateStr] || [];
+    // Next month info
+    const nextYear = month === 11 ? year + 1 : year;
+    const nextMonth = month === 11 ? 0 : month + 1;
+
+    // Helper to create individual day cell
+    function createDayCell(cellYear, cellMonth, cellDay, isOtherMonth) {
+        const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(cellDay).padStart(2, '0')}`;
+        const isToday = !isOtherMonth && today.getFullYear() === cellYear && today.getMonth() === cellMonth && today.getDate() === cellDay;
+        const dow = new Date(cellYear, cellMonth, cellDay).getDay(); // 0=Sun, 6=Sat
+
+        // Fetch entries for this date
+        const allEntries = getUnifiedDiaryEntries();
+        const entries = allEntries.filter(e => e.date === dateStr);
 
         const cell = document.createElement('div');
         let cellClass = 'diary-day-cell';
+        if (isOtherMonth) cellClass += ' is-other-month';
         if (isToday) cellClass += ' is-today';
         if (dow === 0) cellClass += ' is-sunday';
         if (dow === 6) cellClass += ' is-saturday';
@@ -3935,7 +3871,7 @@ function renderDiaryCalendar() {
         // Date number
         const dateNum = document.createElement('div');
         dateNum.className = 'diary-date-num';
-        dateNum.textContent = day;
+        dateNum.textContent = cellDay;
         cell.appendChild(dateNum);
 
         // Entries cards
@@ -4021,7 +3957,29 @@ function renderDiaryCalendar() {
         });
         cell.appendChild(addBtn);
 
-        grid.appendChild(cell);
+        cell.addEventListener('click', () => {
+            openDiaryDrawer(dateStr);
+        });
+
+        return cell;
+    }
+
+    // 1) Previous Month Days
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        grid.appendChild(createDayCell(prevYear, prevMonth, day, true));
+    }
+
+    // 2) Current Month Days
+    for (let day = 1; day <= daysInMonth; day++) {
+        grid.appendChild(createDayCell(year, month, day, false));
+    }
+
+    // 3) Next Month Days (Fill row or complement grid)
+    const totalRendered = firstDayOfWeek + daysInMonth;
+    const nextDaysNeeded = (totalRendered % 7 === 0) ? 0 : (7 - (totalRendered % 7));
+    for (let day = 1; day <= nextDaysNeeded; day++) {
+        grid.appendChild(createDayCell(nextYear, nextMonth, day, true));
     }
 }
 
