@@ -2059,7 +2059,7 @@ function closeRestaurantDetailModal() {
     }
 }
 
-// Bind Close Modal Events
+// Bind Close Modal & Keyboard Events
 document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('list-detail-close-btn');
     const overlay = document.getElementById('list-detail-modal-overlay');
@@ -2069,6 +2069,35 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) closeRestaurantDetailModal();
         });
+    }
+});
+
+// Global ESC key listener to close active modals & drawers
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+        // 1. Notion Popover dropdowns
+        const openPopovers = document.querySelectorAll('.notion-dropdown-popover.open');
+        if (openPopovers.length > 0) {
+            openPopovers.forEach(p => p.classList.remove('open'));
+        }
+
+        // 2. Diary Drawer (add / edit)
+        const diaryOverlay = document.getElementById('diary-drawer-overlay');
+        if (diaryOverlay && diaryOverlay.classList.contains('open')) {
+            closeDiaryDrawer();
+        }
+
+        // 3. Restaurant Detail View Modal (LIST tab & others)
+        const listDetailOverlay = document.getElementById('list-detail-modal-overlay');
+        if (listDetailOverlay && listDetailOverlay.classList.contains('open')) {
+            closeRestaurantDetailModal();
+        }
+
+        // 4. Mobile Card Overlay
+        const mobileOverlay = document.getElementById('mobile-card-overlay');
+        if (mobileOverlay && mobileOverlay.classList.contains('open')) {
+            closeMobileOverlay();
+        }
     }
 });
 
