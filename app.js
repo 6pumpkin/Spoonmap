@@ -1708,48 +1708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapView = document.getElementById('map-view');
         if (map && mapView && mapView.classList.contains('active')) updateMapMarkers();
     }
-    window.renderApp = render;             // If none checked, search all fields
-                if (!useName && !useCat && !useSub && !useMenu) {
-                    if (item.name.toLowerCase().includes(q)) searchMatch = true;
-                    if (item.category && item.category.toLowerCase().includes(q)) searchMatch = true;
-                    if (item.location_small && item.location_small.toLowerCase().includes(q)) searchMatch = true;
-                    if (item.menu && item.menu.some(m => m.toLowerCase().includes(q))) searchMatch = true;
-                }
-            }
-
-            return catMatch && largeMatch && smallMatch && rateMatch && searchMatch;
-        });
-
-        // Multi-level Sort Execution
-        if (currentSorts.length > 0) {
-            filtered.sort((a, b) => {
-                for (const sortType of currentSorts) {
-                    let res = 0;
-                    if (sortType === 'visit-desc') {
-                        res = (b.visit_count || 1) - (a.visit_count || 1);
-                    } else if (sortType === 'rate-desc') {
-                        const aRate = (a.rate ? (a.rate.match(/🥄/g) || []).length : 0);
-                        const bRate = (b.rate ? (b.rate.match(/🥄/g) || []).length : 0);
-                        res = bRate - aRate;
-                    } else if (sortType === 'name-asc') {
-                        res = a.name.localeCompare(b.name, 'ko');
-                    }
-                    if (res !== 0) return res;
-                }
-                return 0;
-            });
-        }
-
-        // Grid
-        grid.innerHTML = '';
-        filtered.forEach(item => {
-            grid.appendChild(createCard(item));
-        });
-
-        // Sync map markers only if map tab is currently active
-        const mapView = document.getElementById('map-view');
-        if (map && mapView && mapView.classList.contains('active')) updateMapMarkers();
-    }
+    window.renderApp = render;
 
     function getFilteredData() {
         return restaurantData.filter(item => {
