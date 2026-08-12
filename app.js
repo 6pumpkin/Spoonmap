@@ -3,12 +3,16 @@ function getSpoonBadgeHtml(item) {
         return '';
     }
     const spoonCount = (item.rate.match(/🥄/g) || []).length || 1;
-    const visits = item.visit_count || 1;
+    const isPeriodFilter = typeof item.period_visit_count !== 'undefined';
+    const visits = isPeriodFilter ? item.period_visit_count : (item.visit_count || 1);
     
     let tierClass = '';
     let visitTagHtml = '';
 
-    if (visits >= 10) {
+    if (isPeriodFilter) {
+        tierClass = 'visit-tier-period';
+        visitTagHtml = `<span class="visit-count-tag period-tag">📅 기간내 ${visits}회</span>`;
+    } else if (visits >= 10) {
         tierClass = 'visit-tier-3';
         visitTagHtml = `<span class="visit-count-tag">👑 ${visits}회</span>`;
     } else if (visits >= 5) {
@@ -20,7 +24,7 @@ function getSpoonBadgeHtml(item) {
     }
 
     return `
-        <span class="spoon-badge rate-${spoonCount} ${tierClass}" title="수저 평점 ${spoonCount}개${visits >= 2 ? ` · 또간집 ${visits}회 방문` : ''}">
+        <span class="spoon-badge rate-${spoonCount} ${tierClass}" title="수저 평점 ${spoonCount}개${visits >= 1 ? ` · ${isPeriodFilter ? `선택 기간 내 ${visits}회 방문` : `또간집 ${visits}회 방문`}` : ''}">
             <span class="spoon-icons">🥄 ${spoonCount}개</span>
             ${visitTagHtml}
         </span>
@@ -1266,30 +1270,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    let dateRangeFilter = {
+        startDate: '',
+        endDate: ''
+    };
+
     function setupFilters() {
-        const categories = new Set();
-        const locationCounts = {};
-
-        restaurantData.forEach(item => {
-            if (item.category) {
-                item.category.split(',').forEach(cat => categories.add(cat.trim()));
-            }
-            if (item.location_large) {
-                locationCounts[item.location_large] = (locationCounts[item.location_large] || 0) + 1;
-            }
-        });
-
-        // Sorted Categories
-        Array.from(categories).sort().forEach(cat => {
-            categoryFilterGroup.appendChild(createFilterBtn('category', cat));
-        });
-
-        // Sorted Locations by Count
-        sortedLocationsLarge = Object.entries(locationCounts)
-            .sort((a, b) => b[1] - a[1]) // Descending count
-            .map(entry => entry[0]);
-
-        renderLocationButtons();
+        refreshSidebarFilters();
 
         // More Button Event
         btnMoreLocation.addEventListener('click', () => {
@@ -1348,6 +1335,110 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
             });
         });
+
+        // ── Sidebar Toggle ON/OFF ──
+        const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
+        const mainSidebar = document.getElementById('main-sidebar');
+        const listMainContent = document.getElementById('list-main-content');
+
+        if (toggleSidebarBtn && mainSidebar) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                const isCollapsed = mainSidebar.classList.toggle('collapsed');
+                if (listMainContent) listMainContent.classList.toggle('expanded', isCollapsed);
+                toggleSidebarBtn.classList.toggle('collapsed-state', isCollapsed);
+
+                const icon = toggleSidebarBtn.querySelector('.toggle-icon');
+                const text = toggleSidebarBtn.querySelector('.toggle-text');
+                if (isCollapsed) {
+                    if (icon) icon.textContent = '🔍';
+                    if (text) text.textContent = '필터 열기';
+                } else {
+                    if (icon) icon.textContent = '🎛️';
+                    if (text) text.textContent = '필터 접기';
+                }
+            });
+        }
+
+        // ── Date Range Filter Actions ──
+        const applyDateBtn = document.getElementById('btn-apply-date-filter');
+        const resetDateBtn = document.getElementById('btn-reset-date-filter');
+        const startInput = document.getElementById('filter-start-date');
+        const endInput = document.getElementById('filter-end-date');
+        const badgeInfo = document.getElementById('date-range-badge-info');
+
+        if (applyDateBtn) {
+            applyDateBtn.addEventListener('click', () => {
+                const s = startInput ? startInput.value : '';
+                const e = endInput ? endInput.value : '';
+
+                if (!s && !e) {
+                    alert('시작일 또는 종료일을 하나 이상 선택해주세요.');
+                    return;
+                }
+
+                dateRangeFilter.startDate = s;
+                dateRangeFilter.endDate = e;
+
+                if (badgeInfo) {
+                    let text = '📅 ';
+                    if (s && e) text += `${s} ~ ${e}`;
+                    else if (s) text += `${s} 이후`;
+                    else text += `${e} 이전`;
+                    badgeInfo.textContent = `${text} 기간 조회 중`;
+                    badgeInfo.style.display = 'block';
+                }
+
+                render();
+            });
+        }
+
+        if (resetDateBtn) {
+            resetDateBtn.addEventListener('click', () => {
+                dateRangeFilter.startDate = '';
+                dateRangeFilter.endDate = '';
+                if (startInput) startInput.value = '';
+                if (endInput) endInput.value = '';
+                if (badgeInfo) {
+                    badgeInfo.textContent = '';
+                    badgeInfo.style.display = 'none';
+                }
+                render();
+            });
+        }
+    }
+
+    function refreshSidebarFilters() {
+        const unifiedData = getUnifiedRestaurantData();
+        const categories = new Set();
+        const locationCounts = {};
+
+        unifiedData.forEach(item => {
+            if (item.category) {
+                item.category.split(',').forEach(cat => categories.add(cat.trim()));
+            }
+            if (item.location_large) {
+                locationCounts[item.location_large] = (locationCounts[item.location_large] || 0) + 1;
+            }
+        });
+
+        // Refresh Category Buttons (Keep 'all' button)
+        if (categoryFilterGroup) {
+            const existingCatBtns = categoryFilterGroup.querySelectorAll('.filter-btn:not([data-value="all"])');
+            existingCatBtns.forEach(b => b.remove());
+
+            Array.from(categories).sort().forEach(cat => {
+                const btn = createFilterBtn('category', cat);
+                if (currentFilters.category.includes(cat)) btn.classList.add('active');
+                categoryFilterGroup.appendChild(btn);
+            });
+        }
+
+        // Sorted Locations by Count
+        sortedLocationsLarge = Object.entries(locationCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(entry => entry[0]);
+
+        renderLocationButtons();
     }
 
     function renderLocationButtons() {
@@ -1672,7 +1763,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            return catMatch && largeMatch && smallMatch && rateMatch && searchMatch;
+            // Date Range Filter Logic
+            let dateMatch = true;
+            if (dateRangeFilter.startDate || dateRangeFilter.endDate) {
+                const visits = getAllVisitsForRestaurant(item.name);
+                const periodVisits = visits.filter(v => {
+                    if (!v.date) return false;
+                    if (dateRangeFilter.startDate && v.date < dateRangeFilter.startDate) return false;
+                    if (dateRangeFilter.endDate && v.date > dateRangeFilter.endDate) return false;
+                    return true;
+                });
+
+                if (periodVisits.length === 0) {
+                    dateMatch = false;
+                } else {
+                    item.period_visit_count = periodVisits.length;
+                    // Sort period visits to get latest within the range
+                    const latestPeriodVisit = [...periodVisits].sort((a, b) => b.date.localeCompare(a.date))[0];
+                    if (latestPeriodVisit) {
+                        item.period_latest_date = latestPeriodVisit.date;
+                    }
+                }
+            } else {
+                delete item.period_visit_count;
+                delete item.period_latest_date;
+            }
+
+            return catMatch && largeMatch && smallMatch && rateMatch && searchMatch && dateMatch;
         });
 
         // Multi-level Sort Execution (Default: Latest Date Descending)
