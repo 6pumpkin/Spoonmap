@@ -4044,7 +4044,7 @@ function openEditDiaryDrawer(entry) {
     if (titleIcon) titleIcon.textContent = '📝';
     if (titleText) titleText.textContent = '방문 기록 수정';
     if (submitBtn) submitBtn.innerHTML = '수정 완료 &#x2713;';
-    if (deleteBtn) deleteBtn.style.display = 'inline-block';
+    if (deleteBtn) deleteBtn.style.display = 'inline-flex';
     if (editIdInput) editIdInput.value = entry.id || '';
 
     if (nameInput) nameInput.value = entry.name || '';

@@ -2931,27 +2931,71 @@ main {
     background: var(--surface-bg);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.75rem;
     flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.drawer-submit-btn {
-    padding: 0.95rem 1.8rem;
-    border-radius: 16px;
+.drawer-actions button,
+.drawer-actions .drawer-delete-btn,
+.drawer-actions .drawer-cancel-btn,
+.drawer-actions .drawer-save-btn,
+.drawer-actions .drawer-submit-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 0.8rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    white-space: nowrap;
+    margin: 0;
+}
+
+/* Delete Button */
+.drawer-actions .drawer-delete-btn {
+    border: 1.5px solid #FFCDD2;
+    background: #FFEBEE;
+    color: #D32F2F;
+}
+.drawer-actions .drawer-delete-btn:hover {
+    background: #FFCDD2;
+    border-color: #E53935;
+    color: #B71C1C;
+}
+
+/* Cancel Button */
+.drawer-actions .drawer-cancel-btn {
+    border: 1.5px solid var(--border-subtle);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+}
+.drawer-actions .drawer-cancel-btn:hover {
+    background: var(--surface-card-hover);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+/* Save / Submit Button */
+.drawer-actions .drawer-save-btn,
+.drawer-actions .drawer-submit-btn {
     border: none;
     background: var(--coral-main);
     color: #ffffff;
-    font-size: 1.05rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.15s;
     box-shadow: 0 4px 14px var(--coral-glow);
 }
-
-.drawer-submit-btn:hover {
+.drawer-actions .drawer-save-btn:hover,
+.drawer-actions .drawer-submit-btn:hover {
     opacity: 0.92;
     transform: translateY(-1px);
+    box-shadow: 0 6px 18px var(--coral-glow);
 }
 
 /* Form Fields */
