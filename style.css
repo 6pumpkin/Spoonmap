@@ -3334,50 +3334,10 @@ input[type="date"].drawer-input {
     transform: translateY(-1px);
 }
 
-.card-name-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2px;
-}
-
-.card-name {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.card-spoon {
-    font-size: 0.55rem;
-    letter-spacing: -1px;
-    flex-shrink: 0;
-}
-
 .card-tags-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px;
-}
-
-.diary-mini-tag {
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 4px;
-    line-height: 1.1;
-    white-space: nowrap;
-}
-
-.card-memo-row {
-    font-size: 0.62rem;
-    color: var(--text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-top: 1px;
+    gap: 4px;
 }
 
 /* Custom Restaurant Name Search Suggestions */
@@ -3455,25 +3415,7 @@ input[type="date"].drawer-input {
     border-color: #DC2626;
 }
 
-/* Calendar Card Sub-row & Visit Tag */
-.card-sub-row {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    flex-wrap: wrap;
-}
-
-.card-visit-tag {
-    font-size: 0.58rem;
-    font-weight: 800;
-    color: var(--coral-main);
-    background: var(--coral-light);
-    border: 1px solid var(--border-hover);
-    padding: 0 4px;
-    border-radius: 4px;
-    line-height: 1.1;
-    white-space: nowrap;
-}
+/* Calendar Card Sub-row & Visit Tag — defined above near .diary-entries */
 
 /* Drag & Drop Feedback Styles */
 .diary-entry-card {
