@@ -2622,6 +2622,27 @@ main {
     pointer-events: none;
 }
 
+/* Previous & Next Month Days (Identical muted style with full entries rendering) */
+.diary-day-cell.is-other-month {
+    background: #FAF8F5;
+}
+
+.diary-day-cell.is-other-month .diary-date-num {
+    color: #A0AEC0;
+}
+
+.diary-day-cell.is-other-month.is-sunday .diary-date-num {
+    color: rgba(197, 48, 48, 0.45);
+}
+
+.diary-day-cell.is-other-month.is-saturday .diary-date-num {
+    color: rgba(43, 108, 176, 0.45);
+}
+
+.diary-day-cell.is-other-month .diary-entry-card {
+    opacity: 0.8;
+}
+
 .diary-day-cell.is-today {
     background: #FFFBF9;
     border: 2px solid var(--coral-main) !important;
