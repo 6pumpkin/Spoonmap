@@ -1868,6 +1868,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return dateB.localeCompare(dateA);
         });
 
+        // 50-Item Pagination Slice for Ultra-Fast Performance
+        const visibleItems = filtered.slice(0, listDisplayCount);
+
         // Total count display
         const totalCountEl = document.getElementById('total-count-num');
         if (totalCountEl) totalCountEl.textContent = filtered.length;
