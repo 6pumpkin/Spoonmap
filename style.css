@@ -3734,6 +3734,116 @@ input[type="date"].drawer-input {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Mobile Control Bar & Responsive Header Styling Fixes
+   ───────────────────────────────────────────────────────────── */
+.mobile-control-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+@media (max-width: 900px) {
+    .mobile-control-bar {
+        display: flex;
+    }
+    #desktop-tabs {
+        display: none !important;
+    }
+}
+
+.mobile-view-menu-wrapper {
+    position: relative;
+}
+
+.mobile-view-toggle {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.mobile-view-toggle:hover {
+    background: var(--coral-light);
+    border-color: var(--coral-main);
+}
+
+.mobile-tabs-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    padding: 0.5rem;
+    min-width: 170px;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mobile-tabs-menu.open {
+    display: flex;
+    animation: fadeInDown 0.18s ease-out;
+}
+
+.mobile-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.mobile-tab-btn:hover {
+    background: var(--surface-bg);
+    color: var(--text-primary);
+}
+
+.mobile-tab-btn.active {
+    background: var(--coral-main);
+    color: #FFFFFF;
+}
+
+.mobile-filter-btn {
+    background: var(--coral-light);
+    border: 1px solid var(--border-hover);
+    color: var(--coral-main);
+    padding: 0.45rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.mobile-filter-btn:hover {
+    background: var(--coral-main);
+    color: #FFFFFF;
+}
+
+/* ─────────────────────────────────────────────────────────────
    LIST Tab Enhancement Styles (Filter Reset, View Mode, Empty State, Diary Connect)
    ───────────────────────────────────────────────────────────── */
 
@@ -3826,41 +3936,120 @@ input[type="date"].drawer-input {
     color: var(--text-primary);
 }
 
-/* 3. Compact List View Mode (.restaurant-grid.compact-view) */
+/* 3. Notion Database Standard Table / Compact Row View (.compact-view) */
 .restaurant-grid.compact-view {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.restaurant-grid.compact-view .compact-table-header {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr 1.2fr 1fr 1fr 0.9fr 1fr 1.1fr;
+    align-items: center;
+    padding: 0.65rem 1rem;
+    background: #FAF8F5;
+    border-bottom: 1.5px solid var(--border-subtle);
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+    min-width: 900px;
 }
 
 .restaurant-grid.compact-view .card {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr 1.2fr 1fr 1fr 0.9fr 1fr 1.1fr;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: none;
+    background: #FFFFFF;
+    transition: background 0.12s;
+    min-width: 900px;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.restaurant-grid.compact-view .card:last-child {
+    border-bottom: none;
+}
+
+.restaurant-grid.compact-view .card:hover {
+    background: #FFFBF9;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Compact Row Cell Styles */
+.restaurant-grid.compact-view .compact-name-cell {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1.1rem;
-    border-radius: 10px;
+    gap: 6px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.restaurant-grid.compact-view .card-header {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.restaurant-grid.compact-view .card-title {
-    font-size: 1.05rem;
-}
-
-.restaurant-grid.compact-view .card-details {
+.restaurant-grid.compact-view .compact-tag-cell {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 0;
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
-.restaurant-grid.compact-view .card-footer {
-    border-top: none;
-    padding-top: 0;
-    margin-top: 0;
+.restaurant-grid.compact-view .compact-tag-cell .diary-mini-tag {
+    font-size: 0.74rem;
+    padding: 1px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+
+.restaurant-grid.compact-view .compact-spoon-cell {
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.restaurant-grid.compact-view .compact-date-cell {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.restaurant-grid.compact-view .compact-map-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.restaurant-grid.compact-view .compact-map-btn {
+    font-size: 0.74rem;
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 700;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    transition: all 0.12s;
+}
+
+.restaurant-grid.compact-view .compact-map-btn:hover {
+    border-color: var(--coral-main);
+    color: var(--coral-main);
 }
 
 /* 4. Empty State UI */

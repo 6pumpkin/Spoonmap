@@ -1831,7 +1831,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     dateMatch = false;
                 } else {
                     item.period_visit_count = periodVisits.length;
-                    // Sort period visits to get latest within the range
                     const latestPeriodVisit = [...periodVisits].sort((a, b) => b.date.localeCompare(a.date))[0];
                     if (latestPeriodVisit) {
                         item.period_latest_date = latestPeriodVisit.date;
@@ -1845,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return catMatch && largeMatch && smallMatch && rateMatch && searchMatch && dateMatch;
         });
 
-        // Multi-level Sort Execution (Default: Latest Date Descending)
+        // Multi-level Sort Execution
         filtered.sort((a, b) => {
             if (currentSorts.length > 0) {
                 for (const sortType of currentSorts) {
@@ -1862,20 +1861,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (res !== 0) return res;
                 }
             }
-            // Default Sort: Latest Date Descending (YYYY-MM-DD)
             const dateA = a.date || '0000-00-00';
             const dateB = b.date || '0000-00-00';
             return dateB.localeCompare(dateA);
         });
 
-        // 50-Item Pagination Slice for Ultra-Fast Performance
+        const isCompact = grid.classList.contains('compact-view');
+
+        // 100-Item Pagination for Compact View, 50-Item for Grid View
         const visibleItems = filtered.slice(0, listDisplayCount);
 
         // Total count display
         const totalCountEl = document.getElementById('total-count-num');
         if (totalCountEl) totalCountEl.textContent = filtered.length;
 
-        // Grid
+        // Grid / Table Render
         grid.innerHTML = '';
         if (filtered.length === 0) {
             grid.innerHTML = `
@@ -1887,8 +1887,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else {
+            if (isCompact) {
+                // Notion Table Header
+                const tableHeader = document.createElement('div');
+                tableHeader.className = 'compact-table-header';
+                tableHeader.innerHTML = `
+                    <span>식당명</span>
+                    <span>식당 분류</span>
+                    <span>주요 메뉴</span>
+                    <span>지역 (대)</span>
+                    <span>지역 (소)</span>
+                    <span>Rate</span>
+                    <span>Date</span>
+                    <span>Map</span>
+                `;
+                grid.appendChild(tableHeader);
+            }
+
             visibleItems.forEach(item => {
-                grid.appendChild(createCard(item));
+                grid.appendChild(createCard(item, isCompact));
             });
         }
 
@@ -1900,8 +1917,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filtered.length > listDisplayCount) {
                 loadMoreContainer.style.display = 'flex';
                 if (loadMoreText) {
-                    const remaining = filtered.length - listDisplayCount;
-                    loadMoreText.textContent = `식당 50개 더보기 (현재 ${visibleItems.length}개 / 총 ${filtered.length}개)`;
+                    const stepText = isCompact ? '100' : '50';
+                    loadMoreText.textContent = `식당 ${stepText}개 더보기 (현재 ${visibleItems.length}개 / 총 ${filtered.length}개)`;
                 }
             } else {
                 loadMoreContainer.style.display = 'none';
@@ -1921,9 +1938,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const catMatch = currentFilters.category === 'all' || 
                            (item.category && item.category.includes(currentFilters.category));
             const largeMatch = currentFilters.location_large === 'all' || 
-                             item.location_large === currentFilters.location_large;
+                              item.location_large === currentFilters.location_large;
             const smallMatch = currentFilters.location_small === 'all' || 
-                             item.location_small === currentFilters.location_small;
+                              item.location_small === currentFilters.location_small;
             const rateMatch = currentFilters.rate === 'all' ||
                             item.rate === currentFilters.rate;
 
@@ -1931,46 +1948,87 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function createCard(item) {
+    function createCard(item, isCompact = false) {
         const card = document.createElement('div');
-        card.className = 'restaurant-card';
         
         // Count spoons or format rate
-        const spoonCount = (item.rate.match(/🥄/g) || []).length || 1;
-        const menuTagsHtml = item.menu && item.menu.length > 0 
-            ? item.menu.slice(0, 3).map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
-            : '';
-
+        const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
         const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
         const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
 
-        card.innerHTML = `
-            <div class="card-header">
-                <span class="category-badge">${item.category || '기타'}</span>
-                ${getSpoonBadgeHtml(item)}
-            </div>
-            <div class="card-body">
-                <h2 class="card-title">${item.name}</h2>
-                <div class="location-info">
-                    <span class="loc-badge loc-large">${item.location_large}</span>
-                    ${item.location_small ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
-                </div>
-                ${menuTagsHtml ? `<div class="card-menu-list">${menuTagsHtml}</div>` : ''}
-            </div>
-            <div class="card-footer">
-                <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="map-link-btn naver-link" onclick="event.stopPropagation()">
-                    <span>Naver</span> 🗺️
-                </a>
-                <a href="${kakaoUrl}" target="_blank" class="map-link-btn kakao-link" onclick="event.stopPropagation()">
-                    <span>Kakao</span> 📍
-                </a>
-            </div>
-        `;
+        if (isCompact) {
+            card.className = 'card compact-card-row';
+            
+            const catTag = item.category ? item.category.split(',')[0].trim() : '기타';
+            const catColor = getNotionTagColor(catTag);
+            
+            const menuArray = Array.isArray(item.menu) ? item.menu : (typeof item.menu === 'string' ? item.menu.split(',') : []);
+            const firstMenu = menuArray.length > 0 ? menuArray[0].trim() : '-';
+            const menuColor = firstMenu !== '-' ? getNotionTagColor(firstMenu) : { bg: '#F1F1EF', color: '#37352F' };
+            
+            const locLargeColor = item.location_large ? getNotionTagColor(item.location_large) : { bg: '#F1F1EF', color: '#37352F' };
+            const locSmallColor = item.location_small ? getNotionTagColor(item.location_small) : { bg: '#F1F1EF', color: '#37352F' };
 
-        // Card click opens clean read-only Detail Modal
+            card.innerHTML = `
+                <div class="compact-name-cell" title="${item.name}">
+                    <span>${item.name}</span>
+                </div>
+                <div class="compact-tag-cell">
+                    <span class="diary-mini-tag" style="background:${catColor.bg}; color:${catColor.color}">${catTag}</span>
+                </div>
+                <div class="compact-tag-cell">
+                    <span class="diary-mini-tag" style="background:${menuColor.bg}; color:${menuColor.color}">${firstMenu}</span>
+                </div>
+                <div class="compact-tag-cell">
+                    <span class="diary-mini-tag" style="background:${locLargeColor.bg}; color:${locLargeColor.color}">${item.location_large || '-'}</span>
+                </div>
+                <div class="compact-tag-cell">
+                    <span class="diary-mini-tag" style="background:${locSmallColor.bg}; color:${locSmallColor.color}">${item.location_small || '-'}</span>
+                </div>
+                <div class="compact-spoon-cell">
+                    ${'🥄'.repeat(spoonCount)}
+                </div>
+                <div class="compact-date-cell">
+                    ${item.date ? item.date.replace(/-/g, '/') : '-'}
+                </div>
+                <div class="compact-map-cell">
+                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="compact-map-btn" onclick="event.stopPropagation()">N</a>
+                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn" onclick="event.stopPropagation()">K</a>
+                </div>
+            `;
+        } else {
+            card.className = 'restaurant-card';
+            const menuTagsHtml = item.menu && item.menu.length > 0 
+                ? item.menu.slice(0, 3).map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
+                : '';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="category-badge">${item.category || '기타'}</span>
+                    ${getSpoonBadgeHtml(item)}
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title">${item.name}</h2>
+                    <div class="location-info">
+                        <span class="loc-badge loc-large">${item.location_large}</span>
+                        ${item.location_small ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
+                    </div>
+                    ${menuTagsHtml ? `<div class="card-menu-list">${menuTagsHtml}</div>` : ''}
+                </div>
+                <div class="card-footer">
+                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="map-link-btn naver-link" onclick="event.stopPropagation()">
+                        <span>Naver</span> 🗺️
+                    </a>
+                    <a href="${kakaoUrl}" target="_blank" class="map-link-btn kakao-link" onclick="event.stopPropagation()">
+                        <span>Kakao</span> 📍
+                    </a>
+                </div>
+            `;
+        }
+
+        // Card click opens Detail Modal
         card.addEventListener('click', (e) => {
-            // Prevent opening if clicking on map links directly
-            if (e.target.closest('.map-link-btn')) return;
+            if (e.target.closest('.map-link-btn') || e.target.closest('.compact-map-btn')) return;
             openRestaurantDetailModal(item);
         });
 
