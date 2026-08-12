@@ -2570,10 +2570,10 @@ main {
     grid-template-columns: repeat(7, 1fr);
     gap: 0;
     background: var(--surface-bg);
-    border: 1.5px solid var(--border-subtle);
+    border: 1px solid var(--border-subtle);
     border-bottom: none;
-    border-radius: 14px 14px 0 0;
-    padding: 0.6rem 0;
+    border-radius: 12px 12px 0 0;
+    padding: 0.55rem 0;
 }
 
 .diary-weekday {
@@ -2587,13 +2587,13 @@ main {
 .diary-weekday.is-sunday { color: #E53E3E; }
 .diary-weekday.is-saturday { color: #3182CE; }
 
-/* ── Calendar Grid (Clean Square Grid Border) ── */
+/* ── Calendar Grid (Clean Thin Square Grid Border) ── */
 .diary-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0;
-    border: 1.5px solid var(--border-subtle);
-    border-radius: 0 0 14px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0 0 12px 12px;
     overflow: hidden;
     background: var(--border-subtle);
 }
@@ -2631,10 +2631,10 @@ main {
 .diary-day-cell.is-sunday .diary-date-num { color: #C53030; }
 .diary-day-cell.is-saturday .diary-date-num { color: #2B6CB0; }
 
-/* Date number (Larger font size) */
+/* Date number (Kept 1.05rem size, refined font-weight to 600) */
 .diary-date-num {
     font-size: 1.05rem;
-    font-weight: 900;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
     margin-bottom: 4px;
