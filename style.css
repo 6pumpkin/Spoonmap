@@ -3866,13 +3866,14 @@ input[type="date"].drawer-input {
 
 .all-filters-reset-btn {
     background: var(--surface-card);
-    border: 1px solid var(--border-hover);
+    border: 1.5px solid var(--border-hover);
     color: var(--coral-main);
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 0.35rem 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
     border-radius: 8px;
     cursor: pointer;
+    line-height: 1;
     transition: all 0.15s;
 }
 
@@ -3887,9 +3888,10 @@ input[type="date"].drawer-input {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 0.2rem 1rem;
+    padding: 0 0.2rem 0.6rem;
     border-bottom: 1px solid var(--border-subtle);
-    margin-bottom: 1.2rem;
+    margin-top: -0.4rem;
+    margin-bottom: 0.8rem;
 }
 
 .result-count-info {
