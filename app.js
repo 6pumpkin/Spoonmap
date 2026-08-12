@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.parseRoute = parseRoute;
 
+    let currentActiveTab = null;
+
     function switchTabUI(targetTab) {
         if (!VALID_TABS.includes(targetTab)) targetTab = 'list';
 
@@ -117,12 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (targetTab === 'map') {
-            initMap();
-        } else if (targetTab === 'insights') {
-            computeAndRenderFoodInsights();
-        } else if (targetTab === 'sommelier') {
-            initSommelierTab();
+        if (currentActiveTab !== targetTab) {
+            currentActiveTab = targetTab;
+            if (targetTab === 'map') {
+                initMap();
+            } else if (targetTab === 'insights') {
+                computeAndRenderFoodInsights();
+            } else if (targetTab === 'sommelier') {
+                initSommelierTab();
+            }
         }
     }
 
@@ -157,6 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (mapPlaceDetail && mapResultsList) {
                     mapResultsList.style.display = 'block';
                     mapPlaceDetail.style.display = 'none';
+                    if (window.currentMapOverlay) {
+                        window.currentMapOverlay.setMap(null);
+                        window.currentMapOverlay = null;
+                    }
+                }
+            } else if (route.queryParams.name && mapPlaceDetail && mapPlaceDetail.style.display !== 'flex') {
+                const targetName = decodeURIComponent(route.queryParams.name);
+                if (typeof restaurantData !== 'undefined') {
+                    const found = restaurantData.find(r => r.name === targetName);
+                    if (found) {
+                        showPlaceDetail(found, found.location_large || '', true, found.map_url);
+                    }
                 }
             }
         }
@@ -955,8 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const focusOnPlace = () => {
-            map.setCenter(coords);
-            map.setLevel(4);
+            map.panTo(coords);
             if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
             window.currentMapOverlay = new kakao.maps.CustomOverlay({
                 position: coords,
