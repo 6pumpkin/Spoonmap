@@ -1514,6 +1514,10 @@ main {
         padding: 0.5rem 0;
     }
 
+    .list-header-controls {
+        margin-top: 0 !important;
+    }
+
     #list-view.active {
         grid-template-columns: 1fr;
     }
@@ -3890,8 +3894,8 @@ input[type="date"].drawer-input {
     justify-content: space-between;
     padding: 0 0.2rem 0.6rem;
     border-bottom: 1px solid var(--border-subtle);
-    margin-top: -0.4rem;
-    margin-bottom: 0.8rem;
+    margin-top: -54px;
+    margin-bottom: 1rem;
 }
 
 .result-count-info {
