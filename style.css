@@ -308,31 +308,31 @@ main {
 }
 
 /* List View (Sidebar + Card Grid) */
-/* List View (Sidebar + Card Grid) */
 #list-view {
     position: relative;
     display: flex;
     gap: 1.5rem;
     align-items: start;
     width: 100%;
+    margin-top: 48px;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Sidebar Toggle ON/OFF Button */
+/* Sidebar Toggle ON/OFF Button (Aligned perfectly with left edge of grid/cards) */
 .sidebar-toggle-btn {
     position: absolute;
-    top: -45px;
+    top: -46px;
     left: 0;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.4rem 0.95rem;
+    padding: 0.42rem 1rem;
     border-radius: 20px;
     border: 1.5px solid var(--border-subtle);
     background: var(--surface-card);
     color: var(--text-primary);
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 800;
     cursor: pointer;
     box-shadow: var(--shadow-sm);
     transition: all 0.2s ease;
@@ -370,12 +370,12 @@ main {
 
 /* Sidebar Collapsed State */
 .sidebar.collapsed {
+    display: none;
     width: 0;
     min-width: 0;
     padding: 0;
     margin: 0;
     opacity: 0;
-    overflow: hidden;
     pointer-events: none;
     border: none;
 }
@@ -390,7 +390,13 @@ main {
     max-width: 100%;
 }
 
-/* Date Range Filter Section */
+/* Collapsed Sidebar Mode: Grid expands to 6 clean columns per row */
+.content.expanded .restaurant-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.25rem;
+}
+
+/* Date Range Filter Section (Vertical Column Layout) */
 .date-range-section {
     background: var(--surface-bg);
     padding: 1rem;
@@ -400,34 +406,75 @@ main {
 
 .date-filter-inputs {
     display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-bottom: 0.6rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
 }
 
 .date-input-box {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    flex: 1;
+    gap: 0.25rem;
+    width: 100%;
 }
 
 .date-input-box label {
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     font-weight: 800;
     color: var(--text-secondary);
 }
 
 .sidebar-date-input {
     width: 100%;
-    padding: 0.35rem 0.45rem;
+    box-sizing: border-border-box;
+    padding: 0.4rem 0.55rem;
     border-radius: 10px;
-    border: 1px solid var(--border-subtle);
+    border: 1.5px solid var(--border-subtle);
     background: var(--surface-card);
-    font-size: 0.76rem;
+    font-size: 0.82rem;
     color: var(--text-primary);
     font-family: inherit;
     outline: none;
+    transition: border-color 0.15s;
+}
+
+.sidebar-date-input:focus {
+    border-color: var(--coral-main);
+    box-shadow: 0 0 0 2px var(--coral-glow);
+}
+
+/* 50 Load More Button Container */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    margin: 2.5rem 0 1.5rem;
+    width: 100%;
+}
+
+.load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 30px;
+    border: 2px solid var(--coral-main);
+    background: var(--surface-card);
+    color: var(--coral-main);
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.load-more-btn:hover {
+    background: var(--coral-main);
+    color: #FFFFFF;
+    box-shadow: 0 8px 20px var(--coral-glow);
+    transform: translateY(-2px);
+}
 }
 
 .sidebar-date-input:focus {

@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608122011">
+    <link rel="stylesheet" href="style.css?v=202608122023">
 </head>
 
 <body class="light-theme">
@@ -90,7 +90,6 @@
                             <label for="filter-start-date">시작일</label>
                             <input type="date" id="filter-start-date" class="sidebar-date-input">
                         </div>
-                        <span class="date-sep">~</span>
                         <div class="date-input-box">
                             <label for="filter-end-date">종료일</label>
                             <input type="date" id="filter-end-date" class="sidebar-date-input">
@@ -155,6 +154,14 @@
             <section class="content" id="list-main-content">
                 <div class="restaurant-grid" id="restaurant-grid">
                     <!-- Cards will be injected here -->
+                </div>
+                
+                <!-- 50 Load More Button Container -->
+                <div id="load-more-container" class="load-more-container" style="display:none;">
+                    <button id="btn-load-more" class="load-more-btn">
+                        <span class="load-icon">➕</span>
+                        <span id="load-more-text">식당 50개 더보기</span>
+                    </button>
                 </div>
             </section>
         </div>
@@ -663,8 +670,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608122011"></script>
-    <script src="app.js?v=202608122011"></script>
+    <script src="data.js?v=202608122023"></script>
+    <script src="app.js?v=202608122023"></script>
 </body>
 
 </html>

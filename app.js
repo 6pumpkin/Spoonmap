@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let locationLargePageSize = 10;
     let locationLargeVisibleCount = 10;
     let sortedLocationsLarge = [];
+    let listDisplayCount = 50; // Initial 50 items for ultra-fast rendering
 
     const grid = document.getElementById('restaurant-grid');
     const categoryFilterGroup = document.getElementById('category-filters');
@@ -53,6 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnMoreLocation = document.getElementById('btn-more-location');
     const btnCollapseLocation = document.getElementById('btn-collapse-location');
     const moreLocContainer = document.getElementById('location-more-container');
+
+    // Load More Button Event Listener
+    const btnLoadMore = document.getElementById('btn-load-more');
+    if (btnLoadMore) {
+        btnLoadMore.addEventListener('click', () => {
+            listDisplayCount += 50;
+            render();
+        });
+    }
 
     // Initialization
     function init() {
@@ -1478,6 +1488,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchSavedPlacesOnMap(query);
                 return;
             }
+            listDisplayCount = 50;
             render();
         });
     }
@@ -1596,6 +1607,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSmallLocationFilters(currentFilters.location_large);
         }
 
+        listDisplayCount = 50;
         render();
     }
 
@@ -1815,11 +1827,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return dateB.localeCompare(dateA);
         });
 
+        // 50-Item Pagination Slice for Ultra-Fast Performance
+        const visibleItems = filtered.slice(0, listDisplayCount);
+
         // Grid
         grid.innerHTML = '';
-        filtered.forEach(item => {
-            grid.appendChild(createCard(item));
-        });
+        if (visibleItems.length === 0) {
+            grid.innerHTML = `<div class="error" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">🔍 조건에 맞는 식당이 없습니다. 필터를 조정해 보세요!</div>`;
+        } else {
+            visibleItems.forEach(item => {
+                grid.appendChild(createCard(item));
+            });
+        }
+
+        // Load More Button UI State
+        const loadMoreContainer = document.getElementById('load-more-container');
+        const loadMoreText = document.getElementById('load-more-text');
+
+        if (loadMoreContainer) {
+            if (filtered.length > listDisplayCount) {
+                loadMoreContainer.style.display = 'flex';
+                if (loadMoreText) {
+                    const remaining = filtered.length - listDisplayCount;
+                    loadMoreText.textContent = `식당 50개 더보기 (현재 ${visibleItems.length}개 / 총 ${filtered.length}개)`;
+                }
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
 
         // Sync map markers only if map tab is currently active
         const mapView = document.getElementById('map-view');
