@@ -1405,6 +1405,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
             });
         }
+
+        // Expose global full filter reset
+        window.resetMainAppFilters = function() {
+            currentFilters.category = [];
+            currentFilters.rate = [];
+            currentFilters.location_large = [];
+            currentFilters.location_small = [];
+            currentFilters.searchQuery = '';
+            currentSorts = [];
+
+            dateRangeFilter.startDate = '';
+            dateRangeFilter.endDate = '';
+
+            const startIn = document.getElementById('filter-start-date');
+            const endIn = document.getElementById('filter-end-date');
+            const badge = document.getElementById('date-range-badge-info');
+            if (startIn) startIn.value = '';
+            if (endIn) endIn.value = '';
+            if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+
+            if (categoryFilterGroup) {
+                categoryFilterGroup.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = categoryFilterGroup.querySelector('.filter-btn[data-value="all"]');
+                if (allBtn) allBtn.classList.add('active');
+            }
+            if (rateFilterGroup) {
+                rateFilterGroup.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = rateFilterGroup.querySelector('.filter-btn[data-value="all"]');
+                if (allBtn) allBtn.classList.add('active');
+            }
+            if (locationLargeFilterGroup) {
+                locationLargeFilterGroup.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = locationLargeFilterGroup.querySelector('.filter-btn[data-value="all"]');
+                if (allBtn) allBtn.classList.add('active');
+            }
+            if (locationSmallFilterGroup) {
+                locationSmallFilterGroup.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                if (smallLocSection) smallLocSection.style.display = 'none';
+            }
+            if (sortFilterGroup) {
+                sortFilterGroup.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                const defaultSortBtn = sortFilterGroup.querySelector('.sort-btn[data-sort="default"]');
+                if (defaultSortBtn) defaultSortBtn.classList.add('active');
+            }
+
+            const searchIn = document.getElementById('restaurant-search');
+            if (searchIn) searchIn.value = '';
+
+            listDisplayCount = 50;
+            render();
+        };
     }
 
     function refreshSidebarFilters() {
@@ -1817,13 +1868,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return dateB.localeCompare(dateA);
         });
 
-        // 50-Item Pagination Slice for Ultra-Fast Performance
-        const visibleItems = filtered.slice(0, listDisplayCount);
+        // Total count display
+        const totalCountEl = document.getElementById('total-count-num');
+        if (totalCountEl) totalCountEl.textContent = filtered.length;
 
         // Grid
         grid.innerHTML = '';
-        if (visibleItems.length === 0) {
-            grid.innerHTML = `<div class="error" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">🔍 조건에 맞는 식당이 없습니다. 필터를 조정해 보세요!</div>`;
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-list-state">
+                    <div class="empty-icon">🍽️</div>
+                    <h4>조건에 맞는 식당이 없습니다</h4>
+                    <p>선택하신 카테고리, 지역, 수저평점 또는 검색어 결과가 없습니다.</p>
+                    <button class="empty-reset-btn" onclick="resetAllFilters()">전체 필터 초기화 ↺</button>
+                </div>
+            `;
         } else {
             visibleItems.forEach(item => {
                 grid.appendChild(createCard(item));
@@ -2046,6 +2105,12 @@ function openRestaurantDetailModal(item) {
         }
     }
 
+    // 8. Add Diary Button Binding
+    const addDiaryBtn = document.getElementById('btn-add-diary-for-this-restaurant');
+    if (addDiaryBtn) {
+        addDiaryBtn.onclick = () => addDiaryForRestaurant(item);
+    }
+
     // Open Modal
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -2058,6 +2123,104 @@ function closeRestaurantDetailModal() {
         document.body.style.overflow = '';
     }
 }
+
+// ─── Reset All Filters Function (Global Scope) ────
+function resetAllFilters() {
+    if (window.resetMainAppFilters) {
+        window.resetMainAppFilters();
+    } else {
+        const searchInput = document.getElementById('restaurant-search');
+        if (searchInput) searchInput.value = '';
+        if (window.renderApp) window.renderApp();
+    }
+}
+
+// ─── Add Diary For Specific Restaurant (Direct Connect from Modal) ────
+function addDiaryForRestaurant(itemOrName) {
+    const name = typeof itemOrName === 'string' ? itemOrName : (itemOrName && itemOrName.name ? itemOrName.name : '');
+    if (!name) return;
+
+    // Close Modals
+    closeRestaurantDetailModal();
+    closeMobileOverlay();
+
+    // Switch to DIARY tab
+    const diaryTabBtn = document.querySelector('.tab-btn[data-tab="diary"]') || document.querySelector('.mobile-tab-btn[data-tab="diary"]');
+    if (diaryTabBtn) {
+        diaryTabBtn.click();
+    }
+
+    // Open Diary Add Drawer with Pre-filled Data
+    setTimeout(() => {
+        if (typeof openEditDiaryDrawer === 'function') {
+            openEditDiaryDrawer(null, null); // Open in 'Add New' mode
+        }
+
+        const nameInput = document.getElementById('diary-input-name');
+        if (nameInput) {
+            nameInput.value = name;
+            nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        if (typeof itemOrName === 'object' && itemOrName) {
+            const item = itemOrName;
+            if (item.category && notionSelectors.category) {
+                const cats = item.category.split(',').map(c => c.trim()).filter(Boolean);
+                cats.forEach(c => notionSelectors.category.addValue(c));
+            }
+            if (item.location_large && notionSelectors.location_large) {
+                notionSelectors.location_large.addValue(item.location_large);
+            }
+            if (item.location_small && notionSelectors.location_small) {
+                notionSelectors.location_small.addValue(item.location_small);
+            }
+            if (item.rate) {
+                const rateSelect = document.getElementById('diary-input-rate');
+                if (rateSelect) rateSelect.value = item.rate;
+            }
+            if (item.map_url) {
+                const mapInput = document.getElementById('diary-input-map');
+                if (mapInput) mapInput.value = item.map_url;
+            }
+        }
+    }, 150);
+}
+
+// ─── View Mode Switcher Controls (Grid vs Compact) ────
+document.addEventListener('DOMContentLoaded', () => {
+    const gridBtn = document.getElementById('view-mode-grid');
+    const compactBtn = document.getElementById('view-mode-compact');
+    const gridEl = document.getElementById('restaurant-grid');
+    const resetAllBtn = document.getElementById('btn-reset-all-filters');
+
+    if (resetAllBtn) {
+        resetAllBtn.addEventListener('click', resetAllFilters);
+    }
+
+    // Restore View Mode preference
+    const savedMode = localStorage.getItem('spoonmap_view_mode') || 'grid';
+    if (savedMode === 'compact' && gridEl) {
+        gridEl.classList.add('compact-view');
+        if (compactBtn) compactBtn.classList.add('active');
+        if (gridBtn) gridBtn.classList.remove('active');
+    }
+
+    if (gridBtn && compactBtn && gridEl) {
+        gridBtn.addEventListener('click', () => {
+            gridEl.classList.remove('compact-view');
+            gridBtn.classList.add('active');
+            compactBtn.classList.remove('active');
+            localStorage.setItem('spoonmap_view_mode', 'grid');
+        });
+
+        compactBtn.addEventListener('click', () => {
+            gridEl.classList.add('compact-view');
+            compactBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+            localStorage.setItem('spoonmap_view_mode', 'compact');
+        });
+    }
+});
 
 // Bind Close Modal & Keyboard Events
 document.addEventListener('DOMContentLoaded', () => {

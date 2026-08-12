@@ -3732,3 +3732,214 @@ input[type="date"].drawer-input {
     .diary-day-cell { min-height: 56px; }
     .chip-name { font-size: 0.6rem; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   LIST Tab Enhancement Styles (Filter Reset, View Mode, Empty State, Diary Connect)
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. Sidebar Filter Reset Header */
+.sidebar-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.8rem;
+    margin-bottom: 1rem;
+    border-bottom: 1.5px solid var(--border-subtle);
+}
+
+.sidebar-header-bar h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.all-filters-reset-btn {
+    background: var(--surface-card);
+    border: 1px solid var(--border-hover);
+    color: var(--coral-main);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.all-filters-reset-btn:hover {
+    background: var(--coral-light);
+    border-color: var(--coral-main);
+    transform: translateY(-1px);
+}
+
+/* 2. List Header Controls (Count & View Mode Switcher) */
+.list-header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.2rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 1.2rem;
+}
+
+.result-count-info {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.result-count-info strong {
+    color: var(--coral-main);
+    font-size: 1.1rem;
+}
+
+.view-mode-toggle-group {
+    display: flex;
+    align-items: center;
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.view-mode-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 0.85rem;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.view-mode-btn.active {
+    background: var(--coral-main);
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+.view-mode-btn:hover:not(.active) {
+    background: var(--surface-bg);
+    color: var(--text-primary);
+}
+
+/* 3. Compact List View Mode (.restaurant-grid.compact-view) */
+.restaurant-grid.compact-view {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.restaurant-grid.compact-view .card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    border-radius: 10px;
+}
+
+.restaurant-grid.compact-view .card-header {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.restaurant-grid.compact-view .card-title {
+    font-size: 1.05rem;
+}
+
+.restaurant-grid.compact-view .card-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.restaurant-grid.compact-view .card-footer {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+/* 4. Empty State UI */
+.empty-list-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--surface-card);
+    border: 1.5px dashed var(--border-hover);
+    border-radius: 16px;
+    margin: 1rem 0;
+}
+
+.empty-list-state .empty-icon {
+    font-size: 3.2rem;
+    margin-bottom: 1rem;
+}
+
+.empty-list-state h4 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+}
+
+.empty-list-state p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+}
+
+.empty-reset-btn {
+    background: var(--coral-main);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.65rem 1.4rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    transition: all 0.15s;
+}
+
+.empty-reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+}
+
+/* 5. Detail View Modal Add Diary Action Button */
+.list-detail-action-bar {
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-subtle);
+}
+
+.detail-add-diary-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(238, 82, 83, 0.25);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.detail-add-diary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(238, 82, 83, 0.35);
+}
