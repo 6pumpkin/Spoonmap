@@ -3900,14 +3900,12 @@ function renderDiaryCalendar() {
                     : '';
 
                 card.innerHTML = `
-                    <div class="card-name-row">
-                        <span class="card-name" title="${entry.name}">${entry.name}</span>
-                        ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
-                    </div>
+                    <div class="card-name" title="${entry.name}">${entry.name}</div>
                     <div class="card-sub-row">
                         ${visitBadgeHtml}
-                        ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
+                        ${tagsHtml}
                     </div>
+                    ${spoonCount > 0 ? `<div class="card-spoon-row"><span class="card-spoon">${'🥄'.repeat(spoonCount)}</span></div>` : ''}
                     ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
                 `;
 
