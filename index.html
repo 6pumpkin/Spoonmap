@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608121800">
+    <link rel="stylesheet" href="style.css?v=202608121806">
 </head>
 
 <body class="light-theme">
@@ -408,10 +408,10 @@
                     </div>
                     <div class="drawer-body">
                         <form id="diary-add-form" autocomplete="off">
-                            <div class="drawer-field">
+                            <div class="drawer-field" style="position:relative;">
                                 <label class="drawer-label" for="diary-input-name">&#x1F37D;&#xFE0F; 식당명 <span class="required">*</span></label>
-                                <input type="text" id="diary-input-name" class="drawer-input" placeholder="식당 이름을 입력하세요" list="diary-name-autocomplete">
-                                <datalist id="diary-name-autocomplete"></datalist>
+                                <input type="text" id="diary-input-name" class="drawer-input" placeholder="식당 이름을 입력하세요 (검색)" autocomplete="off">
+                                <div id="diary-name-suggestions" class="diary-name-suggestions"></div>
                             </div>
                             <div class="drawer-field">
                                 <label class="drawer-label" for="diary-input-date">&#x1F4C5; 방문 날짜 <span class="required">*</span></label>
@@ -505,6 +505,10 @@
                                 <label class="drawer-label" for="diary-input-map">&#x1F5FA;&#xFE0F; 카카오맵 URL</label>
                                 <input type="url" id="diary-input-map" class="drawer-input" placeholder="https://place.map.kakao.com/...">
                             </div>
+                            <div class="drawer-field">
+                                <label class="drawer-label" for="diary-input-memo">&#x1F4DD; 방문 메모 / 후기</label>
+                                <textarea id="diary-input-memo" class="drawer-input drawer-textarea" placeholder="맛, 분위기, 누구와 갔는지 등의 메모를 적어보세요..." rows="3"></textarea>
+                            </div>
                             <div class="drawer-actions">
                                 <button type="button" class="drawer-cancel-btn" onclick="closeDiaryDrawer()">취소</button>
                                 <button type="submit" class="drawer-save-btn">저장하기 &#x2713;</button>
@@ -572,8 +576,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608121800"></script>
-    <script src="app.js?v=202608121800"></script>
+    <script src="data.js?v=202608121806"></script>
+    <script src="app.js?v=202608121806"></script>
 </body>
 
 </html>

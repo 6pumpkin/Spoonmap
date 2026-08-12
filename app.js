@@ -3158,13 +3158,109 @@ function initDiaryTab() {
 }
 
 function populateDiaryAutocomplete() {
-    const nameList = document.getElementById('diary-name-autocomplete');
-    if (nameList && typeof restaurantData !== 'undefined') {
-        const names = new Set(restaurantData.map(r => r.name));
-        if (typeof diaryData !== 'undefined') {
-            diaryData.forEach(r => names.add(r.name));
+    setupDiaryNameSearch();
+}
+
+function setupDiaryNameSearch() {
+    const input = document.getElementById('diary-input-name');
+    const container = document.getElementById('diary-name-suggestions');
+    if (!input || !container) return;
+
+    const getNamesList = () => {
+        const namesSet = new Set();
+        if (typeof restaurantData !== 'undefined') {
+            restaurantData.forEach(r => namesSet.add(r.name));
         }
-        nameList.innerHTML = Array.from(names).map(n => `<option value="${n}">`).join('');
+        if (typeof diaryData !== 'undefined') {
+            diaryData.forEach(r => namesSet.add(r.name));
+        }
+        return Array.from(namesSet).sort();
+    };
+
+    const hideSuggestions = () => {
+        container.style.display = 'none';
+        container.innerHTML = '';
+    };
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+        if (!query) {
+            hideSuggestions();
+            return;
+        }
+
+        const allNames = getNamesList();
+        const filtered = allNames.filter(name => name.toLowerCase().includes(query)).slice(0, 10);
+
+        if (filtered.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        container.innerHTML = filtered.map(name => `
+            <div class="name-suggestion-item" data-name="${name}">
+                <span>🍽️ ${name}</span>
+            </div>
+        `).join('');
+
+        container.style.display = 'block';
+
+        container.querySelectorAll('.name-suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const selectedName = item.dataset.name;
+                input.value = selectedName;
+                hideSuggestions();
+                autoFillRestaurantData(selectedName);
+            });
+        });
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(hideSuggestions, 200);
+        if (input.value.trim()) {
+            autoFillRestaurantData(input.value.trim());
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !container.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+}
+
+function autoFillRestaurantData(restaurantName) {
+    if (!restaurantName || typeof restaurantData === 'undefined') return;
+
+    let match = restaurantData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
+    if (!match && typeof diaryData !== 'undefined') {
+        match = diaryData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
+    }
+
+    if (match) {
+        if (match.category) notionSelectors.category.setValues(match.category);
+        if (match.menu) notionSelectors.menu.setValues(match.menu);
+        if (match.location_large) notionSelectors.location_large.setValues(match.location_large);
+        if (match.location_small) notionSelectors.location_small.setValues(match.location_small);
+
+        const mapInput = document.getElementById('diary-input-map');
+        if (mapInput && !mapInput.value && match.map_url) mapInput.value = match.map_url;
+
+        // Auto-fill Spoon Rate (🥄 count)
+        if (match.rate) {
+            const spoonCount = (match.rate.match(/🥄/g) || []).length || 1;
+            const rateInput = document.getElementById('diary-input-rate');
+            const rateLabel = document.getElementById('diary-rate-label');
+            const ratePicker = document.getElementById('diary-rate-picker');
+
+            if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+            if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || '';
+            if (ratePicker) {
+                ratePicker.querySelectorAll('.rate-spoon').forEach((b, i) => {
+                    b.classList.toggle('active', i < spoonCount);
+                });
+            }
+        }
     }
 }
 
@@ -3265,6 +3361,7 @@ function renderDiaryCalendar() {
                         ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
                     </div>
                     ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
+                    ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
                 `;
 
                 entriesWrap.appendChild(card);
@@ -3301,33 +3398,19 @@ function openDiaryDrawer(dateStr) {
     const rateInput = document.getElementById('diary-input-rate');
     const rateLabel = document.getElementById('diary-rate-label');
     const mapInput = document.getElementById('diary-input-map');
+    const memoInput = document.getElementById('diary-input-memo');
 
     // Reset form & Notion Selectors
     if (nameInput) nameInput.value = '';
     if (rateInput) rateInput.value = '';
     if (rateLabel) rateLabel.textContent = '선택 안 함';
     if (mapInput) mapInput.value = '';
+    if (memoInput) memoInput.value = '';
 
     Object.values(notionSelectors).forEach(sel => sel.clear());
     document.querySelectorAll('.rate-spoon').forEach(b => b.classList.remove('active'));
 
     if (dateInput) dateInput.value = dateStr || '';
-
-    // Auto-fill existing details if restaurant name matches
-    if (nameInput) {
-        nameInput.oninput = () => {
-            if (typeof restaurantData !== 'undefined') {
-                const match = restaurantData.find(r => r.name.toLowerCase() === nameInput.value.trim().toLowerCase());
-                if (match) {
-                    if (match.category) notionSelectors.category.setValues(match.category);
-                    if (match.menu) notionSelectors.menu.setValues(match.menu);
-                    if (match.location_large) notionSelectors.location_large.setValues(match.location_large);
-                    if (match.location_small) notionSelectors.location_small.setValues(match.location_small);
-                    if (match.map_url && mapInput && !mapInput.value) mapInput.value = match.map_url;
-                }
-            }
-        };
-    }
 
     if (overlay) {
         overlay.classList.add('open');
@@ -3360,6 +3443,7 @@ function saveDiaryEntry() {
     const menu = notionSelectors.menu ? notionSelectors.menu.getValues() : [];
     const location_large = notionSelectors.location_large ? notionSelectors.location_large.getValueString() : '';
     const location_small = notionSelectors.location_small ? notionSelectors.location_small.getValueString() : '';
+    const memo = document.getElementById('diary-input-memo')?.value.trim() || '';
 
     const newEntry = {
         id: Date.now(),
@@ -3371,6 +3455,7 @@ function saveDiaryEntry() {
         location_large,
         location_small,
         map_url: document.getElementById('diary-input-map')?.value.trim() || '',
+        memo,
         created_at: new Date().toISOString()
     };
 
@@ -3403,13 +3488,13 @@ function exportDiaryCSV() {
         alert('내보낼 새 항목이 없습니다.\n사이트에서 직접 추가한 기록만 내보내기 됩니다.');
         return;
     }
-    const header = '식당명,Date,Map,Rate,사람,수식,식당 분류,주요 메뉴,지역-대분류,지역-소분류';
+    const header = '식당명,Date,Map,Rate,사람,수식,식당 분류,주요 메뉴,지역-대분류,지역-소분류,메모';
     const rows = entries.map(e => {
         const menuStr = (e.menu || []).join(', ');
         return [
             `"${e.name}"`, `"${e.date}"`, `"${e.map_url || ''}"`, `"${e.rate}"`,
             '""', '""', `"${e.category}"`, `"${menuStr}"`,
-            `"${e.location_large}"`, `"${e.location_small}"`
+            `"${e.location_large}"`, `"${e.location_small}"`, `"${e.memo || ''}"`
         ].join(',');
     });
     const csv = [header, ...rows].join('\n');

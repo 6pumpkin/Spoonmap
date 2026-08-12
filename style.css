@@ -2979,6 +2979,57 @@ input[type="date"].drawer-input {
     white-space: nowrap;
 }
 
+.card-memo-row {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 1px;
+}
+
+/* Custom Restaurant Name Search Suggestions */
+.diary-name-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.14);
+    z-index: 1100;
+    display: none;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.name-suggestion-item {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.name-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.name-suggestion-item:hover {
+    background: var(--coral-light);
+    color: var(--coral-main);
+}
+
+.drawer-textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.4;
+}
+
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
     .diary-container { padding: 1rem 0.75rem 2rem; }
