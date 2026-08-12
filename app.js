@@ -1866,7 +1866,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return dateB.localeCompare(dateA);
         });
 
-        const isCompact = grid.classList.contains('compact-view');
+        // Determine compact mode from both class and saved preference (handles page load timing)
+        const savedViewMode = localStorage.getItem('spoonmap_view_mode') || 'grid';
+        const isCompact = grid.classList.contains('compact-view') || savedViewMode === 'compact';
+        // Sync class to match saved preference if not already in sync
+        if (isCompact && !grid.classList.contains('compact-view')) {
+            grid.classList.add('compact-view');
+        }
 
         // Auto-adjust page size based on view mode
         const pageSize = isCompact ? 100 : 50;
@@ -2262,6 +2268,16 @@ document.addEventListener('DOMContentLoaded', () => {
         gridEl.classList.add('compact-view');
         if (compactBtn) compactBtn.classList.add('active');
         if (gridBtn) gridBtn.classList.remove('active');
+        // Re-render after class is set so cards are built in compact layout
+        // Use small delay to ensure data has loaded first
+        const tryRender = (attempts = 0) => {
+            if (window.renderApp) {
+                window.renderApp();
+            } else if (attempts < 20) {
+                setTimeout(() => tryRender(attempts + 1), 200);
+            }
+        };
+        setTimeout(() => tryRender(), 300);
     }
 
     if (gridBtn && compactBtn && gridEl) {
