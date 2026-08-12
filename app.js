@@ -1356,16 +1356,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isCollapsed = mainSidebar.classList.toggle('collapsed');
                 if (listMainContent) listMainContent.classList.toggle('expanded', isCollapsed);
                 toggleSidebarBtn.classList.toggle('collapsed-state', isCollapsed);
-
-                const icon = toggleSidebarBtn.querySelector('.toggle-icon');
-                const text = toggleSidebarBtn.querySelector('.toggle-text');
-                if (isCollapsed) {
-                    if (icon) icon.textContent = '🔍';
-                    if (text) text.textContent = '필터 열기';
-                } else {
-                    if (icon) icon.textContent = '🎛️';
-                    if (text) text.textContent = '필터 접기';
-                }
             });
         }
 
