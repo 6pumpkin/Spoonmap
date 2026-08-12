@@ -1763,11 +1763,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Mobile: tap opens bottom-sheet overlay instead of navigating
-        card.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                openMobileOverlay(item);
-            }
+        // Card click opens clean read-only Detail Modal
+        card.addEventListener('click', (e) => {
+            // Prevent opening if clicking on map links directly
+            if (e.target.closest('.map-link-btn')) return;
+            openRestaurantDetailModal(item);
         });
 
         return card;
@@ -1780,6 +1780,154 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     init();
+});
+
+// ─── List View Restaurant Detail Modal (Read-Only) ───
+function openRestaurantDetailModal(item) {
+    const overlay = document.getElementById('list-detail-modal-overlay');
+    const nameEl = document.getElementById('list-detail-name');
+    const badgeEl = document.getElementById('list-detail-visit-badge');
+    const rateEl = document.getElementById('list-detail-rate-box');
+    const catBox = document.getElementById('list-detail-categories');
+    const locBox = document.getElementById('list-detail-locations');
+    const menuBox = document.getElementById('list-detail-menus');
+    const naverBtn = document.getElementById('list-detail-naver-btn');
+    const kakaoBtn = document.getElementById('list-detail-kakao-btn');
+    const historyCountEl = document.getElementById('list-detail-history-count');
+    const historyListEl = document.getElementById('list-detail-history-list');
+
+    if (!overlay) return;
+
+    // 1. Title & Visit Badge
+    if (nameEl) nameEl.textContent = item.name;
+    
+    const visits = getAllVisitsForRestaurant(item.name);
+    const totalCount = visits.length || item.visit_count || 1;
+
+    if (badgeEl) {
+        if (totalCount >= 2) {
+            let icon = '🔥';
+            if (totalCount >= 10) icon = '👑';
+            badgeEl.innerHTML = `${icon} ${totalCount}회 방문 (또간집)`;
+            badgeEl.style.display = 'inline-flex';
+        } else {
+            badgeEl.style.display = 'none';
+        }
+    }
+
+    // 2. Spoon Rate
+    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
+    if (rateEl) {
+        rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">(수저 평점 ${spoonCount}개)</span>`;
+    }
+
+    // 3. Notion-style Tags: Category
+    if (catBox) {
+        catBox.innerHTML = '';
+        const catArray = item.category ? item.category.split(',').map(c => c.trim()).filter(Boolean) : ['기타'];
+        catArray.forEach(c => {
+            const color = getNotionTagColor(c);
+            const span = document.createElement('span');
+            span.className = 'diary-mini-tag';
+            span.style.cssText = `background:${color.bg}; color:${color.color}; font-size:0.85rem; padding:3px 10px; border-radius:12px; font-weight:700;`;
+            span.textContent = c;
+            catBox.appendChild(span);
+        });
+    }
+
+    // 4. Locations
+    if (locBox) {
+        locBox.innerHTML = '';
+        const locs = [item.location_large, item.location_small].filter(Boolean);
+        locs.forEach(loc => {
+            const color = getNotionTagColor(loc);
+            const span = document.createElement('span');
+            span.className = 'diary-mini-tag';
+            span.style.cssText = `background:${color.bg}; color:${color.color}; font-size:0.85rem; padding:3px 10px; border-radius:12px; font-weight:700;`;
+            span.textContent = loc;
+            locBox.appendChild(span);
+        });
+    }
+
+    // 5. Menus
+    if (menuBox) {
+        menuBox.innerHTML = '';
+        const menuArray = Array.isArray(item.menu) 
+            ? item.menu 
+            : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+
+        if (menuArray.length > 0) {
+            menuArray.forEach(m => {
+                const color = getNotionTagColor(m);
+                const span = document.createElement('span');
+                span.className = 'diary-mini-tag';
+                span.style.cssText = `background:${color.bg}; color:${color.color}; font-size:0.85rem; padding:3px 10px; border-radius:12px; font-weight:700;`;
+                span.textContent = `🏷️ ${m}`;
+                menuBox.appendChild(span);
+            });
+        } else {
+            menuBox.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">등록된 메뉴 정보 없음</span>';
+        }
+    }
+
+    // 6. Map Action Buttons
+    const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
+    if (naverBtn) naverBtn.href = `https://map.naver.com/p/search/${naverQuery}`;
+    if (kakaoBtn) kakaoBtn.href = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+
+    // 7. Visit History Timeline
+    if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회 방문`;
+    if (historyListEl) {
+        historyListEl.innerHTML = '';
+        if (visits.length > 0) {
+            // Render visits in reverse chronological order (newest first)
+            const sortedVisits = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
+            sortedVisits.forEach((v, idx) => {
+                const orderNum = sortedVisits.length - idx; // 1st visit, 2nd visit...
+                const div = document.createElement('div');
+                div.className = 'history-item-card';
+                div.innerHTML = `
+                    <div class="history-item-top">
+                        <span class="history-date">📅 ${v.date}</span>
+                        <span class="history-order-chip">${orderNum >= 2 ? '🔥' : '📍'} ${orderNum}회차 방문</span>
+                    </div>
+                    ${v.data && v.data.memo ? `<div class="history-item-memo">📝 ${v.data.memo}</div>` : ''}
+                `;
+                historyListEl.appendChild(div);
+            });
+        } else {
+            historyListEl.innerHTML = `
+                <div class="history-item-card" style="text-align:center; color:var(--text-muted); padding:1rem;">
+                    📅 최근 방문 날짜: ${item.date || '기록 없음'}
+                </div>
+            `;
+        }
+    }
+
+    // Open Modal
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRestaurantDetailModal() {
+    const overlay = document.getElementById('list-detail-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+// Bind Close Modal Events
+document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('list-detail-close-btn');
+    const overlay = document.getElementById('list-detail-modal-overlay');
+
+    if (closeBtn) closeBtn.addEventListener('click', closeRestaurantDetailModal);
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeRestaurantDetailModal();
+        });
+    }
 });
 
 // ─── Mobile Card Overlay Functions (global scope) ────

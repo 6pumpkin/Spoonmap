@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608121950">
+    <link rel="stylesheet" href="style.css?v=202608122001">
 </head>
 
 <body class="light-theme">
@@ -579,11 +579,66 @@
         </div>
     </main>
 
+    <!-- Restaurant Detail View Modal -->
+    <div id="list-detail-modal-overlay" class="list-detail-modal-overlay">
+        <div class="list-detail-modal-card">
+            <button id="list-detail-close-btn" class="list-detail-close-btn" title="닫기">&times;</button>
+            
+            <div class="list-detail-header">
+                <div class="list-detail-title-group">
+                    <h2 id="list-detail-name" class="list-detail-name"></h2>
+                    <span id="list-detail-visit-badge" class="list-detail-visit-badge"></span>
+                </div>
+                <div id="list-detail-rate-box" class="list-detail-rate-box"></div>
+            </div>
+
+            <div class="list-detail-body">
+                <!-- Notion-style Tag Information -->
+                <div class="list-detail-info-group">
+                    <div class="list-detail-row">
+                        <span class="detail-label">🏷️ 식당 분류</span>
+                        <div id="list-detail-categories" class="detail-tags-wrap"></div>
+                    </div>
+                    <div class="list-detail-row">
+                        <span class="detail-label">📍 위치</span>
+                        <div id="list-detail-locations" class="detail-tags-wrap"></div>
+                    </div>
+                    <div class="list-detail-row">
+                        <span class="detail-label">🍽️ 주요 메뉴</span>
+                        <div id="list-detail-menus" class="detail-tags-wrap"></div>
+                    </div>
+                </div>
+
+                <!-- Map Action Buttons (Naver Map & Kakao Map) -->
+                <div class="list-detail-maps-group">
+                    <span class="detail-label">🗺️ 지도 바로가기</span>
+                    <div class="detail-map-btns">
+                        <a id="list-detail-naver-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn naver-map-btn">
+                            <span class="map-icon">💚</span> 네이버 지도
+                        </a>
+                        <a id="list-detail-kakao-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn kakao-map-btn">
+                            <span class="map-icon">🟡</span> 카카오맵
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Visit History Timeline -->
+                <div class="list-detail-history-group">
+                    <div class="history-header">
+                        <span class="detail-label">📅 방문 기록 이력</span>
+                        <span id="list-detail-history-count" class="history-count-text"></span>
+                    </div>
+                    <div id="list-detail-history-list" class="history-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608121950"></script>
-    <script src="app.js?v=202608121950"></script>
+    <script src="data.js?v=202608122001"></script>
+    <script src="app.js?v=202608122001"></script>
 </body>
 
 </html>
