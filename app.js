@@ -2789,20 +2789,303 @@ function processSommelierFallbackOnly(query, callback) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// ─── 📅 식사 일기 캘린더 ────────────────────────────────────────────────────
+// ─── 📅 식사 일기 캘린더 (노션 스타일 태그 & 다중 선택 옵션) ───────────────
 // ════════════════════════════════════════════════════════════════════════════
 
 let diaryInitialized = false;
 let currentDiaryYear = new Date().getFullYear();
 let currentDiaryMonth = new Date().getMonth(); // 0-indexed
 const DIARY_STORAGE_KEY = 'spoonmap_diary';
-
-const DIARY_CATEGORIES = [
-    '🍚한식', '🍣일식', '🍜중식', '🥩고기', '🍙분식', '🥗샐러드',
-    '🍕피자/양식', '☕카페/베이커리', '🍻치킨/호프', '🍷주류/바', '🍱도시락', '🍢기타'
-];
+const DIARY_CUSTOM_OPTIONS_KEY = 'spoonmap_custom_options';
 
 const RATE_LABELS = ['', '별로야 😕', '나쁘지 않아 😐', '맛있어! 😊', '또 가고 싶어 😍', '인생 맛집 🤩'];
+
+// Notion style pastel color palette for tags
+const NOTION_COLORS = [
+    { bg: '#FDE8E8', color: '#9B1C1C' }, // Red
+    { bg: '#FEF3C7', color: '#92400E' }, // Yellow
+    { bg: '#DEF7EC', color: '#03543F' }, // Green
+    { bg: '#E1EFFE', color: '#1E429F' }, // Blue
+    { bg: '#F3E8FF', color: '#6B21A8' }, // Purple
+    { bg: '#FCE8F3', color: '#99154B' }, // Pink
+    { bg: '#EDF2F7', color: '#2D3748' }, // Gray
+    { bg: '#FFEDD5', color: '#9A3412' }  // Orange
+];
+
+function getNotionTagColor(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+        hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % NOTION_COLORS.length;
+    return NOTION_COLORS[index];
+}
+
+// Notion Tag Selector Manager Class
+class NotionTagSelector {
+    constructor(fieldType, isMultiSelect = true) {
+        this.fieldType = fieldType;
+        this.isMultiSelect = isMultiSelect;
+        this.selectedValues = [];
+        this.availableOptions = new Set();
+        
+        this.fieldEl = document.getElementById(`notion-field-${fieldType}`);
+        this.tagsContainerEl = document.getElementById(`notion-tags-${fieldType}`);
+        this.popoverEl = document.getElementById(`notion-popover-${fieldType}`);
+        this.searchEl = this.popoverEl?.querySelector('.notion-popover-search');
+        this.optionsEl = document.getElementById(`notion-options-${fieldType}`);
+        this.createBtnEl = document.getElementById(`notion-create-${fieldType}`);
+
+        this.initOptions();
+        this.bindEvents();
+    }
+
+    initOptions() {
+        // Collect & split tags from dataset
+        const collect = (dataset, key) => {
+            if (!dataset || !Array.isArray(dataset)) return;
+            dataset.forEach(item => {
+                const val = item[key];
+                if (!val) return;
+                if (Array.isArray(val)) {
+                    val.forEach(v => {
+                        if (typeof v === 'string') {
+                            v.split(',').forEach(sub => {
+                                const t = sub.trim();
+                                if (t) this.availableOptions.add(t);
+                            });
+                        }
+                    });
+                } else if (typeof val === 'string') {
+                    val.split(',').forEach(sub => {
+                        const t = sub.trim();
+                        if (t) this.availableOptions.add(t);
+                    });
+                }
+            });
+        };
+
+        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.fieldType);
+        if (typeof diaryData !== 'undefined') collect(diaryData, this.fieldType);
+
+        // Load custom options created by user from localStorage
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        if (customStore[this.fieldType] && Array.isArray(customStore[this.fieldType])) {
+            customStore[this.fieldType].forEach(opt => this.availableOptions.add(opt));
+        }
+    }
+
+    bindEvents() {
+        if (!this.fieldEl) return;
+
+        // Toggle popover on bar click
+        const bar = this.fieldEl.querySelector('.notion-tag-input-bar');
+        if (bar) {
+            bar.addEventListener('click', (e) => {
+                if (e.target.classList.contains('notion-tag-remove')) return;
+                this.togglePopover();
+            });
+        }
+
+        // Search input filtering
+        if (this.searchEl) {
+            this.searchEl.addEventListener('input', () => {
+                this.renderOptions(this.searchEl.value.trim());
+            });
+            this.searchEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = this.searchEl.value.trim();
+                    if (query) {
+                        this.addOptionAndSelect(query);
+                        this.searchEl.value = '';
+                        this.renderOptions('');
+                    }
+                }
+            });
+        }
+
+        // Create button click
+        if (this.createBtnEl) {
+            this.createBtnEl.addEventListener('click', () => {
+                const query = this.searchEl ? this.searchEl.value.trim() : '';
+                if (query) {
+                    this.addOptionAndSelect(query);
+                    if (this.searchEl) this.searchEl.value = '';
+                    this.renderOptions('');
+                }
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (this.fieldEl && !this.fieldEl.contains(e.target)) {
+                this.closePopover();
+            }
+        });
+    }
+
+    togglePopover() {
+        // Close other popovers
+        document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => {
+            if (p !== this.popoverEl) p.classList.remove('open');
+        });
+
+        if (this.popoverEl) {
+            const isOpen = this.popoverEl.classList.toggle('open');
+            if (isOpen) {
+                if (this.searchEl) {
+                    this.searchEl.value = '';
+                    this.searchEl.focus();
+                }
+                this.renderOptions('');
+            }
+        }
+    }
+
+    closePopover() {
+        if (this.popoverEl) this.popoverEl.classList.remove('open');
+    }
+
+    addOptionAndSelect(optName) {
+        if (!optName) return;
+        this.availableOptions.add(optName);
+
+        // Save custom option to localStorage
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        if (!customStore[this.fieldType]) customStore[this.fieldType] = [];
+        if (!customStore[this.fieldType].includes(optName)) {
+            customStore[this.fieldType].push(optName);
+            localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
+        }
+
+        this.selectTag(optName);
+    }
+
+    selectTag(val) {
+        if (this.isMultiSelect) {
+            if (!this.selectedValues.includes(val)) {
+                this.selectedValues.push(val);
+            }
+        } else {
+            this.selectedValues = [val];
+            this.closePopover();
+        }
+        this.renderSelectedTags();
+        this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
+    }
+
+    deselectTag(val) {
+        this.selectedValues = this.selectedValues.filter(v => v !== val);
+        this.renderSelectedTags();
+        this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
+    }
+
+    setValues(valArrayOrString) {
+        let vals = [];
+        if (Array.isArray(valArrayOrString)) {
+            vals = valArrayOrString;
+        } else if (typeof valArrayOrString === 'string') {
+            vals = valArrayOrString.split(',').map(v => v.trim()).filter(Boolean);
+        }
+        vals.forEach(v => this.availableOptions.add(v));
+        this.selectedValues = vals;
+        this.renderSelectedTags();
+    }
+
+    getValues() {
+        return this.selectedValues;
+    }
+
+    getValueString() {
+        return this.selectedValues.join(', ');
+    }
+
+    clear() {
+        this.selectedValues = [];
+        this.renderSelectedTags();
+    }
+
+    renderSelectedTags() {
+        if (!this.tagsContainerEl) return;
+        this.tagsContainerEl.innerHTML = '';
+        const placeholder = this.fieldEl.querySelector('.notion-tag-placeholder');
+
+        if (this.selectedValues.length === 0) {
+            if (placeholder) placeholder.style.display = 'inline';
+            return;
+        }
+
+        if (placeholder) placeholder.style.display = 'none';
+
+        this.selectedValues.forEach(val => {
+            const color = getNotionTagColor(val);
+            const chip = document.createElement('span');
+            chip.className = 'notion-selected-chip';
+            chip.style.backgroundColor = color.bg;
+            chip.style.color = color.color;
+
+            chip.innerHTML = `
+                <span class="chip-text">${val}</span>
+                <span class="notion-tag-remove" title="삭제">&times;</span>
+            `;
+
+            chip.querySelector('.notion-tag-remove').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deselectTag(val);
+            });
+
+            this.tagsContainerEl.appendChild(chip);
+        });
+    }
+
+    renderOptions(query = '') {
+        if (!this.optionsEl) return;
+        this.optionsEl.innerHTML = '';
+
+        const allOpts = Array.from(this.availableOptions).sort();
+        const filtered = allOpts.filter(opt => opt.toLowerCase().includes(query.toLowerCase()));
+
+        filtered.forEach(opt => {
+            const color = getNotionTagColor(opt);
+            const isSelected = this.selectedValues.includes(opt);
+
+            const optEl = document.createElement('div');
+            optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
+            
+            optEl.innerHTML = `
+                <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                    ${opt}
+                </div>
+                ${isSelected ? '<span class="option-check">✓</span>' : ''}
+            `;
+
+            optEl.addEventListener('click', () => {
+                if (isSelected) {
+                    this.deselectTag(opt);
+                } else {
+                    this.selectTag(opt);
+                }
+            });
+
+            this.optionsEl.appendChild(optEl);
+        });
+
+        // Show/hide Create Button
+        if (this.createBtnEl) {
+            const exactMatch = allOpts.some(opt => opt.toLowerCase() === query.toLowerCase());
+            if (query && !exactMatch) {
+                this.createBtnEl.style.display = 'flex';
+                this.createBtnEl.innerHTML = `<span>+ "${query}" 생성</span>`;
+            } else {
+                this.createBtnEl.style.display = 'none';
+            }
+        }
+    }
+}
+
+// Map of Notion Tag Selectors
+let notionSelectors = {};
 
 function initDiaryTab() {
     if (diaryInitialized) {
@@ -2835,34 +3118,14 @@ function initDiaryTab() {
     });
     if (exportBtn) exportBtn.addEventListener('click', exportDiaryCSV);
 
-    // Populate autocomplete and dropdowns
-    populateDiaryAutocomplete();
+    // Initialize Notion Tag Selectors
+    notionSelectors.category = new NotionTagSelector('category', true);
+    notionSelectors.menu = new NotionTagSelector('menu', true);
+    notionSelectors.location_large = new NotionTagSelector('location_large', false);
+    notionSelectors.location_small = new NotionTagSelector('location_small', true);
 
-    // Setup category pills in drawer
-    const pillContainer = document.getElementById('diary-cat-pills');
-    if (pillContainer) {
-        // Collect from restaurantData + diaryData
-        const catSet = new Set(DIARY_CATEGORIES);
-        if (typeof restaurantData !== 'undefined') {
-            restaurantData.forEach(r => { if (r.category) catSet.add(r.category); });
-        }
-        if (typeof diaryData !== 'undefined') {
-            diaryData.forEach(r => { if (r.category) catSet.add(r.category); });
-        }
-        Array.from(catSet).forEach(cat => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'diary-cat-pill';
-            btn.textContent = cat;
-            btn.addEventListener('click', () => {
-                pillContainer.querySelectorAll('.diary-cat-pill').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                const catInput = document.getElementById('diary-input-category');
-                if (catInput) catInput.value = cat;
-            });
-            pillContainer.appendChild(btn);
-        });
-    }
+    // Name autocomplete setup
+    populateDiaryAutocomplete();
 
     // Spoon rate picker
     const ratePicker = document.getElementById('diary-rate-picker');
@@ -2895,7 +3158,6 @@ function initDiaryTab() {
 }
 
 function populateDiaryAutocomplete() {
-    // Name autocomplete
     const nameList = document.getElementById('diary-name-autocomplete');
     if (nameList && typeof restaurantData !== 'undefined') {
         const names = new Set(restaurantData.map(r => r.name));
@@ -2903,13 +3165,6 @@ function populateDiaryAutocomplete() {
             diaryData.forEach(r => names.add(r.name));
         }
         nameList.innerHTML = Array.from(names).map(n => `<option value="${n}">`).join('');
-    }
-
-    // Location large autocomplete
-    const locLargeList = document.getElementById('diary-loc-large-list');
-    if (locLargeList && typeof restaurantData !== 'undefined') {
-        const locs = new Set(restaurantData.map(r => r.location_large).filter(Boolean));
-        locLargeList.innerHTML = Array.from(locs).sort().map(l => `<option value="${l}">`).join('');
     }
 }
 
@@ -2985,19 +3240,34 @@ function renderDiaryCalendar() {
         dateNum.textContent = day;
         cell.appendChild(dateNum);
 
-        // Entries chips
+        // Entries cards
         if (entries.length > 0) {
             const entriesWrap = document.createElement('div');
             entriesWrap.className = 'diary-entries';
 
             const MAX_CHIPS = 3;
             entries.slice(0, MAX_CHIPS).forEach(entry => {
-                const chip = document.createElement('div');
-                chip.className = `diary-entry-chip${entry.source === 'local' ? ' is-local' : ''}`;
-                const spoonCount = entry.rate ? (entry.rate.match(/🥄/g) || []).length : 0;
-                const catEmoji = entry.category ? entry.category.match(/[\u{1F000}-\u{1FFFF}]|\p{Emoji}/u)?.[0] || '🍴' : '🍴';
-                chip.innerHTML = `<span class="chip-emoji">${catEmoji}</span><span class="chip-name">${entry.name}</span>${spoonCount > 0 ? `<span class="chip-rate">${'🥄'.repeat(spoonCount)}</span>` : ''}`;
-                entriesWrap.appendChild(chip);
+                const card = document.createElement('div');
+                card.className = `diary-entry-card${entry.source === 'local' ? ' is-local' : ''}`;
+                
+                // Parse individual categories (split commas)
+                const catArray = entry.category ? entry.category.split(',').map(c => c.trim()).filter(Boolean) : [];
+                const spoonCount = entry.rate ? (entry.rate.match(/CLR|🥄/g) || entry.rate.match(/🥄/g) || []).length : 0;
+
+                const tagsHtml = catArray.map(c => {
+                    const color = getNotionTagColor(c);
+                    return `<span class="diary-mini-tag" style="background:${color.bg}; color:${color.color}">${c}</span>`;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="card-name-row">
+                        <span class="card-name">${entry.name}</span>
+                        ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
+                    </div>
+                    ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
+                `;
+
+                entriesWrap.appendChild(card);
             });
 
             if (entries.length > MAX_CHIPS) {
@@ -3028,44 +3298,32 @@ function openDiaryDrawer(dateStr) {
     const overlay = document.getElementById('diary-drawer-overlay');
     const dateInput = document.getElementById('diary-input-date');
     const nameInput = document.getElementById('diary-input-name');
-    const menuInput = document.getElementById('diary-input-menu');
-    const locLargeInput = document.getElementById('diary-input-loc-large');
-    const locSmallInput = document.getElementById('diary-input-loc-small');
-    const catInput = document.getElementById('diary-input-category');
     const rateInput = document.getElementById('diary-input-rate');
     const rateLabel = document.getElementById('diary-rate-label');
     const mapInput = document.getElementById('diary-input-map');
 
-    // Reset form
+    // Reset form & Notion Selectors
     if (nameInput) nameInput.value = '';
-    if (menuInput) menuInput.value = '';
-    if (locLargeInput) locLargeInput.value = '';
-    if (locSmallInput) locSmallInput.value = '';
-    if (catInput) catInput.value = '';
     if (rateInput) rateInput.value = '';
     if (rateLabel) rateLabel.textContent = '선택 안 함';
     if (mapInput) mapInput.value = '';
 
-    document.querySelectorAll('.diary-cat-pill').forEach(b => b.classList.remove('selected'));
+    Object.values(notionSelectors).forEach(sel => sel.clear());
     document.querySelectorAll('.rate-spoon').forEach(b => b.classList.remove('active'));
 
     if (dateInput) dateInput.value = dateStr || '';
 
-    // Auto-fill location if restaurant name is already filled (on name blur)
+    // Auto-fill existing details if restaurant name matches
     if (nameInput) {
         nameInput.oninput = () => {
             if (typeof restaurantData !== 'undefined') {
-                const match = restaurantData.find(r => r.name === nameInput.value);
+                const match = restaurantData.find(r => r.name.toLowerCase() === nameInput.value.trim().toLowerCase());
                 if (match) {
-                    if (locLargeInput && !locLargeInput.value) locLargeInput.value = match.location_large || '';
-                    if (locSmallInput && !locSmallInput.value) locSmallInput.value = match.location_small || '';
-                    if (!catInput.value && match.category) {
-                        catInput.value = match.category;
-                        document.querySelectorAll('.diary-cat-pill').forEach(b => {
-                            b.classList.toggle('selected', b.textContent === match.category);
-                        });
-                    }
-                    if (!mapInput.value && match.map_url) mapInput.value = match.map_url;
+                    if (match.category) notionSelectors.category.setValues(match.category);
+                    if (match.menu) notionSelectors.menu.setValues(match.menu);
+                    if (match.location_large) notionSelectors.location_large.setValues(match.location_large);
+                    if (match.location_small) notionSelectors.location_small.setValues(match.location_small);
+                    if (match.map_url && mapInput && !mapInput.value) mapInput.value = match.map_url;
                 }
             }
         };
@@ -3084,21 +3342,24 @@ function closeDiaryDrawer() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
     }
+    // Close open popovers
+    document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => p.classList.remove('open'));
 }
 
 function saveDiaryEntry() {
     const name = document.getElementById('diary-input-name')?.value.trim();
     const date = document.getElementById('diary-input-date')?.value;
-    const category = document.getElementById('diary-input-category')?.value.trim();
+    const category = notionSelectors.category ? notionSelectors.category.getValueString() : '';
     const rate = document.getElementById('diary-input-rate')?.value.trim();
 
     if (!name) { alert('식당명을 입력해주세요.'); return; }
     if (!date) { alert('방문 날짜를 선택해주세요.'); return; }
-    if (!category) { alert('식당 분류를 선택해주세요.'); return; }
+    if (!category) { alert('식당 분류를 하나 이상 선택해주세요.'); return; }
     if (!rate) { alert('수저 평점을 선택해주세요.'); return; }
 
-    const menuRaw = document.getElementById('diary-input-menu')?.value.trim();
-    const menu = menuRaw ? menuRaw.split(',').map(m => m.trim()).filter(Boolean) : [];
+    const menu = notionSelectors.menu ? notionSelectors.menu.getValues() : [];
+    const location_large = notionSelectors.location_large ? notionSelectors.location_large.getValueString() : '';
+    const location_small = notionSelectors.location_small ? notionSelectors.location_small.getValueString() : '';
 
     const newEntry = {
         id: Date.now(),
@@ -3107,8 +3368,8 @@ function saveDiaryEntry() {
         category,
         rate,
         menu,
-        location_large: document.getElementById('diary-input-loc-large')?.value.trim() || '',
-        location_small: document.getElementById('diary-input-loc-small')?.value.trim() || '',
+        location_large,
+        location_small,
         map_url: document.getElementById('diary-input-map')?.value.trim() || '',
         created_at: new Date().toISOString()
     };
@@ -3120,7 +3381,6 @@ function saveDiaryEntry() {
     closeDiaryDrawer();
     renderDiaryCalendar();
 
-    // Brief success toast
     showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
 }
 

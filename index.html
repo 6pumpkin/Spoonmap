@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608121750">
+    <link rel="stylesheet" href="style.css?v=202608121800">
 </head>
 
 <body class="light-theme">
@@ -417,24 +417,76 @@
                                 <label class="drawer-label" for="diary-input-date">&#x1F4C5; 방문 날짜 <span class="required">*</span></label>
                                 <input type="date" id="diary-input-date" class="drawer-input">
                             </div>
+                            <!-- 식당 분류 -->
                             <div class="drawer-field">
                                 <label class="drawer-label">&#x1F3F7;&#xFE0F; 식당 분류 <span class="required">*</span></label>
-                                <div id="diary-cat-pills" class="diary-cat-pills"></div>
-                                <input type="hidden" id="diary-input-category">
+                                <div class="notion-tag-field" id="notion-field-category" data-field="category">
+                                    <div class="notion-tag-input-bar">
+                                        <div class="notion-selected-tags" id="notion-tags-category"></div>
+                                        <span class="notion-tag-placeholder">옵션 선택 또는 검색...</span>
+                                    </div>
+                                    <!-- Popover Dropdown -->
+                                    <div class="notion-dropdown-popover" id="notion-popover-category">
+                                        <div class="notion-popover-search-wrap">
+                                            <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                        </div>
+                                        <div class="notion-popover-options" id="notion-options-category"></div>
+                                        <div class="notion-popover-create-btn" id="notion-create-category" style="display:none;"></div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- 주요 메뉴 -->
                             <div class="drawer-field">
-                                <label class="drawer-label" for="diary-input-menu">&#x1F374; 주요 메뉴</label>
-                                <input type="text" id="diary-input-menu" class="drawer-input" placeholder="예: 라멘, 교자 (쉼표로 구분)">
+                                <label class="drawer-label">&#x1F374; 주요 메뉴</label>
+                                <div class="notion-tag-field" id="notion-field-menu" data-field="menu">
+                                    <div class="notion-tag-input-bar">
+                                        <div class="notion-selected-tags" id="notion-tags-menu"></div>
+                                        <span class="notion-tag-placeholder">메뉴 선택 또는 생성...</span>
+                                    </div>
+                                    <div class="notion-dropdown-popover" id="notion-popover-menu">
+                                        <div class="notion-popover-search-wrap">
+                                            <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                        </div>
+                                        <div class="notion-popover-options" id="notion-options-menu"></div>
+                                        <div class="notion-popover-create-btn" id="notion-create-menu" style="display:none;"></div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- 지역 (2열) -->
                             <div class="drawer-row">
                                 <div class="drawer-field">
-                                    <label class="drawer-label" for="diary-input-loc-large">&#x1F4CD; 지역-대분류</label>
-                                    <input type="text" id="diary-input-loc-large" class="drawer-input" placeholder="예: 서울 마포구" list="diary-loc-large-list">
-                                    <datalist id="diary-loc-large-list"></datalist>
+                                    <label class="drawer-label">&#x1F4CD; 지역-대분류</label>
+                                    <div class="notion-tag-field" id="notion-field-location_large" data-field="location_large">
+                                        <div class="notion-tag-input-bar">
+                                            <div class="notion-selected-tags" id="notion-tags-location_large"></div>
+                                            <span class="notion-tag-placeholder">대분류 선택...</span>
+                                        </div>
+                                        <div class="notion-dropdown-popover" id="notion-popover-location_large">
+                                            <div class="notion-popover-search-wrap">
+                                                <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                            </div>
+                                            <div class="notion-popover-options" id="notion-options-location_large"></div>
+                                            <div class="notion-popover-create-btn" id="notion-create-location_large" style="display:none;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="drawer-field">
-                                    <label class="drawer-label" for="diary-input-loc-small">&#x1F4CC; 지역-소분류</label>
-                                    <input type="text" id="diary-input-loc-small" class="drawer-input" placeholder="예: 신촌">
+                                    <label class="drawer-label">&#x1F4CC; 지역-소분류</label>
+                                    <div class="notion-tag-field" id="notion-field-location_small" data-field="location_small">
+                                        <div class="notion-tag-input-bar">
+                                            <div class="notion-selected-tags" id="notion-tags-location_small"></div>
+                                            <span class="notion-tag-placeholder">소분류 선택...</span>
+                                        </div>
+                                        <div class="notion-dropdown-popover" id="notion-popover-location_small">
+                                            <div class="notion-popover-search-wrap">
+                                                <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                            </div>
+                                            <div class="notion-popover-options" id="notion-options-location_small"></div>
+                                            <div class="notion-popover-create-btn" id="notion-create-location_small" style="display:none;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="drawer-field">
@@ -520,8 +572,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608121750"></script>
-    <script src="app.js?v=202608121750"></script>
+    <script src="data.js?v=202608121800"></script>
+    <script src="app.js?v=202608121800"></script>
 </body>
 
 </html>
