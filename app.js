@@ -3318,7 +3318,8 @@ function updateDrawerVisitBadge(restaurantName, targetDate = null, targetId = nu
     const visits = getAllVisitsForRestaurant(restaurantName);
     const total = visits.length;
 
-    if (total === 0) {
+    // Hide badge if 0 or 1 visit total
+    if (total < 2) {
         badgeEl.style.display = 'none';
         return;
     }
@@ -3332,12 +3333,60 @@ function updateDrawerVisitBadge(restaurantName, targetDate = null, targetId = nu
         if (foundIdx !== -1) order = foundIdx + 1;
     }
 
+    // Hide badge if this specific visit is 1st visit
+    if (order < 2) {
+        badgeEl.style.display = 'none';
+        return;
+    }
+
     let icon = '🔥';
     if (total >= 10) icon = '👑';
     else if (total >= 5) icon = '🔥';
 
     badgeEl.innerHTML = `${icon} ${order}회차 방문 (총 ${total}회)`;
     badgeEl.style.display = 'inline-flex';
+}
+
+function updateYearMonthPickers() {
+    const yearSelect = document.getElementById('diary-select-year');
+    const monthSelect = document.getElementById('diary-select-month');
+    if (!yearSelect || !monthSelect) return;
+
+    // Populate years (2023 to CurrentYear + 2)
+    if (yearSelect.options.length === 0) {
+        const currentY = new Date().getFullYear();
+        const startY = 2023;
+        const endY = currentY + 2;
+        for (let y = startY; y <= endY; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = `${y}년`;
+            yearSelect.appendChild(opt);
+        }
+
+        yearSelect.addEventListener('change', () => {
+            currentDiaryYear = parseInt(yearSelect.value);
+            renderDiaryCalendar();
+        });
+    }
+
+    // Populate months (1 to 12)
+    if (monthSelect.options.length === 0) {
+        for (let m = 0; m < 12; m++) {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = `${m + 1}월`;
+            monthSelect.appendChild(opt);
+        }
+
+        monthSelect.addEventListener('change', () => {
+            currentDiaryMonth = parseInt(monthSelect.value);
+            renderDiaryCalendar();
+        });
+    }
+
+    yearSelect.value = currentDiaryYear;
+    monthSelect.value = currentDiaryMonth;
 }
 
 function getDiaryEntriesForMonth(year, month) {
@@ -3377,8 +3426,7 @@ function renderDiaryCalendar() {
     const year = currentDiaryYear;
     const month = currentDiaryMonth;
 
-    const titleEl = document.getElementById('diary-month-title');
-    if (titleEl) titleEl.textContent = `${year}년 ${month + 1}월`;
+    updateYearMonthPickers();
 
     const grid = document.getElementById('diary-calendar-grid');
     if (!grid) return;
@@ -3463,13 +3511,17 @@ function renderDiaryCalendar() {
                     return `<span class="diary-mini-tag" style="background:${color.bg}; color:${color.color}">${c}</span>`;
                 }).join('');
 
+                const visitBadgeHtml = (totalCount >= 2 && orderNum >= 2) 
+                    ? `<span class="card-visit-tag">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>` 
+                    : '';
+
                 card.innerHTML = `
                     <div class="card-name-row">
-                        <span class="card-name" title="${entry.name} (${orderNum}회차 방문)">${entry.name}</span>
+                        <span class="card-name" title="${entry.name}">${entry.name}</span>
                         ${spoonCount > 0 ? `<span class="card-spoon">${'🥄'.repeat(spoonCount)}</span>` : ''}
                     </div>
                     <div class="card-sub-row">
-                        <span class="card-visit-tag">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>
+                        ${visitBadgeHtml}
                         ${tagsHtml ? `<div class="card-tags-row">${tagsHtml}</div>` : ''}
                     </div>
                     ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
@@ -3559,9 +3611,12 @@ function openDiaryDrawer(dateStr) {
     const titleText = document.getElementById('drawer-title-text');
     const badgeEl = document.getElementById('drawer-visit-badge');
 
+    const submitBtn = document.getElementById('drawer-submit-btn');
+
     // Reset drawer state (Add mode)
     if (titleIcon) titleIcon.textContent = '✏️';
     if (titleText) titleText.textContent = '새 방문 기록 추가';
+    if (submitBtn) submitBtn.innerHTML = '저장하기 &#x2713;';
     if (deleteBtn) deleteBtn.style.display = 'none';
     if (badgeEl) badgeEl.style.display = 'none';
     if (editIdInput) editIdInput.value = '';
@@ -3598,9 +3653,12 @@ function openEditDiaryDrawer(entry) {
     const titleIcon = document.getElementById('drawer-title-icon');
     const titleText = document.getElementById('drawer-title-text');
 
+    const submitBtn = document.getElementById('drawer-submit-btn');
+
     // Set Edit Mode UI
     if (titleIcon) titleIcon.textContent = '📝';
     if (titleText) titleText.textContent = '방문 기록 수정';
+    if (submitBtn) submitBtn.innerHTML = '수정 완료 &#x2713;';
     if (deleteBtn) deleteBtn.style.display = 'inline-block';
     if (editIdInput) editIdInput.value = entry.id || '';
 
