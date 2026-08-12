@@ -27,20 +27,30 @@ function Parse($l) {
     return $cols
 }
 
-# Pass 1: Count total occurrences of each map_url (or name) in CSV
+# Pass 1: Count total occurrences & find latest date for each map_url/name in CSV
 $visitCounts = @{}
+$latestDates = @{}
+
 for ($i = 1; $i -lt $lines.Count; $i++) {
     $c = Parse $lines[$i]
     if ($null -eq $c -or $c.Count -lt 3) { continue }
     $url = $c[2].Trim('"').Trim()
     $name = $c[0].Trim('"').Trim()
+    $date = $c[1].Trim('"').Trim()
     $key = if ($url) { $url } else { $name }
     if (-not $key) { continue }
+
     if (-not $visitCounts.ContainsKey($key)) { $visitCounts[$key] = 0 }
     $visitCounts[$key]++
+
+    if ($date) {
+        if (-not $latestDates.ContainsKey($key) -or $date -gt $latestDates[$key]) {
+            $latestDates[$key] = $date
+        }
+    }
 }
 
-# Pass 2: Iterate from bottom of CSV to top (newest entries first), deduplicating by map_url
+# Pass 2: Iterate from bottom of CSV to top, deduplicating by map_url
 $seen = New-Object System.Collections.Generic.HashSet[string]
 $res = New-Object System.Collections.Generic.List[PSCustomObject]
 
@@ -66,10 +76,12 @@ for ($i = $lines.Count - 1; $i -ge 1; $i--) {
     }
     
     $count = if ($visitCounts.ContainsKey($url)) { $visitCounts[$url] } else { 1 }
+    $latestDate = if ($latestDates.ContainsKey($url)) { $latestDates[$url] } elseif ($latestDates.ContainsKey($name)) { $latestDates[$name] } else { "" }
 
     $res.Add([PSCustomObject]@{
         category = $c[6].Trim('"')
         name = $name
+        date = $latestDate
         location_small = $c[9].Trim('"')
         rate = $c[3].Trim('"')
         map_url = $url
@@ -117,4 +129,4 @@ $json = $res | ConvertTo-Json -Depth 5
 $diaryJson = $diary | ConvertTo-Json -Depth 5
 $output = "const restaurantData = $json;`nconst diaryData = $diaryJson;"
 [System.IO.File]::WriteAllText($o, $output, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host "Success: $($res.Count) items synced with visit_count, $($diary.Count) diary entries."
+Write-Host "Success: $($res.Count) items synced with visit_count and latest date, $($diary.Count) diary entries."

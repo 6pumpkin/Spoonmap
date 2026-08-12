@@ -1526,7 +1526,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const smallLocs = new Set();
-        restaurantData.forEach(item => {
+        const unifiedData = getUnifiedRestaurantData();
+        unifiedData.forEach(item => {
             if (largeValuesArray.includes(item.location_large) && item.location_small) {
                 smallLocs.add(item.location_small);
             }
@@ -1544,23 +1545,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getUnifiedRestaurantData() {
+        if (typeof restaurantData === 'undefined') return [];
+
+        const mapByName = new Map();
+        const visitsByName = new Map();
+        const datesByName = new Map();
+
+        // Pass 1: Add base restaurantData
+        restaurantData.forEach(r => {
+            const key = r.name.trim().toLowerCase();
+            mapByName.set(key, { ...r, menu: [...(r.menu || [])] });
+            if (r.date) {
+                datesByName.set(key, r.date);
+            }
+        });
+
+        // Pass 2: Process diaryData (CSV visits)
+        if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+            diaryData.forEach(item => {
+                if (!item.name) return;
+                const key = item.name.trim().toLowerCase();
+                visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
+                if (item.date) {
+                    const prevDate = datesByName.get(key) || '';
+                    if (!prevDate || item.date > prevDate) {
+                        datesByName.set(key, item.date);
+                    }
+                }
+            });
+        }
+
+        // Pass 3: Process localStorage user-added/edited diary entries
+        const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+        localEntries.forEach(item => {
+            if (!item.name) return;
+            const key = item.name.trim().toLowerCase();
+            visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
+            if (item.date) {
+                const prevDate = datesByName.get(key) || '';
+                if (!prevDate || item.date > prevDate) {
+                    datesByName.set(key, item.date);
+                }
+            }
+
+            // Override / Add to map
+            const existing = mapByName.get(key);
+            const menuArray = Array.isArray(item.menu) 
+                ? item.menu 
+                : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+
+            if (existing) {
+                if (item.category) existing.category = item.category;
+                if (item.rate) existing.rate = item.rate;
+                if (menuArray.length > 0) existing.menu = menuArray;
+                if (item.location_large) existing.location_large = item.location_large;
+                if (item.location_small) existing.location_small = item.location_small;
+                if (item.map_url) existing.map_url = item.map_url;
+            } else {
+                mapByName.set(key, {
+                    name: item.name,
+                    category: item.category || '기타',
+                    rate: item.rate || '🥄',
+                    menu: menuArray,
+                    location_large: item.location_large || '기타',
+                    location_small: item.location_small || '',
+                    map_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+                    visit_count: 1
+                });
+            }
+        });
+
+        // Pass 4: Finalize merged list with accurate visit_count and latest date
+        const unified = [];
+        mapByName.forEach((item, key) => {
+            const count = visitsByName.get(key) || item.visit_count || 1;
+            const latestDate = datesByName.get(key) || item.date || '';
+            unified.push({
+                ...item,
+                visit_count: count,
+                date: latestDate
+            });
+        });
+
+        return unified;
+    }
+    window.getUnifiedRestaurantData = getUnifiedRestaurantData;
+
     function render() {
+        const unifiedData = getUnifiedRestaurantData();
+
         // Filter search targets
         const useName = document.getElementById('search-name').checked;
         const useCat = document.getElementById('search-category').checked;
         const useSub = document.getElementById('search-subloc').checked;
         const useMenu = document.getElementById('search-menu').checked;
 
-        let filtered = restaurantData.filter(item => {
+        let filtered = unifiedData.filter(item => {
             // Exclude items without kakao map links
             if (!item.map_url) return false;
 
             const catMatch = currentFilters.category.length === 0 || 
                            currentFilters.category.some(c => item.category && item.category.includes(c));
             const largeMatch = currentFilters.location_large.length === 0 || 
-                             currentFilters.location_large.includes(item.location_large);
+                              currentFilters.location_large.includes(item.location_large);
             const smallMatch = currentFilters.location_small.length === 0 || 
-                             currentFilters.location_small.includes(item.location_small);
+                              currentFilters.location_small.includes(item.location_small);
             const rateMatch = currentFilters.rate.length === 0 ||
                             currentFilters.rate.includes(item.rate);
             
@@ -1574,6 +1664,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (useMenu && item.menu && item.menu.some(m => m.toLowerCase().includes(q))) searchMatch = true;
                 
                 // If none checked, search all fields
+                if (!useName && !useCat && !useSub && !useMenu) {
+                    if (item.name.toLowerCase().includes(q)) searchMatch = true;
+                    if (item.category && item.category.toLowerCase().includes(q)) searchMatch = true;
+                    if (item.location_small && item.location_small.toLowerCase().includes(q)) searchMatch = true;
+                    if (item.menu && item.menu.some(m => m.toLowerCase().includes(q))) searchMatch = true;
+                }
+            }
+
+            return catMatch && largeMatch && smallMatch && rateMatch && searchMatch;
+        });
+
+        // Multi-level Sort Execution (Default: Latest Date Descending)
+        filtered.sort((a, b) => {
+            if (currentSorts.length > 0) {
+                for (const sortType of currentSorts) {
+                    let res = 0;
+                    if (sortType === 'visit-desc') {
+                        res = (b.visit_count || 1) - (a.visit_count || 1);
+                    } else if (sortType === 'rate-desc') {
+                        const aRate = (a.rate ? (a.rate.match(/🥄/g) || []).length : 0);
+                        const bRate = (b.rate ? (b.rate.match(/🥄/g) || []).length : 0);
+                        res = bRate - aRate;
+                    } else if (sortType === 'name-asc') {
+                        res = a.name.localeCompare(b.name, 'ko');
+                    }
+                    if (res !== 0) return res;
+                }
+            }
+            // Default Sort: Latest Date Descending (YYYY-MM-DD)
+            const dateA = a.date || '0000-00-00';
+            const dateB = b.date || '0000-00-00';
+            return dateB.localeCompare(dateA);
+        });
+
+        // Grid
+        grid.innerHTML = '';
+        filtered.forEach(item => {
+            grid.appendChild(createCard(item));
+        });
+
+        // Sync map markers only if map tab is currently active
+        const mapView = document.getElementById('map-view');
+        if (map && mapView && mapView.classList.contains('active')) updateMapMarkers();
+    }
+    window.renderApp = render;             // If none checked, search all fields
                 if (!useName && !useCat && !useSub && !useMenu) {
                     if (item.name.toLowerCase().includes(q)) searchMatch = true;
                     if (item.category && item.category.toLowerCase().includes(q)) searchMatch = true;
@@ -3594,6 +3729,7 @@ function moveDiaryEntryToDate(entry, newDate) {
 
     localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(localEntries));
     renderDiaryCalendar();
+    if (window.renderApp) window.renderApp();
     showDiaryToast(`📍 "${entry.name}" 항목이 ${newDate} 날짜로 이동되었습니다!`);
 }
 
@@ -3705,6 +3841,7 @@ function deleteCurrentDiaryEntry() {
 
     closeDiaryDrawer();
     renderDiaryCalendar();
+    if (window.renderApp) window.renderApp();
     showDiaryToast(`🗑️ "${name}" 방문 기록이 삭제되었습니다.`);
 }
 
@@ -3783,6 +3920,7 @@ function saveDiaryEntry() {
 
     closeDiaryDrawer();
     renderDiaryCalendar();
+    if (window.renderApp) window.renderApp();
 }
 
 function showDiaryToast(msg) {
