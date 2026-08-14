@@ -4275,3 +4275,52 @@ input[type="date"].drawer-input {
     50% { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+
+/* 7. Notion Tag Right-Click Delete Context Menu */
+.notion-tag-context-menu {
+    position: fixed;
+    z-index: 100000;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+    padding: 6px;
+    min-width: 170px;
+    animation: popoverFadeIn 0.15s ease-out;
+}
+
+.notion-context-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.55rem 0.85rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #DC2626;
+    cursor: pointer;
+    transition: background-color 0.12s;
+    font-family: inherit;
+    text-align: left;
+}
+
+.notion-context-btn:hover {
+    background: #FEE2E2;
+    color: #B91C1C;
+}
+
+.notion-option-item .option-delete-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.15s;
+    margin-left: auto;
+    font-weight: 500;
+}
+
+.notion-option-item:hover .option-delete-hint {
+    opacity: 0.8;
+}

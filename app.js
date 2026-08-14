@@ -4022,11 +4022,13 @@ class NotionTagSelector {
 
             const optEl = document.createElement('div');
             optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
+            optEl.title = '클릭: 선택 | 우클릭: 카테고리 삭제';
             
             optEl.innerHTML = `
                 <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
                     ${opt}
                 </div>
+                <span class="option-delete-hint">우클릭: 삭제</span>
                 ${isSelected ? '<span class="option-check">✓</span>' : ''}
             `;
 
@@ -4036,6 +4038,13 @@ class NotionTagSelector {
                 } else {
                     this.selectTag(opt);
                 }
+            });
+
+            // Right-click contextmenu for deletion
+            optEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showNotionTagContextMenu(e.clientX, e.clientY, opt, this.baseKey);
             });
 
             this.optionsEl.appendChild(optEl);
@@ -4052,6 +4061,119 @@ class NotionTagSelector {
             }
         }
     }
+}
+
+// ─── Right-Click Context Menu & Global Option Deletion ───
+function removeActiveNotionContextMenu() {
+    const existing = document.getElementById('notion-tag-context-menu');
+    if (existing) existing.remove();
+}
+
+function showNotionTagContextMenu(x, y, optName, baseKey) {
+    removeActiveNotionContextMenu();
+
+    const menu = document.createElement('div');
+    menu.id = 'notion-tag-context-menu';
+    menu.className = 'notion-tag-context-menu';
+    
+    let posX = x;
+    let posY = y;
+    if (posX + 180 > window.innerWidth) posX = window.innerWidth - 190;
+    if (posY + 60 > window.innerHeight) posY = window.innerHeight - 70;
+
+    menu.style.left = `${posX}px`;
+    menu.style.top = `${posY}px`;
+
+    menu.innerHTML = `
+        <button type="button" class="notion-context-btn">
+            <span>🗑️ "${optName}" 카테고리 삭제</span>
+        </button>
+    `;
+
+    menu.querySelector('button').onclick = (e) => {
+        e.stopPropagation();
+        removeActiveNotionContextMenu();
+        if (confirm(`"${optName}" 카테고리를 전체 목록과 필터에서 삭제하시겠습니까?`)) {
+            deleteOptionGlobally(optName, baseKey);
+        }
+    };
+
+    document.body.appendChild(menu);
+}
+
+// Close context menu on outside click
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#notion-tag-context-menu')) {
+        removeActiveNotionContextMenu();
+    }
+});
+
+function deleteOptionGlobally(optName, baseKey) {
+    if (!optName || !baseKey) return;
+
+    // 1. Remove from spoonmap_custom_options localStorage
+    const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+    if (customStore[baseKey] && Array.isArray(customStore[baseKey])) {
+        customStore[baseKey] = customStore[baseKey].filter(item => item !== optName);
+        localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
+    }
+
+    // 2. Remove from all active NotionTagSelector instances
+    if (typeof notionSelectors !== 'undefined') {
+        Object.values(notionSelectors).forEach(sel => {
+            if (sel && sel.baseKey === baseKey) {
+                sel.availableOptions.delete(optName);
+                sel.selectedValues = sel.selectedValues.filter(v => v !== optName);
+                if (typeof sel.renderSelectedTags === 'function') sel.renderSelectedTags();
+                if (typeof sel.renderOptions === 'function') sel.renderOptions('');
+            }
+        });
+    }
+
+    // 3. Remove tag from master overrides & diary entries if present
+    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    let overrideChanged = false;
+    Object.keys(overrides).forEach(key => {
+        const item = overrides[key];
+        if (item && item[baseKey]) {
+            if (typeof item[baseKey] === 'string') {
+                const tags = item[baseKey].split(',').map(s => s.trim()).filter(s => s && s !== optName);
+                item[baseKey] = tags.join(', ');
+                overrideChanged = true;
+            } else if (Array.isArray(item[baseKey])) {
+                item[baseKey] = item[baseKey].filter(s => s !== optName);
+                overrideChanged = true;
+            }
+        }
+    });
+    if (overrideChanged) {
+        localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+    }
+
+    const diaryEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    let diaryChanged = false;
+    diaryEntries.forEach(entry => {
+        if (entry && entry[baseKey]) {
+            if (typeof entry[baseKey] === 'string') {
+                const tags = entry[baseKey].split(',').map(s => s.trim()).filter(s => s && s !== optName);
+                entry[baseKey] = tags.join(', ');
+                diaryChanged = true;
+            } else if (Array.isArray(entry[baseKey])) {
+                entry[baseKey] = entry[baseKey].filter(s => s !== optName);
+                diaryChanged = true;
+            }
+        }
+    });
+    if (diaryChanged) {
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaryEntries));
+    }
+
+    // 4. Re-render app, side filters & diary calendar
+    if (window.renderApp) window.renderApp();
+    if (typeof setupFilters === 'function') setupFilters();
+    renderDiaryCalendar();
+
+    showDiaryToast(`🗑️ "${optName}" 카테고리가 삭제되었습니다.`);
 }
 
 // Map of Notion Tag Selectors
