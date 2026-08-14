@@ -3775,26 +3775,27 @@ function getNotionTagColor(text) {
 
 // Notion Tag Selector Manager Class
 class NotionTagSelector {
-    constructor(fieldType, isMultiSelect = true) {
-        this.fieldType = fieldType;
-        this.dataKey = fieldType.replace('modal_', ''); // Map modal_category -> category, etc.
+    constructor(elementFieldId, dataKey = null, isMultiSelect = true) {
+        this.elementFieldId = elementFieldId;
+        this.dataKey = dataKey || elementFieldId; // e.g. 'category', 'menu', 'location_large', 'location_small'
+        this.fieldType = this.dataKey;
         this.isMultiSelect = isMultiSelect;
         this.selectedValues = [];
         this.availableOptions = new Set();
         
-        this.fieldEl = document.getElementById(`notion-field-${fieldType}`);
-        this.tagsContainerEl = document.getElementById(`notion-tags-${fieldType}`);
-        this.popoverEl = document.getElementById(`notion-popover-${fieldType}`);
+        this.fieldEl = document.getElementById(`notion-field-${elementFieldId}`);
+        this.tagsContainerEl = document.getElementById(`notion-tags-${elementFieldId}`);
+        this.popoverEl = document.getElementById(`notion-popover-${elementFieldId}`);
         this.searchEl = this.popoverEl?.querySelector('.notion-popover-search');
-        this.optionsEl = document.getElementById(`notion-options-${fieldType}`);
-        this.createBtnEl = document.getElementById(`notion-create-${fieldType}`);
+        this.optionsEl = document.getElementById(`notion-options-${elementFieldId}`);
+        this.createBtnEl = document.getElementById(`notion-create-${elementFieldId}`);
 
         this.initOptions();
         this.bindEvents();
     }
 
     initOptions() {
-        // Collect & split tags from dataset using shared dataKey
+        // Collect & split tags from dataset using dataKey
         const collect = (dataset, key) => {
             if (!dataset || !Array.isArray(dataset)) return;
             dataset.forEach(item => {
@@ -3821,7 +3822,7 @@ class NotionTagSelector {
         if (typeof restaurantData !== 'undefined') collect(restaurantData, this.dataKey);
         if (typeof diaryData !== 'undefined') collect(diaryData, this.dataKey);
 
-        // Load custom options created by user from localStorage using shared dataKey
+        // Load custom options created by user from localStorage
         const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
         if (customStore[this.dataKey] && Array.isArray(customStore[this.dataKey])) {
             customStore[this.dataKey].forEach(opt => this.availableOptions.add(opt));
@@ -3902,8 +3903,6 @@ class NotionTagSelector {
 
     addOptionAndSelect(optName) {
         if (!optName) return;
-        
-        // Add option to this instance
         this.availableOptions.add(optName);
 
         // Save custom option to localStorage using dataKey
@@ -3914,7 +3913,7 @@ class NotionTagSelector {
             localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
         }
 
-        // Realtime update: Share newly added option with all NotionTagSelector instances sharing the same dataKey!
+        // Broadcast new option to all other NotionTagSelector instances with matching dataKey
         if (typeof notionSelectors !== 'undefined') {
             Object.values(notionSelectors).forEach(sel => {
                 if (sel && sel.dataKey === this.dataKey) {
@@ -4082,17 +4081,17 @@ function initDiaryTab() {
     });
     if (exportBtn) exportBtn.addEventListener('click', exportDiaryCSV);
 
-    // Initialize Notion Tag Selectors
-    notionSelectors.category = new NotionTagSelector('category', true);
-    notionSelectors.menu = new NotionTagSelector('menu', true);
-    notionSelectors.location_large = new NotionTagSelector('location_large', false);
-    notionSelectors.location_small = new NotionTagSelector('location_small', true);
+    // Initialize Diary Drawer Notion Tag Selectors
+    notionSelectors.category = new NotionTagSelector('category', 'category', true);
+    notionSelectors.menu = new NotionTagSelector('menu', 'menu', true);
+    notionSelectors.location_large = new NotionTagSelector('location_large', 'location_large', false);
+    notionSelectors.location_small = new NotionTagSelector('location_small', 'location_small', true);
 
-    // Initialize Modal Inline Edit Notion Tag Selectors
-    notionSelectors.modal_category = new NotionTagSelector('modal_category', true);
-    notionSelectors.modal_menu = new NotionTagSelector('modal_menu', true);
-    notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', false);
-    notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', true);
+    // Initialize Modal Inline Edit Notion Tag Selectors (Shared dataKeys with Diary)
+    notionSelectors.modal_category = new NotionTagSelector('modal_category', 'category', true);
+    notionSelectors.modal_menu = new NotionTagSelector('modal_menu', 'menu', true);
+    notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', 'location_large', false);
+    notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', 'location_small', true);
 
     // Modal spoon rate picker
     const modalRatePicker = document.getElementById('modal-edit-rate-picker');
