@@ -232,6 +232,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentWinnerItem = null;
 
+    // Dynamic Populate Category & Location Select Options for Roulette
+    function populateRecommendCategories() {
+        const catSelect = document.getElementById('rec-category-select');
+        const locSelect = document.getElementById('rec-location-select');
+        if (!catSelect || !locSelect) return;
+
+        const currentCatVal = catSelect.value;
+        const currentLocVal = locSelect.value;
+
+        const masterData = getUnifiedRestaurantData();
+        const categories = new Set();
+        const locations = new Set();
+
+        masterData.forEach(item => {
+            if (item.category) {
+                item.category.split(',').forEach(c => {
+                    const t = c.trim();
+                    if (t) categories.add(t);
+                });
+            }
+            if (item.location_large) locations.add(item.location_large.trim());
+        });
+
+        // Collect custom options from spoonmap_custom_options
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        if (customStore.category && Array.isArray(customStore.category)) {
+            customStore.category.forEach(c => {
+                if (c && c.trim()) categories.add(c.trim());
+            });
+        }
+
+        // Refresh Category Options
+        catSelect.innerHTML = '<option value="all">전체 (All)</option>';
+        Array.from(categories).sort().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = typeof getFormattedTagDisplay === 'function' ? getFormattedTagDisplay(cat) : cat;
+            catSelect.appendChild(opt);
+        });
+        if (Array.from(categories).includes(currentCatVal)) {
+            catSelect.value = currentCatVal;
+        }
+
+        // Refresh Location Options
+        locSelect.innerHTML = '<option value="all">전체 (All)</option>';
+        Array.from(locations).sort().forEach(loc => {
+            const opt = document.createElement('option');
+            opt.value = loc;
+            opt.textContent = loc;
+            locSelect.appendChild(opt);
+        });
+        if (Array.from(locations).includes(currentLocVal)) {
+            locSelect.value = currentLocVal;
+        }
+    }
+    window.populateRecommendCategories = populateRecommendCategories;
+
     function initRecommendTab() {
         const catSelect = document.getElementById('rec-category-select');
         const locSelect = document.getElementById('rec-location-select');
@@ -318,31 +375,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Populate Category select options
-        const categories = new Set();
-        restaurantData.forEach(item => {
-            if (item.category) {
-                item.category.split(',').forEach(c => categories.add(c.trim()));
-            }
-        });
-        Array.from(categories).sort().forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            catSelect.appendChild(opt);
-        });
-
-        // Populate Location select options
-        const locations = new Set();
-        restaurantData.forEach(item => {
-            if (item.location_large) locations.add(item.location_large);
-        });
-        Array.from(locations).sort().forEach(loc => {
-            const opt = document.createElement('option');
-            opt.value = loc;
-            opt.textContent = loc;
-            locSelect.appendChild(opt);
-        });
+        // Populate Category & Location Selects Initially
+        populateRecommendCategories();
 
         // Execute Spin Reel Animation
         function runSpinAnimation(candidates) {
@@ -471,13 +505,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Visited dataset candidates
-                let candidates = restaurantData.filter(item => {
+                // Visited dataset candidates using unified master data (includes user-added new/custom restaurants!)
+                const masterData = getUnifiedRestaurantData();
+                let candidates = masterData.filter(item => {
                     if (!item.map_url) return false;
-                    if (selectedCat !== 'all' && (!item.category || !item.category.includes(selectedCat))) return false;
+                    if (selectedCat !== 'all') {
+                        if (!item.category) return false;
+                        const catArray = item.category.split(',').map(c => c.trim());
+                        if (!catArray.includes(selectedCat)) return false;
+                    }
                     if (selectedLoc !== 'all' && item.location_large !== selectedLoc) return false;
                     
-                    const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+                    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 1) || 1;
                     if (spoonCount < minRate) return false;
                     if (onlyVisited && (item.visit_count || 1) < 2) return false;
                     
@@ -570,20 +609,11 @@ document.addEventListener('DOMContentLoaded', () => {
         spinBtn.addEventListener('click', startSpin);
         if (reSpinBtn) reSpinBtn.addEventListener('click', startSpin);
 
-        // View on map action
+        // View on map action with automatic map pan & pin highlight
         if (viewOnMapBtn) {
             viewOnMapBtn.addEventListener('click', () => {
                 if (!currentWinnerItem) return;
-                const mapTabBtn = document.querySelector('.tab-btn[data-tab="map"], .mobile-tab-btn[data-tab="map"]');
-                if (mapTabBtn) mapTabBtn.click();
-
-                setTimeout(() => {
-                    const searchInput = document.getElementById('map-search-input');
-                    if (searchInput) {
-                        searchInput.value = currentWinnerItem.name;
-                        searchSavedPlacesOnMap(currentWinnerItem.name);
-                    }
-                }, 300);
+                navigateToMapWithRestaurant(currentWinnerItem);
             });
         }
     }
@@ -591,6 +621,89 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
     let geocoder = null;
+
+    // ─── Navigate to MAP Tab & Highlight Pin/Marker ───
+    function navigateToMapWithRestaurant(item) {
+        if (!item || !item.name) return;
+
+        // 1. Switch to MAP tab UI
+        switchTabUI('map');
+        window.location.hash = '#map';
+
+        // 2. Ensure map is initialized
+        initMap();
+
+        // 3. Pan to location & show pulsing highlight marker overlay
+        setTimeout(() => {
+            const searchInput = document.getElementById('map-search-input');
+            if (searchInput) searchInput.value = item.name;
+
+            if (typeof kakao !== 'undefined' && kakao.maps && map) {
+                const ps = new kakao.maps.services.Places();
+                const geocoderObj = new kakao.maps.services.Geocoder();
+                const searchKeyword = item.location_small ? `${item.location_small.split('/').pop().trim()} ${item.name}` : item.name;
+
+                const handleCoordsFound = (lat, lng, name, address, placeUrl) => {
+                    const moveLatLng = new kakao.maps.LatLng(lat, lng);
+                    map.setCenter(moveLatLng);
+                    map.setLevel(3); // Zoom in close for maximum clarity
+
+                    // Remove any previous highlight overlay
+                    if (window.rouletteMapHighlightOverlay) {
+                        window.rouletteMapHighlightOverlay.setMap(null);
+                    }
+
+                    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
+                    const catDisplay = item.category ? item.category.split(',')[0].trim() : '기타';
+
+                    const content = document.createElement('div');
+                    content.className = 'custom-overlay map-winner-pulse-marker';
+                    content.style.cssText = 'position:relative; bottom:60px; z-index:1000; animation: popoverFadeIn 0.3s ease-out;';
+                    content.innerHTML = `
+                        <div class="overlay-card" style="background:#FFFFFF; border:2.5px solid #EF4444; border-radius:16px; padding:0.95rem 1.2rem; box-shadow:0 14px 30px rgba(239,68,68,0.4); text-align:center; min-width:210px;">
+                            <div style="font-size:0.78rem; font-weight:800; color:#EF4444; margin-bottom:3px;">🎯 룰렛 추천 맛집!</div>
+                            <h4 style="margin:0; font-size:1.1rem; font-weight:900; color:#111827;">${name}</h4>
+                            <div style="font-size:0.82rem; margin:5px 0; color:#4B5563; font-weight:700;">
+                                <span>🏷️ ${catDisplay}</span> · <span>${'🥄'.repeat(spoonCount)}</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:#9CA3AF; margin-bottom:10px;">${address || ''}</div>
+                            <div style="display:flex; gap:6px; justify-content:center;">
+                                <a href="${placeUrl || item.map_url || '#'}" target="_blank" rel="noopener noreferrer" style="background:#FEE2E2; color:#DC2626; text-decoration:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:800;">카카오맵 📍</a>
+                                <button type="button" onclick="this.closest('.map-winner-pulse-marker').remove()" style="background:#F3F4F6; color:#4B5563; border:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:700; cursor:pointer;">닫기</button>
+                            </div>
+                        </div>
+                    `;
+
+                    const customOverlay = new kakao.maps.CustomOverlay({
+                        position: moveLatLng,
+                        content: content,
+                        yAnchor: 1
+                    });
+                    customOverlay.setMap(map);
+                    window.rouletteMapHighlightOverlay = customOverlay;
+                };
+
+                ps.keywordSearch(searchKeyword, (data, status) => {
+                    if (status === kakao.maps.services.Status.OK && data.length > 0) {
+                        const target = data[0];
+                        handleCoordsFound(parseFloat(target.y), parseFloat(target.x), target.place_name, target.address_name, target.place_url);
+                    } else {
+                        const addrToSearch = item.location_small || item.location_large || item.name;
+                        geocoderObj.addressSearch(addrToSearch, (res, geoStatus) => {
+                            if (geoStatus === kakao.maps.services.Status.OK && res.length > 0) {
+                                handleCoordsFound(parseFloat(res[0].y), parseFloat(res[0].x), item.name, res[0].address_name, item.map_url);
+                            } else {
+                                if (typeof searchSavedPlacesOnMap === 'function') searchSavedPlacesOnMap(item.name);
+                            }
+                        });
+                    }
+                });
+            } else {
+                if (typeof searchSavedPlacesOnMap === 'function') searchSavedPlacesOnMap(item.name);
+            }
+        }, 350);
+    }
+    window.navigateToMapWithRestaurant = navigateToMapWithRestaurant;
 
     function initMap() {
         if (map) {
@@ -2360,8 +2473,9 @@ function saveRestaurantMasterFromModal() {
         localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
     }
 
-    // 3. Re-render List, Diary Calendar & Map
+    // 3. Re-render List, Diary Calendar, Map & Roulette Categories
     if (window.renderApp) window.renderApp();
+    if (window.populateRecommendCategories) window.populateRecommendCategories();
     renderDiaryCalendar();
 
     // 4. Update currentDetailModalItem & refresh View Mode
@@ -3960,10 +4074,9 @@ class NotionTagSelector {
             notionSelectors[siblingKey].availableOptions.add(optName);
         }
 
-        // Refresh Sidebar Filter Buttons
-        if (window.refreshSidebarFilters) {
-            window.refreshSidebarFilters();
-        }
+        // Refresh Sidebar Filter & Recommend Roulette Category Buttons
+        if (window.refreshSidebarFilters) window.refreshSidebarFilters();
+        if (window.populateRecommendCategories) window.populateRecommendCategories();
 
         this.selectTag(optName);
     }
