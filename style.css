@@ -4121,7 +4121,8 @@ input[type="date"].drawer-input {
 
 /* 5. Detail View Modal Action Buttons (Add Diary & Edit Restaurant) */
 .list-detail-action-bar {
-    margin-top: 0;
+    margin-top: 0.3rem;
+    margin-bottom: 0.3rem;
     padding-top: 0;
     border-top: none;
 }

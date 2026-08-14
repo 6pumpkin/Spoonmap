@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
             return;
         }
+        initNotionSelectors();
         setupFilters();
         setupSearch();
         setupTabs();
@@ -2084,6 +2085,11 @@ function switchModalToEditMode(item) {
     if (!item) return;
     currentModalEditingItem = item;
 
+    // Ensure Notion Tag Selectors are initialized
+    if (typeof initNotionSelectors === 'function') {
+        initNotionSelectors();
+    }
+
     const viewHeader = document.getElementById('list-detail-header-view');
     const editHeader = document.getElementById('list-detail-header-edit');
     const viewMode = document.getElementById('list-detail-view-mode');
@@ -4049,8 +4055,53 @@ class NotionTagSelector {
 
 // Map of Notion Tag Selectors
 let notionSelectors = {};
+let notionSelectorsInitialized = false;
+
+function initNotionSelectors() {
+    if (notionSelectorsInitialized) return;
+    
+    // Check if DOM is ready with required elements
+    if (!document.getElementById('notion-field-category') && !document.getElementById('notion-field-modal_category')) return;
+    notionSelectorsInitialized = true;
+
+    // Initialize Diary Drawer Notion Tag Selectors
+    if (document.getElementById('notion-field-category')) {
+        notionSelectors.category = new NotionTagSelector('category', 'category', true);
+        notionSelectors.menu = new NotionTagSelector('menu', 'menu', true);
+        notionSelectors.location_large = new NotionTagSelector('location_large', 'location_large', false);
+        notionSelectors.location_small = new NotionTagSelector('location_small', 'location_small', true);
+    }
+
+    // Initialize Modal Inline Edit Notion Tag Selectors (Shared dataKeys with Diary)
+    if (document.getElementById('notion-field-modal_category')) {
+        notionSelectors.modal_category = new NotionTagSelector('modal_category', 'category', true);
+        notionSelectors.modal_menu = new NotionTagSelector('modal_menu', 'menu', true);
+        notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', 'location_large', false);
+        notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', 'location_small', true);
+    }
+
+    // Modal spoon rate picker
+    const modalRatePicker = document.getElementById('modal-edit-rate-picker');
+    if (modalRatePicker) {
+        const spoonBtns = modalRatePicker.querySelectorAll('.modal-rate-spoon');
+        const rateLabel = document.getElementById('modal-edit-rate-label');
+        const rateInput = document.getElementById('modal-edit-input-rate');
+        spoonBtns.forEach(btn => {
+            btn.onclick = () => {
+                const val = parseInt(btn.dataset.val);
+                spoonBtns.forEach((b, i) => {
+                    b.classList.toggle('active', i < val);
+                });
+                if (rateInput) rateInput.value = '🥄'.repeat(val);
+                if (rateLabel) rateLabel.textContent = RATE_LABELS[val] || '';
+            };
+        });
+    }
+}
 
 function initDiaryTab() {
+    initNotionSelectors();
+
     if (diaryInitialized) {
         renderDiaryCalendar(); // Always refresh on re-enter
         return;
@@ -4080,36 +4131,6 @@ function initDiaryTab() {
         renderDiaryCalendar();
     });
     if (exportBtn) exportBtn.addEventListener('click', exportDiaryCSV);
-
-    // Initialize Diary Drawer Notion Tag Selectors
-    notionSelectors.category = new NotionTagSelector('category', 'category', true);
-    notionSelectors.menu = new NotionTagSelector('menu', 'menu', true);
-    notionSelectors.location_large = new NotionTagSelector('location_large', 'location_large', false);
-    notionSelectors.location_small = new NotionTagSelector('location_small', 'location_small', true);
-
-    // Initialize Modal Inline Edit Notion Tag Selectors (Shared dataKeys with Diary)
-    notionSelectors.modal_category = new NotionTagSelector('modal_category', 'category', true);
-    notionSelectors.modal_menu = new NotionTagSelector('modal_menu', 'menu', true);
-    notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', 'location_large', false);
-    notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', 'location_small', true);
-
-    // Modal spoon rate picker
-    const modalRatePicker = document.getElementById('modal-edit-rate-picker');
-    if (modalRatePicker) {
-        const spoonBtns = modalRatePicker.querySelectorAll('.modal-rate-spoon');
-        const rateLabel = document.getElementById('modal-edit-rate-label');
-        const rateInput = document.getElementById('modal-edit-input-rate');
-        spoonBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const val = parseInt(btn.dataset.val);
-                spoonBtns.forEach((b, i) => {
-                    b.classList.toggle('active', i < val);
-                });
-                if (rateInput) rateInput.value = '🥄'.repeat(val);
-                if (rateLabel) rateLabel.textContent = RATE_LABELS[val] || '';
-            });
-        });
-    }
 
     // Name autocomplete setup
     populateDiaryAutocomplete();
