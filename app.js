@@ -1466,12 +1466,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         unifiedData.forEach(item => {
             if (item.category) {
-                item.category.split(',').forEach(cat => categories.add(cat.trim()));
+                item.category.split(',').forEach(cat => {
+                    const t = cat.trim();
+                    if (t) categories.add(t);
+                });
             }
             if (item.location_large) {
                 locationCounts[item.location_large] = (locationCounts[item.location_large] || 0) + 1;
             }
         });
+
+        // Also collect custom categories added by user in spoonmap_custom_options
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        if (customStore.category && Array.isArray(customStore.category)) {
+            customStore.category.forEach(c => {
+                if (c && c.trim()) categories.add(c.trim());
+            });
+        }
 
         // Refresh Category Buttons (Keep 'all' button)
         if (categoryFilterGroup) {
@@ -1492,6 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderLocationButtons();
     }
+    window.refreshSidebarFilters = refreshSidebarFilters;
 
     function renderLocationButtons() {
         // Clear previous buttons EXCEPT 'all'
@@ -3765,6 +3777,41 @@ const NOTION_COLORS = [
     { bg: '#FFEDD5', color: '#9A3412' }  // Orange
 ];
 
+const KNOWN_TAG_EMOJIS = {
+    '한식': '🍚', '중식': '🥟', '일식': '🍣', '양식': '🍝', '카페': '☕', '디저트': '🍰',
+    '고기': '🥩', '야채': '🥦', '채소': '🥗', '샐러드': '🥗', '치킨': '🍗', '피자': '🍕',
+    '버거': '🍔', '패스트푸드': '🍔', '분식': '🍥', '술집': '🍺', '포차': '🍶', '와인': '🍷',
+    '칵테일': '🍸', '일반식당': '🍽️', '멕시칸': '🌮', '아시안': '🍜', '쌀국수': '🍜', '해산물': '🦀',
+    '회': '🐟', '초밥': '🍣', '삼겹살': '🥓', '갈비': '🍖', '족발': '🍖', '곱창': '🍢',
+    '베이커리': '🥐', '브런치': '🥞', '커피': '☕', '파스타': '🍝', '스테이크': '🥩'
+};
+
+const RANDOM_FOOD_EMOJIS = ['🍽️', '🏷️', '✨', '😋', '🥢', '🥄', '🍲', '🍱', '🥣', '🥗', '🍢', '🍡', '🥟', '🍘', '🌶️', '🥑', '🍳'];
+
+function getFormattedTagDisplay(text) {
+    if (!text) return '';
+    const trimmed = text.trim();
+
+    // Check if text already starts with an emoji
+    const hasEmojiPrefix = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed);
+    if (hasEmojiPrefix) return trimmed;
+
+    // Check known dictionary matches
+    for (const [key, emoji] of Object.entries(KNOWN_TAG_EMOJIS)) {
+        if (trimmed.includes(key)) {
+            return `${emoji} ${trimmed}`;
+        }
+    }
+
+    // Fallback: pick deterministic food emoji based on string hash
+    let hash = 0;
+    for (let i = 0; i < trimmed.length; i++) {
+        hash = trimmed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const emoji = RANDOM_FOOD_EMOJIS[Math.abs(hash) % RANDOM_FOOD_EMOJIS.length];
+    return `${emoji} ${trimmed}`;
+}
+
 function getNotionTagColor(text) {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
@@ -3923,6 +3970,11 @@ class NotionTagSelector {
             notionSelectors[siblingKey].availableOptions.add(optName);
         }
 
+        // Refresh Sidebar Filter Buttons
+        if (window.refreshSidebarFilters) {
+            window.refreshSidebarFilters();
+        }
+
         this.selectTag(optName);
     }
 
@@ -3990,13 +4042,14 @@ class NotionTagSelector {
 
         this.selectedValues.forEach(val => {
             const color = getNotionTagColor(val);
+            const displayLabel = getFormattedTagDisplay(val);
             const chip = document.createElement('span');
             chip.className = 'notion-selected-chip';
             chip.style.backgroundColor = color.bg;
             chip.style.color = color.color;
 
             chip.innerHTML = `
-                <span class="chip-text">${val}</span>
+                <span class="chip-text">${displayLabel}</span>
                 <span class="notion-tag-remove" title="삭제">&times;</span>
             `;
 
@@ -4018,6 +4071,7 @@ class NotionTagSelector {
 
         filtered.forEach(opt => {
             const color = getNotionTagColor(opt);
+            const displayLabel = getFormattedTagDisplay(opt);
             const isSelected = this.selectedValues.includes(opt);
 
             const optEl = document.createElement('div');
@@ -4026,7 +4080,7 @@ class NotionTagSelector {
             
             optEl.innerHTML = `
                 <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
-                    ${opt}
+                    ${displayLabel}
                 </div>
                 <span class="option-delete-hint">우클릭: 삭제</span>
                 ${isSelected ? '<span class="option-check">✓</span>' : ''}
@@ -4170,7 +4224,7 @@ function deleteOptionGlobally(optName, baseKey) {
 
     // 4. Re-render app, side filters & diary calendar
     if (window.renderApp) window.renderApp();
-    if (typeof setupFilters === 'function') setupFilters();
+    if (window.refreshSidebarFilters) window.refreshSidebarFilters();
     renderDiaryCalendar();
 
     showDiaryToast(`🗑️ "${optName}" 카테고리가 삭제되었습니다.`);
