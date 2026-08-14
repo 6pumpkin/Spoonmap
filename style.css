@@ -4324,3 +4324,36 @@ input[type="date"].drawer-input {
 .notion-option-item:hover .option-delete-hint {
     opacity: 0.8;
 }
+
+/* 8. Clickable Insight Bars & Rank Items */
+.clickable-insight-bar, .clickable-rank-item {
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    border-radius: 12px;
+    padding: 6px 10px;
+}
+
+.clickable-insight-bar:hover {
+    transform: translateX(4px);
+    background-color: var(--surface-hover);
+}
+
+.clickable-rank-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--surface-hover);
+}
+
+.insight-jump-hint {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--coral-main);
+    opacity: 0;
+    transition: opacity 0.15s;
+    margin-left: 6px;
+}
+
+.clickable-insight-bar:hover .insight-jump-hint,
+.clickable-rank-item:hover .insight-jump-hint {
+    opacity: 1;
+}

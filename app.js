@@ -2473,9 +2473,10 @@ function saveRestaurantMasterFromModal() {
         localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
     }
 
-    // 3. Re-render List, Diary Calendar, Map & Roulette Categories
+    // 3. Re-render List, Diary Calendar, Map, Insights & Roulette Categories
     if (window.renderApp) window.renderApp();
     if (window.populateRecommendCategories) window.populateRecommendCategories();
+    if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
     renderDiaryCalendar();
 
     // 4. Update currentDetailModalItem & refresh View Mode
@@ -2850,18 +2851,54 @@ function initFoodInsightsTab() {
     }
 }
 
-function computeAndRenderFoodInsights() {
-    if (typeof restaurantData === 'undefined' || !restaurantData.length) return;
+// ─── Filter by Insight Graph Click (Smart Navigation to LIST Tab) ───
+function filterByInsight(filterType, filterValue) {
+    if (!filterType || !filterValue) return;
 
-    const totalCount = restaurantData.length;
+    // 1. Switch to LIST tab
+    switchTabUI('list');
+    window.location.hash = '#list';
+
+    // 2. Reset existing filters first
+    if (window.resetMainAppFilters) {
+        window.resetMainAppFilters();
+    }
+
+    // 3. Trigger filter button click in sidebar
+    setTimeout(() => {
+        let selector = '';
+        if (filterType === 'category') {
+            selector = `#category-filters .filter-btn[data-value="${filterValue}"]`;
+        } else if (filterType === 'location_large') {
+            selector = `#location-large-filters .filter-btn[data-value="${filterValue}"]`;
+        } else if (filterType === 'rate') {
+            selector = `#rate-filters .filter-btn[data-value="${filterValue}"]`;
+        }
+
+        const targetBtn = document.querySelector(selector);
+        if (targetBtn) {
+            targetBtn.click();
+        }
+
+        const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
+        showDiaryToast(`${label} "${filterValue}" 필터로 LIST 목록이 검색되었습니다!`);
+    }, 150);
+}
+window.filterByInsight = filterByInsight;
+
+function computeAndRenderFoodInsights() {
+    const masterData = getUnifiedRestaurantData();
+    if (!masterData || !masterData.length) return;
+
+    const totalCount = masterData.length;
     let totalVisitsSum = 0;
     let reVisitedCount = 0;
     const regionCounts = {};
     const categoryCounts = {};
     const rateCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    const topVisitedItems = [...restaurantData].sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
+    const topVisitedItems = [...masterData].sort((a, b) => (b.visit_count || 1) - (a.visit_count || 1));
 
-    restaurantData.forEach(item => {
+    masterData.forEach(item => {
         const visits = item.visit_count || 1;
         totalVisitsSum += visits;
         if (visits >= 2) reVisitedCount++;
@@ -2879,11 +2916,11 @@ function computeAndRenderFoodInsights() {
         }
 
         // Spoon Rate
-        const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+        const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 1) || 1;
         rateCounts[spoonCount] = (rateCounts[spoonCount] || 0) + 1;
     });
 
-    // 1. Counter Cards (Full value, no truncation)
+    // 1. Counter Cards (Realtime 100% updated values)
     const summaryEl = document.getElementById('insights-total-summary');
     if (summaryEl) {
         summaryEl.textContent = `총 ${totalCount.toLocaleString()}개의 맛집과 ${totalVisitsSum.toLocaleString()}회의 미식 탐방 기록 분석 완료`;
@@ -2906,7 +2943,7 @@ function computeAndRenderFoodInsights() {
     const topCatEl = document.getElementById('stat-top-category');
     if (topCatEl) topCatEl.textContent = topCat ? `${topCat[0]} (${topCat[1]}곳)` : '-';
 
-    // 2. Region List (Top 5 vs All)
+    // 2. Region List (Clickable bar filters LIST tab!)
     const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]);
     const btnReg = document.getElementById('btn-toggle-regions');
     if (btnReg) {
@@ -2918,9 +2955,9 @@ function computeAndRenderFoodInsights() {
         regionContainer.innerHTML = displayRegions.map(([reg, count]) => {
             const pct = Math.round((count / totalCount) * 100);
             return `
-                <div class="bar-item">
+                <div class="bar-item clickable-insight-bar" onclick="filterByInsight('location_large', '${reg}')" title="클릭하면 LIST 탭에서 '${reg}' 맛집만 필터링합니다">
                     <div class="bar-label-row">
-                        <span>📍 ${reg}</span>
+                        <span>📍 ${reg} <span class="insight-jump-hint">LIST로 이동 ➔</span></span>
                         <span class="bar-count">${count}곳 (${pct}%)</span>
                     </div>
                     <div class="bar-track">
@@ -2931,7 +2968,7 @@ function computeAndRenderFoodInsights() {
         }).join('');
     }
 
-    // 3. Category List (Top 5 vs All)
+    // 3. Category List (Clickable bar filters LIST tab with Notion pastel badges)
     const btnCat = document.getElementById('btn-toggle-categories');
     if (btnCat) {
         btnCat.textContent = showAllCategories ? '접기 ▲' : '전체 ▼';
@@ -2941,21 +2978,25 @@ function computeAndRenderFoodInsights() {
     if (categoryContainer) {
         categoryContainer.innerHTML = displayCategories.map(([cat, count]) => {
             const pct = Math.round((count / totalCount) * 100);
+            const displayLabel = typeof getFormattedTagDisplay === 'function' ? getFormattedTagDisplay(cat) : cat;
+            const color = typeof getNotionTagColor === 'function' ? getNotionTagColor(cat) : { bg: '#FEF3C7', color: '#92400E' };
             return `
-                <div class="bar-item">
+                <div class="bar-item clickable-insight-bar" onclick="filterByInsight('category', '${cat}')" title="클릭하면 LIST 탭에서 '${cat}' 맛집만 필터링합니다">
                     <div class="bar-label-row">
-                        <span>🍚 ${cat}</span>
+                        <span class="notion-selected-chip" style="background:${color.bg}; color:${color.color}; font-weight:800; font-size:0.84rem; padding:2px 8px; border-radius:10px;">
+                            ${displayLabel} <span class="insight-jump-hint">LIST로 이동 ➔</span>
+                        </span>
                         <span class="bar-count">${count}곳 (${pct}%)</span>
                     </div>
                     <div class="bar-track">
-                        <div class="bar-fill" style="width: ${pct}%;"></div>
+                        <div class="bar-fill" style="width: ${pct}%; background:${color.color};"></div>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    // 4. Rate Distribution
+    // 4. Rate Distribution (Clickable bar filters LIST tab!)
     const rateContainer = document.getElementById('insights-rate-list');
     if (rateContainer) {
         const rateKeys = [5, 4, 3, 2, 1];
@@ -2963,9 +3004,9 @@ function computeAndRenderFoodInsights() {
             const count = rateCounts[r] || 0;
             const pct = Math.round((count / totalCount) * 100);
             return `
-                <div class="bar-item">
+                <div class="bar-item clickable-insight-bar" onclick="filterByInsight('rate', '${r}')" title="클릭하면 LIST 탭에서 평점 ${r}개 맛집만 필터링합니다">
                     <div class="bar-label-row">
-                        <span>🥄 ${r}개 평점</span>
+                        <span>🥄 ${r}개 평점 <span class="insight-jump-hint">LIST로 이동 ➔</span></span>
                         <span class="bar-count">${count}곳 (${pct}%)</span>
                     </div>
                     <div class="bar-track">
@@ -2976,7 +3017,7 @@ function computeAndRenderFoodInsights() {
         }).join('');
     }
 
-    // 5. Hall of Fame (Top 5 vs All Visited Places)
+    // 5. Hall of Fame (Clickable card opens Detail Modal)
     const visitedOnlyPlaces = topVisitedItems.filter(item => (item.visit_count || 1) >= 2);
     const btnTop = document.getElementById('btn-toggle-top-places');
     if (btnTop) {
@@ -2986,14 +3027,15 @@ function computeAndRenderFoodInsights() {
     const topPlacesContainer = document.getElementById('insights-top-places-list');
     if (topPlacesContainer) {
         topPlacesContainer.innerHTML = displayPlaces.map((item, idx) => {
-            const spoonCount = (item.rate ? (item.rate.match(/🥄/g) || []).length : 1) || 1;
+            const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
             const visits = item.visit_count || 1;
+            const jsonStr = JSON.stringify(item).replace(/"/g, '&quot;');
             return `
-                <div class="rank-item">
+                <div class="rank-item clickable-rank-item" onclick='openRestaurantDetailModal(${jsonStr})' title="클릭하면 식당 상세 및 방문 이력을 확인합니다">
                     <div class="rank-left">
                         <span class="rank-num">#${idx + 1}</span>
                         <div>
-                            <div class="rank-name">${item.name}</div>
+                            <div class="rank-name">${item.name} <span class="insight-jump-hint">상세보기 ➔</span></div>
                             <div class="rank-meta">${item.location_large} • ${item.category || '기타'}</div>
                         </div>
                     </div>
@@ -5164,6 +5206,8 @@ function saveDiaryEntry() {
     closeDiaryDrawer();
     renderDiaryCalendar();
     if (window.renderApp) window.renderApp();
+    if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
+    if (window.populateRecommendCategories) window.populateRecommendCategories();
 }
 
 function showDiaryToast(msg) {
