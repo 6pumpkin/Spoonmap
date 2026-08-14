@@ -3579,6 +3579,54 @@ input[type="date"].drawer-input {
     gap: 0.35rem;
 }
 
+/* Restaurant Detail View Modal Layout Enhancements */
+.list-detail-modal-card {
+    background: var(--surface-card);
+    border-radius: 24px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 1.4rem 1.6rem;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.list-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--border-subtle);
+    margin-bottom: 0.1rem;
+}
+
+.list-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.list-detail-info-group {
+    background: var(--surface-bg);
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.list-detail-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
 .detail-label {
     font-size: 0.82rem;
     font-weight: 800;
@@ -3598,7 +3646,8 @@ input[type="date"].drawer-input {
 .list-detail-maps-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
+    margin-top: 0.1rem;
 }
 
 .detail-map-btns {
@@ -3612,8 +3661,8 @@ input[type="date"].drawer-input {
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    padding: 0.75rem 1rem;
-    border-radius: 16px;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
     font-size: 0.92rem;
     font-weight: 800;
     text-decoration: none;
@@ -3648,12 +3697,13 @@ input[type="date"].drawer-input {
 /* History Section */
 .list-detail-history-group {
     background: var(--surface-bg);
-    padding: 1.1rem;
-    border-radius: 20px;
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
     border: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.65rem;
+    margin-top: 0.1rem;
 }
 
 .history-header {

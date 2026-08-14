@@ -3777,6 +3777,7 @@ function getNotionTagColor(text) {
 class NotionTagSelector {
     constructor(fieldType, isMultiSelect = true) {
         this.fieldType = fieldType;
+        this.dataKey = fieldType.replace('modal_', ''); // Map modal_category -> category, etc.
         this.isMultiSelect = isMultiSelect;
         this.selectedValues = [];
         this.availableOptions = new Set();
@@ -3793,7 +3794,7 @@ class NotionTagSelector {
     }
 
     initOptions() {
-        // Collect & split tags from dataset
+        // Collect & split tags from dataset using shared dataKey
         const collect = (dataset, key) => {
             if (!dataset || !Array.isArray(dataset)) return;
             dataset.forEach(item => {
@@ -3817,13 +3818,13 @@ class NotionTagSelector {
             });
         };
 
-        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.fieldType);
-        if (typeof diaryData !== 'undefined') collect(diaryData, this.fieldType);
+        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.dataKey);
+        if (typeof diaryData !== 'undefined') collect(diaryData, this.dataKey);
 
-        // Load custom options created by user from localStorage
+        // Load custom options created by user from localStorage using shared dataKey
         const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
-        if (customStore[this.fieldType] && Array.isArray(customStore[this.fieldType])) {
-            customStore[this.fieldType].forEach(opt => this.availableOptions.add(opt));
+        if (customStore[this.dataKey] && Array.isArray(customStore[this.dataKey])) {
+            customStore[this.dataKey].forEach(opt => this.availableOptions.add(opt));
         }
     }
 
@@ -3901,14 +3902,25 @@ class NotionTagSelector {
 
     addOptionAndSelect(optName) {
         if (!optName) return;
+        
+        // Add option to this instance
         this.availableOptions.add(optName);
 
-        // Save custom option to localStorage
+        // Save custom option to localStorage using dataKey
         const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
-        if (!customStore[this.fieldType]) customStore[this.fieldType] = [];
-        if (!customStore[this.fieldType].includes(optName)) {
-            customStore[this.fieldType].push(optName);
+        if (!customStore[this.dataKey]) customStore[this.dataKey] = [];
+        if (!customStore[this.dataKey].includes(optName)) {
+            customStore[this.dataKey].push(optName);
             localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
+        }
+
+        // Realtime update: Share newly added option with all NotionTagSelector instances sharing the same dataKey!
+        if (typeof notionSelectors !== 'undefined') {
+            Object.values(notionSelectors).forEach(sel => {
+                if (sel && sel.dataKey === this.dataKey) {
+                    sel.availableOptions.add(optName);
+                }
+            });
         }
 
         this.selectTag(optName);
