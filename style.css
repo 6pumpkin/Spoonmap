@@ -3556,11 +3556,24 @@ input[type="date"].drawer-input {
     font-weight: 700;
 }
 
+/* Detail Mode Container (View / Edit) */
+.detail-mode-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.modal-edit-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
 /* Body & Rows */
 .list-detail-body {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .list-detail-info-group {
@@ -4121,9 +4134,9 @@ input[type="date"].drawer-input {
 
 /* 5. Detail View Modal Action Buttons (Add Diary & Edit Restaurant) */
 .list-detail-action-bar {
-    margin: 0;
-    padding: 0;
-    border: none;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-subtle);
 }
 
 .detail-action-two-btns {

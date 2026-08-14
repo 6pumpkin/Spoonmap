@@ -70,12 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
             return;
         }
-        initNotionSelectors();
         setupFilters();
         setupSearch();
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
+        if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
         render();
     }
 
@@ -2066,145 +2066,13 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 });
 
-// ─── List View Restaurant Detail Modal (Read-Only & Inline Master Edit) ───
-let currentModalEditingItem = null;
-
-function switchModalToViewMode() {
-    const viewHeader = document.getElementById('list-detail-header-view');
-    const editHeader = document.getElementById('list-detail-header-edit');
-    const viewMode = document.getElementById('list-detail-view-mode');
-    const editMode = document.getElementById('list-detail-edit-mode');
-
-    if (viewHeader) viewHeader.style.display = 'flex';
-    if (editHeader) editHeader.style.display = 'none';
-    if (viewMode) viewMode.style.display = 'block';
-    if (editMode) editMode.style.display = 'none';
-}
-
-function switchModalToEditMode(item) {
-    if (!item) return;
-    currentModalEditingItem = item;
-
-    // Ensure Notion Tag Selectors are initialized
-    if (typeof initNotionSelectors === 'function') {
-        initNotionSelectors();
-    }
-
-    const viewHeader = document.getElementById('list-detail-header-view');
-    const editHeader = document.getElementById('list-detail-header-edit');
-    const viewMode = document.getElementById('list-detail-view-mode');
-    const editMode = document.getElementById('list-detail-edit-mode');
-
-    if (viewHeader) viewHeader.style.display = 'none';
-    if (editHeader) editHeader.style.display = 'flex';
-    if (viewMode) viewMode.style.display = 'none';
-    if (editMode) editMode.style.display = 'block';
-
-    const nameInput = document.getElementById('modal-edit-input-name');
-    const mapInput = document.getElementById('modal-edit-input-map');
-    const memoInput = document.getElementById('modal-edit-input-memo');
-    const rateInput = document.getElementById('modal-edit-input-rate');
-    const rateLabel = document.getElementById('modal-edit-rate-label');
-
-    if (nameInput) nameInput.value = item.name || '';
-    if (mapInput) mapInput.value = item.map_url || '';
-    if (memoInput) memoInput.value = item.memo || '';
-
-    // Notion Tag Selectors
-    if (item.category && notionSelectors.modal_category) notionSelectors.modal_category.setValues(item.category);
-    else if (notionSelectors.modal_category) notionSelectors.modal_category.clear();
-
-    if (item.menu && notionSelectors.modal_menu) notionSelectors.modal_menu.setValues(item.menu);
-    else if (notionSelectors.modal_menu) notionSelectors.modal_menu.clear();
-
-    if (item.location_large && notionSelectors.modal_location_large) notionSelectors.modal_location_large.setValues(item.location_large);
-    else if (notionSelectors.modal_location_large) notionSelectors.modal_location_large.clear();
-
-    if (item.location_small && notionSelectors.modal_location_small) notionSelectors.modal_location_small.setValues(item.location_small);
-    else if (notionSelectors.modal_location_small) notionSelectors.modal_location_small.clear();
-
-    // Spoon rate
-    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 4;
-    if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
-    if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || '';
-    document.querySelectorAll('.modal-rate-spoon').forEach((b, i) => {
-        b.classList.toggle('active', i < spoonCount);
-    });
-}
-
-function saveModalMasterEdit() {
-    if (!currentModalEditingItem) return;
-    const name = document.getElementById('modal-edit-input-name')?.value.trim() || currentModalEditingItem.name;
-    const key = name.toLowerCase();
-
-    const category = notionSelectors.modal_category ? notionSelectors.modal_category.getValueString() : '';
-    const menu = notionSelectors.modal_menu ? notionSelectors.modal_menu.getValues() : [];
-    const location_large = notionSelectors.modal_location_large ? notionSelectors.modal_location_large.getValueString() : '';
-    const location_small = notionSelectors.modal_location_small ? notionSelectors.modal_location_small.getValueString() : '';
-    const rate = document.getElementById('modal-edit-input-rate')?.value.trim() || '🥄🥄🥄🥄';
-    const map_url = document.getElementById('modal-edit-input-map')?.value.trim() || '';
-    const memo = document.getElementById('modal-edit-input-memo')?.value.trim() || '';
-
-    if (!name) { alert('식당명을 입력해주세요.'); return; }
-    if (!category) { alert('식당 분류를 하나 이상 선택해주세요.'); return; }
-
-    // 1. Save to spoonmap_restaurant_overrides
-    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
-    overrides[key] = {
-        name,
-        category,
-        location_large,
-        location_small,
-        menu,
-        rate,
-        map_url,
-        memo,
-        updated_at: new Date().toISOString()
-    };
-    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
-
-    // 2. Batch sync all entries in spoonmap_diary for this restaurant
-    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
-    let diaryUpdated = false;
-    existing.forEach(entry => {
-        if (entry.name && entry.name.trim().toLowerCase() === key) {
-            entry.category = category;
-            if (location_large) entry.location_large = location_large;
-            if (location_small) entry.location_small = location_small;
-            if (menu.length > 0) entry.menu = menu;
-            if (rate) entry.rate = rate;
-            if (map_url) entry.map_url = map_url;
-            diaryUpdated = true;
-        }
-    });
-    if (diaryUpdated) {
-        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
-    }
-
-    // 3. Switch back to View mode and refresh modal UI
-    switchModalToViewMode();
-
-    const allUnified = getUnifiedRestaurantData();
-    const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key) || {
-        ...currentModalEditingItem,
-        name,
-        category,
-        location_large,
-        location_small,
-        menu,
-        rate,
-        map_url,
-        memo
-    };
-    openRestaurantDetailModal(updatedItem);
-
-    if (window.renderApp) window.renderApp();
-    renderDiaryCalendar();
-
-    showDiaryToast(`✅ "${name}" 가게 정보가 전체 일괄 수정되었습니다!`);
-}
+// ─── List View Restaurant Detail Modal (View & Inline Edit) ───
+let currentDetailModalItem = null;
 
 function openRestaurantDetailModal(item) {
+    if (!item) return;
+    currentDetailModalItem = item;
+
     const overlay = document.getElementById('list-detail-modal-overlay');
     const nameEl = document.getElementById('list-detail-name');
     const badgeEl = document.getElementById('list-detail-visit-badge');
@@ -2219,8 +2087,8 @@ function openRestaurantDetailModal(item) {
 
     if (!overlay) return;
 
-    // Reset to view mode
-    switchModalToViewMode();
+    // Always start in View Mode
+    switchDetailModalMode('view');
 
     // 1. Title & Visit Badge
     if (nameEl) nameEl.textContent = item.name;
@@ -2304,10 +2172,9 @@ function openRestaurantDetailModal(item) {
     if (historyListEl) {
         historyListEl.innerHTML = '';
         if (visits.length > 0) {
-            // Render visits in reverse chronological order (newest first)
             const sortedVisits = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
             sortedVisits.forEach((v, idx) => {
-                const orderNum = sortedVisits.length - idx; // 1st visit, 2nd visit...
+                const orderNum = sortedVisits.length - idx;
                 const memoText = (v.data && (v.data.memo || v.data.review)) || v.memo || '';
                 const div = document.createElement('div');
                 div.className = 'history-item-card';
@@ -2349,7 +2216,7 @@ function openRestaurantDetailModal(item) {
     }
     const editRestaurantBtn = document.getElementById('btn-edit-restaurant-info');
     if (editRestaurantBtn) {
-        editRestaurantBtn.onclick = () => switchModalToEditMode(item);
+        editRestaurantBtn.onclick = () => switchDetailModalMode('edit');
     }
 
     // Open Modal
@@ -2363,18 +2230,146 @@ function closeRestaurantDetailModal() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
     }
-    switchModalToViewMode();
+    // Close open popovers
+    document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => p.classList.remove('open'));
 }
 
-// ─── Reset All Filters Function (Global Scope) ────
-function resetAllFilters() {
-    if (window.resetMainAppFilters) {
-        window.resetMainAppFilters();
+// Switch between 'view' and 'edit' mode in the center modal
+function switchDetailModalMode(mode = 'view') {
+    const viewContainer = document.getElementById('list-detail-view-container');
+    const editContainer = document.getElementById('list-detail-edit-container');
+
+    // Close any open popovers
+    document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => p.classList.remove('open'));
+
+    if (mode === 'edit') {
+        if (viewContainer) viewContainer.style.display = 'none';
+        if (editContainer) editContainer.style.display = 'block';
+        populateModalEditForm(currentDetailModalItem);
     } else {
-        const searchInput = document.getElementById('restaurant-search');
-        if (searchInput) searchInput.value = '';
-        if (window.renderApp) window.renderApp();
+        if (editContainer) editContainer.style.display = 'none';
+        if (viewContainer) viewContainer.style.display = 'block';
     }
+}
+
+function populateModalEditForm(item) {
+    if (!item) return;
+
+    // Ensure notion selectors are initialized
+    if (!notionSelectors.modal_category) {
+        initAllNotionSelectors();
+    }
+
+    const nameInput = document.getElementById('modal-edit-input-name');
+    const rateInput = document.getElementById('modal-edit-input-rate');
+    const rateLabel = document.getElementById('modal-edit-rate-label');
+    const mapInput = document.getElementById('modal-edit-input-map');
+    const memoInput = document.getElementById('modal-edit-input-memo');
+
+    if (nameInput) nameInput.value = item.name || '';
+    if (mapInput) mapInput.value = item.map_url || '';
+    if (memoInput) memoInput.value = item.memo || '';
+
+    // Set Notion tag selectors
+    if (notionSelectors.modal_category) {
+        if (item.category) notionSelectors.modal_category.setValues(item.category);
+        else notionSelectors.modal_category.clear();
+    }
+    if (notionSelectors.modal_menu) {
+        if (item.menu) notionSelectors.modal_menu.setValues(item.menu);
+        else notionSelectors.modal_menu.clear();
+    }
+    if (notionSelectors.modal_location_large) {
+        if (item.location_large) notionSelectors.modal_location_large.setValues(item.location_large);
+        else notionSelectors.modal_location_large.clear();
+    }
+    if (notionSelectors.modal_location_small) {
+        if (item.location_small) notionSelectors.modal_location_small.setValues(item.location_small);
+        else notionSelectors.modal_location_small.clear();
+    }
+
+    // Set Rate
+    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 4;
+    if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+    if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || `${spoonCount}개`;
+    document.querySelectorAll('.modal-rate-spoon').forEach((b, i) => {
+        b.classList.toggle('active', i < spoonCount);
+    });
+}
+
+function saveRestaurantMasterFromModal() {
+    if (!currentDetailModalItem || !currentDetailModalItem.name) return;
+    const name = currentDetailModalItem.name;
+    const key = name.trim().toLowerCase();
+
+    const category = notionSelectors.modal_category ? notionSelectors.modal_category.getValueString() : '';
+    if (!category) {
+        alert('식당 분류를 하나 이상 선택해주세요.');
+        return;
+    }
+
+    const menu = notionSelectors.modal_menu ? notionSelectors.modal_menu.getValues() : [];
+    const location_large = notionSelectors.modal_location_large ? notionSelectors.modal_location_large.getValueString() : '';
+    const location_small = notionSelectors.modal_location_small ? notionSelectors.modal_location_small.getValueString() : '';
+    const rate = document.getElementById('modal-edit-input-rate')?.value.trim() || '🥄🥄🥄🥄';
+    const map_url = document.getElementById('modal-edit-input-map')?.value.trim() || '';
+    const memo = document.getElementById('modal-edit-input-memo')?.value.trim() || '';
+
+    // 1. Save to spoonmap_restaurant_overrides
+    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    overrides[key] = {
+        name,
+        category,
+        location_large,
+        location_small,
+        menu,
+        rate,
+        map_url,
+        memo,
+        updated_at: new Date().toISOString()
+    };
+    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+
+    // 2. Batch sync all entries in spoonmap_diary for this restaurant
+    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    let diaryUpdated = false;
+    existing.forEach(entry => {
+        if (entry.name && entry.name.trim().toLowerCase() === key) {
+            entry.category = category;
+            if (location_large) entry.location_large = location_large;
+            if (location_small) entry.location_small = location_small;
+            if (menu.length > 0) entry.menu = menu;
+            if (rate) entry.rate = rate;
+            if (map_url) entry.map_url = map_url;
+            diaryUpdated = true;
+        }
+    });
+    if (diaryUpdated) {
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+    }
+
+    // 3. Re-render List, Diary Calendar & Map
+    if (window.renderApp) window.renderApp();
+    renderDiaryCalendar();
+
+    // 4. Update currentDetailModalItem & refresh View Mode
+    const allUnified = getUnifiedRestaurantData();
+    const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key) || {
+        ...currentDetailModalItem,
+        category,
+        location_large,
+        location_small,
+        menu,
+        rate,
+        map_url,
+        memo
+    };
+    currentDetailModalItem = updatedItem;
+
+    openRestaurantDetailModal(updatedItem);
+    switchDetailModalMode('view');
+
+    showDiaryToast(`✅ "${name}" 정보가 저장되었습니다!`);
 }
 
 // ─── Navigate to DIARY Tab at Specific Date ────
@@ -3781,27 +3776,26 @@ function getNotionTagColor(text) {
 
 // Notion Tag Selector Manager Class
 class NotionTagSelector {
-    constructor(elementFieldId, dataKey = null, isMultiSelect = true) {
-        this.elementFieldId = elementFieldId;
-        this.dataKey = dataKey || elementFieldId; // e.g. 'category', 'menu', 'location_large', 'location_small'
-        this.fieldType = this.dataKey;
+    constructor(fieldType, isMultiSelect = true) {
+        this.fieldType = fieldType;
+        this.baseKey = fieldType.replace('modal_', ''); // e.g. 'modal_category' -> 'category'
         this.isMultiSelect = isMultiSelect;
         this.selectedValues = [];
         this.availableOptions = new Set();
         
-        this.fieldEl = document.getElementById(`notion-field-${elementFieldId}`);
-        this.tagsContainerEl = document.getElementById(`notion-tags-${elementFieldId}`);
-        this.popoverEl = document.getElementById(`notion-popover-${elementFieldId}`);
+        this.fieldEl = document.getElementById(`notion-field-${fieldType}`);
+        this.tagsContainerEl = document.getElementById(`notion-tags-${fieldType}`);
+        this.popoverEl = document.getElementById(`notion-popover-${fieldType}`);
         this.searchEl = this.popoverEl?.querySelector('.notion-popover-search');
-        this.optionsEl = document.getElementById(`notion-options-${elementFieldId}`);
-        this.createBtnEl = document.getElementById(`notion-create-${elementFieldId}`);
+        this.optionsEl = document.getElementById(`notion-options-${fieldType}`);
+        this.createBtnEl = document.getElementById(`notion-create-${fieldType}`);
 
         this.initOptions();
         this.bindEvents();
     }
 
     initOptions() {
-        // Collect & split tags from dataset using dataKey
+        // Collect & split tags from dataset using baseKey
         const collect = (dataset, key) => {
             if (!dataset || !Array.isArray(dataset)) return;
             dataset.forEach(item => {
@@ -3825,13 +3819,17 @@ class NotionTagSelector {
             });
         };
 
-        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.dataKey);
-        if (typeof diaryData !== 'undefined') collect(diaryData, this.dataKey);
+        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.baseKey);
+        if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
+
+        // Load from spoonmap_diary
+        const localDiary = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+        collect(localDiary, this.baseKey);
 
         // Load custom options created by user from localStorage
         const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
-        if (customStore[this.dataKey] && Array.isArray(customStore[this.dataKey])) {
-            customStore[this.dataKey].forEach(opt => this.availableOptions.add(opt));
+        if (customStore[this.baseKey] && Array.isArray(customStore[this.baseKey])) {
+            customStore[this.baseKey].forEach(opt => this.availableOptions.add(opt));
         }
     }
 
@@ -3911,21 +3909,18 @@ class NotionTagSelector {
         if (!optName) return;
         this.availableOptions.add(optName);
 
-        // Save custom option to localStorage using dataKey
+        // Save custom option to localStorage using baseKey
         const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
-        if (!customStore[this.dataKey]) customStore[this.dataKey] = [];
-        if (!customStore[this.dataKey].includes(optName)) {
-            customStore[this.dataKey].push(optName);
+        if (!customStore[this.baseKey]) customStore[this.baseKey] = [];
+        if (!customStore[this.baseKey].includes(optName)) {
+            customStore[this.baseKey].push(optName);
             localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
         }
 
-        // Broadcast new option to all other NotionTagSelector instances with matching dataKey
-        if (typeof notionSelectors !== 'undefined') {
-            Object.values(notionSelectors).forEach(sel => {
-                if (sel && sel.dataKey === this.dataKey) {
-                    sel.availableOptions.add(optName);
-                }
-            });
+        // Global Sync: Also propagate to sibling selector instance
+        const siblingKey = this.fieldType.startsWith('modal_') ? this.baseKey : `modal_${this.baseKey}`;
+        if (typeof notionSelectors !== 'undefined' && notionSelectors[siblingKey]) {
+            notionSelectors[siblingKey].availableOptions.add(optName);
         }
 
         this.selectTag(optName);
@@ -3957,7 +3952,13 @@ class NotionTagSelector {
         } else if (typeof valArrayOrString === 'string') {
             vals = valArrayOrString.split(',').map(v => v.trim()).filter(Boolean);
         }
-        vals.forEach(v => this.availableOptions.add(v));
+        vals.forEach(v => {
+            this.availableOptions.add(v);
+            const siblingKey = this.fieldType.startsWith('modal_') ? this.baseKey : `modal_${this.baseKey}`;
+            if (typeof notionSelectors !== 'undefined' && notionSelectors[siblingKey]) {
+                notionSelectors[siblingKey].availableOptions.add(v);
+            }
+        });
         this.selectedValues = vals;
         this.renderSelectedTags();
     }
@@ -3978,7 +3979,7 @@ class NotionTagSelector {
     renderSelectedTags() {
         if (!this.tagsContainerEl) return;
         this.tagsContainerEl.innerHTML = '';
-        const placeholder = this.fieldEl.querySelector('.notion-tag-placeholder');
+        const placeholder = this.fieldEl?.querySelector('.notion-tag-placeholder');
 
         if (this.selectedValues.length === 0) {
             if (placeholder) placeholder.style.display = 'inline';
@@ -4055,53 +4056,43 @@ class NotionTagSelector {
 
 // Map of Notion Tag Selectors
 let notionSelectors = {};
-let notionSelectorsInitialized = false;
 
-function initNotionSelectors() {
-    if (notionSelectorsInitialized) return;
-    
-    // Check if DOM is ready with required elements
-    if (!document.getElementById('notion-field-category') && !document.getElementById('notion-field-modal_category')) return;
-    notionSelectorsInitialized = true;
-
-    // Initialize Diary Drawer Notion Tag Selectors
+function initAllNotionSelectors() {
+    // Diary drawer selectors
     if (document.getElementById('notion-field-category')) {
-        notionSelectors.category = new NotionTagSelector('category', 'category', true);
-        notionSelectors.menu = new NotionTagSelector('menu', 'menu', true);
-        notionSelectors.location_large = new NotionTagSelector('location_large', 'location_large', false);
-        notionSelectors.location_small = new NotionTagSelector('location_small', 'location_small', true);
+        notionSelectors.category = new NotionTagSelector('category', true);
+        notionSelectors.menu = new NotionTagSelector('menu', true);
+        notionSelectors.location_large = new NotionTagSelector('location_large', false);
+        notionSelectors.location_small = new NotionTagSelector('location_small', true);
     }
 
-    // Initialize Modal Inline Edit Notion Tag Selectors (Shared dataKeys with Diary)
+    // Modal inline edit selectors
     if (document.getElementById('notion-field-modal_category')) {
-        notionSelectors.modal_category = new NotionTagSelector('modal_category', 'category', true);
-        notionSelectors.modal_menu = new NotionTagSelector('modal_menu', 'menu', true);
-        notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', 'location_large', false);
-        notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', 'location_small', true);
+        notionSelectors.modal_category = new NotionTagSelector('modal_category', true);
+        notionSelectors.modal_menu = new NotionTagSelector('modal_menu', true);
+        notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', false);
+        notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', true);
     }
 
-    // Modal spoon rate picker
-    const modalRatePicker = document.getElementById('modal-edit-rate-picker');
-    if (modalRatePicker) {
-        const spoonBtns = modalRatePicker.querySelectorAll('.modal-rate-spoon');
-        const rateLabel = document.getElementById('modal-edit-rate-label');
-        const rateInput = document.getElementById('modal-edit-input-rate');
-        spoonBtns.forEach(btn => {
+    // Bind modal rate spoon buttons
+    const modalRateBtns = document.querySelectorAll('.modal-rate-spoon');
+    if (modalRateBtns.length > 0) {
+        modalRateBtns.forEach(btn => {
             btn.onclick = () => {
-                const val = parseInt(btn.dataset.val);
-                spoonBtns.forEach((b, i) => {
+                const val = parseInt(btn.dataset.val, 10);
+                const rateInput = document.getElementById('modal-edit-input-rate');
+                const rateLabel = document.getElementById('modal-edit-rate-label');
+                if (rateInput) rateInput.value = '🥄'.repeat(val);
+                if (rateLabel && typeof RATE_LABELS !== 'undefined') rateLabel.textContent = RATE_LABELS[val] || `${val}개`;
+                modalRateBtns.forEach((b, i) => {
                     b.classList.toggle('active', i < val);
                 });
-                if (rateInput) rateInput.value = '🥄'.repeat(val);
-                if (rateLabel) rateLabel.textContent = RATE_LABELS[val] || '';
             };
         });
     }
 }
 
 function initDiaryTab() {
-    initNotionSelectors();
-
     if (diaryInitialized) {
         renderDiaryCalendar(); // Always refresh on re-enter
         return;
@@ -4131,6 +4122,9 @@ function initDiaryTab() {
         renderDiaryCalendar();
     });
     if (exportBtn) exportBtn.addEventListener('click', exportDiaryCSV);
+
+    // Initialize Notion Tag Selectors
+    initAllNotionSelectors();
 
     // Name autocomplete setup
     populateDiaryAutocomplete();

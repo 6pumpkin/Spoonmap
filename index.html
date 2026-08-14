@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608150053">
+    <link rel="stylesheet" href="style.css?v=202608150101">
 </head>
 
 <body class="light-theme">
@@ -624,85 +624,86 @@
         </div>
     </main>
 
-    <!-- Restaurant Detail View / Edit Modal -->
-    <div id="list-detail-modal-overlay" class="list-detail-modal-overlay">
+    <!-- Restaurant Detail View & Inline Edit Modal -->
+    <div id="list-detail-modal-overlay" class="list-detail-modal-overlay" onclick="if(event.target===this)closeRestaurantDetailModal()">
         <div class="list-detail-modal-card">
-            <button id="list-detail-close-btn" class="list-detail-close-btn" title="닫기">&times;</button>
+            <button id="list-detail-close-btn" class="list-detail-close-btn" onclick="closeRestaurantDetailModal()" title="닫기">&times;</button>
             
-            <!-- View Mode Header -->
-            <div id="list-detail-header-view" class="list-detail-header">
-                <div class="list-detail-title-group">
-                    <h2 id="list-detail-name" class="list-detail-name"></h2>
-                    <span id="list-detail-visit-badge" class="list-detail-visit-badge"></span>
-                </div>
-                <div id="list-detail-rate-box" class="list-detail-rate-box"></div>
-            </div>
-
-            <!-- Edit Mode Header (Hidden by default) -->
-            <div id="list-detail-header-edit" class="list-detail-header" style="display:none;">
-                <div class="list-detail-title-group">
-                    <h2 id="list-detail-edit-title" class="list-detail-name">✏️ 가게 정보 수정</h2>
-                    <span class="drawer-visit-badge" style="display:inline-flex;">🏷️ 식당 마스터 정보 일괄 수정</span>
-                </div>
-            </div>
-
-            <!-- View Mode Body -->
-            <div id="list-detail-view-mode" class="list-detail-body">
-                <!-- Notion-style Tag Information -->
-                <div class="list-detail-info-group">
-                    <div class="list-detail-row">
-                        <span class="detail-label">🏷️ 식당 분류</span>
-                        <div id="list-detail-categories" class="detail-tags-wrap"></div>
+            <!-- ─── 1. View Mode (상세 정보 보기) ─── -->
+            <div id="list-detail-view-container" class="detail-mode-container">
+                <div class="list-detail-header">
+                    <div class="list-detail-title-group">
+                        <h2 id="list-detail-name" class="list-detail-name"></h2>
+                        <span id="list-detail-visit-badge" class="list-detail-visit-badge"></span>
                     </div>
-                    <div class="list-detail-row">
-                        <span class="detail-label">📍 위치</span>
-                        <div id="list-detail-locations" class="detail-tags-wrap"></div>
-                    </div>
-                    <div class="list-detail-row">
-                        <span class="detail-label">🍽️ 주요 메뉴</span>
-                        <div id="list-detail-menus" class="detail-tags-wrap"></div>
-                    </div>
+                    <div id="list-detail-rate-box" class="list-detail-rate-box"></div>
                 </div>
 
-                <!-- Map Action Buttons (Naver Map & Kakao Map) -->
-                <div class="list-detail-maps-group">
-                    <span class="detail-label">🗺️ 지도 바로가기</span>
-                    <div class="detail-map-btns">
-                        <a id="list-detail-naver-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn naver-map-btn">
-                            Naver 🗺️
-                        </a>
-                        <a id="list-detail-kakao-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn kakao-map-btn">
-                            Kakao 📍
-                        </a>
+                <div class="list-detail-body">
+                    <!-- Notion-style Tag Information -->
+                    <div class="list-detail-info-group">
+                        <div class="list-detail-row">
+                            <span class="detail-label">🏷️ 식당 분류</span>
+                            <div id="list-detail-categories" class="detail-tags-wrap"></div>
+                        </div>
+                        <div class="list-detail-row">
+                            <span class="detail-label">📍 위치</span>
+                            <div id="list-detail-locations" class="detail-tags-wrap"></div>
+                        </div>
+                        <div class="list-detail-row">
+                            <span class="detail-label">🍽️ 주요 메뉴</span>
+                            <div id="list-detail-menus" class="detail-tags-wrap"></div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Action Bar: Add Diary & Edit Restaurant Info (2 Split Buttons) -->
-                <div class="list-detail-action-bar detail-action-two-btns">
-                    <button id="btn-add-diary-for-this-restaurant" class="detail-add-diary-btn" title="오늘 날짜로 새 방문 기록 작성">
-                        📝 기록 추가하기
-                    </button>
-                    <button id="btn-edit-restaurant-info" class="detail-edit-restaurant-btn" title="식당 카테고리, 위치, 메뉴 등 일괄 수정">
-                        ✏️ 수정하기
-                    </button>
-                </div>
-
-                <!-- Visit History Timeline -->
-                <div class="list-detail-history-group">
-                    <div class="history-header">
-                        <span class="detail-label">📅 방문 기록 이력</span>
-                        <span id="list-detail-history-count" class="history-count-text"></span>
+                    <!-- Map Action Buttons (Naver Map & Kakao Map) -->
+                    <div class="list-detail-maps-group">
+                        <span class="detail-label">🗺️ 지도 바로가기</span>
+                        <div class="detail-map-btns">
+                            <a id="list-detail-naver-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn naver-map-btn">
+                                Naver 🗺️
+                            </a>
+                            <a id="list-detail-kakao-btn" href="#" target="_blank" rel="noopener noreferrer" class="detail-map-btn kakao-map-btn">
+                                Kakao 📍
+                            </a>
+                        </div>
                     </div>
-                    <div id="list-detail-history-list" class="history-list"></div>
+
+                    <!-- Action Bar: Add Diary & Edit Restaurant Info (2 Split Buttons) -->
+                    <div class="list-detail-action-bar detail-action-two-btns">
+                        <button id="btn-add-diary-for-this-restaurant" class="detail-add-diary-btn" title="오늘 날짜로 새 방문 기록 작성">
+                            📝 기록 추가하기
+                        </button>
+                        <button id="btn-edit-restaurant-info" class="detail-edit-restaurant-btn" title="식당 카테고리, 위치, 메뉴 등 일괄 수정">
+                            ✏️ 수정하기
+                        </button>
+                    </div>
+
+                    <!-- Visit History Timeline -->
+                    <div class="list-detail-history-group">
+                        <div class="history-header">
+                            <span class="detail-label">📅 방문 기록 이력</span>
+                            <span id="list-detail-history-count" class="history-count-text"></span>
+                        </div>
+                        <div id="list-detail-history-list" class="history-list"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Edit Mode Body (Hidden by default, identical features to Diary Edit) -->
-            <div id="list-detail-edit-mode" class="list-detail-body" style="display:none;">
-                <form id="modal-edit-form" autocomplete="off" onsubmit="event.preventDefault(); saveModalMasterEdit();">
+            <!-- ─── 2. Edit Mode (중앙 모달 내 식당 정보 수정 화면) ─── -->
+            <div id="list-detail-edit-container" class="detail-mode-container" style="display:none;">
+                <div class="list-detail-header">
+                    <div class="list-detail-title-group">
+                        <h2 class="list-detail-name">✏️ 가게 정보 수정</h2>
+                        <span class="drawer-visit-badge" style="display:inline-flex; font-size:0.75rem;">🏷️ 식당 마스터 정보 일괄 수정</span>
+                    </div>
+                </div>
+
+                <div class="list-detail-body modal-edit-body">
+                    <!-- 식당명 (표시) -->
                     <div class="drawer-field">
-                        <label class="drawer-label" for="modal-edit-input-name">🍽️ 식당명 <span class="required">*</span></label>
-                        <input type="text" id="modal-edit-input-name" class="drawer-input" placeholder="식당 이름" required>
+                        <label class="drawer-label">🍽️ 식당명 <span class="required">*</span></label>
+                        <input type="text" id="modal-edit-input-name" class="drawer-input" readonly style="background:var(--surface-bg); color:var(--text-primary); font-weight:700; cursor:default;">
                     </div>
 
                     <!-- 식당 분류 -->
@@ -741,7 +742,7 @@
                         </div>
                     </div>
 
-                    <!-- 지역 (2열) -->
+                    <!-- 지역 (대/소분류 2열) -->
                     <div class="drawer-row">
                         <div class="drawer-field">
                             <label class="drawer-label">📍 지역-대분류</label>
@@ -803,12 +804,12 @@
                         <textarea id="modal-edit-input-memo" class="drawer-input drawer-textarea" placeholder="맛, 분위기 등의 메모를 적어보세요..." rows="3"></textarea>
                     </div>
 
-                    <!-- Actions -->
-                    <div class="drawer-actions" style="margin-top: 1rem;">
-                        <button type="button" class="drawer-cancel-btn" onclick="switchModalToViewMode()">취소</button>
-                        <button type="submit" class="drawer-save-btn">저장</button>
+                    <!-- 액션 버튼: 취소 | 저장 -->
+                    <div class="drawer-actions" style="margin-top: 1.2rem; display: flex; gap: 0.6rem; justify-content: flex-end;">
+                        <button type="button" class="drawer-cancel-btn" onclick="switchDetailModalMode('view')">취소</button>
+                        <button type="button" id="modal-edit-save-btn" class="drawer-save-btn" onclick="saveRestaurantMasterFromModal()">저장</button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -816,8 +817,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608150053"></script>
-    <script src="app.js?v=202608150053"></script>
+    <script src="data.js?v=202608150101"></script>
+    <script src="app.js?v=202608150101"></script>
 </body>
 
 </html>
