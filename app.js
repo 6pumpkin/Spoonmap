@@ -1615,8 +1615,38 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(entry => entry[0]);
 
         renderLocationButtons();
+        updateFilterButtonsUI();
     }
     window.refreshSidebarFilters = refreshSidebarFilters;
+
+    function updateFilterButtonsUI() {
+        ['category', 'rate', 'location_large', 'location_small'].forEach(type => {
+            let groupEl = null;
+            if (type === 'category') groupEl = categoryFilterGroup || document.getElementById('category-filters');
+            else if (type === 'rate') groupEl = rateFilterGroup || document.getElementById('rate-filters');
+            else if (type === 'location_large') groupEl = locationLargeFilterGroup || document.getElementById('location-large-filters');
+            else if (type === 'location_small') groupEl = locationSmallFilterGroup || document.getElementById('location-small-filters');
+
+            if (!groupEl) return;
+
+            const filterValues = currentFilters[type] || [];
+            const allBtn = groupEl.querySelector('.filter-btn[data-value="all"]');
+
+            if (filterValues.length === 0) {
+                groupEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                if (allBtn) allBtn.classList.add('active');
+            } else {
+                if (allBtn) allBtn.classList.remove('active');
+                groupEl.querySelectorAll('.filter-btn').forEach(b => {
+                    const val = b.dataset.value;
+                    if (val !== 'all') {
+                        b.classList.toggle('active', filterValues.includes(val));
+                    }
+                });
+            }
+        });
+    }
+    window.updateFilterButtonsUI = updateFilterButtonsUI;
 
     function renderLocationButtons() {
         // Clear previous buttons EXCEPT 'all'
@@ -2888,9 +2918,10 @@ function filterByInsight(filterType, filterValue) {
 
     // 4. Update UI filter buttons state in sidebar & re-render main app
     if (typeof refreshSidebarFilters === 'function') refreshSidebarFilters();
+    if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
     if (typeof renderApp === 'function') renderApp();
 
-    // 5. Scroll to top of list container smoothly
+    // 5. Scroll smoothly to top of window
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
