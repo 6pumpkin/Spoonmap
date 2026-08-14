@@ -3777,39 +3777,29 @@ const NOTION_COLORS = [
     { bg: '#FFEDD5', color: '#9A3412' }  // Orange
 ];
 
-const KNOWN_TAG_EMOJIS = {
+const ORIGINAL_CATEGORY_EMOJIS = {
     '한식': '🍚', '중식': '🥟', '일식': '🍣', '양식': '🍝', '카페': '☕', '디저트': '🍰',
-    '고기': '🥩', '야채': '🥦', '채소': '🥗', '샐러드': '🥗', '치킨': '🍗', '피자': '🍕',
-    '버거': '🍔', '패스트푸드': '🍔', '분식': '🍥', '술집': '🍺', '포차': '🍶', '와인': '🍷',
-    '칵테일': '🍸', '일반식당': '🍽️', '멕시칸': '🌮', '아시안': '🍜', '쌀국수': '🍜', '해산물': '🦀',
-    '회': '🐟', '초밥': '🍣', '삼겹살': '🥓', '갈비': '🍖', '족발': '🍖', '곱창': '🍢',
-    '베이커리': '🥐', '브런치': '🥞', '커피': '☕', '파스타': '🍝', '스테이크': '🥩'
+    '패스트푸드': '🍔', '멕시칸': '🌮', '피자': '🍕', '치킨': '🍗', '고기': '🥩', '술집': '🍺',
+    '일반식당': '🍽️', '아시안': '🍜'
 };
-
-const RANDOM_FOOD_EMOJIS = ['🍽️', '🏷️', '✨', '😋', '🥢', '🥄', '🍲', '🍱', '🥣', '🥗', '🍢', '🍡', '🥟', '🍘', '🌶️', '🥑', '🍳'];
 
 function getFormattedTagDisplay(text) {
     if (!text) return '';
     const trimmed = text.trim();
 
-    // Check if text already starts with an emoji
+    // Check if text already starts with an emoji (if user typed emoji directly)
     const hasEmojiPrefix = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed);
     if (hasEmojiPrefix) return trimmed;
 
-    // Check known dictionary matches
-    for (const [key, emoji] of Object.entries(KNOWN_TAG_EMOJIS)) {
-        if (trimmed.includes(key)) {
+    // Check original dataset category matches
+    for (const [key, emoji] of Object.entries(ORIGINAL_CATEGORY_EMOJIS)) {
+        if (trimmed === key) {
             return `${emoji} ${trimmed}`;
         }
     }
 
-    // Fallback: pick deterministic food emoji based on string hash
-    let hash = 0;
-    for (let i = 0; i < trimmed.length; i++) {
-        hash = trimmed.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const emoji = RANDOM_FOOD_EMOJIS[Math.abs(hash) % RANDOM_FOOD_EMOJIS.length];
-    return `${emoji} ${trimmed}`;
+    // Return user-entered text directly without adding random emojis
+    return trimmed;
 }
 
 function getNotionTagColor(text) {
