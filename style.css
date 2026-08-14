@@ -3560,7 +3560,7 @@ input[type="date"].drawer-input {
 .list-detail-body {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .list-detail-info-group {
@@ -4121,8 +4121,8 @@ input[type="date"].drawer-input {
 
 /* 5. Detail View Modal Action Buttons (Add Diary & Edit Restaurant) */
 .list-detail-action-bar {
-    margin-top: 0.3rem;
-    margin-bottom: 0.3rem;
+    margin-top: -0.45rem;
+    margin-bottom: -0.45rem;
     padding-top: 0;
     border-top: none;
 }
