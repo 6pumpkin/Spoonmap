@@ -2065,7 +2065,139 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 });
 
-// ─── List View Restaurant Detail Modal (Read-Only) ───
+// ─── List View Restaurant Detail Modal (Read-Only & Inline Master Edit) ───
+let currentModalEditingItem = null;
+
+function switchModalToViewMode() {
+    const viewHeader = document.getElementById('list-detail-header-view');
+    const editHeader = document.getElementById('list-detail-header-edit');
+    const viewMode = document.getElementById('list-detail-view-mode');
+    const editMode = document.getElementById('list-detail-edit-mode');
+
+    if (viewHeader) viewHeader.style.display = 'flex';
+    if (editHeader) editHeader.style.display = 'none';
+    if (viewMode) viewMode.style.display = 'block';
+    if (editMode) editMode.style.display = 'none';
+}
+
+function switchModalToEditMode(item) {
+    if (!item) return;
+    currentModalEditingItem = item;
+
+    const viewHeader = document.getElementById('list-detail-header-view');
+    const editHeader = document.getElementById('list-detail-header-edit');
+    const viewMode = document.getElementById('list-detail-view-mode');
+    const editMode = document.getElementById('list-detail-edit-mode');
+
+    if (viewHeader) viewHeader.style.display = 'none';
+    if (editHeader) editHeader.style.display = 'flex';
+    if (viewMode) viewMode.style.display = 'none';
+    if (editMode) editMode.style.display = 'block';
+
+    const nameInput = document.getElementById('modal-edit-input-name');
+    const mapInput = document.getElementById('modal-edit-input-map');
+    const memoInput = document.getElementById('modal-edit-input-memo');
+    const rateInput = document.getElementById('modal-edit-input-rate');
+    const rateLabel = document.getElementById('modal-edit-rate-label');
+
+    if (nameInput) nameInput.value = item.name || '';
+    if (mapInput) mapInput.value = item.map_url || '';
+    if (memoInput) memoInput.value = item.memo || '';
+
+    // Notion Tag Selectors
+    if (item.category && notionSelectors.modal_category) notionSelectors.modal_category.setValues(item.category);
+    else if (notionSelectors.modal_category) notionSelectors.modal_category.clear();
+
+    if (item.menu && notionSelectors.modal_menu) notionSelectors.modal_menu.setValues(item.menu);
+    else if (notionSelectors.modal_menu) notionSelectors.modal_menu.clear();
+
+    if (item.location_large && notionSelectors.modal_location_large) notionSelectors.modal_location_large.setValues(item.location_large);
+    else if (notionSelectors.modal_location_large) notionSelectors.modal_location_large.clear();
+
+    if (item.location_small && notionSelectors.modal_location_small) notionSelectors.modal_location_small.setValues(item.location_small);
+    else if (notionSelectors.modal_location_small) notionSelectors.modal_location_small.clear();
+
+    // Spoon rate
+    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 4;
+    if (rateInput) rateInput.value = '🥄'.repeat(spoonCount);
+    if (rateLabel) rateLabel.textContent = RATE_LABELS[spoonCount] || '';
+    document.querySelectorAll('.modal-rate-spoon').forEach((b, i) => {
+        b.classList.toggle('active', i < spoonCount);
+    });
+}
+
+function saveModalMasterEdit() {
+    if (!currentModalEditingItem) return;
+    const name = document.getElementById('modal-edit-input-name')?.value.trim() || currentModalEditingItem.name;
+    const key = name.toLowerCase();
+
+    const category = notionSelectors.modal_category ? notionSelectors.modal_category.getValueString() : '';
+    const menu = notionSelectors.modal_menu ? notionSelectors.modal_menu.getValues() : [];
+    const location_large = notionSelectors.modal_location_large ? notionSelectors.modal_location_large.getValueString() : '';
+    const location_small = notionSelectors.modal_location_small ? notionSelectors.modal_location_small.getValueString() : '';
+    const rate = document.getElementById('modal-edit-input-rate')?.value.trim() || '🥄🥄🥄🥄';
+    const map_url = document.getElementById('modal-edit-input-map')?.value.trim() || '';
+    const memo = document.getElementById('modal-edit-input-memo')?.value.trim() || '';
+
+    if (!name) { alert('식당명을 입력해주세요.'); return; }
+    if (!category) { alert('식당 분류를 하나 이상 선택해주세요.'); return; }
+
+    // 1. Save to spoonmap_restaurant_overrides
+    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    overrides[key] = {
+        name,
+        category,
+        location_large,
+        location_small,
+        menu,
+        rate,
+        map_url,
+        memo,
+        updated_at: new Date().toISOString()
+    };
+    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+
+    // 2. Batch sync all entries in spoonmap_diary for this restaurant
+    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    let diaryUpdated = false;
+    existing.forEach(entry => {
+        if (entry.name && entry.name.trim().toLowerCase() === key) {
+            entry.category = category;
+            if (location_large) entry.location_large = location_large;
+            if (location_small) entry.location_small = location_small;
+            if (menu.length > 0) entry.menu = menu;
+            if (rate) entry.rate = rate;
+            if (map_url) entry.map_url = map_url;
+            diaryUpdated = true;
+        }
+    });
+    if (diaryUpdated) {
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+    }
+
+    // 3. Switch back to View mode and refresh modal UI
+    switchModalToViewMode();
+
+    const allUnified = getUnifiedRestaurantData();
+    const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key) || {
+        ...currentModalEditingItem,
+        name,
+        category,
+        location_large,
+        location_small,
+        menu,
+        rate,
+        map_url,
+        memo
+    };
+    openRestaurantDetailModal(updatedItem);
+
+    if (window.renderApp) window.renderApp();
+    renderDiaryCalendar();
+
+    showDiaryToast(`✅ "${name}" 가게 정보가 전체 일괄 수정되었습니다!`);
+}
+
 function openRestaurantDetailModal(item) {
     const overlay = document.getElementById('list-detail-modal-overlay');
     const nameEl = document.getElementById('list-detail-name');
@@ -2080,6 +2212,9 @@ function openRestaurantDetailModal(item) {
     const historyListEl = document.getElementById('list-detail-history-list');
 
     if (!overlay) return;
+
+    // Reset to view mode
+    switchModalToViewMode();
 
     // 1. Title & Visit Badge
     if (nameEl) nameEl.textContent = item.name;
@@ -2208,7 +2343,7 @@ function openRestaurantDetailModal(item) {
     }
     const editRestaurantBtn = document.getElementById('btn-edit-restaurant-info');
     if (editRestaurantBtn) {
-        editRestaurantBtn.onclick = () => openRestaurantMasterEditDrawer(item);
+        editRestaurantBtn.onclick = () => switchModalToEditMode(item);
     }
 
     // Open Modal
@@ -2222,6 +2357,7 @@ function closeRestaurantDetailModal() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
     }
+    switchModalToViewMode();
 }
 
 // ─── Reset All Filters Function (Global Scope) ────
@@ -3939,6 +4075,30 @@ function initDiaryTab() {
     notionSelectors.menu = new NotionTagSelector('menu', true);
     notionSelectors.location_large = new NotionTagSelector('location_large', false);
     notionSelectors.location_small = new NotionTagSelector('location_small', true);
+
+    // Initialize Modal Inline Edit Notion Tag Selectors
+    notionSelectors.modal_category = new NotionTagSelector('modal_category', true);
+    notionSelectors.modal_menu = new NotionTagSelector('modal_menu', true);
+    notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', false);
+    notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', true);
+
+    // Modal spoon rate picker
+    const modalRatePicker = document.getElementById('modal-edit-rate-picker');
+    if (modalRatePicker) {
+        const spoonBtns = modalRatePicker.querySelectorAll('.modal-rate-spoon');
+        const rateLabel = document.getElementById('modal-edit-rate-label');
+        const rateInput = document.getElementById('modal-edit-input-rate');
+        spoonBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.val);
+                spoonBtns.forEach((b, i) => {
+                    b.classList.toggle('active', i < val);
+                });
+                if (rateInput) rateInput.value = '🥄'.repeat(val);
+                if (rateLabel) rateLabel.textContent = RATE_LABELS[val] || '';
+            });
+        });
+    }
 
     // Name autocomplete setup
     populateDiaryAutocomplete();

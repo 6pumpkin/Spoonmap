@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608150028">
+    <link rel="stylesheet" href="style.css?v=202608150033">
 </head>
 
 <body class="light-theme">
@@ -624,12 +624,13 @@
         </div>
     </main>
 
-    <!-- Restaurant Detail View Modal -->
+    <!-- Restaurant Detail View / Edit Modal -->
     <div id="list-detail-modal-overlay" class="list-detail-modal-overlay">
         <div class="list-detail-modal-card">
             <button id="list-detail-close-btn" class="list-detail-close-btn" title="닫기">&times;</button>
             
-            <div class="list-detail-header">
+            <!-- View Mode Header -->
+            <div id="list-detail-header-view" class="list-detail-header">
                 <div class="list-detail-title-group">
                     <h2 id="list-detail-name" class="list-detail-name"></h2>
                     <span id="list-detail-visit-badge" class="list-detail-visit-badge"></span>
@@ -637,7 +638,16 @@
                 <div id="list-detail-rate-box" class="list-detail-rate-box"></div>
             </div>
 
-            <div class="list-detail-body">
+            <!-- Edit Mode Header (Hidden by default) -->
+            <div id="list-detail-header-edit" class="list-detail-header" style="display:none;">
+                <div class="list-detail-title-group">
+                    <h2 id="list-detail-edit-title" class="list-detail-name">✏️ 가게 정보 수정</h2>
+                    <span class="drawer-visit-badge" style="display:inline-flex;">🏷️ 식당 마스터 정보 일괄 수정</span>
+                </div>
+            </div>
+
+            <!-- View Mode Body -->
+            <div id="list-detail-view-mode" class="list-detail-body">
                 <!-- Notion-style Tag Information -->
                 <div class="list-detail-info-group">
                     <div class="list-detail-row">
@@ -686,14 +696,128 @@
                     <div id="list-detail-history-list" class="history-list"></div>
                 </div>
             </div>
+
+            <!-- Edit Mode Body (Hidden by default, identical features to Diary Edit) -->
+            <div id="list-detail-edit-mode" class="list-detail-body" style="display:none;">
+                <form id="modal-edit-form" autocomplete="off" onsubmit="event.preventDefault(); saveModalMasterEdit();">
+                    <div class="drawer-field">
+                        <label class="drawer-label" for="modal-edit-input-name">🍽️ 식당명 <span class="required">*</span></label>
+                        <input type="text" id="modal-edit-input-name" class="drawer-input" placeholder="식당 이름" required>
+                    </div>
+
+                    <!-- 식당 분류 -->
+                    <div class="drawer-field">
+                        <label class="drawer-label">🏷️ 식당 분류 <span class="required">*</span></label>
+                        <div class="notion-tag-field" id="notion-field-modal_category" data-field="modal_category">
+                            <div class="notion-tag-input-bar">
+                                <div class="notion-selected-tags" id="notion-tags-modal_category"></div>
+                                <span class="notion-tag-placeholder">옵션 선택 또는 검색...</span>
+                            </div>
+                            <div class="notion-dropdown-popover" id="notion-popover-modal_category">
+                                <div class="notion-popover-search-wrap">
+                                    <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                </div>
+                                <div class="notion-popover-options" id="notion-options-modal_category"></div>
+                                <div class="notion-popover-create-btn" id="notion-create-modal_category" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 주요 메뉴 -->
+                    <div class="drawer-field">
+                        <label class="drawer-label">🍴 주요 메뉴</label>
+                        <div class="notion-tag-field" id="notion-field-modal_menu" data-field="modal_menu">
+                            <div class="notion-tag-input-bar">
+                                <div class="notion-selected-tags" id="notion-tags-modal_menu"></div>
+                                <span class="notion-tag-placeholder">메뉴 선택 또는 생성...</span>
+                            </div>
+                            <div class="notion-dropdown-popover" id="notion-popover-modal_menu">
+                                <div class="notion-popover-search-wrap">
+                                    <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                </div>
+                                <div class="notion-popover-options" id="notion-options-modal_menu"></div>
+                                <div class="notion-popover-create-btn" id="notion-create-modal_menu" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 지역 (2열) -->
+                    <div class="drawer-row">
+                        <div class="drawer-field">
+                            <label class="drawer-label">📍 지역-대분류</label>
+                            <div class="notion-tag-field" id="notion-field-modal_location_large" data-field="modal_location_large">
+                                <div class="notion-tag-input-bar">
+                                    <div class="notion-selected-tags" id="notion-tags-modal_location_large"></div>
+                                    <span class="notion-tag-placeholder">대분류 선택...</span>
+                                </div>
+                                <div class="notion-dropdown-popover" id="notion-popover-modal_location_large">
+                                    <div class="notion-popover-search-wrap">
+                                        <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                    </div>
+                                    <div class="notion-popover-options" id="notion-options-modal_location_large"></div>
+                                    <div class="notion-popover-create-btn" id="notion-create-modal_location_large" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="drawer-field">
+                            <label class="drawer-label">📍 지역-소분류</label>
+                            <div class="notion-tag-field" id="notion-field-modal_location_small" data-field="modal_location_small">
+                                <div class="notion-tag-input-bar">
+                                    <div class="notion-selected-tags" id="notion-tags-modal_location_small"></div>
+                                    <span class="notion-tag-placeholder">소분류 선택...</span>
+                                </div>
+                                <div class="notion-dropdown-popover" id="notion-popover-modal_location_small">
+                                    <div class="notion-popover-search-wrap">
+                                        <input type="text" class="notion-popover-search" placeholder="옵션 검색 또는 생성..." autocomplete="off">
+                                    </div>
+                                    <div class="notion-popover-options" id="notion-options-modal_location_small"></div>
+                                    <div class="notion-popover-create-btn" id="notion-create-modal_location_small" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 수저 평점 -->
+                    <div class="drawer-field">
+                        <label class="drawer-label">🥄 수저 평점 <span class="required">*</span></label>
+                        <div id="modal-edit-rate-picker" class="diary-rate-picker">
+                            <button type="button" class="rate-spoon modal-rate-spoon" data-val="1">🥄</button>
+                            <button type="button" class="rate-spoon modal-rate-spoon" data-val="2">🥄</button>
+                            <button type="button" class="rate-spoon modal-rate-spoon" data-val="3">🥄</button>
+                            <button type="button" class="rate-spoon modal-rate-spoon" data-val="4">🥄</button>
+                            <button type="button" class="rate-spoon modal-rate-spoon" data-val="5">🥄</button>
+                            <span id="modal-edit-rate-label" class="rate-label">선택 안 함</span>
+                        </div>
+                        <input type="hidden" id="modal-edit-input-rate">
+                    </div>
+
+                    <!-- 카카오맵 URL -->
+                    <div class="drawer-field">
+                        <label class="drawer-label" for="modal-edit-input-map">🗺️ 카카오맵 URL</label>
+                        <input type="url" id="modal-edit-input-map" class="drawer-input" placeholder="https://place.map.kakao.com/...">
+                    </div>
+
+                    <!-- 방문 메모 / 후기 -->
+                    <div class="drawer-field">
+                        <label class="drawer-label" for="modal-edit-input-memo">📝 방문 메모 / 후기</label>
+                        <textarea id="modal-edit-input-memo" class="drawer-input drawer-textarea" placeholder="맛, 분위기 등의 메모를 적어보세요..." rows="3"></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="drawer-actions" style="margin-top: 1rem;">
+                        <button type="button" class="drawer-cancel-btn" onclick="switchModalToViewMode()">취소</button>
+                        <button type="submit" class="drawer-save-btn">가게 정보 일괄 수정 저장 ✓</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608150028"></script>
-    <script src="app.js?v=202608150028"></script>
+    <script src="data.js?v=202608150033"></script>
+    <script src="app.js?v=202608150033"></script>
 </body>
 
 </html>
