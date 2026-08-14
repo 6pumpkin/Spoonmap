@@ -2167,6 +2167,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.filterByInsight = filterByInsight;
 
+    // ─── Reset All Filters & Search Inputs ───
+    function resetAllFilters() {
+        // 1. Reset filter objects
+        currentFilters.category = [];
+        currentFilters.rate = [];
+        currentFilters.location_large = [];
+        currentFilters.location_small = [];
+        currentFilters.searchQuery = '';
+        if (typeof dateRangeFilter !== 'undefined') {
+            dateRangeFilter.startDate = null;
+            dateRangeFilter.endDate = null;
+        }
+
+        // 2. Reset text search & date inputs
+        const searchInputEl = document.getElementById('restaurant-search');
+        if (searchInputEl) searchInputEl.value = '';
+        const startDateInput = document.getElementById('filter-start-date');
+        const endDateInput = document.getElementById('filter-end-date');
+        if (startDateInput) startDateInput.value = '';
+        if (endDateInput) endDateInput.value = '';
+
+        // 3. Reset sort buttons to default
+        document.querySelectorAll('.sort-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.sort === 'default');
+        });
+        currentSorts = [];
+
+        // 4. Update UI & re-render
+        refreshSidebarFilters();
+        updateFilterButtonsUI();
+        listDisplayCount = 50;
+        render();
+
+        // 5. User feedback toast
+        if (typeof showDiaryToast === 'function') {
+            showDiaryToast('🔄 모든 필터가 초기화되었습니다.');
+        }
+    }
+    window.resetAllFilters = resetAllFilters;
+
     function getFilteredData() {
         return restaurantData.filter(item => {
             if (!item.map_url) return false;
@@ -2768,7 +2808,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetAllBtn = document.getElementById('btn-reset-all-filters');
 
     if (resetAllBtn) {
-        resetAllBtn.addEventListener('click', resetAllFilters);
+        resetAllBtn.addEventListener('click', () => {
+            if (typeof window.resetAllFilters === 'function') {
+                window.resetAllFilters();
+            }
+        });
     }
 
     // Restore View Mode preference
