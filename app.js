@@ -2113,6 +2113,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.renderApp = render;
 
+    // ─── Filter by Insight Graph Click (Direct Closure Binding) ───
+    function filterByInsight(filterType, filterValue) {
+        if (!filterType || !filterValue) return;
+
+        // 1. Switch route & UI to LIST tab
+        const listTabBtn = document.querySelector('.tab-btn[data-tab="list"], .mobile-tab-btn[data-tab="list"]');
+        if (listTabBtn) {
+            listTabBtn.click();
+        } else {
+            switchTabUI('list');
+            window.location.hash = '#list';
+        }
+
+        // 2. Clear all previous filters
+        currentFilters.category = [];
+        currentFilters.rate = [];
+        currentFilters.location_large = [];
+        currentFilters.location_small = [];
+        currentFilters.searchQuery = '';
+        if (typeof dateRangeFilter !== 'undefined') {
+            dateRangeFilter.startDate = null;
+            dateRangeFilter.endDate = null;
+        }
+
+        // 3. Set target filter value
+        if (filterType === 'category') {
+            currentFilters.category = [filterValue];
+        } else if (filterType === 'location_large') {
+            currentFilters.location_large = [filterValue];
+        } else if (filterType === 'rate') {
+            const num = parseInt(filterValue, 10);
+            if (num >= 1 && num <= 5) {
+                currentFilters.rate = ['🥄'.repeat(num)];
+            } else {
+                currentFilters.rate = [filterValue];
+            }
+        }
+
+        // 4. Update Sidebar Filter Buttons & Render List
+        refreshSidebarFilters();
+        updateFilterButtonsUI();
+        listDisplayCount = 50;
+        render();
+
+        // 5. Scroll smoothly to top of window
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
+        if (typeof showDiaryToast === 'function') {
+            showDiaryToast(`${label} "${filterValue}" 필터가 적용되었습니다!`);
+        }
+    }
+    window.filterByInsight = filterByInsight;
+
     function getFilteredData() {
         return restaurantData.filter(item => {
             if (!item.map_url) return false;
@@ -2881,53 +2935,7 @@ function initFoodInsightsTab() {
     }
 }
 
-// ─── Filter by Insight Graph Click (Smart Navigation to LIST Tab) ───
-function filterByInsight(filterType, filterValue) {
-    if (!filterType || !filterValue) return;
 
-    // 1. Switch UI to LIST tab
-    const listTabBtn = document.querySelector('.tab-btn[data-tab="list"], .mobile-tab-btn[data-tab="list"]');
-    if (listTabBtn) {
-        listTabBtn.click();
-    } else if (typeof switchTabUI === 'function') {
-        switchTabUI('list');
-        window.location.hash = '#list';
-    }
-
-    // 2. Clear previous filters
-    currentFilters.category = [];
-    currentFilters.rate = [];
-    currentFilters.location_large = [];
-    currentFilters.location_small = [];
-    currentFilters.searchQuery = '';
-    currentFilters.dateRange = { start: null, end: null };
-
-    // 3. Set target filter value
-    if (filterType === 'category') {
-        currentFilters.category = [filterValue];
-    } else if (filterType === 'location_large') {
-        currentFilters.location_large = [filterValue];
-    } else if (filterType === 'rate') {
-        const num = parseInt(filterValue, 10);
-        if (num >= 1 && num <= 5) {
-            currentFilters.rate = ['🥄'.repeat(num)];
-        } else {
-            currentFilters.rate = [filterValue];
-        }
-    }
-
-    // 4. Update UI filter buttons state in sidebar & re-render main app
-    if (typeof refreshSidebarFilters === 'function') refreshSidebarFilters();
-    if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
-    if (typeof renderApp === 'function') renderApp();
-
-    // 5. Scroll smoothly to top of window
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
-    showDiaryToast(`${label} "${filterValue}" 필터가 적용된 LIST 목록입니다!`);
-}
-window.filterByInsight = filterByInsight;
 
 function computeAndRenderFoodInsights() {
     const masterData = getUnifiedRestaurantData();
