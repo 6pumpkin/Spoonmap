@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608130200">
+    <link rel="stylesheet" href="style.css?v=202608150019">
 </head>
 
 <body class="light-theme">
@@ -667,10 +667,13 @@
                     </div>
                 </div>
 
-                <!-- Add Diary Connect Button -->
-                <div class="list-detail-action-bar">
-                    <button id="btn-add-diary-for-this-restaurant" class="detail-add-diary-btn">
-                        📝 이 식당 방문 기록 추가하기
+                <!-- Action Bar: Add Diary & Edit Restaurant Info (2 Split Buttons) -->
+                <div class="list-detail-action-bar detail-action-two-btns">
+                    <button id="btn-add-diary-for-this-restaurant" class="detail-add-diary-btn" title="오늘 날짜로 새 방문 기록 작성">
+                        📝 기록 추가하기
+                    </button>
+                    <button id="btn-edit-restaurant-info" class="detail-edit-restaurant-btn" title="식당 카테고리, 위치, 메뉴 등 일괄 수정">
+                        ✏️ 수정하기
                     </button>
                 </div>
 
@@ -686,11 +689,79 @@
         </div>
     </div>
 
+    <!-- ─── Restaurant Master Info Edit Modal ─── -->
+    <div id="restaurant-edit-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeRestaurantEditModal()">
+        <div class="restaurant-edit-modal-card">
+            <div class="restaurant-edit-header">
+                <div class="restaurant-edit-title-group">
+                    <span class="edit-modal-icon">✏️</span>
+                    <div>
+                        <h3 id="edit-modal-restaurant-name">식당 정보 수정</h3>
+                        <p class="edit-modal-subtitle">수정된 카테고리/정보는 이 식당의 모든 방문 기록과 목록에 일괄 반영됩니다.</p>
+                    </div>
+                </div>
+                <button class="list-detail-close" onclick="closeRestaurantEditModal()">✕</button>
+            </div>
+
+            <div class="restaurant-edit-body">
+                <!-- Category Select -->
+                <div class="edit-form-group">
+                    <label class="edit-form-label">🏷️ 식당 분류 (카테고리)</label>
+                    <div id="edit-modal-category-picker" class="edit-picker-container">
+                        <!-- Custom Notion Style Dropdown Picker or Chips will be injected -->
+                    </div>
+                </div>
+
+                <!-- Locations (Large & Small) -->
+                <div class="edit-form-row">
+                    <div class="edit-form-group">
+                        <label class="edit-form-label" for="edit-modal-loc-large">📍 지역 (대분류)</label>
+                        <div id="edit-modal-loc-large-picker" class="edit-picker-container"></div>
+                    </div>
+                    <div class="edit-form-group">
+                        <label class="edit-form-label" for="edit-modal-loc-small">📍 지역 (소분류)</label>
+                        <div id="edit-modal-loc-small-picker" class="edit-picker-container"></div>
+                    </div>
+                </div>
+
+                <!-- Main Menus -->
+                <div class="edit-form-group">
+                    <label class="edit-form-label">🍽️ 주요 메뉴</label>
+                    <div id="edit-modal-menu-picker" class="edit-picker-container"></div>
+                </div>
+
+                <!-- Spoon Rate -->
+                <div class="edit-form-group">
+                    <label class="edit-form-label">🥄 수저 평점</label>
+                    <div class="edit-rate-spoon-group">
+                        <button type="button" class="edit-rate-spoon" data-rate="1">🥄</button>
+                        <button type="button" class="edit-rate-spoon" data-rate="2">🥄</button>
+                        <button type="button" class="edit-rate-spoon" data-rate="3">🥄</button>
+                        <button type="button" class="edit-rate-spoon" data-rate="4">🥄</button>
+                        <button type="button" class="edit-rate-spoon" data-rate="5">🥄</button>
+                        <span id="edit-rate-label" class="edit-rate-label-text">4개 (맛있음)</span>
+                    </div>
+                </div>
+
+                <!-- Kakao Map URL -->
+                <div class="edit-form-group">
+                    <label class="edit-form-label" for="edit-modal-map-url">🗺️ 지도 링크 (Kakao Map URL)</label>
+                    <input type="text" id="edit-modal-map-url" class="edit-text-input" placeholder="https://place.map.kakao.com/...">
+                </div>
+            </div>
+
+            <div class="restaurant-edit-footer">
+                <button type="button" class="edit-btn-cancel" onclick="closeRestaurantEditModal()">취소</button>
+                <button type="button" id="btn-save-restaurant-edit" class="edit-btn-submit">일괄 수정 저장하기 ✓</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608130200"></script>
-    <script src="app.js?v=202608130200"></script>
+    <script src="data.js?v=202608150019"></script>
+    <script src="app.js?v=202608150019"></script>
 </body>
 
 </html>

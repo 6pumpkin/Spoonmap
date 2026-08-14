@@ -1760,6 +1760,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Pass 3.5: Apply spoonmap_restaurant_overrides (Master restaurant metadata updates)
+        const restaurantOverrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+        Object.keys(restaurantOverrides).forEach(rawKey => {
+            const key = rawKey.trim().toLowerCase();
+            const ov = restaurantOverrides[rawKey];
+            if (!ov) return;
+            const existing = mapByName.get(key);
+            const menuArray = Array.isArray(ov.menu) 
+                ? ov.menu 
+                : (typeof ov.menu === 'string' ? ov.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+            if (existing) {
+                if (ov.category) existing.category = ov.category;
+                if (ov.rate) existing.rate = ov.rate;
+                if (menuArray.length > 0) existing.menu = menuArray;
+                if (ov.location_large) existing.location_large = ov.location_large;
+                if (ov.location_small) existing.location_small = ov.location_small;
+                if (ov.map_url) existing.map_url = ov.map_url;
+            }
+        });
+
         // Pass 4: Finalize merged list with accurate visit_count and latest date
         const unified = [];
         mapByName.forEach((item, key) => {
@@ -2138,7 +2158,7 @@ function openRestaurantDetailModal(item) {
     if (naverBtn) naverBtn.href = `https://map.naver.com/p/search/${naverQuery}`;
     if (kakaoBtn) kakaoBtn.href = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
 
-    // 7. Visit History Timeline
+    // 7. Visit History Timeline with rich memo & clickable date
     if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회 방문`;
     if (historyListEl) {
         historyListEl.innerHTML = '';
@@ -2147,15 +2167,29 @@ function openRestaurantDetailModal(item) {
             const sortedVisits = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
             sortedVisits.forEach((v, idx) => {
                 const orderNum = sortedVisits.length - idx; // 1st visit, 2nd visit...
+                const memoText = (v.data && (v.data.memo || v.data.review)) || v.memo || '';
                 const div = document.createElement('div');
                 div.className = 'history-item-card';
+                div.title = `클릭하면 ${v.date} 다이어리로 이동합니다`;
                 div.innerHTML = `
                     <div class="history-item-top">
-                        <span class="history-date">📅 ${v.date}</span>
+                        <span class="history-date-link">
+                            📅 ${v.date}
+                            <span class="jump-hint">다이어리 보기 ➔</span>
+                        </span>
                         <span class="history-order-chip">${orderNum >= 2 ? '🔥' : '📍'} ${orderNum}회차 방문</span>
                     </div>
-                    ${v.data && v.data.memo ? `<div class="history-item-memo">📝 ${v.data.memo}</div>` : ''}
+                    ${memoText ? `
+                        <div class="history-item-memo">
+                            <span class="memo-icon">📝</span>
+                            <span class="memo-text">${memoText}</span>
+                        </div>
+                    ` : ''}
                 `;
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    navigateToDiaryDate(v.date);
+                };
                 historyListEl.appendChild(div);
             });
         } else {
@@ -2167,10 +2201,14 @@ function openRestaurantDetailModal(item) {
         }
     }
 
-    // 8. Add Diary Button Binding
+    // 8. Action Buttons Binding
     const addDiaryBtn = document.getElementById('btn-add-diary-for-this-restaurant');
     if (addDiaryBtn) {
         addDiaryBtn.onclick = () => addDiaryForRestaurant(item);
+    }
+    const editRestaurantBtn = document.getElementById('btn-edit-restaurant-info');
+    if (editRestaurantBtn) {
+        editRestaurantBtn.onclick = () => openRestaurantEditModal(item);
     }
 
     // Open Modal
@@ -2195,6 +2233,266 @@ function resetAllFilters() {
         if (searchInput) searchInput.value = '';
         if (window.renderApp) window.renderApp();
     }
+}
+
+// ─── Navigate to DIARY Tab at Specific Date ────
+function navigateToDiaryDate(dateStr) {
+    if (!dateStr) return;
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return;
+
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // 0-indexed month
+
+    // Close Modals
+    closeRestaurantDetailModal();
+    closeMobileOverlay();
+    closeRestaurantEditModal();
+
+    // Switch to DIARY tab
+    const diaryTabBtn = document.querySelector('.tab-btn[data-tab="diary"]') || document.querySelector('.mobile-tab-btn[data-tab="diary"]');
+    if (diaryTabBtn) {
+        diaryTabBtn.click();
+    }
+
+    // Update Calendar Year & Month
+    currentDiaryYear = year;
+    currentDiaryMonth = month;
+    renderDiaryCalendar();
+
+    // Scroll to & highlight the day cell
+    setTimeout(() => {
+        const cell = document.querySelector(`.diary-day-cell[data-date="${dateStr}"]`);
+        if (cell) {
+            cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            cell.classList.add('highlight-pulse');
+            setTimeout(() => cell.classList.remove('highlight-pulse'), 2500);
+        }
+        showDiaryToast(`📅 ${dateStr} 다이어리로 이동했습니다!`);
+    }, 150);
+}
+
+// ─── Restaurant Master Info Edit Modal Logic ────
+let currentEditingRestaurantItem = null;
+let editModalSelectedRate = 4;
+let editModalSelectedCategories = new Set();
+
+function openRestaurantEditModal(item) {
+    if (!item || !item.name) return;
+    currentEditingRestaurantItem = item;
+
+    const overlay = document.getElementById('restaurant-edit-modal-overlay');
+    const nameEl = document.getElementById('edit-modal-restaurant-name');
+    const catPicker = document.getElementById('edit-modal-category-picker');
+    const locLargePicker = document.getElementById('edit-modal-loc-large-picker');
+    const locSmallPicker = document.getElementById('edit-modal-loc-small-picker');
+    const menuPicker = document.getElementById('edit-modal-menu-picker');
+    const mapUrlInput = document.getElementById('edit-modal-map-url');
+
+    if (!overlay) return;
+
+    if (nameEl) nameEl.textContent = `✏️ "${item.name}" 정보 수정`;
+    if (mapUrlInput) mapUrlInput.value = item.map_url || '';
+
+    // 1. Categories setup
+    editModalSelectedCategories = new Set();
+    const curCats = item.category ? item.category.split(',').map(c => c.trim()).filter(Boolean) : [];
+    curCats.forEach(c => editModalSelectedCategories.add(c));
+
+    // Gather all existing categories across dataset
+    const allCategories = new Set([
+        '🍣일식', '🍚한식', '🥩고기', '🍗치킨', '🍔패스트푸드', '☕카페', '🍕피자', '🍜중식', '🍝양식', '🍙분식', '🍺술집', '🥗샐러드', '🍲아시안', '뷔페', '기타'
+    ]);
+    if (typeof restaurantData !== 'undefined') {
+        restaurantData.forEach(r => {
+            if (r.category) r.category.split(',').forEach(c => { const t = c.trim(); if(t) allCategories.add(t); });
+        });
+    }
+    curCats.forEach(c => allCategories.add(c));
+
+    if (catPicker) {
+        catPicker.innerHTML = `
+            <div class="edit-chips-wrap" id="edit-cat-chips-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px;">
+                <input type="text" id="edit-cat-custom-input" class="edit-text-input" placeholder="새 카테고리 직접 입력 후 추가" style="font-size:0.82rem; padding:0.4rem 0.6rem;">
+                <button type="button" id="btn-add-custom-cat" style="background:#FFF8E1; border:1px solid #FFE082; color:#D84315; border-radius:8px; padding:0 10px; font-size:0.8rem; font-weight:800; cursor:pointer; white-space:nowrap;">+ 추가</button>
+            </div>
+        `;
+
+        const renderCatChips = () => {
+            const container = document.getElementById('edit-cat-chips-container');
+            if (!container) return;
+            container.innerHTML = '';
+            allCategories.forEach(cat => {
+                const isSelected = editModalSelectedCategories.has(cat);
+                const color = getNotionTagColor(cat);
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = `edit-chip-btn ${isSelected ? 'active' : ''}`;
+                chip.style.cssText = `
+                    padding: 4px 10px; border-radius: 12px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.12s; border: 1.5px solid ${isSelected ? color.color : 'transparent'};
+                    background: ${isSelected ? color.bg : '#F5F5F5'}; color: ${isSelected ? color.color : '#666666'};
+                `;
+                chip.textContent = cat;
+                chip.onclick = () => {
+                    if (editModalSelectedCategories.has(cat)) {
+                        editModalSelectedCategories.delete(cat);
+                    } else {
+                        editModalSelectedCategories.add(cat);
+                    }
+                    renderCatChips();
+                };
+                container.appendChild(chip);
+            });
+        };
+        renderCatChips();
+
+        const customInput = document.getElementById('edit-cat-custom-input');
+        const addBtn = document.getElementById('btn-add-custom-cat');
+        const handleAdd = () => {
+            const val = customInput?.value.trim();
+            if (val) {
+                allCategories.add(val);
+                editModalSelectedCategories.add(val);
+                if (customInput) customInput.value = '';
+                renderCatChips();
+            }
+        };
+        if (addBtn) addBtn.onclick = handleAdd;
+        if (customInput) {
+            customInput.onkeydown = (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); handleAdd(); }
+            };
+        }
+    }
+
+    // 2. Locations setup
+    if (locLargePicker) {
+        locLargePicker.innerHTML = `
+            <input type="text" id="edit-modal-loc-large-val" class="edit-text-input" value="${item.location_large || ''}" placeholder="예: 서울 용산구, 서울 강서구">
+        `;
+    }
+    if (locSmallPicker) {
+        locSmallPicker.innerHTML = `
+            <input type="text" id="edit-modal-loc-small-val" class="edit-text-input" value="${item.location_small || ''}" placeholder="예: 효창공원, 우장산">
+        `;
+    }
+
+    // 3. Menus setup
+    const curMenus = Array.isArray(item.menu) ? item.menu : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+    if (menuPicker) {
+        menuPicker.innerHTML = `
+            <input type="text" id="edit-modal-menu-val" class="edit-text-input" value="${curMenus.join(', ')}" placeholder="주요 메뉴 (쉼표로 구분, 예: 곱창, 전골)">
+        `;
+    }
+
+    // 4. Rate setup
+    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 4;
+    setEditModalRate(spoonCount);
+
+    document.querySelectorAll('.edit-rate-spoon').forEach(btn => {
+        btn.onclick = () => {
+            const r = parseInt(btn.dataset.rate, 10);
+            setEditModalRate(r);
+        };
+    });
+
+    // 5. Save Button Binding
+    const saveBtn = document.getElementById('btn-save-restaurant-edit');
+    if (saveBtn) {
+        saveBtn.onclick = saveRestaurantInfoOverride;
+    }
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function setEditModalRate(spoonCount) {
+    editModalSelectedRate = spoonCount;
+    document.querySelectorAll('.edit-rate-spoon').forEach((b, i) => {
+        b.classList.toggle('active', i < spoonCount);
+    });
+    const labelEl = document.getElementById('edit-rate-label');
+    if (labelEl && typeof RATE_LABELS !== 'undefined') {
+        labelEl.textContent = RATE_LABELS[spoonCount] || `${spoonCount}개`;
+    }
+}
+
+function closeRestaurantEditModal() {
+    const overlay = document.getElementById('restaurant-edit-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function saveRestaurantInfoOverride() {
+    if (!currentEditingRestaurantItem || !currentEditingRestaurantItem.name) return;
+    const name = currentEditingRestaurantItem.name;
+    const key = name.trim().toLowerCase();
+
+    // 1. Gather values
+    const newCategory = Array.from(editModalSelectedCategories).join(', ') || '기타';
+    const newLocLarge = document.getElementById('edit-modal-loc-large-val')?.value.trim() || '';
+    const newLocSmall = document.getElementById('edit-modal-loc-small-val')?.value.trim() || '';
+    const menuRaw = document.getElementById('edit-modal-menu-val')?.value.trim() || '';
+    const newMenus = menuRaw ? menuRaw.split(',').map(m => m.trim()).filter(Boolean) : [];
+    const newRate = '🥄'.repeat(editModalSelectedRate || 1);
+    const newMapUrl = document.getElementById('edit-modal-map-url')?.value.trim() || currentEditingRestaurantItem.map_url || '';
+
+    // 2. Save to spoonmap_restaurant_overrides
+    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    overrides[key] = {
+        name: name,
+        category: newCategory,
+        location_large: newLocLarge,
+        location_small: newLocSmall,
+        menu: newMenus,
+        rate: newRate,
+        map_url: newMapUrl,
+        updated_at: new Date().toISOString()
+    };
+    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+
+    // 3. Batch Update all entries in spoonmap_diary for this restaurant
+    const diaryEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    let diaryUpdated = false;
+    diaryEntries.forEach(entry => {
+        if (entry.name && entry.name.trim().toLowerCase() === key) {
+            entry.category = newCategory;
+            if (newLocLarge) entry.location_large = newLocLarge;
+            if (newLocSmall) entry.location_small = newLocSmall;
+            if (newMenus.length > 0) entry.menu = newMenus;
+            if (newRate) entry.rate = newRate;
+            if (newMapUrl) entry.map_url = newMapUrl;
+            diaryUpdated = true;
+        }
+    });
+    if (diaryUpdated) {
+        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaryEntries));
+    }
+
+    // 4. Close edit modal
+    closeRestaurantEditModal();
+
+    // 5. Re-render list & diary
+    if (window.renderApp) window.renderApp();
+    renderDiaryCalendar();
+
+    // 6. Refresh Detail Modal with updated item
+    const allUnified = getUnifiedRestaurantData();
+    const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key) || {
+        ...currentEditingRestaurantItem,
+        category: newCategory,
+        location_large: newLocLarge,
+        location_small: newLocSmall,
+        menu: newMenus,
+        rate: newRate,
+        map_url: newMapUrl
+    };
+    openRestaurantDetailModal(updatedItem);
+
+    showDiaryToast(`✅ "${name}" 식당 정보가 전체 일괄 수정되었습니다!`);
 }
 
 // ─── Add Diary For Specific Restaurant (Direct Connect from Modal) ────
@@ -2348,7 +2646,13 @@ document.addEventListener('keydown', (e) => {
             closeRestaurantDetailModal();
         }
 
-        // 4. Mobile Card Overlay
+        // 4. Restaurant Edit Modal
+        const editOverlay = document.getElementById('restaurant-edit-modal-overlay');
+        if (editOverlay && editOverlay.classList.contains('open')) {
+            closeRestaurantEditModal();
+        }
+
+        // 5. Mobile Card Overlay
         const mobileOverlay = document.getElementById('mobile-card-overlay');
         if (mobileOverlay && mobileOverlay.classList.contains('open')) {
             closeMobileOverlay();
