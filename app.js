@@ -2855,34 +2855,46 @@ function initFoodInsightsTab() {
 function filterByInsight(filterType, filterValue) {
     if (!filterType || !filterValue) return;
 
-    // 1. Switch to LIST tab
-    switchTabUI('list');
-    window.location.hash = '#list';
-
-    // 2. Reset existing filters first
-    if (window.resetMainAppFilters) {
-        window.resetMainAppFilters();
+    // 1. Switch UI to LIST tab
+    const listTabBtn = document.querySelector('.tab-btn[data-tab="list"], .mobile-tab-btn[data-tab="list"]');
+    if (listTabBtn) {
+        listTabBtn.click();
+    } else if (typeof switchTabUI === 'function') {
+        switchTabUI('list');
+        window.location.hash = '#list';
     }
 
-    // 3. Trigger filter button click in sidebar
-    setTimeout(() => {
-        let selector = '';
-        if (filterType === 'category') {
-            selector = `#category-filters .filter-btn[data-value="${filterValue}"]`;
-        } else if (filterType === 'location_large') {
-            selector = `#location-large-filters .filter-btn[data-value="${filterValue}"]`;
-        } else if (filterType === 'rate') {
-            selector = `#rate-filters .filter-btn[data-value="${filterValue}"]`;
-        }
+    // 2. Clear previous filters
+    currentFilters.category = [];
+    currentFilters.rate = [];
+    currentFilters.location_large = [];
+    currentFilters.location_small = [];
+    currentFilters.searchQuery = '';
+    currentFilters.dateRange = { start: null, end: null };
 
-        const targetBtn = document.querySelector(selector);
-        if (targetBtn) {
-            targetBtn.click();
+    // 3. Set target filter value
+    if (filterType === 'category') {
+        currentFilters.category = [filterValue];
+    } else if (filterType === 'location_large') {
+        currentFilters.location_large = [filterValue];
+    } else if (filterType === 'rate') {
+        const num = parseInt(filterValue, 10);
+        if (num >= 1 && num <= 5) {
+            currentFilters.rate = ['🥄'.repeat(num)];
+        } else {
+            currentFilters.rate = [filterValue];
         }
+    }
 
-        const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
-        showDiaryToast(`${label} "${filterValue}" 필터로 LIST 목록이 검색되었습니다!`);
-    }, 150);
+    // 4. Update UI filter buttons state in sidebar & re-render main app
+    if (typeof refreshSidebarFilters === 'function') refreshSidebarFilters();
+    if (typeof renderApp === 'function') renderApp();
+
+    // 5. Scroll to top of list container smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const label = filterType === 'category' ? '🏷️' : (filterType === 'location_large' ? '📍' : '🥄');
+    showDiaryToast(`${label} "${filterValue}" 필터가 적용된 LIST 목록입니다!`);
 }
 window.filterByInsight = filterByInsight;
 
@@ -2983,8 +2995,11 @@ function computeAndRenderFoodInsights() {
             return `
                 <div class="bar-item clickable-insight-bar" onclick="filterByInsight('category', '${cat}')" title="클릭하면 LIST 탭에서 '${cat}' 맛집만 필터링합니다">
                     <div class="bar-label-row">
-                        <span class="notion-selected-chip" style="background:${color.bg}; color:${color.color}; font-weight:800; font-size:0.84rem; padding:2px 8px; border-radius:10px;">
-                            ${displayLabel} <span class="insight-jump-hint">LIST로 이동 ➔</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;">
+                            <span class="notion-selected-chip" style="background:${color.bg}; color:${color.color}; font-weight:800; font-size:0.84rem; padding:3px 10px; border-radius:10px; display:inline-block;">
+                                ${displayLabel}
+                            </span>
+                            <span class="insight-jump-hint">LIST로 이동 ➔</span>
                         </span>
                         <span class="bar-count">${count}곳 (${pct}%)</span>
                     </div>
