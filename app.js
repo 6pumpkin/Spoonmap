@@ -1622,10 +1622,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateFilterButtonsUI() {
         ['category', 'rate', 'location_large', 'location_small'].forEach(type => {
             let groupEl = null;
-            if (type === 'category') groupEl = categoryFilterGroup || document.getElementById('category-filters');
-            else if (type === 'rate') groupEl = rateFilterGroup || document.getElementById('rate-filters');
-            else if (type === 'location_large') groupEl = locationLargeFilterGroup || document.getElementById('location-large-filters');
-            else if (type === 'location_small') groupEl = locationSmallFilterGroup || document.getElementById('location-small-filters');
+            if (type === 'category') groupEl = document.getElementById('category-filters');
+            else if (type === 'rate') groupEl = document.getElementById('rate-filters');
+            else if (type === 'location_large') groupEl = document.getElementById('location-large-filters');
+            else if (type === 'location_small') groupEl = document.getElementById('location-small-filters');
 
             if (!groupEl) return;
 
