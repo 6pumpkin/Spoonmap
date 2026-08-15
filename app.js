@@ -874,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     categoryItems.forEach(li => li.classList.remove('active-on')); // Clear others
                     document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
                     this.classList.add('on');
-                    searchPlacesByCategory(false);
+                    searchPlacesByCategory();
                 }
             });
 
@@ -887,90 +887,113 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.currSubKeyword = keyword === '음식점' ? '' : keyword;
                     
                     document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
-                    
-                    // Manage active state for sub-menu items
                     document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
                     sub.classList.add('active');
 
                     newItem.classList.add('on');
                     newItem.classList.remove('sub-open');
                     
-                    searchPlacesByCategory(false);
+                    searchPlacesByCategory();
                 });
             });
         });
 
-        function searchPlacesByCategory(shouldUpdateBounds = true, isNextPage = false) {
-            if (!window.currCategory) return;
+        function executeUnifiedSearch(searchType, query, searchOptions) {
+            let collectedPlaces = [];
+            const searchBounds = new kakao.maps.LatLngBounds();
             const ps = new kakao.maps.services.Places();
-            const keyword = window.currSubKeyword ? `${window.currSubKeyword}` : '';
-            
-            // Base options
-            const options = {
-                sort: kakao.maps.services.SortBy.ACCURACY
-            };
 
-            // Only restrict to current view if global search is OFF
-            if (!window.isGlobalSearchActive) {
-                options.bounds = map.getBounds();
-            }
+            // Clear previous UI & markers
+            resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 현 지도의 모든 맛집을 검색하는 중...</p></div>`;
+            markers.forEach(m => m.setMap(null));
+            markers = [];
+            if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
 
-            const catSearchBounds = new kakao.maps.LatLngBounds();
-
-            const callback = (data, status, pagination) => {
-                // Remove old 'more' button
-                const oldMoreBtn = document.getElementById('map-load-more');
-                if (oldMoreBtn) oldMoreBtn.remove();
-                
-                const isFirstPage = !isNextPage && (!pagination || pagination.current === 1);
-
-                // On first page, clear existing results and markers
-                if (isFirstPage) {
-                    resultsList.innerHTML = '';
-                    markers.forEach(m => m.setMap(null));
-                    markers = [];
-                }
-                isNextPage = false; // reset after first use
-
+            const handlePageCallback = (data, status, pagination) => {
                 if (status === kakao.maps.services.Status.OK) {
+                    collectedPlaces = collectedPlaces.concat(data);
+
+                    // 1. Auto-fetch all available pages (1~3) recursively!
+                    if (pagination && pagination.hasNextPage) {
+                        pagination.nextPage();
+                        return;
+                    }
+
+                    // 2. All pages collected! Process masterData matching
                     const masterData = getUnifiedRestaurantData();
-                    data.forEach(place => {
-                        // Check if this Kakao result matches a saved place in masterData → mark as visited
+                    const processedResults = [];
+
+                    collectedPlaces.forEach(place => {
                         const savedMatch = masterData.find(r => {
                             const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
                             const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
-                            return pn.includes(rn) || rn.includes(pn);
+                            if (rn === pn) return true;
+                            const nameMatch = pn.includes(rn) || rn.includes(pn);
+                            if (nameMatch) {
+                                const ra = ((r.location_large || '') + ' ' + (r.location_small || '')).replace(/\s/g, '').toLowerCase();
+                                const pa = (place.road_address_name || place.address_name || '').replace(/\s/g, '').toLowerCase();
+                                return pa.includes(ra) || ra.includes(pa) || (r.location_small && pa.includes(r.location_small.replace(/\s/g, '').toLowerCase()));
+                            }
+                            return false;
                         });
+
                         const item = savedMatch || {
                             name: place.place_name,
                             category: place.category_name.split(' > ').pop(),
                             location_large: place.address_name,
                             rate: '카카오맵 데이터'
                         };
-                        // Pass global toggle state to extend bounds if active
-                        renderSearchResult(item, place, !!savedMatch, catSearchBounds, window.isGlobalSearchActive);
+
+                        processedResults.push({ item, place, isSaved: !!savedMatch });
                     });
 
-                    // Move map if global search is active
+                    // 3. Render ALL Markers on map initially at once!
+                    processedResults.forEach(res => {
+                        renderSingleMarker(res.item, res.place, res.isSaved, searchBounds, window.isGlobalSearchActive);
+                    });
+
+                    // 4. Adjust map bounds if global search is active
                     if (window.isGlobalSearchActive) {
-                        finalizeSearch(data.length, data.length, catSearchBounds, true);
+                        finalizeSearch(processedResults.length, processedResults.length, searchBounds, true);
                     }
 
-                    if (pagination && pagination.last > 1) {
-                        renderMapPagination(pagination, resultsList);
-                    }
-                } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
+                    // 5. Render Paginated Left List
+                    renderPaginatedList(processedResults, 1);
+
+                } else if (status === kakao.maps.services.Status.ZERO_RESULT && collectedPlaces.length === 0) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
-                } else if (status === kakao.maps.services.Status.ERROR && isFirstPage) {
+                } else if (status === kakao.maps.services.Status.ERROR && collectedPlaces.length === 0) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 웹 서버를 실행해주세요.</p></div>`;
+                } else if (collectedPlaces.length > 0) {
+                    // Render whatever was collected
+                    const masterData = getUnifiedRestaurantData();
+                    const processedResults = collectedPlaces.map(place => {
+                        const savedMatch = masterData.find(r => r.name.includes(place.place_name) || place.place_name.includes(r.name));
+                        return { item: savedMatch || { name: place.place_name, category: place.category_name.split(' > ').pop(), location_large: place.address_name, rate: '카카오맵 데이터' }, place, isSaved: !!savedMatch };
+                    });
+                    processedResults.forEach(res => renderSingleMarker(res.item, res.place, res.isSaved, searchBounds, window.isGlobalSearchActive));
+                    renderPaginatedList(processedResults, 1);
                 }
             };
 
-            if (window.currSubKeyword) {
-                ps.keywordSearch(keyword, callback, options);
+            if (searchType === 'category') {
+                if (window.currSubKeyword) {
+                    ps.keywordSearch(query, handlePageCallback, searchOptions);
+                } else {
+                    ps.categorySearch(query, handlePageCallback, searchOptions);
+                }
             } else {
-                ps.categorySearch(window.currCategory, callback, options);
+                ps.keywordSearch(query, handlePageCallback, searchOptions);
             }
+        }
+
+        function searchPlacesByCategory() {
+            if (!window.currCategory) return;
+            const query = window.currSubKeyword ? `${window.currSubKeyword}` : window.currCategory;
+            const options = { sort: kakao.maps.services.SortBy.ACCURACY };
+            if (!window.isGlobalSearchActive) options.bounds = map.getBounds();
+
+            executeUnifiedSearch('category', query, options);
         }
 
         // Logic for official keyword/category sample integration
@@ -981,100 +1004,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Mode: Keyword Search (Kakao results only, visited places marked) ---
         if (mapSearchValue) {
-            const searchOptions = {
-                sort: kakao.maps.services.SortBy.ACCURACY
-            };
+            const searchOptions = { sort: kakao.maps.services.SortBy.ACCURACY };
+            if (!window.isGlobalSearchActive) searchOptions.bounds = map.getBounds();
 
-            if (!window.isGlobalSearchActive) {
-                searchOptions.bounds = map.getBounds();
-            }
-
-            const keywordSearchBounds = new kakao.maps.LatLngBounds();
-
-            ps.keywordSearch(mapSearchValue, (data, status, pagination) => {
-                // Safely determine current page (if pagination doesn't exist, assume first page/error)
-                const isFirstPage = !pagination || pagination.current === 1;
-
-                // On first page or error - clear previous
-                if (isFirstPage) {
-                    resultsList.innerHTML = '';
-                    markers.forEach(m => m.setMap(null));
-                    markers = [];
-                }
-
-                if (status === kakao.maps.services.Status.OK) {
-                    const masterData = getUnifiedRestaurantData();
-                    data.forEach(place => {
-                        // Check if this Kakao result matches a saved place → mark as visited
-                        const savedMatch = masterData.find(r => {
-                            const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
-                            const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
-                            
-                            // Exact name match is good
-                            if (rn === pn) return true;
-                            
-                            // If names are similar, check address/location to avoid false positives (e.g. McDonald's)
-                            const nameMatch = pn.includes(rn) || rn.includes(pn);
-                            if (nameMatch) {
-                                const ra = ((r.location_large || '') + ' ' + (r.location_small || '')).replace(/\s/g, '').toLowerCase();
-                                const pa = (place.road_address_name || place.address_name || '').replace(/\s/g, '').toLowerCase();
-                                return pa.includes(ra) || ra.includes(pa) || (r.location_small && pa.includes(r.location_small.replace(/\s/g, '').toLowerCase()));
-                            }
-                            return false;
-                        });
-                        const item = savedMatch || {
-                            name: place.place_name,
-                            category: place.category_name.split(' > ').pop(),
-                            location_large: place.address_name,
-                            rate: '카카오맵 데이터'
-                        };
-                        // Use the correctly scoped keywordSearchBounds
-                        renderSearchResult(item, place, !!savedMatch, keywordSearchBounds, window.isGlobalSearchActive);
-                    });
-
-                    // Update map view if global search is on
-                    finalizeSearch(data.length, data.length, keywordSearchBounds, window.isGlobalSearchActive);
-
-                    if (pagination && pagination.last > 1) {
-                        renderMapPagination(pagination, resultsList);
-                    }
-                } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
-                    resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
-                } else if (status === kakao.maps.services.Status.ERROR && isFirstPage) {
-                    resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 서버를 실행해주세요.</p></div>`;
-                }
-            }, searchOptions);
+            executeUnifiedSearch('keyword', mapSearchValue, searchOptions);
         }
         // --- Mode: Initial State (Empty search) ---
         else {
-            const currentData = getFilteredData().slice(0, 15);
-            // No search, no category: show empty state (just the map, no auto-loaded places)
             resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
         }
     }
 
-    // Numbered Pagination Controller for Kakao Map Results
-    function renderMapPagination(pagination, containerEl) {
-        if (!pagination || pagination.last <= 1 || !containerEl) return;
-        
-        const existing = containerEl.querySelector('.map-pagination-container');
-        if (existing) existing.remove();
+    // Numbered Pagination & Clean Replacement Controller
+    function renderPaginatedList(allResults, currentPage) {
+        const pageSize = 15;
+        const totalPages = Math.ceil(allResults.length / pageSize) || 1;
+        const safePage = Math.max(1, Math.min(currentPage, totalPages));
 
-        const pagContainer = document.createElement('div');
-        pagContainer.className = 'map-pagination-container';
+        const startIndex = (safePage - 1) * pageSize;
+        const pageItems = allResults.slice(startIndex, startIndex + pageSize);
 
-        for (let i = 1; i <= pagination.last; i++) {
-            const btn = document.createElement('button');
-            btn.className = `map-pag-btn ${i === pagination.current ? 'active' : ''}`;
-            btn.innerText = i;
-            btn.type = 'button';
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                pagination.gotoPage(i);
-            };
-            pagContainer.appendChild(btn);
+        // 1. Clear previous page items & Reset Scroll to Top!
+        resultsList.innerHTML = '';
+        resultsList.scrollTop = 0;
+
+        // 2. Build current page items
+        pageItems.forEach(res => {
+            const { item, place, isSaved } = res;
+            const coords = new kakao.maps.LatLng(place.y, place.x);
+            const visits = isSaved ? (item.visit_count || 1) : 0;
+            const tagBadge = isSaved 
+                ? (visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`)
+                : '';
+
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${isSaved ? 'is-saved' : ''}`;
+            resultItem.innerHTML = `
+                <div class="result-item-top">
+                    <h4>${place.place_name || item.name}</h4>
+                    ${tagBadge}
+                </div>
+                <p>${place.category_name?.split(' > ').pop() || item.category} • ${place.address_name || item.location_large}</p>
+            `;
+
+            resultItem.addEventListener('click', () => {
+                map.panTo(coords);
+                if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
+                window.currentMapOverlay = new kakao.maps.CustomOverlay({
+                    position: coords,
+                    content: `<div class="marker-label ${isSaved ? 'is-saved' : ''}">${place.place_name || item.name}</div>`,
+                    yAnchor: 2.1,
+                    zIndex: 99999
+                });
+                window.currentMapOverlay.setMap(map);
+                const detailsUrl = place.place_url || item.map_url;
+                showPlaceDetail(item, place.road_address_name || place.address_name, isSaved, detailsUrl, place);
+            });
+
+            resultsList.appendChild(resultItem);
+        });
+
+        // 3. Render Numbered Page Buttons (1 2 3)
+        if (totalPages > 1) {
+            const pagContainer = document.createElement('div');
+            pagContainer.className = 'map-pagination-container';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `map-pag-btn ${i === safePage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.type = 'button';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    renderPaginatedList(allResults, i);
+                };
+                pagContainer.appendChild(btn);
+            }
+            resultsList.appendChild(pagContainer);
         }
-        containerEl.appendChild(pagContainer);
     }
 
     // Custom Marker SVG Pin Icons (Identical design & size: 29x42, only colors differ)
@@ -1082,29 +1089,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23EF4444" stroke="%23B91C1C" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23EF4444"/></svg>`;
 
-    function renderSearchResult(item, place, isSaved, bounds, shouldExtendBounds = false) {
-        const resultsList = document.getElementById('map-results-list');
+    function renderSingleMarker(item, place, isSaved, bounds, shouldExtendBounds = false) {
         const coords = new kakao.maps.LatLng(place.y, place.x);
-        
-        // Visits count & Badge tag
-        const visits = isSaved ? (item.visit_count || 1) : 0;
-        const tagBadge = isSaved 
-            ? (visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`)
-            : '';
 
-        // Create Sidebar Item
-        const resultItem = document.createElement('div');
-        resultItem.className = `result-item ${isSaved ? 'is-saved' : ''}`;
-        resultItem.innerHTML = `
-            <div class="result-item-top">
-                <h4>${place.place_name || item.name}</h4>
-                ${tagBadge}
-            </div>
-            <p>${place.category_name?.split(' > ').pop() || item.category} • ${place.address_name || item.location_large}</p>
-        `;
-        resultsList.appendChild(resultItem);
-
-        // Custom Colored Marker Image (Identical shape & size: 29x42, Red for Saved Places, Blue for Unvisited Kakao Places)
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             if (isSaved) {
@@ -1125,16 +1112,14 @@ document.addEventListener('DOMContentLoaded', () => {
             markerOptions.opacity = isSaved ? 1 : 0.6;
         }
 
-        // Create Marker
         const marker = new kakao.maps.Marker(markerOptions);
         markers.push(marker);
         
-        // Only extend bounds if we want to move the map (Global Search active)
         if (shouldExtendBounds) {
             bounds.extend(coords);
         }
 
-        const focusOnPlace = () => {
+        kakao.maps.event.addListener(marker, 'click', () => {
             map.panTo(coords);
             if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
             window.currentMapOverlay = new kakao.maps.CustomOverlay({
@@ -1144,13 +1129,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 zIndex: 99999
             });
             window.currentMapOverlay.setMap(map);
-            // Use place_url from Kakao if available, otherwise fallback to item's map_url
             const detailsUrl = place.place_url || item.map_url;
             showPlaceDetail(item, place.road_address_name || place.address_name, isSaved, detailsUrl, place);
-        };
-
-        resultItem.addEventListener('click', focusOnPlace);
-        kakao.maps.event.addListener(marker, 'click', focusOnPlace);
+        });
     }
 
     function finalizeSearch(current, total, bounds, shouldSetBounds) {
