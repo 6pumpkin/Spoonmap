@@ -1301,17 +1301,27 @@ main {
 
 #category-menu > li {
     background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.12);
-    border-radius: 12px;
-    padding: 7px 14px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #333333;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    border: 1.5px solid rgba(0,0,0,0.12);
+    border-radius: 18px;
+    min-width: 80px;
+    min-height: 74px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1F2937;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.14);
     cursor: pointer;
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+#category-menu > li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
 }
 
 #category-menu > li.has-sub {

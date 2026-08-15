@@ -1075,12 +1075,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Custom Marker SVG Pin Icons
-    const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="42" viewBox="0 0 34 42"><path fill="%23EF4444" stroke="%23991B1B" stroke-width="1.8" d="M17 0C7.611 0 0 7.611 0 17c0 13.6 17 25 17 25s17-11.4 17-25C34 7.611 26.389 0 17 0z"/><circle cx="17" cy="17" r="8" fill="%23FFFFFF"/><text x="17" y="21" font-size="11" font-weight="900" text-anchor="middle" fill="%23EF4444">🥄</text></svg>`;
+    // Custom Marker SVG Pin Icons (Identical design & size: 29x42, only colors differ)
+    const BLUE_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%233B82F6" stroke="%231D4ED8" stroke-width="1.6" opacity="0.9" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%233B82F6"/></svg>`;
 
-    const GOLD_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46"><path fill="%23DC2626" stroke="%23FEF08A" stroke-width="2.5" d="M19 0C8.507 0 0 8.507 0 19c0 15 19 27 19 27s19-12 19-27C38 8.507 29.493 0 19 0z"/><circle cx="19" cy="19" r="9.5" fill="%23FEF08A"/><text x="19" y="23.5" font-size="12" font-weight="900" text-anchor="middle" fill="%23991B1B">🔥</text></svg>`;
-
-    const BLUE_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="34" viewBox="0 0 28 34"><path fill="%233B82F6" stroke="%231D4ED8" stroke-width="1.2" opacity="0.85" d="M14 0C6.268 0 0 6.268 0 14c0 11 14 20 14 20s14-9 14-20C28 6.268 21.732 0 14 0z"/><circle cx="14" cy="14" r="5.5" fill="%23FFFFFF"/><circle cx="14" cy="14" r="3" fill="%233B82F6"/></svg>`;
+    const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23EF4444" stroke="%23B91C1C" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23EF4444"/></svg>`;
 
     function renderSearchResult(item, place, isSaved, bounds, shouldExtendBounds = false) {
         const resultsList = document.getElementById('map-results-list');
@@ -1104,17 +1102,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         resultsList.appendChild(resultItem);
 
-        // Custom Colored Marker Image (Red/Gold for Saved Places, Blue for Unvisited Kakao Places)
+        // Custom Colored Marker Image (Identical shape & size: 29x42, Red for Saved Places, Blue for Unvisited Kakao Places)
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             if (isSaved) {
-                if (visits >= 2) {
-                    markerImg = new kakao.maps.MarkerImage(GOLD_MARKER_SVG, new kakao.maps.Size(38, 46), { offset: new kakao.maps.Point(19, 46) });
-                } else {
-                    markerImg = new kakao.maps.MarkerImage(RED_MARKER_SVG, new kakao.maps.Size(34, 42), { offset: new kakao.maps.Point(17, 42) });
-                }
+                markerImg = new kakao.maps.MarkerImage(RED_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
             } else {
-                markerImg = new kakao.maps.MarkerImage(BLUE_MARKER_SVG, new kakao.maps.Size(28, 34), { offset: new kakao.maps.Point(14, 34) });
+                markerImg = new kakao.maps.MarkerImage(BLUE_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
             }
         }
 
@@ -1364,11 +1358,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="${finalUrl}" target="_blank" class="detail-kakao-btn">
                         카카오맵
                     </a>
-                </div>
-                <div class="map-modal-btn-container" style="margin-top:10px;">
-                    <button type="button" onclick='openRestaurantDetailModal(${JSON.stringify(item).replace(/'/g, "\\'").replace(/"/g, '&quot;')})' class="detail-modal-open-btn" style="width:100%; background:#FFF1F2; color:#E11D48; border:1px solid #FECDD3; border-radius:12px; padding:0.7rem 1rem; font-weight:800; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
-                        🔍 식당 상세 및 방문기록 보기
-                    </button>
                 </div>
             </div>
         `;
