@@ -3268,35 +3268,7 @@ function initSommelierTab() {
     const thread = document.getElementById('sommelier-chat-thread');
     const input = document.getElementById('sommelier-user-input');
     const sendBtn = document.getElementById('btn-send-sommelier');
-    const keyInput = document.getElementById('gemini-api-key-input');
-    const saveKeyBtn = document.getElementById('btn-save-gemini-key');
-    const keyStatus = document.getElementById('gemini-key-status');
-
     if (!thread || !input || !sendBtn) return;
-
-    // Load saved Gemini Key
-    const savedKey = localStorage.getItem('spoonmap_gemini_key') || '';
-    if (keyInput) keyInput.value = savedKey;
-    if (keyStatus) {
-        keyStatus.innerHTML = savedKey 
-            ? `<b style="color:#10B981;">✅ Google Gemini AI 연동 완료</b>`
-            : `💡 API Key 미입력 시에도 스마트 의도 파서가 개수/출처/코스를 동적 분석합니다.`;
-    }
-
-    if (saveKeyBtn) {
-        saveKeyBtn.addEventListener('click', () => {
-            const val = keyInput ? keyInput.value.trim() : '';
-            if (val) {
-                localStorage.setItem('spoonmap_gemini_key', val);
-                alert('🔑 Gemini API Key가 저장되었습니다! 이제 자유 대화형 LLM으로 동작합니다.');
-                if (keyStatus) keyStatus.innerHTML = `<b style="color:#10B981;">✅ Google Gemini AI 연동 완료</b>`;
-            } else {
-                localStorage.removeItem('spoonmap_gemini_key');
-                alert('API Key가 제거되었습니다. 기본 스마트 파서 모드로 전환됩니다.');
-                if (keyStatus) keyStatus.innerHTML = `💡 API Key 미입력 시에도 스마트 의도 파서가 개수/출처/코스를 동적 분석합니다.`;
-            }
-        });
-    }
 
     // Initial AI Welcome Message with Time Context
     const now = new Date();
