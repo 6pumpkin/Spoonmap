@@ -3301,7 +3301,7 @@ function initSommelierTab() {
         <div class="chat-msg ai-msg">
             <div class="chat-avatar">🤖</div>
             <div class="chat-bubble">
-                안녕하세요! 1,100개 미식 데이터 및 카카오 지도 API와 연동된 <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
+                안녕하세요! <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
                 원하시는 <b>개수(예: 1차 3곳, 2차 3곳), 추천 출처(내 맛집만 vs 카카오 지도 실시간), 코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br><br>
                 💡 상단의 추천 샘플 질문을 누르시거나 하단 창에 원하는 질문을 입력하세요!
