@@ -1366,6 +1366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide list, show detail
         resultsList.style.display = 'none';
         detailPanel.style.display = 'flex';
+        detailPanel.scrollTop = 0;
 
         const mapDetailHash = `#map/place?name=${encodeURIComponent(item.name)}`;
         if (window.location.hash !== mapDetailHash) {

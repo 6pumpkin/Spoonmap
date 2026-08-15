@@ -894,6 +894,11 @@ main {
 
 .map-sidebar {
     width: 360px;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
     background: #ffffff;
     border-radius: 16px;
     padding: 1.4rem;
@@ -1011,13 +1016,29 @@ main {
 /* Map Place Detail View (Photo 2 original design) */
 .map-place-detail {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
     flex-direction: column;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.map-place-detail::-webkit-scrollbar {
+    width: 5px;
+}
+
+.map-place-detail::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
 }
 
 .detail-body {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 100%;
 }
 
 .back-to-list-btn {
