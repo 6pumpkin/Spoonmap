@@ -3700,36 +3700,44 @@ const FOOD_CATEGORIES = [
 ];
 
 function extractLocationAndCategory(query) {
-    const q = query.toLowerCase();
+    // 조사 및 불필요한 서술어 제거 전처리
+    let qClean = query
+        .replace(/(에서|근처|주변|인근|앞|뒤|옆|쪽|방면|일대)\b/g, ' ')
+        .replace(/([가-힣]+)(에서|근처|주변|인근|앞에|으로|로가)/g, '$1 ')
+        .trim();
+
+    const qLower = qClean.toLowerCase();
     let targetLoc = null;
     let targetLocDisplay = null;
 
-    // 1. Search Predefined Location list
+    // 1. Predefined Location list
     for (const loc of KOREA_LOCATIONS) {
-        if (q.includes(loc.key.toLowerCase())) {
+        if (qLower.includes(loc.key.toLowerCase())) {
             targetLoc = loc.key;
             targetLocDisplay = loc.display;
             break;
         }
     }
 
-    // 2. Administrative / Geographic Suffix Matching (역, 시, 군, 구, 동, 읍, 면, 리, 로, 길, 온천, 해수욕장, 해변, 산, 섬, 단지, 지구)
+    // 2. Comprehensive POI & Landmark Pattern Matching
+    // [역/교통, 대학/학교, 병원, 문화/쇼핑, 체육/공원/온천, 관광/시장, 행정구역]
     if (!targetLocDisplay) {
-        const suffixMatch = query.match(/([가-힣]{2,8})(역|시|군|구|동|읍|면|리|로|길|온천|해수욕장|해변|산|섬|단지|지구)\b/);
-        if (suffixMatch) {
-            targetLoc = suffixMatch[0];
-            targetLocDisplay = suffixMatch[0];
+        const poiRegex = /([가-힣a-zA-Z0-9]{2,15})(역|터미널|공항|환승센터|선착장|대학교|대학|캠퍼스|초등학교|중학교|고등학교|초|중|고|병원|의료원|스타필드|백화점|아울렛|몰|코엑스|벡스코|킨텍스|예술의전당|미술관|박물관|아트센터|문화회관|영화관|롯데월드|에버랜드|타워|경기장|운동장|체육관|스타디움|공원|유원지|리조트|호텔|골프장|캠핑장|워터파크|스파|온천|해수욕장|해변|포구|항|계곡|폭포|호수|산|봉|섬|도|단지|지구|거리|골목|시장|특별시|광역시|시|군|구|동|읍|면|리|가|로|길)/;
+        const match = qClean.match(poiRegex);
+        if (match) {
+            targetLoc = match[0];
+            targetLocDisplay = match[0];
         }
     }
 
     // 3. Dynamic Residual Noun Extractor (Stopwords removal)
     // E.g. "온양온천 1차 고기 2차 카페 각각 두곳씩 알려줘" -> "온양온천"
     if (!targetLocDisplay) {
-        let cleaned = query
+        let cleaned = qClean
             .replace(/[0-9두세네다섯여섯일이삼사오육칠팔구십]+(곳|개|선|군데)/g, '')
             .replace(/[1-9]차/g, '')
             .replace(/각각|모두|전부|근처|주변|인근|실시간|카카오|내 맛집|5수저/g, '')
-            .replace(/추천해줘|추천|알려줘|찾아줘|골라줘|코스|짜줘|부탁해|해줘|어때|가볼만한곳/g, '');
+            .replace(/추천해줘|추천|알려줘|찾아줘|골라줘|코스|짜줘|부탁해|해줘|어때|가볼만한곳|맛집/g, '');
         
         for (const cat of FOOD_CATEGORIES) {
             cleaned = cleaned.replace(new RegExp(cat.key, 'gi'), '');
@@ -3749,7 +3757,7 @@ function extractLocationAndCategory(query) {
 
     // Category: more-specific first
     for (const cat of FOOD_CATEGORIES) {
-        if (q.includes(cat.key.toLowerCase())) {
+        if (qLower.includes(cat.key.toLowerCase())) {
             mainCat = cat.key;
             mainCatDisplay = cat.display;
             catDescFn = cat.desc;
