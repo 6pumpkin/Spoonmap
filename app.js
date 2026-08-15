@@ -3323,7 +3323,7 @@ function handleSommelierSend() {
     typingDiv.id = 'ai-typing-indicator';
     typingDiv.innerHTML = `
         <div class="chat-avatar">🤖</div>
-        <div class="chat-bubble">🍷 요청 조건(개수·출처·코스) 정밀 분석 중...</div>
+        <div class="chat-bubble">🍷 카카오 + 네이버 듀얼 실시간 데이터 수집 및 교차 분석 중...</div>
     `;
     thread.appendChild(typingDiv);
     thread.scrollTop = thread.scrollHeight;
@@ -3789,17 +3789,20 @@ function processSommelierQuery(query, callback) {
 
     async function fetchNaverPlaces(searchKw) {
         if (!searchKw || !NAVER_CLIENT_ID) return [];
+        
+        const directUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(searchKw)}&display=5&sort=comment`;
+        const headers = {
+            'X-Naver-Client-Id': NAVER_CLIENT_ID,
+            'X-Naver-Client-Secret': NAVER_CLIENT_SECRET
+        };
+
+        // 1. Try direct fetch
         try {
-            const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(searchKw)}&display=5&sort=comment`;
-            const res = await fetch(url, {
-                headers: {
-                    'X-Naver-Client-Id': NAVER_CLIENT_ID,
-                    'X-Naver-Client-Secret': NAVER_CLIENT_SECRET
-                }
-            });
+            const res = await fetch(directUrl, { headers });
             if (res.ok) {
                 const json = await res.json();
-                if (json && json.items) {
+                if (json && json.items && json.items.length > 0) {
+                    console.log(`%c💚 [Naver API 실시간 연동 성공] "${searchKw}" 결과 ${json.items.length}곳 수집 완료!`, 'color: #03C75A; font-weight: bold;', json.items);
                     return json.items.map(item => ({
                         이름: item.title.replace(/<[^>]+>/g, ''),
                         카테고리: item.category,
@@ -3808,9 +3811,26 @@ function processSommelierQuery(query, callback) {
                     }));
                 }
             }
-        } catch (e) {
-            // Graceful fallback if client-side CORS restriction applies
-            console.log('[Spoonmap] Naver API direct fetch note:', e.message);
+        } catch (directErr) {
+            // 2. Browser CORS Fallback: use secure proxy to ensure 100% browser compatibility
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
+                const res = await fetch(proxyUrl, { headers });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.items && json.items.length > 0) {
+                        console.log(`%c💚 [Naver API 실시간 연동 성공] "${searchKw}" 결과 ${json.items.length}곳 수집 완료!`, 'color: #03C75A; font-weight: bold;', json.items);
+                        return json.items.map(item => ({
+                            이름: item.title.replace(/<[^>]+>/g, ''),
+                            카테고리: item.category,
+                            주소: item.roadAddress || item.address,
+                            링크: item.link
+                        }));
+                    }
+                }
+            } catch (proxyErr) {
+                console.log('[Spoonmap] Naver API fetch note:', proxyErr.message);
+            }
         }
         return [];
     }
