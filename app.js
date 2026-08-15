@@ -3704,12 +3704,42 @@ function extractLocationAndCategory(query) {
     let targetLoc = null;
     let targetLocDisplay = null;
 
-    // Location: search longer/more-specific entries first (already ordered)
+    // 1. Search Predefined Location list
     for (const loc of KOREA_LOCATIONS) {
         if (q.includes(loc.key.toLowerCase())) {
             targetLoc = loc.key;
             targetLocDisplay = loc.display;
             break;
+        }
+    }
+
+    // 2. Administrative / Geographic Suffix Matching (역, 시, 군, 구, 동, 읍, 면, 리, 로, 길, 온천, 해수욕장, 해변, 산, 섬, 단지, 지구)
+    if (!targetLocDisplay) {
+        const suffixMatch = query.match(/([가-힣]{2,8})(역|시|군|구|동|읍|면|리|로|길|온천|해수욕장|해변|산|섬|단지|지구)\b/);
+        if (suffixMatch) {
+            targetLoc = suffixMatch[0];
+            targetLocDisplay = suffixMatch[0];
+        }
+    }
+
+    // 3. Dynamic Residual Noun Extractor (Stopwords removal)
+    // E.g. "온양온천 1차 고기 2차 카페 각각 두곳씩 알려줘" -> "온양온천"
+    if (!targetLocDisplay) {
+        let cleaned = query
+            .replace(/[0-9두세네다섯여섯일이삼사오육칠팔구십]+(곳|개|선|군데)/g, '')
+            .replace(/[1-9]차/g, '')
+            .replace(/각각|모두|전부|근처|주변|인근|실시간|카카오|내 맛집|5수저/g, '')
+            .replace(/추천해줘|추천|알려줘|찾아줘|골라줘|코스|짜줘|부탁해|해줘|어때|가볼만한곳/g, '');
+        
+        for (const cat of FOOD_CATEGORIES) {
+            cleaned = cleaned.replace(new RegExp(cat.key, 'gi'), '');
+        }
+        cleaned = cleaned.replace(/맛집|식당|밥집|술집|카페|디저트|요리|음식/g, '').trim();
+
+        const words = cleaned.split(/\s+/).filter(w => w.length >= 2);
+        if (words.length > 0) {
+            targetLoc = words[0];
+            targetLocDisplay = words[0];
         }
     }
 
@@ -3757,11 +3787,8 @@ function processSommelierQuery(query, callback) {
     const isMultiCourse = has1cha && has2cha;
 
     // ─── 1차/2차 각각의 숫자 추출 ───
-    // "1차 고기집 1곳" "1차 3곳" "1차 두곳" 등 모두 처리
-    // 1차 이후 ~ 2차(또는 문장 끝) 사이에서 숫자 단어 찾기
     function extractStepCount(text, stepTag) {
         const afterStep = text.split(stepTag)[1] || '';
-        // 다음 차(ex: 2차)가 나오면 거기서 자름
         const nextStep = afterStep.split(/[12]차/)[0];
         const numMatch = nextStep.match(/([두세네다섯여섯일이삼사오육칠팔구십1-9]+)\s*(곳|개)/i);
         if (numMatch) return parseKoreanNumber(numMatch[1]) || null;
@@ -3771,7 +3798,6 @@ function processSommelierQuery(query, callback) {
     const step1Req = has1cha ? (extractStepCount(query, '1차') || 2) : null;
     const step2Req = has2cha ? (extractStepCount(query, '2차') || 2) : null;
 
-    // 전체 개수: 1차+2차면 합산, 아니면 첫 번째 "X곳/개" 매칭
     let totalReq;
     if (isMultiCourse) {
         totalReq = (step1Req || 2) + (step2Req || 2);
@@ -3780,18 +3806,10 @@ function processSommelierQuery(query, callback) {
         totalReq = mTotal ? (parseKoreanNumber(mTotal[1]) || 2) : 2;
     }
 
-    // ─── Location & Category Extraction (With Memory Inheritance) ───
+    // ─── Location & Category Extraction (With Dynamic Extractor & Memory) ───
     let { targetLoc, targetLocDisplay, mainCat, mainCatDisplay, catDescFn } = extractLocationAndCategory(query);
 
-    // 사전에 없는 지역도 커버: "[도시명]역/시/군/구/동" 패턴으로 raw 추출
-    if (!targetLocDisplay) {
-        const rawMatch = query.match(/([가-힣]{1,5})(역|시|군)\b/);
-        if (rawMatch) {
-            targetLocDisplay = rawMatch[1]; // e.g. "청주역" → "청주"
-        }
-    }
-
-    // Inherit previous location if user is asking a follow-up (e.g. "여기 말고 다른 곳", "2차만 다시", "주차 되는 곳")
+    // Inherit previous location if user is asking a follow-up
     if (!targetLocDisplay && window.sommelierContext.lastLocation) {
         targetLocDisplay = window.sommelierContext.lastLocation;
         console.log(`[Spoonmap Multi-turn] Inheriting previous location: ${targetLocDisplay}`);
@@ -3829,17 +3847,16 @@ function processSommelierQuery(query, callback) {
 
     // ─── Gemini LLM Logic ───
     if (geminiKey) {
-        // Robust multi-tier search keywords for all Korea regions & districts
-        const cleanQueryNoNumbers = query.replace(/[0-9두세네다섯여섯일이삼사오육칠팔구십]+(곳|개|선)/g, '').replace(/1차|2차|추천해줘|추천|알려줘|코스/g, '').trim();
+        // Robust search keywords with mandatory location prefix
+        const baseLoc = locSearch || '전국';
+        const kw1_primary = `${baseLoc} ${cat1Display || (isMultiCourse ? '맛집' : (mainCatDisplay || '맛집'))}`.trim();
+        const kw1_fallback = `${baseLoc} ${mainCatDisplay || '맛집'}`.trim();
         
-        const kw1_primary = `${locSearch} ${cat1Display || (isMultiCourse ? '맛집' : (mainCatDisplay || '맛집'))}`.trim();
-        const kw1_fallback = cleanQueryNoNumbers || `${locSearch} 맛집`.trim();
+        const kw2_primary = `${baseLoc} ${cat2Display || '카페'}`.trim();
+        const kw2_fallback = `${baseLoc} 디저트 카페`.trim();
         
-        const kw2_primary = `${locSearch} ${cat2Display || '술집'}`.trim();
-        const kw2_fallback = `${locSearch} 카페`.trim();
-        
-        const kwSingle_primary = cleanQueryNoNumbers || `${locSearch} ${mainCatDisplay || '맛집'}`.trim();
-        const kwSingle_fallback = `${locSearch} ${mainCatDisplay || '맛집'}`.trim();
+        const kwSingle_primary = `${baseLoc} ${mainCatDisplay || '맛집'}`.trim();
+        const kwSingle_fallback = `${baseLoc} 맛집`.trim();
 
         const localCandidates = targetLocDisplay
             ? restaurantData.filter(item => {
