@@ -4357,3 +4357,44 @@ input[type="date"].drawer-input {
 .clickable-rank-item:hover .insight-jump-hint {
     opacity: 1;
 }
+
+/* 9. MAP Tab Visited Place Chips & Custom Markers */
+.result-item.is-saved {
+    border-left: 4px solid #EF4444 !important;
+    background-color: #FEF2F2 !important;
+}
+
+.result-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.saved-place-chip {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.saved-place-chip.red {
+    background-color: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECDD3;
+}
+
+.saved-place-chip.gold {
+    background-color: #FEF9C3;
+    color: #854D0E;
+    border: 1px solid #FDE047;
+}
+
+.marker-label.is-saved {
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
+    font-weight: 800 !important;
+}

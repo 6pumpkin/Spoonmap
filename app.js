@@ -933,11 +933,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 isNextPage = false; // reset after first use
 
                 if (status === kakao.maps.services.Status.OK) {
+                    const masterData = getUnifiedRestaurantData();
                     data.forEach(place => {
-                        // Check if this Kakao result matches a saved place → mark as visited
-                        const savedMatch = restaurantData.find(r => {
-                            const rn = r.name.replace(/\s/g, '').toLowerCase();
-                            const pn = place.place_name.replace(/\s/g, '').toLowerCase();
+                        // Check if this Kakao result matches a saved place in masterData → mark as visited
+                        const savedMatch = masterData.find(r => {
+                            const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
+                            const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
                             return pn.includes(rn) || rn.includes(pn);
                         });
                         const item = savedMatch || {
@@ -1015,12 +1016,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (oldMoreBtn) oldMoreBtn.remove();
 
                 if (status === kakao.maps.services.Status.OK) {
+                    const masterData = getUnifiedRestaurantData();
                     data.forEach(place => {
                         // Check if this Kakao result matches a saved place → mark as visited
-                        // Use stricter matching: exact name or name + location overlap
-                        const savedMatch = restaurantData.find(r => {
-                            const rn = r.name.replace(/\s/g, '').toLowerCase();
-                            const pn = place.place_name.replace(/\s/g, '').toLowerCase();
+                        const savedMatch = masterData.find(r => {
+                            const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
+                            const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
                             
                             // Exact name match is good
                             if (rn === pn) return true;
@@ -1028,10 +1029,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             // If names are similar, check address/location to avoid false positives (e.g. McDonald's)
                             const nameMatch = pn.includes(rn) || rn.includes(pn);
                             if (nameMatch) {
-                                const ra = (r.location_large + ' ' + r.location_small).replace(/\s/g, '').toLowerCase();
+                                const ra = ((r.location_large || '') + ' ' + (r.location_small || '')).replace(/\s/g, '').toLowerCase();
                                 const pa = (place.road_address_name || place.address_name || '').replace(/\s/g, '').toLowerCase();
-                                // Check if address contains our broad location or vice versa
-                                return pa.includes(ra) || ra.includes(pa) || pa.includes(r.location_small.replace(/\s/g, '').toLowerCase());
+                                return pa.includes(ra) || ra.includes(pa) || (r.location_small && pa.includes(r.location_small.replace(/\s/g, '').toLowerCase()));
                             }
                             return false;
                         });
@@ -1075,25 +1075,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Custom Marker SVG Pin Icons
+    const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="42" viewBox="0 0 34 42"><path fill="%23EF4444" stroke="%23991B1B" stroke-width="1.8" d="M17 0C7.611 0 0 7.611 0 17c0 13.6 17 25 17 25s17-11.4 17-25C34 7.611 26.389 0 17 0z"/><circle cx="17" cy="17" r="8" fill="%23FFFFFF"/><text x="17" y="21" font-size="11" font-weight="900" text-anchor="middle" fill="%23EF4444">🥄</text></svg>`;
+
+    const GOLD_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46"><path fill="%23DC2626" stroke="%23FEF08A" stroke-width="2.5" d="M19 0C8.507 0 0 8.507 0 19c0 15 19 27 19 27s19-12 19-27C38 8.507 29.493 0 19 0z"/><circle cx="19" cy="19" r="9.5" fill="%23FEF08A"/><text x="19" y="23.5" font-size="12" font-weight="900" text-anchor="middle" fill="%23991B1B">🔥</text></svg>`;
+
+    const BLUE_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="34" viewBox="0 0 28 34"><path fill="%233B82F6" stroke="%231D4ED8" stroke-width="1.2" opacity="0.85" d="M14 0C6.268 0 0 6.268 0 14c0 11 14 20 14 20s14-9 14-20C28 6.268 21.732 0 14 0z"/><circle cx="14" cy="14" r="5.5" fill="%23FFFFFF"/><circle cx="14" cy="14" r="3" fill="%233B82F6"/></svg>`;
+
     function renderSearchResult(item, place, isSaved, bounds, shouldExtendBounds = false) {
         const resultsList = document.getElementById('map-results-list');
         const coords = new kakao.maps.LatLng(place.y, place.x);
         
+        // Visits count & Badge tag
+        const visits = isSaved ? (item.visit_count || 1) : 0;
+        const tagBadge = isSaved 
+            ? (visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`)
+            : '';
+
         // Create Sidebar Item
         const resultItem = document.createElement('div');
         resultItem.className = `result-item ${isSaved ? 'is-saved' : ''}`;
         resultItem.innerHTML = `
-            <h4>${place.place_name || item.name}</h4>
+            <div class="result-item-top">
+                <h4>${place.place_name || item.name}</h4>
+                ${tagBadge}
+            </div>
             <p>${place.category_name?.split(' > ').pop() || item.category} • ${place.address_name || item.location_large}</p>
         `;
         resultsList.appendChild(resultItem);
 
-        // Create Marker
-        const marker = new kakao.maps.Marker({
+        // Custom Colored Marker Image (Red/Gold for Saved Places, Blue for Unvisited Kakao Places)
+        let markerImg = null;
+        if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
+            if (isSaved) {
+                if (visits >= 2) {
+                    markerImg = new kakao.maps.MarkerImage(GOLD_MARKER_SVG, new kakao.maps.Size(38, 46), { offset: new kakao.maps.Point(19, 46) });
+                } else {
+                    markerImg = new kakao.maps.MarkerImage(RED_MARKER_SVG, new kakao.maps.Size(34, 42), { offset: new kakao.maps.Point(17, 42) });
+                }
+            } else {
+                markerImg = new kakao.maps.MarkerImage(BLUE_MARKER_SVG, new kakao.maps.Size(28, 34), { offset: new kakao.maps.Point(14, 34) });
+            }
+        }
+
+        const markerOptions = {
             map: map,
             position: coords,
-            opacity: isSaved ? 1 : 0.6
-        });
+            zIndex: isSaved ? 100 : 1
+        };
+        if (markerImg) {
+            markerOptions.image = markerImg;
+        } else {
+            markerOptions.opacity = isSaved ? 1 : 0.6;
+        }
+
+        // Create Marker
+        const marker = new kakao.maps.Marker(markerOptions);
         markers.push(marker);
         
         // Only extend bounds if we want to move the map (Global Search active)
@@ -1327,6 +1364,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="${finalUrl}" target="_blank" class="detail-kakao-btn">
                         카카오맵
                     </a>
+                </div>
+                <div class="map-modal-btn-container" style="margin-top:10px;">
+                    <button type="button" onclick='openRestaurantDetailModal(${JSON.stringify(item).replace(/'/g, "\\'").replace(/"/g, '&quot;')})' class="detail-modal-open-btn" style="width:100%; background:#FFF1F2; color:#E11D48; border:1px solid #FECDD3; border-radius:12px; padding:0.7rem 1rem; font-weight:800; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                        🔍 식당 상세 및 방문기록 보기
+                    </button>
                 </div>
             </div>
         `;
