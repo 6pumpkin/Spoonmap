@@ -899,23 +899,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function executeUnifiedSearch(searchType, query, searchOptions) {
-            let collectedResults = [];
+            const resultsList = document.getElementById('map-results-list');
+            let collectedPlaces = [];
             const searchBounds = new kakao.maps.LatLngBounds();
             const ps = new kakao.maps.services.Places();
-            let isFirstCallback = true;
-            window.currentSelectedMapPage = 1;
 
             // Clear previous UI & markers
-            resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 장소를 검색하는 중...</p></div>`;
+            if (resultsList) {
+                resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 현 지도의 모든 맛집을 검색하는 중...</p></div>`;
+            }
             markers.forEach(m => m.setMap(null));
             markers = [];
             if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
 
             const handlePageCallback = (data, status, pagination) => {
                 if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                    const masterData = getUnifiedRestaurantData();
+                    collectedPlaces = collectedPlaces.concat(data);
 
-                    data.forEach(place => {
+                    // 1. Auto-fetch all available pages (1~3) recursively!
+                    if (pagination && pagination.hasNextPage) {
+                        try {
+                            pagination.nextPage();
+                            return;
+                        } catch (err) {
+                            console.warn('Pagination nextPage error:', err);
+                        }
+                    }
+
+                    // 2. All pages collected! Process masterData matching
+                    const masterData = getUnifiedRestaurantData();
+                    const processedResults = [];
+
+                    collectedPlaces.forEach(place => {
                         const savedMatch = masterData.find(r => {
                             const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
                             const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
@@ -931,36 +946,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const item = savedMatch || {
                             name: place.place_name,
-                            category: place.category_name?.split(' > ').pop() || '음식점',
+                            category: place.category_name.split(' > ').pop(),
                             location_large: place.address_name,
                             rate: '카카오맵 데이터'
                         };
 
-                        collectedResults.push({ item, place, isSaved: !!savedMatch });
-                        // Render marker immediately on map!
-                        renderSingleMarker(item, place, !!savedMatch, searchBounds, window.isGlobalSearchActive);
+                        processedResults.push({ item, place, isSaved: !!savedMatch });
                     });
 
-                    // Update UI immediately on first page or when updated
-                    renderPaginatedList(collectedResults, window.currentSelectedMapPage || 1);
+                    // 3. Render ALL Markers on map initially at once!
+                    processedResults.forEach(res => {
+                        renderSingleMarker(res.item, res.place, res.isSaved, searchBounds, window.isGlobalSearchActive);
+                    });
 
-                    if (window.isGlobalSearchActive && isFirstCallback) {
-                        finalizeSearch(collectedResults.length, collectedResults.length, searchBounds, true);
+                    // 4. Adjust map bounds if global search is active
+                    if (window.isGlobalSearchActive) {
+                        finalizeSearch(processedResults.length, processedResults.length, searchBounds, true);
                     }
 
-                    isFirstCallback = false;
+                    // 5. Render Paginated Left List
+                    renderPaginatedList(processedResults, 1);
 
-                    // Fetch next page safely in background
-                    if (pagination && pagination.hasNextPage) {
-                        setTimeout(() => {
-                            pagination.nextPage();
-                        }, 50);
-                    }
-
-                } else if (status === kakao.maps.services.Status.ZERO_RESULT && collectedResults.length === 0) {
-                    resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
-                } else if (status === kakao.maps.services.Status.ERROR && collectedResults.length === 0) {
-                    resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 웹 서버를 실행해주세요.</p></div>`;
+                } else if (status === kakao.maps.services.Status.ZERO_RESULT && collectedPlaces.length === 0) {
+                    if (resultsList) resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
+                } else if (status === kakao.maps.services.Status.ERROR && collectedPlaces.length === 0) {
+                    if (resultsList) resultsList.innerHTML = `<div class="map-empty-state"><p>⚠️ 오류가 발생했습니다.<br>로컬 주소(폴더)에서는 카카오 검색 API가 차단됩니다.<br>깃허브 주소를 이용하시거나 웹 서버를 실행해주세요.</p></div>`;
+                } else if (collectedPlaces.length > 0) {
+                    // Render whatever was collected
+                    const masterData = getUnifiedRestaurantData();
+                    const processedResults = collectedPlaces.map(place => {
+                        const savedMatch = masterData.find(r => r.name.includes(place.place_name) || place.place_name.includes(r.name));
+                        return { item: savedMatch || { name: place.place_name, category: place.category_name.split(' > ').pop(), location_large: place.address_name, rate: '카카오맵 데이터' }, place, isSaved: !!savedMatch };
+                    });
+                    processedResults.forEach(res => renderSingleMarker(res.item, res.place, res.isSaved, searchBounds, window.isGlobalSearchActive));
+                    renderPaginatedList(processedResults, 1);
                 }
             };
 
@@ -1005,10 +1024,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Numbered Pagination & Clean Replacement Controller
     function renderPaginatedList(allResults, currentPage) {
+        const resultsList = document.getElementById('map-results-list');
+        if (!resultsList) return;
+
         const pageSize = 15;
         const totalPages = Math.ceil(allResults.length / pageSize) || 1;
         const safePage = Math.max(1, Math.min(currentPage, totalPages));
-        window.currentSelectedMapPage = safePage;
 
         const startIndex = (safePage - 1) * pageSize;
         const pageItems = allResults.slice(startIndex, startIndex + pageSize);
