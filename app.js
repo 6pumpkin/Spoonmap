@@ -3730,9 +3730,26 @@ function extractLocationAndCategory(query) {
     return { targetLoc, targetLocDisplay, mainCat, mainCatDisplay, catDescFn };
 }
 
+// ─── Multi-turn Conversation Memory Context ───
+window.sommelierContext = {
+    lastLocation: '',
+    lastPlaces: [],          // Place names previously recommended
+    lastQuery: '',
+    history: []
+};
+
 function processSommelierQuery(query, callback) {
     const q = query.toLowerCase();
     const geminiKey = localStorage.getItem('spoonmap_gemini_key');
+
+    // ─── Multi-turn Intent Detection ───
+    const isExcludeReRec = /여기 말고|다른 곳|다른곳|다른 데|다른데|다시 추천|바꿔|더 없어|더 보여|제외|말고|새로운/i.test(query);
+    const isStep2Only = /2차만|술집만|카페만|디저트만/i.test(query);
+    const isStep1Only = /1차만|밥집만|식당만|고기집만|양식만/i.test(query);
+    const isMenuTips = /메뉴|뭐 시켜|대표메뉴|시그니처|꿀팁|조합|주문/i.test(query);
+    const isWalkingRoute = /도보|걸어서|동선|거리|근처|역에서|가까운/i.test(query);
+    const isFeatures = /주차|발렛|룸|개별룸|방|예약|캐치테이블|웨이팅|대기/i.test(query);
+    const isBudget = /예산|가성비|인당|만원|가격|고급|오마카세|파인다이닝/i.test(query);
 
     // ─── Number & Step Detection ───
     const has1cha = query.includes('1차');
@@ -3763,7 +3780,7 @@ function processSommelierQuery(query, callback) {
         totalReq = mTotal ? (parseKoreanNumber(mTotal[1]) || 2) : 2;
     }
 
-    // ─── Location & Category Extraction ───
+    // ─── Location & Category Extraction (With Memory Inheritance) ───
     let { targetLoc, targetLocDisplay, mainCat, mainCatDisplay, catDescFn } = extractLocationAndCategory(query);
 
     // 사전에 없는 지역도 커버: "[도시명]역/시/군/구/동" 패턴으로 raw 추출
@@ -3774,9 +3791,19 @@ function processSommelierQuery(query, callback) {
         }
     }
 
-    // 기본값 '서울' 제거 → 지역 불명확하면 카테고리만으로 검색
+    // Inherit previous location if user is asking a follow-up (e.g. "여기 말고 다른 곳", "2차만 다시", "주차 되는 곳")
+    if (!targetLocDisplay && window.sommelierContext.lastLocation) {
+        targetLocDisplay = window.sommelierContext.lastLocation;
+        console.log(`[Spoonmap Multi-turn] Inheriting previous location: ${targetLocDisplay}`);
+    }
+
     const locSearch = targetLocDisplay || '';
     const locDisplay = targetLocDisplay || '요청하신 지역';
+
+    // Update Context Location
+    if (targetLocDisplay) {
+        window.sommelierContext.lastLocation = targetLocDisplay;
+    }
 
     // ─── 1차/2차별 카테고리 추출 ───
     let cat1Display = null, cat2Display = null;
@@ -3828,13 +3855,43 @@ function processSommelierQuery(query, callback) {
                 ? JSON.stringify(kakaoPlaces2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.address_name, 카테고리: p.category_name, url: p.place_url })))
                 : '[]';
 
-            const promptContext = `당신은 Spoonmap AI 미식 소믈리에입니다. 카카오 지도 실시간 데이터와 검증된 맛집 빅데이터를 종합 분석하여 가장 신뢰도 높은 맛집을 추천합니다. 한국어로 친절하고 전문적으로 답변하세요.
+            // Build Multi-turn Instructions
+            const previousPlacesList = window.sommelierContext.lastPlaces || [];
+            let followUpPrompt = '';
+
+            if (isExcludeReRec && previousPlacesList.length > 0) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 재추천 요구] 사용자가 직전 추천 장소가 마음에 들지 않아 다른 후보를 요청했습니다. 직전 추천 목록 [${previousPlacesList.join(', ')}]은 이미 보았으므로 완전히 제외하고 새로운 장소들로 추천하세요.`;
+            }
+            if (isStep2Only) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 2차 부분 교체] 사용자가 2차(술집/카페) 장소만 변경을 요청했습니다. 2차 추천 장소들을 새로운 곳으로 집중 재선별하세요.`;
+            }
+            if (isStep1Only) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 1차 부분 교체] 사용자가 1차 식당만 변경을 요청했습니다. 1차 추천 장소를 새로운 곳으로 집중 재선별하세요.`;
+            }
+            if (isMenuTips) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 대표 메뉴 & 주문 꿀팁] 사용자가 메뉴 조합이나 시그니처 메뉴 꿀팁을 질문했습니다. 각 식당의 시그니처 대표 메뉴와 2인 주문 꿀팁을 설명란에 상세히 작성하세요.`;
+            }
+            if (isWalkingRoute) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 도보 동선/거리 연계] 식당 간의 도보 이동 시간(예: 도보 5분), 지하철역 접근성을 설명에 구체적으로 명시하세요.`;
+            }
+            if (isFeatures) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 세부 조건] 주차 가능 여부, 개별 룸, 예약 가능성(네이버/캐치테이블), 웨이팅 상황을 고려하여 설명하세요.`;
+            }
+            if (isBudget) {
+                followUpPrompt += `\n⚠️ [연속 대화 - 예산/가격대] 사용자가 요청한 가성비/가격대 수준을 엄격히 맞춰 선별하세요.`;
+            }
+
+            const promptContext = `당신은 Spoonmap AI 미식 소믈리에입니다. 이전 대화 맥락을 기억하는 지능형 소믈리에로서 친절하고 전문적으로 답변하세요.
 
 사용자 질문: "${query}"
 
 추출된 정보:
 - 목표 지역: ${locDisplay} (이 지역 결과만 추천. 다른 지역 절대 금지)
 ${countInstruction}
+${followUpPrompt}
+
+[직전 대화에서 추천했던 장소 목록]
+${previousPlacesList.length > 0 ? previousPlacesList.join(', ') : '없음 (첫 대화)'}
 
 제공된 데이터:
 [내 방문 맛집 데이터 (검증된 단골 기록)]
@@ -3854,7 +3911,7 @@ ${kakaoData2Str}` : ''}
 5. 카카오맵 URL이 없는 경우 https://map.kakao.com/link/search/장소명 형식으로 직접 생성할 것
 6. 반드시 아래 구조로만 출력:
 
-<div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장)</div>
+<div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장, 사용자의 후속 피드백 적극 반영 언급)</div>
 
 각 장소마다 아래 카드 구조 사용:
 <div class="rec-card-standard">
@@ -3905,6 +3962,18 @@ ${kakaoData2Str}` : ''}
                         textRes = cleanMarkdownText(textRes);
                         textRes = injectNaverButtons(textRes);
                         console.log(`[Spoonmap] Success with model: ${model}`);
+
+                        // Update Context Memory: Extract recommended place names
+                        const titleMatches = textRes.match(/<h4 class="rec-place-title">([\s\S]*?)<\/h4>/g);
+                        if (titleMatches) {
+                            const newPlaces = titleMatches.map(m => m.replace(/<[^>]+>/g, '').trim());
+                            if (isExcludeReRec) {
+                                window.sommelierContext.lastPlaces = newPlaces;
+                            } else {
+                                window.sommelierContext.lastPlaces = Array.from(new Set([...window.sommelierContext.lastPlaces, ...newPlaces]));
+                            }
+                        }
+
                         callback({ html: textRes });
                     } else {
                         console.warn(`[Spoonmap] Model ${model} returned no candidates:`, data);
