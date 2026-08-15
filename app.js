@@ -3829,12 +3829,18 @@ function processSommelierQuery(query, callback) {
 
     // ─── Gemini LLM Logic ───
     if (geminiKey) {
-        // 1차/2차 각각 카카오 검색 키워드
-        const kw1 = `${locSearch} ${cat1Display || (isMultiCourse ? '맛집' : (mainCatDisplay || '맛집'))}`;
-        const kw2 = `${locSearch} ${cat2Display || '술집'}`;
-        const kwSingle = `${locSearch} ${mainCatDisplay || '맛집'}`;
+        // Robust multi-tier search keywords for all Korea regions & districts
+        const cleanQueryNoNumbers = query.replace(/[0-9두세네다섯여섯일이삼사오육칠팔구십]+(곳|개|선)/g, '').replace(/1차|2차|추천해줘|추천|알려줘|코스/g, '').trim();
+        
+        const kw1_primary = `${locSearch} ${cat1Display || (isMultiCourse ? '맛집' : (mainCatDisplay || '맛집'))}`.trim();
+        const kw1_fallback = cleanQueryNoNumbers || `${locSearch} 맛집`.trim();
+        
+        const kw2_primary = `${locSearch} ${cat2Display || '술집'}`.trim();
+        const kw2_fallback = `${locSearch} 카페`.trim();
+        
+        const kwSingle_primary = cleanQueryNoNumbers || `${locSearch} ${mainCatDisplay || '맛집'}`.trim();
+        const kwSingle_fallback = `${locSearch} ${mainCatDisplay || '맛집'}`.trim();
 
-        // 지역이 특정된 경우만 로컬 후보 포함. 지역 불명확하면 빈 배열 → Gemini가 서울 기준으로 오답 내는 것 방지
         const localCandidates = targetLocDisplay
             ? restaurantData.filter(item => {
                 const addr = (item.location_large || '') + (item.address || '');
@@ -3843,16 +3849,28 @@ function processSommelierQuery(query, callback) {
             : [];
 
         function queryGemini(kakaoPlaces1 = [], kakaoPlaces2 = []) {
-            // 1차+2차 구분 지시사항
+            const allCollectedPlaces = [...kakaoPlaces1, ...kakaoPlaces2];
+
+            // If absolutely 0 places found on Kakao (e.g. invalid query/typo), don't hallucinate fake restaurants!
+            if (allCollectedPlaces.length === 0 && localCandidates.length === 0) {
+                callback({
+                    html: `<div class="sommelier-intro-p">
+                        죄송합니다. <b>${locDisplay}</b> 지역에서 실시간으로 등록된 실제 매장 데이터를 찾지 못했습니다. 😢<br><br>
+                        💡 <b>검색 팁:</b> <i>"${locDisplay} 삼겹살 3곳"</i> 또는 <i>"${locDisplay} 유성구 맛집 2곳"</i>처럼 구체적인 지역과 메뉴로 다시 질문해 보세요!
+                    </div>`
+                });
+                return;
+            }
+
             const countInstruction = isMultiCourse
                 ? `- 1차 요청: ${step1Req}곳 (카테고리: ${cat1Display || '맛집'})
 - 2차 요청: ${step2Req}곳 (카테고리: ${cat2Display || '술집/카페'})
 - 반드시 1차 ${step1Req}곳 + 2차 ${step2Req}곳 = 총 ${totalReq}곳을 모두 추천할 것`
                 : `- 요청 개수: ${totalReq}곳 (카테고리: ${mainCatDisplay || '맛집'})`;
 
-            const kakaoData1Str = JSON.stringify(kakaoPlaces1.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.address_name, 카테고리: p.category_name, url: p.place_url })));
+            const kakaoData1Str = JSON.stringify(kakaoPlaces1.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })));
             const kakaoData2Str = isMultiCourse
-                ? JSON.stringify(kakaoPlaces2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.address_name, 카테고리: p.category_name, url: p.place_url })))
+                ? JSON.stringify(kakaoPlaces2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })))
                 : '[]';
 
             // Build Multi-turn Instructions
@@ -3881,45 +3899,44 @@ function processSommelierQuery(query, callback) {
                 followUpPrompt += `\n⚠️ [연속 대화 - 예산/가격대] 사용자가 요청한 가성비/가격대 수준을 엄격히 맞춰 선별하세요.`;
             }
 
-            const promptContext = `당신은 Spoonmap AI 미식 소믈리에입니다. 이전 대화 맥락을 기억하는 지능형 소믈리에로서 친절하고 전문적으로 답변하세요.
+            const promptContext = `당신은 대한민국 전국 100% 실존 맛집을 안내하는 Spoonmap AI 최고급 미식 소믈리에입니다.
 
 사용자 질문: "${query}"
 
 추출된 정보:
-- 목표 지역: ${locDisplay} (이 지역 결과만 추천. 다른 지역 절대 금지)
+- 목표 지역: ${locDisplay} (이 지역 결과만 추천)
 ${countInstruction}
 ${followUpPrompt}
 
 [직전 대화에서 추천했던 장소 목록]
 ${previousPlacesList.length > 0 ? previousPlacesList.join(', ') : '없음 (첫 대화)'}
 
-제공된 데이터:
+제공된 실제 실시간 데이터 (100% 신뢰 데이터):
+[카카오 지도 실시간 실제 매장 데이터 - ${isMultiCourse ? '1차' : ''} ${kw1_primary} 기준]
+${kakaoData1Str}
+${isMultiCourse ? `
+[카카오 지도 실시간 실제 매장 데이터 - 2차 ${kw2_primary} 기준]
+${kakaoData2Str}` : ''}
+
 [내 방문 맛집 데이터 (검증된 단골 기록)]
 ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_large, 카테고리: c.category, 방문횟수: c.visit_count })))}
 
-[카카오 지도 실시간 데이터 - ${isMultiCourse ? '1차' : ''} ${kw1} 기준]
-${kakaoData1Str}
-${isMultiCourse ? `
-[카카오 지도 실시간 데이터 - 2차 ${kw2} 기준]
-${kakaoData2Str}` : ''}
+⚠️ [신뢰도 100% 엄격 출력 규칙 - 위반 절대 금지]:
+1. ❌ 가상의 상호명(예: "대전 봉명동 고깃집", "OO일대")이나 모호한 가짜 주소를 절대 지어내지 마세요 (Hallucination 엄격 금지).
+2. ✅ 반드시 위 [카카오 지도 실시간 실제 매장 데이터] 및 [내 방문 맛집 데이터]에 존재하는 '실제 상호명', '실제 도로명 주소', '실제 카카오맵 URL'을 100% 그대로 카드에 복사하여 출력하세요.
+3. 마크다운 기호(**, ##, #, *) 절대 사용 금지 (이모티콘 사용 가능)
+4. 각 식당 설명: 실제 상호명의 대표 시그니처 메뉴, 실제 방문자 리뷰 핵심 호평 포인트, 분위기, 모임/회식 적합성을 사실에 근거하여 2-3문장으로 전문성 있게 작성할 것.
+5. 반드시 아래 HTML 구조로만 출력:
 
-⚠️ 필수 출력 규칙:
-1. 마크다운 기호(**, ##, #, *) 절대 사용 금지
-2. 이모티콘은 자연스럽게 사용 가능
-3. 카카오 실시간 검색 결과 및 실제 방문자 평점/리뷰가 높은 찐맛집을 최우선 엄선할 것. 카카오 데이터가 부족할 경우 Gemini의 최신 지식으로 ${locDisplay} 지역의 실존하는 유명 맛집을 자신있게 추천할 것
-4. 절대로 "데이터가 없어서 추천이 어렵습니다"라고 하지 말 것. 항상 완성된 추천 카드를 출력할 것
-5. 카카오맵 URL이 없는 경우 https://map.kakao.com/link/search/장소명 형식으로 직접 생성할 것
-6. 반드시 아래 구조로만 출력:
-
-<div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장, 사용자의 후속 피드백 적극 반영 언급)</div>
+<div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장, 사용자의 요청 조건 완벽 반영 언급)</div>
 
 각 장소마다 아래 카드 구조 사용:
 <div class="rec-card-standard">
     <span class="rec-tag-pill">추천 번호 (카테고리 또는 1차/2차)</span>
-    <h4 class="rec-place-title">장소 이름</h4>
-    <div class="rec-place-meta">📍 <b>위치:</b> 주소</div>
-    <p class="rec-place-desc">음식 맛, 실제 방문자 리뷰 핵심 포인트, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
-    <a href="카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
+    <h4 class="rec-place-title">실제 매장 이름</h4>
+    <div class="rec-place-meta">📍 <b>위치:</b> 실제 도로명 주소</div>
+    <p class="rec-place-desc">대표 메뉴 맛, 실제 방문자 리뷰 핵심 포인트, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
+    <a href="실제카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
 </div>`;
 
             const modelsToTry = [
@@ -3940,7 +3957,7 @@ ${kakaoData2Str}` : ''}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: promptContext }] }],
-                        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+                        generationConfig: { temperature: 0.5, maxOutputTokens: 2048 }
                     })
                 })
                 .then(res => {
@@ -3989,24 +4006,41 @@ ${kakaoData2Str}` : ''}
             attemptModel(0);
         }
 
+        // Multi-Query Kakao Search Engine: Tries primary keyword first, falls back if 0 results
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
             const ps = new kakao.maps.services.Places();
-            if (isMultiCourse) {
-                // 1차, 2차 각각 별도 검색 후 Gemini에 전달
-                console.log(`[Spoonmap] Multi-course Kakao: "${kw1}" + "${kw2}"`);
-                ps.keywordSearch(kw1, (d1, s1) => {
-                    const p1 = s1 === kakao.maps.services.Status.OK ? d1 : [];
-                    ps.keywordSearch(kw2, (d2, s2) => {
-                        const p2 = s2 === kakao.maps.services.Status.OK ? d2 : [];
-                        console.log(`[Spoonmap] 1차 results: ${p1.length}, 2차 results: ${p2.length}`);
-                        queryGemini(p1, p2);
+
+            function searchKakaoSmart(keywordPrimary, keywordFallback) {
+                return new Promise(resolve => {
+                    ps.keywordSearch(keywordPrimary, (data, status) => {
+                        if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                            resolve(data);
+                        } else if (keywordFallback && keywordFallback !== keywordPrimary) {
+                            ps.keywordSearch(keywordFallback, (fbData, fbStatus) => {
+                                if (fbStatus === kakao.maps.services.Status.OK && fbData && fbData.length > 0) {
+                                    resolve(fbData);
+                                } else {
+                                    resolve([]);
+                                }
+                            });
+                        } else {
+                            resolve([]);
+                        }
                     });
                 });
+            }
+
+            if (isMultiCourse) {
+                Promise.all([
+                    searchKakaoSmart(kw1_primary, kw1_fallback),
+                    searchKakaoSmart(kw2_primary, kw2_fallback)
+                ]).then(([p1, p2]) => {
+                    console.log(`[Spoonmap] Smart Kakao Multi-Course: 1차 ${p1.length}곳, 2차 ${p2.length}곳 수집 완료`);
+                    queryGemini(p1, p2);
+                });
             } else {
-                console.log(`[Spoonmap] Kakao search: "${kwSingle}"`);
-                ps.keywordSearch(kwSingle, (data, status) => {
-                    const places = status === kakao.maps.services.Status.OK ? data : [];
-                    console.log(`[Spoonmap] Kakao returned ${places.length} results`);
+                searchKakaoSmart(kwSingle_primary, kwSingle_fallback).then(places => {
+                    console.log(`[Spoonmap] Smart Kakao Single: ${places.length}곳 수집 완료`);
                     queryGemini(places, []);
                 });
             }
