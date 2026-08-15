@@ -1116,11 +1116,12 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsList.appendChild(resultItem);
         });
 
-        // 3. Render Numbered Page Buttons (1 2 3)
+        // 3. Render Numbered Page Buttons (1 2 3 ... 10+ in a single scrollable row)
         if (totalPages > 1) {
             const pagContainer = document.createElement('div');
             pagContainer.className = 'map-pagination-container';
 
+            let activeBtn = null;
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button');
                 btn.className = `map-pag-btn ${i === safePage ? 'active' : ''}`;
@@ -1131,8 +1132,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderPaginatedList(allResults, i);
                 };
                 pagContainer.appendChild(btn);
+                if (i === safePage) activeBtn = btn;
             }
+
+            // Enable mouse wheel horizontal scrolling
+            pagContainer.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    pagContainer.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+
             resultsList.appendChild(pagContainer);
+
+            // Auto-center active page button in scroll view
+            if (activeBtn) {
+                setTimeout(() => {
+                    activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+                }, 50);
+            }
         }
     }
 

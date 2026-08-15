@@ -4417,24 +4417,42 @@ input[type="date"].drawer-input {
 
 .map-pagination-container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     align-items: center;
-    gap: 6px;
-    padding: 16px 12px 12px 12px;
-    margin-top: 8px;
+    gap: 8px;
+    padding: 14px 8px 14px 8px;
+    margin-top: 10px;
     border-top: 1px dashed var(--border-color);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.map-pagination-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.map-pagination-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.map-pagination-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
 }
 
 .map-pag-btn {
-    min-width: 32px;
-    height: 32px;
-    padding: 0 6px;
-    border-radius: 8px;
+    flex-shrink: 0;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border-radius: 10px;
     border: 1px solid var(--border-color);
     background: #ffffff;
     color: #374151;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -4453,5 +4471,5 @@ input[type="date"].drawer-input {
     background: var(--coral-main, #FF4757);
     color: #ffffff;
     border-color: var(--coral-main, #FF4757);
-    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.35);
 }
