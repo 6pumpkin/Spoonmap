@@ -3783,9 +3783,41 @@ function processSommelierQuery(query, callback) {
     if (hasKakaoKeywords && !hasLocalKeywords) sourcePref = 'kakao_only';
     else if (hasLocalKeywords && !hasKakaoKeywords) sourcePref = 'local_only';
 
+    // ─── Naver API Config & Dual Search Engine ───
+    const NAVER_CLIENT_ID = '4pu8hgjmxl';
+    const NAVER_CLIENT_SECRET = 'vxsLjhIl2QKx45DXI2Wf19nDM7UDhGYT23WE4tFe';
+
+    async function fetchNaverPlaces(searchKw) {
+        if (!searchKw || !NAVER_CLIENT_ID) return [];
+        try {
+            const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(searchKw)}&display=5&sort=comment`;
+            const res = await fetch(url, {
+                headers: {
+                    'X-Naver-Client-Id': NAVER_CLIENT_ID,
+                    'X-Naver-Client-Secret': NAVER_CLIENT_SECRET
+                }
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.items) {
+                    return json.items.map(item => ({
+                        이름: item.title.replace(/<[^>]+>/g, ''),
+                        카테고리: item.category,
+                        주소: item.roadAddress || item.address,
+                        링크: item.link
+                    }));
+                }
+            }
+        } catch (e) {
+            // Graceful fallback if client-side CORS restriction applies
+            console.log('[Spoonmap] Naver API direct fetch note:', e.message);
+        }
+        return [];
+    }
+
     // ─── Gemini LLM Logic ───
     if (geminiKey) {
-        // 1차/2차 각각 카카오 검색 키워드
+        // 1차/2차 각각 카카오/네이버 검색 키워드
         const kw1 = `${locSearch} ${cat1Display || (isMultiCourse ? '맛집' : (mainCatDisplay || '맛집'))}`;
         const kw2 = `${locSearch} ${cat2Display || '술집'}`;
         const kwSingle = `${locSearch} ${mainCatDisplay || '맛집'}`;
@@ -3798,8 +3830,17 @@ function processSommelierQuery(query, callback) {
               }).slice(0, 8)
             : [];
 
+        async function queryGemini(kakaoPlaces1 = [], kakaoPlaces2 = []) {
+            // Fetch Naver Live Places in parallel
+            let naverPlaces1 = [];
+            let naverPlaces2 = [];
+            try {
+                naverPlaces1 = await fetchNaverPlaces(kw1);
+                if (isMultiCourse) naverPlaces2 = await fetchNaverPlaces(kw2);
+            } catch (err) {
+                console.warn('[Spoonmap] Naver parallel fetch error:', err);
+            }
 
-        function queryGemini(kakaoPlaces1 = [], kakaoPlaces2 = []) {
             // 1차+2차 구분 지시사항
             const countInstruction = isMultiCourse
                 ? `- 1차 요청: ${step1Req}곳 (카테고리: ${cat1Display || '맛집'})
@@ -3812,7 +3853,10 @@ function processSommelierQuery(query, callback) {
                 ? JSON.stringify(kakaoPlaces2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.address_name, 카테고리: p.category_name, url: p.place_url })))
                 : '[]';
 
-            const promptContext = `당신은 Spoonmap AI 미식 소믈리에입니다. 사용자 질문에 정확하고 상세하게 한국어로 답변하세요.
+            const naverData1Str = JSON.stringify(naverPlaces1);
+            const naverData2Str = isMultiCourse ? JSON.stringify(naverPlaces2) : '[]';
+
+            const promptContext = `당신은 Spoonmap AI 미식 소믈리에입니다. 카카오 지도와 네이버 지도 듀얼 실시간 데이터를 교차 분석하여 가장 신뢰도 높은 맛집을 추천합니다. 한국어로 친절하고 전문적으로 답변하세요.
 
 사용자 질문: "${query}"
 
@@ -3821,20 +3865,26 @@ function processSommelierQuery(query, callback) {
 ${countInstruction}
 
 제공된 데이터:
-[내 방문 맛집 데이터]
+[내 방문 맛집 데이터 (검증된 단골 기록)]
 ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_large, 카테고리: c.category, 방문횟수: c.visit_count })))}
 
-[카카오 실시간 검색 - ${isMultiCourse ? '1차' : ''} ${kw1} 기준]
+[카카오 지도 실시간 데이터 - ${isMultiCourse ? '1차' : ''} ${kw1} 기준]
 ${kakaoData1Str}
 ${isMultiCourse ? `
-[카카오 실시간 검색 - 2차 ${kw2} 기준]
+[카카오 지도 실시간 데이터 - 2차 ${kw2} 기준]
 ${kakaoData2Str}` : ''}
+
+[네이버 지도 & 블로그 실시간 데이터 - ${isMultiCourse ? '1차' : ''} ${kw1} 기준]
+${naverData1Str}
+${isMultiCourse ? `
+[네이버 지도 & 블로그 실시간 데이터 - 2차 ${kw2} 기준]
+${naverData2Str}` : ''}
 
 ⚠️ 필수 출력 규칙:
 1. 마크다운 기호(**, ##, #, *) 절대 사용 금지
 2. 이모티콘은 자연스럽게 사용 가능
-3. 카카오 검색 결과가 있으면 우선 활용하고, 결과가 없거나 부족하면 Gemini 자신의 지식으로 ${locDisplay} 지역의 실제 존재하는 맛집을 자신있게 추천할 것
-4. 절대로 "데이터가 없어서 추천이 어렵습니다" 또는 "안내하기 어렵습니다"라고 하지 말 것. 항상 추천 카드를 출력할 것
+3. 카카오 및 네이버 양쪽 플랫폼에서 모두 평점이 높고 리뷰가 검증된 찐맛집을 최우선 엄선할 것. 카카오/네이버 데이터가 부족할 경우 Gemini의 최신 지식으로 ${locDisplay} 지역의 실존하는 유명 맛집을 자신있게 추천할 것
+4. 절대로 "데이터가 없어서 추천이 어렵습니다"라고 하지 말 것. 항상 완성된 추천 카드를 출력할 것
 5. 카카오맵 URL이 없는 경우 https://map.kakao.com/link/search/장소명 형식으로 직접 생성할 것
 6. 반드시 아래 구조로만 출력:
 
@@ -3845,7 +3895,7 @@ ${kakaoData2Str}` : ''}
     <span class="rec-tag-pill">추천 번호 (카테고리 또는 1차/2차)</span>
     <h4 class="rec-place-title">장소 이름</h4>
     <div class="rec-place-meta">📍 <b>위치:</b> 주소</div>
-    <p class="rec-place-desc">음식 맛, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
+    <p class="rec-place-desc">음식 맛, 네이버/카카오 리뷰 핵심 포인트, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
     <a href="카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
 </div>`;
 
