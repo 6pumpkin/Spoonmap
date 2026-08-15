@@ -4417,10 +4417,11 @@ input[type="date"].drawer-input {
 
 .map-pagination-container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 6px;
-    padding: 16px 12px 8px 12px;
+    padding: 16px 12px 12px 12px;
     margin-top: 8px;
     border-top: 1px dashed var(--border-color);
 }
