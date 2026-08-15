@@ -4408,3 +4408,49 @@ input[type="date"].drawer-input {
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
     font-weight: 800 !important;
 }
+
+/* 10. MAP Custom Overlay Label Z-index & Pagination Controls */
+.marker-label {
+    z-index: 99999 !important;
+    position: relative !important;
+}
+
+.map-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 12px 8px 12px;
+    margin-top: 8px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.map-pag-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+    color: #374151;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-pag-btn:hover {
+    background: #F3F4F6;
+    border-color: var(--coral-main, #FF4757);
+    color: var(--coral-main, #FF4757);
+}
+
+.map-pag-btn.active {
+    background: var(--coral-main, #FF4757);
+    color: #ffffff;
+    border-color: var(--coral-main, #FF4757);
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.3);
+}

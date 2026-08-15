@@ -956,18 +956,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         finalizeSearch(data.length, data.length, catSearchBounds, true);
                     }
 
-                    if (pagination && pagination.hasNextPage) {
-                        const moreBtn = document.createElement('button');
-                        moreBtn.id = 'map-load-more';
-                        moreBtn.className = 'map-more-btn';
-                        moreBtn.innerHTML = `검색 결과 더보기 (${pagination.current}/${pagination.last})`;
-                        moreBtn.onclick = () => {
-                            moreBtn.disabled = true;
-                            moreBtn.innerHTML = '불러오는 중...';
-                            isNextPage = true;
-                            pagination.nextPage();
-                        };
-                        resultsList.appendChild(moreBtn);
+                    if (pagination && pagination.last > 1) {
+                        renderMapPagination(pagination, resultsList);
                     }
                 } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
@@ -1011,9 +1001,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     markers.forEach(m => m.setMap(null));
                     markers = [];
                 }
-                // Remove old 'More' button
-                const oldMoreBtn = document.getElementById('map-load-more');
-                if (oldMoreBtn) oldMoreBtn.remove();
 
                 if (status === kakao.maps.services.Status.OK) {
                     const masterData = getUnifiedRestaurantData();
@@ -1048,17 +1035,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update map view if global search is on
                     finalizeSearch(data.length, data.length, keywordSearchBounds, window.isGlobalSearchActive);
 
-                    if (pagination && pagination.hasNextPage) {
-                        const moreBtn = document.createElement('button');
-                        moreBtn.id = 'map-load-more';
-                        moreBtn.className = 'map-more-btn';
-                        moreBtn.innerHTML = `검색 결과 더보기 (${pagination.current}/${pagination.last})`;
-                        moreBtn.onclick = () => {
-                            moreBtn.disabled = true;
-                            moreBtn.innerHTML = '불러오는 중...';
-                            pagination.nextPage();
-                        };
-                        resultsList.appendChild(moreBtn);
+                    if (pagination && pagination.last > 1) {
+                        renderMapPagination(pagination, resultsList);
                     }
                 } else if (status === kakao.maps.services.Status.ZERO_RESULT && isFirstPage) {
                     resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
@@ -1073,6 +1051,30 @@ document.addEventListener('DOMContentLoaded', () => {
             // No search, no category: show empty state (just the map, no auto-loaded places)
             resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
         }
+    }
+
+    // Numbered Pagination Controller for Kakao Map Results
+    function renderMapPagination(pagination, containerEl) {
+        if (!pagination || pagination.last <= 1 || !containerEl) return;
+        
+        const existing = containerEl.querySelector('.map-pagination-container');
+        if (existing) existing.remove();
+
+        const pagContainer = document.createElement('div');
+        pagContainer.className = 'map-pagination-container';
+
+        for (let i = 1; i <= pagination.last; i++) {
+            const btn = document.createElement('button');
+            btn.className = `map-pag-btn ${i === pagination.current ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.type = 'button';
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                pagination.gotoPage(i);
+            };
+            pagContainer.appendChild(btn);
+        }
+        containerEl.appendChild(pagContainer);
     }
 
     // Custom Marker SVG Pin Icons (Identical design & size: 29x42, only colors differ)
@@ -1138,7 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.currentMapOverlay = new kakao.maps.CustomOverlay({
                 position: coords,
                 content: `<div class="marker-label ${isSaved ? 'is-saved' : ''}">${place.place_name || item.name}</div>`,
-                yAnchor: 2.5
+                yAnchor: 2.1,
+                zIndex: 99999
             });
             window.currentMapOverlay.setMap(map);
             // Use place_url from Kakao if available, otherwise fallback to item's map_url
