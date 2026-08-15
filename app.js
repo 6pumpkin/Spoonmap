@@ -916,6 +916,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
         }
 
+        // Global National Multi-Region Bounds (Nationwide Coverage for Global Search mode)
+        function getGlobalSubdivisionBounds() {
+            return [
+                null, // 1. Global National Default Accuracy Search
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(37.15, 126.60), new kakao.maps.LatLng(37.75, 127.35)), // 2. 수도권 (서울/인천/경기)
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(35.05, 128.20), new kakao.maps.LatLng(36.15, 129.45)), // 3. 영남권 (부산/대구/울산/경남/경북)
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(36.10, 126.80), new kakao.maps.LatLng(36.85, 127.65)), // 4. 충청/세종/대전권
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(34.80, 126.60), new kakao.maps.LatLng(35.90, 127.30)), // 5. 호남/광주/전주권
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(37.40, 127.70), new kakao.maps.LatLng(38.20, 128.90)), // 6. 강원권
+                new kakao.maps.LatLngBounds(new kakao.maps.LatLng(33.20, 126.20), new kakao.maps.LatLng(33.60, 126.90))  // 7. 제주권
+            ];
+        }
+
         function fetchPlacesForBounds(ps, searchType, query, singleBounds) {
             return new Promise(resolve => {
                 let collected = [];
@@ -964,9 +977,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const ps = new kakao.maps.services.Places();
             const currentBounds = map.getBounds();
-            const targetBoundsList = window.isGlobalSearchActive ? [null] : getSubdivisionBounds(currentBounds);
+            const targetBoundsList = window.isGlobalSearchActive 
+                ? getGlobalSubdivisionBounds() 
+                : getSubdivisionBounds(currentBounds);
 
-            // Execute parallel multi-quadrant search across viewport!
+            // Execute parallel multi-quadrant search across viewport or nationwide!
             let resultsArray = [];
             try {
                 resultsArray = await Promise.all(
