@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608160120">
+    <link rel="stylesheet" href="style.css?v=202608160128">
 </head>
 
 <body class="light-theme">
@@ -305,12 +305,28 @@
 
                 <!-- Dynamic Prompt Chips -->
                 <div class="sommelier-chips-wrapper">
-                    <span class="chips-label">💡 동적 수량/출처/코스 추천 질문 샘플:</span>
+                    <div class="chips-header">
+                        <span class="chips-label">💡 추천 질문 샘플:</span>
+                        <button id="btn-toggle-chips" class="chips-more-btn" onclick="toggleChipsExpand()">
+                            <span id="chips-toggle-text">+ 질문 더보기</span> <span id="chips-toggle-icon">▾</span>
+                        </button>
+                    </div>
                     <div class="chips-list">
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌐 카카오 지도 실시간 추천 1차 3곳과 2차 3곳 추천해줘')">🌐 카카오 지도 1차 3곳 + 2차 3곳</button>
+                        <!-- 기본 4개 칩 -->
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌐 카카오 지도 실시간 추천 1차 3곳과 2차 3곳 추천해줘')">🌐 카카오 1차 3곳 + 2차 3곳</button>
                         <button class="chip-btn" onclick="sendSommelierQuickPrompt('🔥 내 맛집 데이터에서만 5수저 맛집 3곳 추천해줘')">🔥 내 맛집 5수저 3곳만</button>
                         <button class="chip-btn" onclick="sendSommelierQuickPrompt('🌧️ 비 오는 날 연남동 데이트 코스 1차 고기집 1곳, 2차 카페 1곳 추천해줘')">🌧️ 연남동 1차 고기 + 2차 카페</button>
-                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍺 강남역 근처 카카오 지도 실시간 2차 술집 2곳 추천해줘')">🍺 강남역 2차 술집 2곳 (카카오)</button>
+                        <button class="chip-btn" onclick="sendSommelierQuickPrompt('🍺 강남역 근처 카카오 지도 실시간 2차 술집 2곳 추천해줘')">🍺 강남역 2차 술집 2곳</button>
+
+                        <!-- 확장 8개 테마별 칩 (더보기 클릭 시 노출) -->
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🍶 신촌에서 눈치 안 보고 편하게 혼밥하기 좋은 맛집 2곳 알려줘')">🍶 신촌 혼밥 맛집 2곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🥩 여의도에서 팀 회식하기 좋은 넓고 친절한 고깃집 2곳 추천해줘')">🥩 여의도 회식 고깃집 2곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🍰 성수동 1차 감성 양식당 1곳, 2차 디저트 카페 1곳 데이트 코스 짜줘')">🍰 성수동 양식 + 디저트 데이트</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🔥 내가 2번 이상 방문해서 검증된 또간집 중에서 3곳 추천해줘')">🔥 검증된 찐 또간집 3곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('💰 홍대 주변 푸짐하고 가성비 뛰어난 혜자 맛집 3곳 알려줘')">💰 홍대 푸짐한 가성비 혜자 3곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🌙 이태원 근처 분위기 좋고 늦게까지 하는 2차 요리주점 2곳')">🌙 이태원 심야 2차 요리주점 2곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🍲 종로 근처 속 확 풀리는 얼큰한 국물/해장 맛집 2곳')">🍲 종로 속풀리는 국물/해장 2곳</button>
+                        <button class="chip-btn chip-extra" style="display:none;" onclick="sendSommelierQuickPrompt('🌮 이태원에서 카카오 지도로 안 가본 타코/남미 음식점 3곳 찾아줘')">🌮 이태원 신상 타코/남미 3곳</button>
                     </div>
                 </div>
 
@@ -809,8 +825,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608160120"></script>
-    <script src="app.js?v=202608160120"></script>
+    <script src="data.js?v=202608160128"></script>
+    <script src="app.js?v=202608160128"></script>
 </body>
 
 </html>

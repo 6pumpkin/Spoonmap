@@ -3261,6 +3261,23 @@ window.sendSommelierQuickPrompt = function(promptText) {
     }
 };
 
+window.toggleChipsExpand = function() {
+    const extraChips = document.querySelectorAll('.chip-extra');
+    const toggleText = document.getElementById('chips-toggle-text');
+    const toggleIcon = document.getElementById('chips-toggle-icon');
+    if (!extraChips.length) return;
+
+    const isHidden = extraChips[0].style.display === 'none';
+    extraChips.forEach(chip => {
+        chip.style.display = isHidden ? 'inline-block' : 'none';
+    });
+
+    if (toggleText && toggleIcon) {
+        toggleText.innerText = isHidden ? '접기' : '+ 질문 더보기';
+        toggleIcon.innerText = isHidden ? '▴' : '▾';
+    }
+};
+
 function initSommelierTab() {
     if (sommelierInitialized) return;
     sommelierInitialized = true;

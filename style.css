@@ -2209,12 +2209,38 @@ main {
     box-shadow: 0 4px 14px rgba(0,0,0,0.02);
 }
 
+.chips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
 .chips-label {
     font-size: 0.82rem;
     font-weight: 800;
     color: var(--text-muted);
-    display: block;
-    margin-bottom: 0.6rem;
+    display: inline-block;
+}
+
+.chips-more-btn {
+    background: #FFF0F2;
+    border: 1px solid var(--border-hover);
+    color: var(--coral-main);
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+}
+
+.chips-more-btn:hover {
+    background: var(--coral-main);
+    color: #ffffff;
 }
 
 .chips-list {
