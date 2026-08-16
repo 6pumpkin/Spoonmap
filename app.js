@@ -3966,10 +3966,10 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 </div>`;
 
             const modelsToTry = [
-                'gemini-flash-latest',
+                'gemini-3.5-flash-lite',
+                'gemini-3.1-flash-lite',
                 'gemini-flash-lite-latest',
-                'gemini-2.5-flash',
-                'gemini-2.5-flash-lite'
+                'gemini-flash-latest'
             ];
 
             function attemptModel(idx) {
