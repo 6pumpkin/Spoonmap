@@ -3778,7 +3778,8 @@ window.sommelierContext = {
 
 function processSommelierQuery(query, callback) {
     const q = query.toLowerCase();
-    const geminiKey = localStorage.getItem('spoonmap_gemini_key');
+    const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S3lSZElqVjBoaHRBUVhkTThYUVBvSlMyZHpBblExUjdwRjFsejZ4amsyUlE=');
+    const geminiKey = localStorage.getItem('spoonmap_gemini_key') || DEFAULT_GEMINI_KEY;
 
     // ─── Multi-turn Intent Detection ───
     const isExcludeReRec = /여기 말고|다른 곳|다른곳|다른 데|다른데|다시 추천|바꿔|더 없어|더 보여|제외|말고|새로운/i.test(query);
@@ -3965,8 +3966,10 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 </div>`;
 
             const modelsToTry = [
-                'gemini-3.5-flash-lite',
-                'gemini-3.1-flash-lite'
+                'gemini-flash-latest',
+                'gemini-flash-lite-latest',
+                'gemini-2.5-flash',
+                'gemini-2.5-flash-lite'
             ];
 
             function attemptModel(idx) {
