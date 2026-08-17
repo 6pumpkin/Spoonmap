@@ -53,7 +53,7 @@ function renderAuthLockedScreen(tabName) {
 }
 
 function updateAuthProtectedViews() {
-    const isOwner = isOwnerUser();
+    const loggedIn = isUserLoggedIn();
 
     const protectedSections = [
         { protectedId: 'list-protected-content', lockedId: 'list-locked-view' },
@@ -66,11 +66,11 @@ function updateAuthProtectedViews() {
         const lEl = document.getElementById(lockedId);
 
         if (pEl) {
-            pEl.style.display = isOwner ? '' : 'none';
+            pEl.style.display = loggedIn ? '' : 'none';
         }
         if (lEl) {
-            lEl.style.display = isOwner ? 'none' : 'flex';
-            if (!isOwner) {
+            lEl.style.display = loggedIn ? 'none' : 'flex';
+            if (!loggedIn) {
                 lEl.innerHTML = renderAuthLockedScreen(protectedId);
             }
         }
@@ -78,12 +78,12 @@ function updateAuthProtectedViews() {
 
     // Update Tab Button Labels (e.g. DIARY vs DIARY 🔒)
     const tabLabels = [
-        { tab: 'diary', name: 'DIARY', locked: !isOwner },
-        { tab: 'list', name: 'LIST', locked: !isOwner },
+        { tab: 'diary', name: 'DIARY', locked: !loggedIn },
+        { tab: 'list', name: 'LIST', locked: !loggedIn },
         { tab: 'map', name: 'MAP', locked: false },
         { tab: 'sommelier', name: 'AI', locked: false },
         { tab: 'recommend', name: 'ROULETTE', locked: false },
-        { tab: 'insights', name: 'INSIGHT', locked: !isOwner }
+        { tab: 'insights', name: 'INSIGHT', locked: !loggedIn }
     ];
 
     tabLabels.forEach(({ tab, name, locked }) => {
@@ -126,6 +126,8 @@ window.handleKakaoLogin = function() {
         try {
             Kakao.Auth.login({
                 scope: 'profile_nickname,profile_image',
+                prompt: 'select_account',
+                prompts: ['select_account', 'login'],
                 success: function(authObj) {
                     console.log('[Spoonmap] Kakao Auth Success:', authObj);
                     Kakao.API.request({
