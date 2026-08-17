@@ -4987,6 +4987,7 @@ class NotionTagSelector {
     }
 
     initOptions() {
+        this.availableOptions = new Set();
         // Collect & split tags from dataset using baseKey
         const collect = (dataset, key) => {
             if (!dataset || !Array.isArray(dataset)) return;
@@ -5028,21 +5029,22 @@ class NotionTagSelector {
     bindEvents() {
         if (!this.fieldEl) return;
 
-        // Toggle popover on bar click
+        // Toggle popover on bar click with stopPropagation
         const bar = this.fieldEl.querySelector('.notion-tag-input-bar');
         if (bar) {
-            bar.addEventListener('click', (e) => {
+            bar.onclick = (e) => {
                 if (e.target.classList.contains('notion-tag-remove')) return;
+                e.stopPropagation();
                 this.togglePopover();
-            });
+            };
         }
 
         // Search input filtering
         if (this.searchEl) {
-            this.searchEl.addEventListener('input', () => {
+            this.searchEl.oninput = () => {
                 this.renderOptions(this.searchEl.value.trim());
-            });
-            this.searchEl.addEventListener('keydown', (e) => {
+            };
+            this.searchEl.onkeydown = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const query = this.searchEl.value.trim();
@@ -5052,49 +5054,63 @@ class NotionTagSelector {
                         this.renderOptions('');
                     }
                 }
-            });
+            };
         }
 
         // Create button click
         if (this.createBtnEl) {
-            this.createBtnEl.addEventListener('click', () => {
+            this.createBtnEl.onclick = () => {
                 const query = this.searchEl ? this.searchEl.value.trim() : '';
                 if (query) {
                     this.addOptionAndSelect(query);
                     if (this.searchEl) this.searchEl.value = '';
                     this.renderOptions('');
                 }
-            });
+            };
         }
 
         // Close on outside click
         document.addEventListener('click', (e) => {
-            if (this.fieldEl && !this.fieldEl.contains(e.target)) {
-                this.closePopover();
+            if (this.popoverEl && this.popoverEl.classList.contains('open')) {
+                if (this.fieldEl && !this.fieldEl.contains(e.target)) {
+                    this.closePopover();
+                }
             }
         });
     }
 
     togglePopover() {
+        if (!this.popoverEl) return;
+        const willOpen = !this.popoverEl.classList.contains('open');
+
         // Close other popovers
         document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => {
             if (p !== this.popoverEl) p.classList.remove('open');
         });
 
-        if (this.popoverEl) {
-            const isOpen = this.popoverEl.classList.toggle('open');
-            if (isOpen) {
-                if (this.searchEl) {
-                    this.searchEl.value = '';
-                    this.searchEl.focus();
-                }
-                this.renderOptions('');
-            }
+        if (willOpen) {
+            this.openPopover();
+        } else {
+            this.closePopover();
         }
+    }
+
+    openPopover() {
+        if (!this.popoverEl) return;
+        this.popoverEl.classList.add('open');
+        if (this.searchEl) {
+            this.searchEl.value = '';
+            this.searchEl.focus();
+        }
+        this.renderOptions('');
     }
 
     closePopover() {
         if (this.popoverEl) this.popoverEl.classList.remove('open');
+    }
+
+    setSelected(valArrayOrString) {
+        this.setValues(valArrayOrString);
     }
 
     addOptionAndSelect(optName) {
@@ -5378,6 +5394,15 @@ function deleteOptionGlobally(optName, baseKey) {
 let notionSelectors = {};
 
 function initAllNotionSelectors() {
+    if (window._notionSelectorsInitialized) {
+        if (typeof notionSelectors !== 'undefined') {
+            Object.values(notionSelectors).forEach(sel => {
+                if (sel && typeof sel.initOptions === 'function') sel.initOptions();
+            });
+        }
+        return;
+    }
+
     // Diary drawer selectors
     if (document.getElementById('notion-field-category')) {
         notionSelectors.category = new NotionTagSelector('category', true);
@@ -5393,6 +5418,8 @@ function initAllNotionSelectors() {
         notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', false);
         notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', true);
     }
+
+    window._notionSelectorsInitialized = true;
 
     // Bind modal rate spoon buttons
     const modalRateBtns = document.querySelectorAll('.modal-rate-spoon');
