@@ -29,6 +29,31 @@ function isOwnerUser() {
     return String(u.id) === String(ownerId);
 }
 
+function getUserDiaryStorageKey() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return 'spoonmap_guest_diary';
+    if (isOwnerUser()) return 'spoonmap_diary';
+    return `spoonmap_user_${u.id}_diary`;
+}
+
+function getDiaryStorageKey() {
+    return getUserDiaryStorageKey();
+}
+
+function getUserOverridesStorageKey() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return 'spoonmap_guest_restaurant_overrides';
+    if (isOwnerUser()) return 'spoonmap_restaurant_overrides';
+    return `spoonmap_user_${u.id}_restaurant_overrides`;
+}
+
+function getUserCustomOptionsKey() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return 'spoonmap_guest_custom_options';
+    if (isOwnerUser()) return 'spoonmap_custom_options';
+    return `spoonmap_user_${u.id}_custom_options`;
+}
+
 function getActiveRestaurantData() {
     if (isOwnerUser()) {
         return (typeof restaurantData !== 'undefined') ? restaurantData : [];
@@ -462,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentActiveTab = null;
 
     function switchTabUI(targetTab) {
-        if (!VALID_TABS.includes(targetTab)) targetTab = isOwnerUser() ? 'diary' : 'map';
+        if (!VALID_TABS.includes(targetTab)) targetTab = isUserLoggedIn() ? 'diary' : 'map';
 
         const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -478,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (mobileFilterBtn) {
-            mobileFilterBtn.style.display = (targetTab === 'list' && isOwnerUser()) ? 'block' : 'none';
+            mobileFilterBtn.style.display = (targetTab === 'list' && isUserLoggedIn()) ? 'block' : 'none';
         }
         
         if (mobileTabsMenu) {
@@ -494,17 +519,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateAuthProtectedViews();
 
-        if (currentActiveTab !== targetTab) {
-            currentActiveTab = targetTab;
-            if (targetTab === 'map') {
-                initMap();
-            } else if (targetTab === 'insights' && isOwnerUser()) {
-                computeAndRenderFoodInsights();
-            } else if (targetTab === 'sommelier') {
-                initSommelierTab();
-            } else if (targetTab === 'diary' && isOwnerUser()) {
-                initDiaryTab();
-            }
+        currentActiveTab = targetTab;
+        if (targetTab === 'map') {
+            initMap();
+        } else if (targetTab === 'insights' && isUserLoggedIn()) {
+            computeAndRenderFoodInsights();
+        } else if (targetTab === 'sommelier') {
+            initSommelierTab();
+        } else if (targetTab === 'diary' && isUserLoggedIn()) {
+            initDiaryTab();
+        } else if (targetTab === 'list' && isUserLoggedIn()) {
+            if (typeof render === 'function') render();
         }
     }
 
@@ -2615,23 +2640,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getUnifiedRestaurantData() {
-        if (typeof restaurantData === 'undefined') return [];
-
+        const isOwner = isOwnerUser();
         const mapByName = new Map();
         const visitsByName = new Map();
         const datesByName = new Map();
 
-        // Pass 1: Add base restaurantData
-        restaurantData.forEach(r => {
-            const key = r.name.trim().toLowerCase();
-            mapByName.set(key, { ...r, menu: [...(r.menu || [])] });
-            if (r.date) {
-                datesByName.set(key, r.date);
-            }
-        });
+        // Pass 1: Add base master restaurantData ONLY if Owner!
+        if (isOwner && typeof restaurantData !== 'undefined' && Array.isArray(restaurantData)) {
+            restaurantData.forEach(r => {
+                const key = r.name.trim().toLowerCase();
+                mapByName.set(key, { ...r, menu: [...(r.menu || [])] });
+                if (r.date) {
+                    datesByName.set(key, r.date);
+                }
+            });
+        }
 
-        // Pass 2: Process diaryData (CSV visits)
-        if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+        // Pass 2: Process base master diaryData (CSV visits) ONLY if Owner!
+        if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
             diaryData.forEach(item => {
                 if (!item.name) return;
                 const key = item.name.trim().toLowerCase();
@@ -2645,8 +2671,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Pass 3: Process localStorage user-added/edited diary entries
-        const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+        // Pass 3: Process user-specific localStorage diary entries
+        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
+        const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
         localEntries.forEach(item => {
             if (!item.name) return;
             const key = item.name.trim().toLowerCase();
@@ -2685,8 +2712,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Pass 3.5: Apply spoonmap_restaurant_overrides (Master restaurant metadata updates)
-        const restaurantOverrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+        // Pass 3.5: For general users, also include wishlisted places in their restaurant map!
+        if (!isOwner && typeof getUserWishlist === 'function') {
+            const wishlist = getUserWishlist();
+            wishlist.forEach(wItem => {
+                if (!wItem.name) return;
+                const key = wItem.name.trim().toLowerCase();
+                if (!mapByName.has(key)) {
+                    mapByName.set(key, {
+                        name: wItem.name,
+                        category: wItem.category || '음식점',
+                        rate: '',
+                        menu: [],
+                        location_large: wItem.location || '기타',
+                        location_small: wItem.location || '',
+                        map_url: wItem.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(wItem.name)}`,
+                        visit_count: 0,
+                        isWishlist: true
+                    });
+                }
+            });
+        }
+
+        // Pass 3.6: Apply overrides
+        const overridesKey = isOwner ? 'spoonmap_restaurant_overrides' : (typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides');
+        const restaurantOverrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
         Object.keys(restaurantOverrides).forEach(rawKey => {
             const key = rawKey.trim().toLowerCase();
             const ov = restaurantOverrides[rawKey];
@@ -2708,7 +2758,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pass 4: Finalize merged list with accurate visit_count and latest date
         const unified = [];
         mapByName.forEach((item, key) => {
-            const count = visitsByName.get(key) || item.visit_count || 1;
+            const count = visitsByName.get(key) || item.visit_count || (item.isWishlist ? 0 : 1);
             const latestDate = datesByName.get(key) || item.date || '';
             unified.push({
                 ...item,
@@ -3346,10 +3396,12 @@ function saveRestaurantMasterFromModal() {
         memo,
         updated_at: new Date().toISOString()
     };
-    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    localStorage.setItem(overridesKey, JSON.stringify(overrides));
 
-    // 2. Batch sync all entries in spoonmap_diary for this restaurant
-    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    // 2. Batch sync all entries in user diary for this restaurant
+    const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     let diaryUpdated = false;
     existing.forEach(entry => {
         if (entry.name && entry.name.trim().toLowerCase() === key) {
@@ -3363,7 +3415,7 @@ function saveRestaurantMasterFromModal() {
         }
     });
     if (diaryUpdated) {
-        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+        localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
     }
 
     // 3. Re-render List, Diary Calendar, Map, Insights & Roulette Categories
@@ -5016,15 +5068,19 @@ class NotionTagSelector {
             });
         };
 
-        if (typeof restaurantData !== 'undefined') collect(restaurantData, this.baseKey);
-        if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
+        if (isOwnerUser()) {
+            if (typeof restaurantData !== 'undefined') collect(restaurantData, this.baseKey);
+            if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
+        }
 
-        // Load from spoonmap_diary
-        const localDiary = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+        // Load from user's diary
+        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+        const localDiary = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
         collect(localDiary, this.baseKey);
 
         // Load custom options created by user from localStorage
-        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
+        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
         if (customStore[this.baseKey] && Array.isArray(customStore[this.baseKey])) {
             customStore[this.baseKey].forEach(opt => this.availableOptions.add(opt));
         }
@@ -5364,11 +5420,14 @@ function deleteOptionGlobally(optName, baseKey) {
             }
         }
     });
+    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+
     if (overrideChanged) {
-        localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+        localStorage.setItem(overridesKey, JSON.stringify(overrides));
     }
 
-    const diaryEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const diaryEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     let diaryChanged = false;
     diaryEntries.forEach(entry => {
         if (entry && entry[baseKey]) {
@@ -5383,7 +5442,7 @@ function deleteOptionGlobally(optName, baseKey) {
         }
     });
     if (diaryChanged) {
-        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaryEntries));
+        localStorage.setItem(diaryStorageKey, JSON.stringify(diaryEntries));
     }
 
     // 4. Re-render app, side filters & diary calendar
@@ -5624,9 +5683,10 @@ function autoFillRestaurantData(restaurantName) {
 function getAllVisitsForRestaurant(restaurantName) {
     if (!restaurantName) return [];
     const all = [];
+    const isOwner = isOwnerUser();
 
-    // From CSV diaryData
-    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+    // From CSV diaryData ONLY for Owner
+    if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
         diaryData.forEach((item, idx) => {
             if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
                 all.push({
@@ -5640,8 +5700,9 @@ function getAllVisitsForRestaurant(restaurantName) {
         });
     }
 
-    // From LocalStorage
-    const local = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    // From LocalStorage for this user
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
+    const local = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     local.forEach(item => {
         if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
             all.push({
@@ -5744,9 +5805,10 @@ function updateYearMonthPickers() {
 
 function getDiaryEntriesForMonth(year, month) {
     const byDate = {};
+    const isOwner = isOwnerUser();
 
-    // From diaryData (CSV-synced, all visits)
-    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+    // From diaryData (CSV-synced, all visits) ONLY for Owner
+    if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
         diaryData.forEach((entry, idx) => {
             if (!entry.date) return;
             const d = new Date(entry.date + 'T00:00:00');
@@ -5759,7 +5821,8 @@ function getDiaryEntriesForMonth(year, month) {
     }
 
     // From localStorage (user-added or edited)
-    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
+    const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     localEntries.forEach(entry => {
         if (!entry.date) return;
         const d = new Date(entry.date + 'T00:00:00');
@@ -5927,7 +5990,8 @@ function renderDiaryCalendar() {
 function moveDiaryEntryToDate(entry, newDate) {
     if (!entry || !newDate || entry.date === newDate) return;
 
-    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     let foundIdx = localEntries.findIndex(e => String(e.id) === String(entry.id));
 
     if (foundIdx !== -1) {
@@ -5943,7 +6007,7 @@ function moveDiaryEntryToDate(entry, newDate) {
         localEntries.push(newLocal);
     }
 
-    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(localEntries));
+    localStorage.setItem(diaryStorageKey, JSON.stringify(localEntries));
     renderDiaryCalendar();
     if (window.renderApp) window.renderApp();
     showDiaryToast(`📍 "${entry.name}" 항목이 ${newDate} 날짜로 이동되었습니다!`);
@@ -6080,9 +6144,10 @@ function deleteCurrentDiaryEntry() {
     if (!editId) return;
     if (!confirm(`"${name}" 방문 기록을 정말 삭제하시겠습니까?`)) return;
 
-    const localEntries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     const updated = localEntries.filter(e => String(e.id) !== String(editId));
-    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(diaryStorageKey, JSON.stringify(updated));
 
     closeDiaryDrawer();
     renderDiaryCalendar();
@@ -6122,11 +6187,13 @@ function saveDiaryEntry() {
     const memo = document.getElementById('diary-input-memo')?.value.trim() || '';
 
     const key = name.trim().toLowerCase();
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
 
     // ─── Mode A: Restaurant Master Info Batch Edit (From LIST Tab) ───
     if (editId && editId.startsWith('__MASTER_EDIT__')) {
-        // 1. Save to spoonmap_restaurant_overrides
-        const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+        // 1. Save to overrides
+        const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
         overrides[key] = {
             name,
             category,
@@ -6138,10 +6205,10 @@ function saveDiaryEntry() {
             memo,
             updated_at: new Date().toISOString()
         };
-        localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+        localStorage.setItem(overridesKey, JSON.stringify(overrides));
 
-        // 2. Batch sync all entries in spoonmap_diary for this restaurant
-        const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+        // 2. Batch sync all entries in user diary for this restaurant
+        const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
         let diaryUpdated = false;
         existing.forEach(entry => {
             if (entry.name && entry.name.trim().toLowerCase() === key) {
@@ -6155,7 +6222,7 @@ function saveDiaryEntry() {
             }
         });
         if (diaryUpdated) {
-            localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+            localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
         }
 
         closeDiaryDrawer();
@@ -6176,7 +6243,7 @@ function saveDiaryEntry() {
     // ─── Mode B: Normal Diary Entry Add / Edit ───
     if (!date) { alert('방문 날짜를 선택해주세요.'); return; }
 
-    const existing = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
 
     if (editId) {
         // Update mode
@@ -6200,7 +6267,7 @@ function saveDiaryEntry() {
         } else {
             existing.push(updatedEntry);
         }
-        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+        localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
         showDiaryToast(`✏️ "${name}" 기록이 수정되었습니다!`);
     } else {
         // Create mode
@@ -6218,12 +6285,12 @@ function saveDiaryEntry() {
             created_at: new Date().toISOString()
         };
         existing.push(newEntry);
-        localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+        localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
         showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
     }
 
-    // ─── Global Sync: Always sync master overrides & all visits so LIST and DIARY share identical info! ───
-    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    // ─── Global Sync: Always sync overrides & all visits so LIST and DIARY share identical info! ───
+    const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
     overrides[key] = {
         name,
         category,
@@ -6234,7 +6301,7 @@ function saveDiaryEntry() {
         map_url,
         updated_at: new Date().toISOString()
     };
-    localStorage.setItem('spoonmap_restaurant_overrides', JSON.stringify(overrides));
+    localStorage.setItem(overridesKey, JSON.stringify(overrides));
 
     // Batch sync other diary records of this restaurant
     existing.forEach(entry => {
@@ -6245,7 +6312,7 @@ function saveDiaryEntry() {
             if (menu.length > 0) entry.menu = menu;
         }
     });
-    localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(existing));
+    localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
 
     closeDiaryDrawer();
     renderDiaryCalendar();
@@ -6268,7 +6335,8 @@ function showDiaryToast(msg) {
 }
 
 function exportDiaryCSV() {
-    const entries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const entries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     if (entries.length === 0) {
         alert('내보낼 새 항목이 없습니다.\n사이트에서 직접 추가한 기록만 내보내기 됩니다.');
         return;
