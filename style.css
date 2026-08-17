@@ -1141,13 +1141,22 @@ main {
 .map-results-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .result-item {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     padding: 12px 8px;
     border-bottom: 1px solid rgba(0,0,0,0.06);
     cursor: pointer;
     transition: background 0.15s ease;
+    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .result-item:hover {
@@ -1414,6 +1423,63 @@ main {
     font-weight: 600;
     font-size: 0.88rem;
     line-height: 1.4;
+}
+
+/* Map Place Detail Actions (내 맛집에 추가 & 찜하기 토글) */
+.place-detail-actions {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 16px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-add-to-diary {
+    flex: 1;
+    background: var(--coral-main, #FF5A5F);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 90, 95, 0.2);
+}
+
+.btn-add-to-diary:hover {
+    background: #E0484D;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 90, 95, 0.3);
+}
+
+.btn-toggle-wishlist {
+    flex: 1;
+    background: #FFFFFF;
+    color: #4B5563;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 12px;
+    padding: 10px 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle-wishlist:hover {
+    border-color: var(--coral-main, #FF5A5F);
+    color: var(--coral-main, #FF5A5F);
+    background: #FFF5F5;
+}
+
+.btn-toggle-wishlist.active {
+    background: #FFF0F2;
+    border-color: #FF4757;
+    color: #FF4757;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.15);
 }
 
 .map-link-container {

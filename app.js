@@ -239,6 +239,93 @@ function updateUserAuthUI() {
     updateAuthProtectedViews();
 }
 
+// ─── User Wishlist (찜 목록) & Add To Diary Module ───
+function getUserWishlistKey() {
+    const u = getCurrentUser();
+    return u && u.id ? `spoonmap_user_${u.id}_wishlist` : 'spoonmap_guest_wishlist';
+}
+
+function getUserWishlist() {
+    try {
+        const saved = localStorage.getItem(getUserWishlistKey());
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveUserWishlist(list) {
+    localStorage.setItem(getUserWishlistKey(), JSON.stringify(list));
+}
+
+function isPlaceInWishlist(name) {
+    if (!name) return false;
+    const list = getUserWishlist();
+    return list.some(item => item.name === name);
+}
+
+window.handleToggleWishlist = function(name, category, location, mapUrl) {
+    if (!isUserLoggedIn()) {
+        alert('카카오 로그인 후 이용하실 수 있습니다.');
+        return;
+    }
+
+    let list = getUserWishlist();
+    const existingIndex = list.findIndex(item => item.name === name);
+    let isNowWishlisted = false;
+
+    if (existingIndex > -1) {
+        list.splice(existingIndex, 1);
+        isNowWishlisted = false;
+        alert(`'${name}' 식당을 찜 목록에서 삭제했습니다.`);
+    } else {
+        list.push({
+            name,
+            category: category || '음식점',
+            location: location || '',
+            map_url: mapUrl || '',
+            savedAt: new Date().toISOString()
+        });
+        isNowWishlisted = true;
+        alert(`'${name}' 식당을 찜 목록에 저장했습니다!`);
+    }
+
+    saveUserWishlist(list);
+
+    // Update the single button text & active class in place detail view
+    const btn = document.getElementById('btn-wishlist-toggle');
+    if (btn) {
+        btn.textContent = isNowWishlisted ? '찜 취소' : '찜하기';
+        btn.classList.toggle('active', isNowWishlisted);
+    }
+};
+
+window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
+    if (!isUserLoggedIn()) {
+        alert('카카오 로그인 후 이용하실 수 있습니다.');
+        return;
+    }
+
+    // 1. Switch to DIARY tab
+    window.location.hash = '#diary';
+
+    // 2. Open drawer with today's date
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // Ensure diary tab is initialized
+    initDiaryTab();
+
+    setTimeout(() => {
+        if (typeof openDiaryDrawer === 'function') {
+            openDiaryDrawer(todayStr, { name, category, location, mapUrl });
+        }
+    }, 150);
+};
+
 function getSpoonBadgeHtml(item) {
     if (!item || item.isExternal || item.visit_count === 0 || !item.rate) {
         return '';
@@ -1659,6 +1746,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayCategory = placeData?.category_name || item.category || '기타';
         const displayAddress = placeData?.address_name || item.location_large || preciseAddress;
 
+        const isWishlisted = isPlaceInWishlist(item.name);
+        const safeName = (item.name || '').replace(/'/g, "\\'");
+        const safeCategory = (displayCategory || '').replace(/'/g, "\\'");
+        const safeAddress = (displayAddress || '').replace(/'/g, "\\'");
+        const safeUrl = (finalUrl || '').replace(/'/g, "\\'");
+
+        const actionsHtml = `
+            <div class="place-detail-actions">
+                <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}')">내 맛집에 추가</button>
+                <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
+            </div>
+        `;
+
         detailPanel.innerHTML = `
             <div class="detail-body">
                 <button class="back-to-list-btn" onclick="if (window.location.hash.includes('/place')) { window.location.hash = '#map'; } else { document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none'; }">
@@ -1671,6 +1771,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
                 </div>
                 
+                ${actionsHtml}
+
                 <div class="detail-info-list">
                     <div class="info-item">
                         ${ratingHtml}
@@ -5510,7 +5612,7 @@ function moveDiaryEntryToDate(entry, newDate) {
     showDiaryToast(`📍 "${entry.name}" 항목이 ${newDate} 날짜로 이동되었습니다!`);
 }
 
-function openDiaryDrawer(dateStr) {
+function openDiaryDrawer(dateStr, prefillData = null) {
     const overlay = document.getElementById('diary-drawer-overlay');
     const dateField = document.getElementById('diary-drawer-field-date');
     const dateInput = document.getElementById('diary-input-date');
@@ -5538,14 +5640,24 @@ function openDiaryDrawer(dateStr) {
     if (badgeEl) badgeEl.style.display = 'none';
     if (editIdInput) editIdInput.value = '';
 
-    if (nameInput) nameInput.value = '';
+    if (nameInput) nameInput.value = prefillData?.name || '';
     if (rateInput) rateInput.value = '';
     if (rateLabel) rateLabel.textContent = '선택 안 함';
-    if (mapInput) mapInput.value = '';
+    if (mapInput) mapInput.value = prefillData?.mapUrl || '';
     if (memoInput) memoInput.value = '';
 
     Object.values(notionSelectors).forEach(sel => sel.clear());
     document.querySelectorAll('.rate-spoon').forEach(b => b.classList.remove('active'));
+
+    // If prefillData has category or location, select in notionSelectors
+    if (prefillData) {
+        if (prefillData.category && notionSelectors.category) {
+            notionSelectors.category.setSelected([prefillData.category]);
+        }
+        if (prefillData.location && notionSelectors.location_large) {
+            notionSelectors.location_large.setSelected([prefillData.location]);
+        }
+    }
 
     if (dateInput) dateInput.value = dateStr || '';
 
@@ -5553,7 +5665,11 @@ function openDiaryDrawer(dateStr) {
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
-    if (nameInput) setTimeout(() => nameInput.focus(), 100);
+    if (memoInput && prefillData?.name) {
+        setTimeout(() => memoInput.focus(), 150);
+    } else if (nameInput) {
+        setTimeout(() => nameInput.focus(), 100);
+    }
 }
 
 // Open Edit Drawer for an Existing Entry
