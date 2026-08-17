@@ -248,6 +248,14 @@ header {
 }
 
 /* ─── Auth Locked Tab Screen ─── */
+.auth-locked-placeholder {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
 .auth-locked-container {
     display: flex;
     align-items: center;
@@ -255,6 +263,7 @@ header {
     min-height: 60vh;
     padding: 2rem 1rem;
     width: 100%;
+    margin: 0 auto;
 }
 
 .auth-locked-card {
@@ -487,15 +496,21 @@ main {
 #list-view {
     display: none;
     position: relative;
-    gap: 1.5rem;
-    align-items: start;
     width: 100%;
-    margin-top: 48px;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #list-view.active {
+    display: block;
+}
+
+#list-protected-content {
     display: flex;
+    position: relative;
+    gap: 1.5rem;
+    align-items: start;
+    width: 100%;
+    margin-top: 48px;
 }
 
 /* Sidebar Toggle ON/OFF Button (Pastel Coral Circle Icon Button) */
@@ -1688,8 +1703,7 @@ main {
 }
 
 @media (max-width: 1024px) {
-    #list-view.active {
-        grid-template-columns: 260px 1fr;
+    #list-protected-content {
         gap: 1.2rem;
     }
 }
@@ -1724,8 +1738,9 @@ main {
         margin-top: 0 !important;
     }
 
-    #list-view.active {
-        grid-template-columns: 1fr;
+    #list-protected-content {
+        display: block;
+        margin-top: 0;
     }
 
     .sidebar {

@@ -42,7 +42,7 @@ function renderAuthLockedScreen(tabName) {
             <div class="auth-locked-card">
                 <div class="auth-locked-icon">🔒🥄</div>
                 <h3>나만의 미식 대사전 & 식사 일기</h3>
-                <p>1,100여 개의 엄선된 맛집 데이터와 나만의 식사 기록(DIARY), 미식 통계(INSIGHT)는 <b>카카오 로그인</b> 후 이용하실 수 있습니다.</p>
+                <p>Dairy, List, Insight 탭은 <b>카카오 로그인</b> 후 이용하실 수 있습니다.</p>
                 <button class="kakao-login-btn auth-locked-login-btn" onclick="handleKakaoLogin()">
                     <svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.48 2 10.77c0 2.76 1.83 5.17 4.59 6.55l-1.16 4.29c-.1.38.33.68.66.47l5.06-3.34c.28.03.56.05.85.05 5.52 0 10-3.48 10-7.77S17.52 3 12 3z"/></svg>
                     <span>카카오톡으로 로그인하기</span>
