@@ -151,8 +151,7 @@ window.handleKakaoLogin = function() {
                             updateUserAuthUI();
                             alert(`환영합니다, ${user.nickname}님! 나만의 Spoonmap에 로그인되었습니다 🥄✨`);
                             
-                            // Switch to DIARY
-                            window.location.hash = '#diary';
+                            // Keep current tab / route and refresh view
                             if (typeof window.handleRouteGlobal === 'function') {
                                 window.handleRouteGlobal();
                             } else {
@@ -306,24 +305,30 @@ window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
         return;
     }
 
-    // 1. Switch to DIARY tab
-    window.location.hash = '#diary';
-
-    // 2. Open drawer with today's date
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
-    // Ensure diary tab is initialized
-    initDiaryTab();
+    // Switch to DIARY tab UI and update route
+    if (typeof switchTabUI === 'function') {
+        switchTabUI('diary');
+    }
+    if (window.location.hash !== '#diary') {
+        window.location.hash = '#diary';
+    }
+
+    // Ensure diary tab is initialized and open drawer with today's date & prefilled restaurant name
+    if (typeof initDiaryTab === 'function') {
+        initDiaryTab();
+    }
 
     setTimeout(() => {
         if (typeof openDiaryDrawer === 'function') {
             openDiaryDrawer(todayStr, { name, category, location, mapUrl });
         }
-    }, 150);
+    }, 200);
 };
 
 function getSpoonBadgeHtml(item) {
@@ -1439,14 +1444,19 @@ document.addEventListener('DOMContentLoaded', () => {
         pageItems.forEach(res => {
             const { item, place } = res;
             const isSaved = isOwnerUser() ? res.isSaved : false;
+            const isWishlist = res.isWishlist || isPlaceInWishlist(item.name || place.place_name);
             const coords = new kakao.maps.LatLng(place.y, place.x);
             const visits = isSaved ? (item.visit_count || 1) : 0;
-            const tagBadge = isSaved 
-                ? (visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`)
-                : '';
+            let tagBadge = '';
+            if (isSaved) {
+                tagBadge = visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`;
+            } else if (isWishlist) {
+                tagBadge = `<span class="saved-place-chip yellow">⭐ 찜 식당</span>`;
+            }
 
+            const itemClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
             const resultItem = document.createElement('div');
-            resultItem.className = `result-item ${isSaved ? 'is-saved' : ''}`;
+            resultItem.className = `result-item ${itemClass}`;
             resultItem.innerHTML = `
                 <div class="result-item-top">
                     <h4>${place.place_name || item.name}</h4>
@@ -1458,9 +1468,10 @@ document.addEventListener('DOMContentLoaded', () => {
             resultItem.addEventListener('click', () => {
                 map.panTo(coords);
                 if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
+                const overlayClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
                 window.currentMapOverlay = new kakao.maps.CustomOverlay({
                     position: coords,
-                    content: `<div class="marker-label ${isSaved ? 'is-saved' : ''}">${place.place_name || item.name}</div>`,
+                    content: `<div class="marker-label ${overlayClass}">${place.place_name || item.name}</div>`,
                     yAnchor: 2.1,
                     zIndex: 99999
                 });
@@ -1510,19 +1521,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Custom Marker SVG Pin Icons (Identical design & size: 29x42, only colors differ)
+    // Custom Marker SVG Pin Icons (Identical design & size: 29x42, colors differ)
     const BLUE_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%233B82F6" stroke="%231D4ED8" stroke-width="1.6" opacity="0.9" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%233B82F6"/></svg>`;
 
     const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23EF4444" stroke="%23B91C1C" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23EF4444"/></svg>`;
 
-    function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false) {
+    const YELLOW_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23F59E0B" stroke="%23D97706" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23F59E0B"/></svg>`;
+
+    function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false) {
         const isSaved = isOwnerUser() ? isSavedParam : false;
+        const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name);
         const coords = new kakao.maps.LatLng(place.y, place.x);
 
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             if (isSaved) {
                 markerImg = new kakao.maps.MarkerImage(RED_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
+            } else if (isWishlist) {
+                markerImg = new kakao.maps.MarkerImage(YELLOW_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
             } else {
                 markerImg = new kakao.maps.MarkerImage(BLUE_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
             }
@@ -1531,12 +1547,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const markerOptions = {
             map: map,
             position: coords,
-            zIndex: isSaved ? 100 : 1
+            zIndex: isSaved ? 100 : (isWishlist ? 90 : 1)
         };
         if (markerImg) {
             markerOptions.image = markerImg;
         } else {
-            markerOptions.opacity = isSaved ? 1 : 0.6;
+            markerOptions.opacity = (isSaved || isWishlist) ? 1 : 0.6;
         }
 
         const marker = new kakao.maps.Marker(markerOptions);
@@ -1549,9 +1565,10 @@ document.addEventListener('DOMContentLoaded', () => {
         kakao.maps.event.addListener(marker, 'click', () => {
             map.panTo(coords);
             if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
+            const overlayClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
             window.currentMapOverlay = new kakao.maps.CustomOverlay({
                 position: coords,
-                content: `<div class="marker-label ${isSaved ? 'is-saved' : ''}">${place.place_name || item.name}</div>`,
+                content: `<div class="marker-label ${overlayClass}">${place.place_name || item.name}</div>`,
                 yAnchor: 2.1,
                 zIndex: 99999
             });
@@ -1771,8 +1788,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
                 </div>
                 
-                ${actionsHtml}
-
                 <div class="detail-info-list">
                     <div class="info-item">
                         ${ratingHtml}
@@ -1787,6 +1802,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         카카오맵
                     </a>
                 </div>
+
+                ${actionsHtml}
             </div>
         `;
 
@@ -1826,6 +1843,115 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('map-place-detail').style.display = 'none';
         updateMapMarkers();
     });
+
+    // ─── Show Wishlist Places on Map ───
+    function showWishlistPlacesOnMap() {
+        if (!isUserLoggedIn()) {
+            alert('카카오 로그인 후 찜 목록을 확인하실 수 있습니다.');
+            return;
+        }
+
+        const wishlist = getUserWishlist();
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (resultsList) resultsList.style.display = 'block';
+
+        if (!wishlist || wishlist.length === 0) {
+            clearMarkers();
+            if (window.currentMapOverlay) {
+                window.currentMapOverlay.setMap(null);
+                window.currentMapOverlay = null;
+            }
+            if (resultsList) {
+                resultsList.innerHTML = `
+                    <div class="map-empty-state">
+                        <p style="font-size:1.4rem; margin-bottom:8px;">⭐</p>
+                        <p><b>찜한 식당이 아직 없습니다.</b></p>
+                        <p style="font-size:0.82rem; margin-top:6px; color:#888;">지도에서 마음에 드는 식당을 찾아 [찜하기]를 눌러보세요!</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        clearMarkers();
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+
+        const ps = new kakao.maps.services.Places();
+        const geocoder = new kakao.maps.services.Geocoder();
+        const bounds = new kakao.maps.LatLngBounds();
+        const allWishlistResults = [];
+        let completed = 0;
+
+        resultsList.innerHTML = `<div class="map-empty-state"><p>⌛ 찜한 식당 ${wishlist.length}곳을 지도에 불러오는 중...</p></div>`;
+
+        wishlist.forEach((wItem) => {
+            const query = wItem.location ? `${wItem.location} ${wItem.name}` : wItem.name;
+            ps.keywordSearch(query, (data, status) => {
+                completed++;
+                if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                    const place = data[0];
+                    const item = {
+                        name: wItem.name,
+                        category: wItem.category || place.category_name || '음식점',
+                        location_large: wItem.location || place.address_name || '',
+                        location_small: place.road_address_name || place.address_name || '',
+                        map_url: wItem.map_url || place.place_url || '',
+                        rate: '',
+                        visit_count: 0
+                    };
+                    renderSingleMarker(item, place, false, bounds, true, true);
+                    allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                } else if (wItem.location) {
+                    geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
+                        if (geoStatus === kakao.maps.services.Status.OK && geoRes.length > 0) {
+                            const place = {
+                                place_name: wItem.name,
+                                x: geoRes[0].x,
+                                y: geoRes[0].y,
+                                address_name: geoRes[0].address_name,
+                                road_address_name: geoRes[0].road_address?.address_name || '',
+                                category_name: wItem.category || '음식점',
+                                place_url: wItem.map_url || ''
+                            };
+                            const item = {
+                                name: wItem.name,
+                                category: wItem.category || '음식점',
+                                location_large: wItem.location,
+                                location_small: place.address_name,
+                                map_url: wItem.map_url || '',
+                                rate: '',
+                                visit_count: 0
+                            };
+                            renderSingleMarker(item, place, false, bounds, true, true);
+                            allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                        }
+                    });
+                }
+
+                if (completed === wishlist.length) {
+                    setTimeout(() => {
+                        if (allWishlistResults.length > 0) {
+                            renderPaginatedList(allWishlistResults, 1);
+                            map.setBounds(bounds);
+                            if (allWishlistResults.length === 1) map.setLevel(3);
+                        } else {
+                            resultsList.innerHTML = `<div class="map-empty-state"><p>찜한 식당들의 위치 정보를 지도에서 찾지 못했습니다.</p></div>`;
+                        }
+                    }, 350);
+                }
+            });
+        });
+    }
+
+    const btnShowWishlist = document.getElementById('btn-show-wishlist');
+    if (btnShowWishlist) {
+        btnShowWishlist.addEventListener('click', showWishlistPlacesOnMap);
+    }
 
     // Helper to get filtered data for map
     function getFilteredData() {

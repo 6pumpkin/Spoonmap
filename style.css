@@ -1425,11 +1425,61 @@ main {
     line-height: 1.4;
 }
 
-/* Map Place Detail Actions (내 맛집에 추가 & 찜하기 토글) */
-.place-detail-actions {
+/* Map Quick Filters (찜 가게 목록 등) */
+.map-quick-filters {
     display: flex;
     gap: 8px;
-    margin: 12px 0 16px 0;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.map-quick-filter-btn {
+    flex: 1;
+    background: #FFFBEB;
+    border: 1.5px solid #F59E0B;
+    color: #B45309;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.map-quick-filter-btn:hover {
+    background: #FEF3C7;
+    color: #92400E;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+}
+
+.map-quick-filter-btn.active {
+    background: #F59E0B;
+    color: #FFFFFF;
+    border-color: #D97706;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Yellow Wishlist Chips & Overlay Labels */
+.saved-place-chip.yellow {
+    background: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FCD34D;
+}
+
+.marker-label.is-wishlist {
+    background: #F59E0B;
+    color: #FFFFFF;
+    border: 1.5px solid #D97706;
+}
+
+/* Map Place Detail Actions (네이버 지도, 카카오맵 아래 위치) */
+.place-detail-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -1439,9 +1489,9 @@ main {
     background: var(--coral-main, #FF5A5F);
     color: #FFFFFF;
     border: none;
-    border-radius: 12px;
-    padding: 10px 8px;
-    font-size: 0.88rem;
+    border-radius: 14px;
+    padding: 12px 10px;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     text-align: center;
@@ -1460,9 +1510,9 @@ main {
     background: #FFFFFF;
     color: #4B5563;
     border: 1.5px solid #D1D5DB;
-    border-radius: 12px;
-    padding: 10px 8px;
-    font-size: 0.88rem;
+    border-radius: 14px;
+    padding: 12px 10px;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     text-align: center;
