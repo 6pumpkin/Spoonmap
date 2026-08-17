@@ -122,12 +122,14 @@ window.handleKakaoLogin = function() {
         console.error('[Spoonmap] Kakao.init error:', e);
     }
 
-    if (Kakao.Auth && typeof Kakao.Auth.login === 'function') {
+    const loginMethod = (Kakao.Auth && typeof Kakao.Auth.loginForm === 'function')
+        ? Kakao.Auth.loginForm
+        : (Kakao.Auth && typeof Kakao.Auth.login === 'function' ? Kakao.Auth.login : null);
+
+    if (loginMethod) {
         try {
-            Kakao.Auth.login({
+            loginMethod.call(Kakao.Auth, {
                 scope: 'profile_nickname,profile_image',
-                prompt: 'select_account',
-                prompts: ['select_account', 'login'],
                 success: function(authObj) {
                     console.log('[Spoonmap] Kakao Auth Success:', authObj);
                     Kakao.API.request({
