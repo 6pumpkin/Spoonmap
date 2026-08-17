@@ -307,30 +307,47 @@ window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
         return;
     }
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${yyyy}-${mm}-${dd}`;
+    // 1. Close Detail Modals
+    if (typeof closeRestaurantDetailModal === 'function') closeRestaurantDetailModal();
+    if (typeof closeMobileOverlay === 'function') closeMobileOverlay();
 
-    // Switch to DIARY tab UI and update route
-    if (typeof switchTabUI === 'function') {
-        switchTabUI('diary');
-    }
-    if (window.location.hash !== '#diary') {
+    // 2. Switch to DIARY tab (simulating click on tab button)
+    const diaryTabBtn = document.querySelector('.tab-btn[data-tab="diary"]') || document.querySelector('.mobile-tab-btn[data-tab="diary"]');
+    if (diaryTabBtn) {
+        diaryTabBtn.click();
+    } else {
+        if (typeof switchTabUI === 'function') switchTabUI('diary');
         window.location.hash = '#diary';
     }
 
-    // Ensure diary tab is initialized and open drawer with today's date & prefilled restaurant name
-    if (typeof initDiaryTab === 'function') {
-        initDiaryTab();
-    }
-
+    // 3. Open '새 방문 기록 추가' Drawer with Today's Date & Pre-fill Restaurant Name Only
     setTimeout(() => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+
         if (typeof openDiaryDrawer === 'function') {
-            openDiaryDrawer(todayStr, { name, category, location, mapUrl });
+            openDiaryDrawer(todayStr); // Open in 'Add New' mode with today's date
         }
-    }, 200);
+
+        const nameInput = document.getElementById('diary-input-name');
+        if (nameInput) {
+            nameInput.value = name || '';
+            nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        const mapInput = document.getElementById('diary-input-map');
+        if (mapInput && mapUrl) {
+            mapInput.value = mapUrl;
+        }
+
+        // Focus on name or rate
+        if (nameInput) {
+            nameInput.focus();
+        }
+    }, 250);
 };
 
 function getSpoonBadgeHtml(item) {
