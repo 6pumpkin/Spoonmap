@@ -18,7 +18,7 @@ function initKakaoAuth() {
 window.handleKakaoLogin = function() {
     console.log('[Spoonmap] handleKakaoLogin clicked');
     if (typeof Kakao === 'undefined') {
-        alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해 주세요.');
+        alert('카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
         return;
     }
     try {
@@ -30,44 +30,49 @@ window.handleKakaoLogin = function() {
     }
 
     if (Kakao.Auth && typeof Kakao.Auth.login === 'function') {
-        Kakao.Auth.login({
-            scope: 'profile_nickname,profile_image',
-            success: function(authObj) {
-                console.log('[Spoonmap] Kakao Auth Success:', authObj);
-                Kakao.API.request({
-                    url: '/v2/user/me',
-                    success: function(res) {
-                        console.log('[Spoonmap] Kakao User Profile:', res);
-                        const kakaoAccount = res.kakao_account || {};
-                        const profile = kakaoAccount.profile || {};
-                        const user = {
-                            id: String(res.id),
-                            nickname: profile.nickname || '카카오 미식가',
-                            profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
-                            connectedAt: res.connected_at || new Date().toISOString()
-                        };
-                        localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
-                        updateUserAuthUI();
-                    },
-                    fail: function(error) {
-                        console.error('[Spoonmap] Kakao /v2/user/me failed:', error);
-                        alert('카카오 프로필 정보를 가져오지 못했습니다.');
+        try {
+            Kakao.Auth.login({
+                scope: 'profile_nickname,profile_image',
+                success: function(authObj) {
+                    console.log('[Spoonmap] Kakao Auth Success:', authObj);
+                    Kakao.API.request({
+                        url: '/v2/user/me',
+                        success: function(res) {
+                            console.log('[Spoonmap] Kakao User Profile:', res);
+                            const kakaoAccount = res.kakao_account || {};
+                            const profile = kakaoAccount.profile || {};
+                            const user = {
+                                id: String(res.id),
+                                nickname: profile.nickname || '카카오 미식가',
+                                profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
+                                connectedAt: res.connected_at || new Date().toISOString()
+                            };
+                            localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
+                            updateUserAuthUI();
+                            alert(`환영합니다, ${user.nickname}님! Spoonmap에 로그인되었습니다 🥄✨`);
+                        },
+                        fail: function(error) {
+                            console.error('[Spoonmap] Kakao /v2/user/me failed:', error);
+                            alert('카카오 사용자 정보 조회 실패: ' + (error.msg || JSON.stringify(error)));
+                        }
+                    });
+                },
+                fail: function(err) {
+                    console.error('[Spoonmap] Kakao Login failed:', err);
+                    if (err && (err.error === 'access_denied' || err.error === 'window_closed')) {
+                        // User explicitly cancelled
+                        return;
                     }
-                });
-            },
-            fail: function(err) {
-                console.error('[Spoonmap] Kakao Login failed/cancelled:', err);
-                if (err && err.error_description) {
-                    alert('카카오 로그인 안내: ' + err.error_description);
+                    const msg = (err && (err.error_description || err.msg || err.error)) ? (err.error_description || err.msg || err.error) : JSON.stringify(err);
+                    alert('카카오 로그인 안내: ' + msg);
                 }
-            }
-        });
-    } else if (Kakao.Auth && typeof Kakao.Auth.authorize === 'function') {
-        Kakao.Auth.authorize({
-            redirectUri: window.location.origin + window.location.pathname
-        });
+            });
+        } catch (callErr) {
+            console.error('[Spoonmap] Kakao.Auth.login call error:', callErr);
+            alert('로그인 호출 중 오류: ' + callErr.message);
+        }
     } else {
-        alert('카카오 로그인 모듈을 불러오지 못했습니다.');
+        alert('카카오 인증 모듈을 지원하지 않는 브라우저입니다.');
     }
 };
 
