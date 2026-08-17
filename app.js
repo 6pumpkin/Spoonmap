@@ -1,3 +1,112 @@
+// ─── Kakao OAuth 2.0 User Authentication Module ───
+const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
+
+function initKakaoAuth() {
+    try {
+        if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+            Kakao.init(KAKAO_JAVASCRIPT_KEY);
+            console.log('[Spoonmap] Kakao SDK Initialized:', Kakao.isInitialized());
+        }
+    } catch (err) {
+        console.warn('[Spoonmap] Kakao SDK Init Warning:', err);
+    }
+    updateUserAuthUI();
+}
+
+window.handleKakaoLogin = function() {
+    if (typeof Kakao === 'undefined') {
+        alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해 주세요.');
+        return;
+    }
+    if (!Kakao.isInitialized()) {
+        Kakao.init(KAKAO_JAVASCRIPT_KEY);
+    }
+
+    Kakao.Auth.login({
+        scope: 'profile_nickname,profile_image',
+        success: function(authObj) {
+            console.log('[Spoonmap] Kakao Auth Success:', authObj);
+            Kakao.API.request({
+                url: '/v2/user/me',
+                success: function(res) {
+                    console.log('[Spoonmap] Kakao User Profile:', res);
+                    const kakaoAccount = res.kakao_account || {};
+                    const profile = kakaoAccount.profile || {};
+                    const user = {
+                        id: String(res.id),
+                        nickname: profile.nickname || '카카오 미식가',
+                        profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
+                        connectedAt: res.connected_at || new Date().toISOString()
+                    };
+                    localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
+                    updateUserAuthUI();
+                },
+                fail: function(error) {
+                    console.error('[Spoonmap] Kakao /v2/user/me failed:', error);
+                    alert('카카오 프로필 정보를 가져오지 못했습니다.');
+                }
+            });
+        },
+        fail: function(err) {
+            console.error('[Spoonmap] Kakao Login failed/cancelled:', err);
+        }
+    });
+};
+
+window.handleKakaoLogout = function() {
+    if (confirm('로그아웃 하시겠습니까?')) {
+        try {
+            if (typeof Kakao !== 'undefined' && Kakao.Auth && Kakao.Auth.getAccessToken()) {
+                Kakao.Auth.logout(function() {
+                    console.log('[Spoonmap] Kakao Logged Out');
+                });
+            }
+        } catch (e) {
+            console.warn('[Spoonmap] Kakao Logout warning:', e);
+        }
+        localStorage.removeItem('spoonmap_current_user');
+        updateUserAuthUI();
+    }
+};
+
+function updateUserAuthUI() {
+    const authContainer = document.getElementById('header-user-auth');
+    if (!authContainer) return;
+
+    let currentUser = null;
+    try {
+        const saved = localStorage.getItem('spoonmap_current_user');
+        if (saved) currentUser = JSON.parse(saved);
+    } catch (e) {
+        console.error(e);
+    }
+
+    if (currentUser && currentUser.nickname) {
+        const avatarHtml = currentUser.profileImage
+            ? `<img src="${currentUser.profileImage}" alt="${currentUser.nickname}" class="user-avatar" onerror="this.outerHTML='<div class=\\'user-avatar-placeholder\\'>🥄</div>'">`
+            : `<div class="user-avatar-placeholder">🥄</div>`;
+
+        authContainer.innerHTML = `
+            <div class="user-profile-badge">
+                ${avatarHtml}
+                <div class="user-info-text">
+                    <span class="user-name" title="${currentUser.nickname}">${currentUser.nickname}</span>
+                </div>
+                <button class="user-logout-btn" onclick="handleKakaoLogout()" title="로그아웃">로그아웃</button>
+            </div>
+        `;
+    } else {
+        authContainer.innerHTML = `
+            <button class="kakao-login-btn" onclick="handleKakaoLogin()" title="카카오톡 계정으로 간편 로그인">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3C6.48 3 2 6.48 2 10.77c0 2.76 1.83 5.17 4.59 6.55l-1.16 4.29c-.1.38.33.68.66.47l5.06-3.34c.28.03.56.05.85.05 5.52 0 10-3.48 10-7.77S17.52 3 12 3z"/>
+                </svg>
+                <span>로그인</span>
+            </button>
+        `;
+    }
+}
+
 function getSpoonBadgeHtml(item) {
     if (!item || item.isExternal || item.visit_count === 0 || !item.rate) {
         return '';
@@ -32,6 +141,7 @@ function getSpoonBadgeHtml(item) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initKakaoAuth();
     let currentFilters = {
         category: [],
         location_large: [],

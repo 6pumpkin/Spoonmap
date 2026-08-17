@@ -132,6 +132,121 @@ header {
     object-fit: contain;
 }
 
+/* Header Right Group */
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* User Auth UI */
+.header-user-auth {
+    display: flex;
+    align-items: center;
+}
+
+.kakao-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #FEE500;
+    color: #191919;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.5rem 0.95rem;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    white-space: nowrap;
+}
+
+.kakao-login-btn:hover {
+    background-color: #FADA0A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.09);
+}
+
+.kakao-login-btn svg, .kakao-login-btn .kakao-icon {
+    width: 17px;
+    height: 17px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-subtle);
+    padding: 4px 10px 4px 6px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.user-profile-badge:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--coral-main);
+}
+
+.user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FFF0F2;
+    color: var(--coral-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.user-info-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-logout-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+    margin-left: 2px;
+}
+
+.user-logout-btn:hover {
+    color: var(--coral-main);
+    text-decoration: underline;
+}
+
 /* Search Bar Container */
 .search-container {
     position: relative;
