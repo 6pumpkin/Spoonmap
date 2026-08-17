@@ -4112,7 +4112,7 @@ function processSommelierQuery(query, callback) {
         callback({
             html: `<div class="sommelier-intro-p">
                 🔒 <b>나만의 또간집 및 저장 맛집 연동 추천</b>은 카카오 로그인 후 이용하실 수 있습니다.<br><br>
-                상단 헤더의 <b>[💬 로그인]</b> 버튼을 누르시면 회원님의 1,100여 개 미식 데이터와 연동된 맞춤 추천을 바로 받아보실 수 있습니다! 🍷✨
+                상단 헤더의 <b>[💬 로그인]</b> 버튼을 누르시면 회원님의 미식 데이터와 연동된 맞춤 추천을 바로 받아보실 수 있습니다! 🍷✨
             </div>`
         });
         return;
