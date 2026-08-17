@@ -1,5 +1,98 @@
-// ─── Kakao OAuth 2.0 User Authentication Module ───
+// ─── Kakao OAuth 2.0 & Owner Auth Guard Module ───
 const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
+
+function getCurrentUser() {
+    try {
+        const saved = localStorage.getItem('spoonmap_current_user');
+        return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function isUserLoggedIn() {
+    const u = getCurrentUser();
+    return !!(u && u.id);
+}
+
+function isOwnerUser() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return false;
+    
+    // Auto-bind the first logged-in user as the master Owner if not set
+    let ownerId = localStorage.getItem('spoonmap_owner_kakao_id');
+    if (!ownerId) {
+        ownerId = String(u.id);
+        localStorage.setItem('spoonmap_owner_kakao_id', ownerId);
+        console.log('[Spoonmap] Auto-assigned Master Owner Kakao ID:', ownerId);
+    }
+    return String(u.id) === String(ownerId);
+}
+
+function getActiveRestaurantData() {
+    if (isOwnerUser()) {
+        return (typeof restaurantData !== 'undefined') ? restaurantData : [];
+    }
+    return [];
+}
+
+function renderAuthLockedScreen(tabName) {
+    return `
+        <div class="auth-locked-container">
+            <div class="auth-locked-card">
+                <div class="auth-locked-icon">🔒🥄</div>
+                <h3>나만의 미식 대사전 & 식사 일기</h3>
+                <p>1,100여 개의 엄선된 맛집 데이터와 나만의 식사 기록(DIARY), 미식 통계(INSIGHT)는 <b>카카오 로그인</b> 후 이용하실 수 있습니다.</p>
+                <button class="kakao-login-btn auth-locked-login-btn" onclick="handleKakaoLogin()">
+                    <svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.48 2 10.77c0 2.76 1.83 5.17 4.59 6.55l-1.16 4.29c-.1.38.33.68.66.47l5.06-3.34c.28.03.56.05.85.05 5.52 0 10-3.48 10-7.77S17.52 3 12 3z"/></svg>
+                    <span>카카오톡으로 로그인하기</span>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function updateAuthProtectedViews() {
+    const isOwner = isOwnerUser();
+
+    const protectedSections = [
+        { protectedId: 'list-protected-content', lockedId: 'list-locked-view' },
+        { protectedId: 'insights-protected-content', lockedId: 'insights-locked-view' },
+        { protectedId: 'diary-protected-content', lockedId: 'diary-locked-view' }
+    ];
+
+    protectedSections.forEach(({ protectedId, lockedId }) => {
+        const pEl = document.getElementById(protectedId);
+        const lEl = document.getElementById(lockedId);
+
+        if (pEl) {
+            pEl.style.display = isOwner ? '' : 'none';
+        }
+        if (lEl) {
+            lEl.style.display = isOwner ? 'none' : 'flex';
+            if (!isOwner) {
+                lEl.innerHTML = renderAuthLockedScreen(protectedId);
+            }
+        }
+    });
+
+    // Update Tab Button Labels (e.g. DIARY vs DIARY 🔒)
+    const tabLabels = [
+        { tab: 'diary', name: 'DIARY', locked: !isOwner },
+        { tab: 'list', name: 'LIST', locked: !isOwner },
+        { tab: 'map', name: 'MAP', locked: false },
+        { tab: 'sommelier', name: 'AI', locked: false },
+        { tab: 'recommend', name: 'ROULETTE', locked: false },
+        { tab: 'insights', name: 'INSIGHT', locked: !isOwner }
+    ];
+
+    tabLabels.forEach(({ tab, name, locked }) => {
+        const btns = document.querySelectorAll(`.tab-btn[data-tab="${tab}"], .mobile-tab-btn[data-tab="${tab}"]`);
+        btns.forEach(b => {
+            b.innerHTML = locked ? `${name} <span class="tab-lock-icon" style="font-size:0.75em;opacity:0.8;">🔒</span>` : name;
+        });
+    });
+}
 
 function initKakaoAuth() {
     try {
@@ -48,8 +141,23 @@ window.handleKakaoLogin = function() {
                                 connectedAt: res.connected_at || new Date().toISOString()
                             };
                             localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
+                            
+                            // Auto assign owner ID if not set
+                            let ownerId = localStorage.getItem('spoonmap_owner_kakao_id');
+                            if (!ownerId) {
+                                localStorage.setItem('spoonmap_owner_kakao_id', user.id);
+                            }
+
                             updateUserAuthUI();
-                            alert(`환영합니다, ${user.nickname}님! Spoonmap에 로그인되었습니다 🥄✨`);
+                            alert(`환영합니다, ${user.nickname}님! 나만의 Spoonmap에 로그인되었습니다 🥄✨`);
+                            
+                            // Switch to DIARY
+                            window.location.hash = '#diary';
+                            if (typeof window.handleRouteGlobal === 'function') {
+                                window.handleRouteGlobal();
+                            } else {
+                                window.location.reload();
+                            }
                         },
                         fail: function(error) {
                             console.error('[Spoonmap] Kakao /v2/user/me failed:', error);
@@ -60,7 +168,6 @@ window.handleKakaoLogin = function() {
                 fail: function(err) {
                     console.error('[Spoonmap] Kakao Login failed:', err);
                     if (err && (err.error === 'access_denied' || err.error === 'window_closed')) {
-                        // User explicitly cancelled
                         return;
                     }
                     const msg = (err && (err.error_description || err.msg || err.error)) ? (err.error_description || err.msg || err.error) : JSON.stringify(err);
@@ -89,6 +196,12 @@ window.handleKakaoLogout = function() {
         }
         localStorage.removeItem('spoonmap_current_user');
         updateUserAuthUI();
+        window.location.hash = '#map';
+        if (typeof window.handleRouteGlobal === 'function') {
+            window.handleRouteGlobal();
+        } else {
+            window.location.reload();
+        }
     }
 };
 
@@ -96,13 +209,7 @@ function updateUserAuthUI() {
     const authContainer = document.getElementById('header-user-auth');
     if (!authContainer) return;
 
-    let currentUser = null;
-    try {
-        const saved = localStorage.getItem('spoonmap_current_user');
-        if (saved) currentUser = JSON.parse(saved);
-    } catch (e) {
-        console.error(e);
-    }
+    let currentUser = getCurrentUser();
 
     if (currentUser && currentUser.nickname) {
         const avatarHtml = currentUser.profileImage
@@ -128,6 +235,8 @@ function updateUserAuthUI() {
             </button>
         `;
     }
+
+    updateAuthProtectedViews();
 }
 
 function getSpoonBadgeHtml(item) {
@@ -218,7 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
         const parts = rawHash.split('/');
         const mainPart = parts[0].split('?')[0];
-        const tab = VALID_TABS.includes(mainPart) ? mainPart : 'diary';
+        const defaultTab = isOwnerUser() ? 'diary' : 'map';
+        const tab = VALID_TABS.includes(mainPart) ? mainPart : defaultTab;
         
         const subPath = parts[1] ? parts[1].split('?')[0] : '';
         const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
@@ -237,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentActiveTab = null;
 
     function switchTabUI(targetTab) {
-        if (!VALID_TABS.includes(targetTab)) targetTab = 'list';
+        if (!VALID_TABS.includes(targetTab)) targetTab = isOwnerUser() ? 'diary' : 'map';
 
         const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -253,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (mobileFilterBtn) {
-            mobileFilterBtn.style.display = targetTab === 'list' ? 'block' : 'none';
+            mobileFilterBtn.style.display = (targetTab === 'list' && isOwnerUser()) ? 'block' : 'none';
         }
         
         if (mobileTabsMenu) {
@@ -267,15 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        updateAuthProtectedViews();
+
         if (currentActiveTab !== targetTab) {
             currentActiveTab = targetTab;
             if (targetTab === 'map') {
                 initMap();
-            } else if (targetTab === 'insights') {
+            } else if (targetTab === 'insights' && isOwnerUser()) {
                 computeAndRenderFoodInsights();
             } else if (targetTab === 'sommelier') {
                 initSommelierTab();
-            } else if (targetTab === 'diary') {
+            } else if (targetTab === 'diary' && isOwnerUser()) {
                 initDiaryTab();
             }
         }
@@ -283,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleRoute() {
         const route = parseRoute();
+        window.handleRouteGlobal = handleRoute;
 
         // 1. Switch UI tab
         switchTabUI(route.tab);
@@ -582,6 +695,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const centerText = centerInput ? centerInput.value.trim() : '';
             const radiusVal = radiusSelect ? radiusSelect.value : 'all';
             const radiusMeters = radiusVal !== 'all' ? parseInt(radiusVal, 10) : null;
+
+            if (!isOwnerUser() && !isKakaoAll) {
+                alert('🔒 저장된 내 맛집 데이터 기반 추천은 카카오 로그인 후 이용하실 수 있습니다.\n카카오 전체 식당 검색 모드로 추천을 진행합니다! 🎲');
+                isKakaoAll = true;
+                if (kakaoAllCheck) kakaoAllCheck.checked = true;
+                if (visitedCheck) visitedCheck.checked = false;
+            }
 
             function proceedSpin(centerCoords) {
                 if (isKakaoAll) {
@@ -1230,7 +1350,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Build current page items
         pageItems.forEach(res => {
-            const { item, place, isSaved } = res;
+            const { item, place } = res;
+            const isSaved = isOwnerUser() ? res.isSaved : false;
             const coords = new kakao.maps.LatLng(place.y, place.x);
             const visits = isSaved ? (item.visit_count || 1) : 0;
             const tagBadge = isSaved 
@@ -1307,7 +1428,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23EF4444" stroke="%23B91C1C" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23EF4444"/></svg>`;
 
-    function renderSingleMarker(item, place, isSaved, bounds, shouldExtendBounds = false) {
+    function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false) {
+        const isSaved = isOwnerUser() ? isSavedParam : false;
         const coords = new kakao.maps.LatLng(place.y, place.x);
 
         let markerImg = null;
@@ -1507,7 +1629,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function showPlaceDetail(item, preciseAddress, isSaved, placeUrl, placeData) {
+    function showPlaceDetail(item, preciseAddress, isSavedParam, placeUrl, placeData) {
+        const isSaved = isOwnerUser() ? isSavedParam : false;
         const detailPanel = document.getElementById('map-place-detail');
         const resultsList = document.getElementById('map-results-list');
         
@@ -3982,10 +4105,27 @@ function processSommelierQuery(query, callback) {
 
     // ─── Source Preference ───
     const hasKakaoKeywords = q.includes('카카오') || q.includes('실시간') || q.includes('안가본') || q.includes('새로운');
-    const hasLocalKeywords = q.includes('내 맛집') || q.includes('내가 간') || q.includes('단골') || q.includes('저장된') || q.includes('내 데이터');
+    const hasLocalKeywords = q.includes('내 맛집') || q.includes('내가 간') || q.includes('단골') || q.includes('저장된') || q.includes('내 데이터') || q.includes('또간집') || q.includes('5수저');
+    
+    // Auth Check for Private Data Queries
+    if (!isOwnerUser() && hasLocalKeywords) {
+        callback({
+            html: `<div class="sommelier-intro-p">
+                🔒 <b>나만의 또간집 및 저장 맛집 연동 추천</b>은 카카오 로그인 후 이용하실 수 있습니다.<br><br>
+                상단 헤더의 <b>[💬 로그인]</b> 버튼을 누르시면 회원님의 1,100여 개 미식 데이터와 연동된 맞춤 추천을 바로 받아보실 수 있습니다! 🍷✨
+            </div>`
+        });
+        return;
+    }
+
     let sourcePref = 'both';
-    if (hasKakaoKeywords && !hasLocalKeywords) sourcePref = 'kakao_only';
-    else if (hasLocalKeywords && !hasKakaoKeywords) sourcePref = 'local_only';
+    if (!isOwnerUser()) {
+        sourcePref = 'kakao_only';
+    } else if (hasKakaoKeywords && !hasLocalKeywords) {
+        sourcePref = 'kakao_only';
+    } else if (hasLocalKeywords && !hasKakaoKeywords) {
+        sourcePref = 'local_only';
+    }
 
     // ─── Gemini LLM Logic ───
     if (geminiKey) {
@@ -4000,7 +4140,7 @@ function processSommelierQuery(query, callback) {
         const kwSingle_primary = `${baseLoc} ${mainCatDisplay || '맛집'}`.trim();
         const kwSingle_fallback = `${baseLoc} 맛집`.trim();
 
-        const localCandidates = targetLocDisplay
+        const localCandidates = (isOwnerUser() && targetLocDisplay && typeof restaurantData !== 'undefined')
             ? restaurantData.filter(item => {
                 const addr = (item.location_large || '') + (item.address || '');
                 return addr.includes(targetLocDisplay) || (locSearch && addr.includes(locSearch));

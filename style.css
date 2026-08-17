@@ -247,6 +247,66 @@ header {
     text-decoration: underline;
 }
 
+/* ─── Auth Locked Tab Screen ─── */
+.auth-locked-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 2rem 1rem;
+    width: 100%;
+}
+
+.auth-locked-card {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 3rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    animation: fadeInDown 0.3s ease-out;
+}
+
+.auth-locked-icon {
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
+
+.auth-locked-card h3 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.auth-locked-card p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    word-break: keep-all;
+}
+
+.auth-locked-login-btn {
+    margin-top: 0.6rem;
+    font-size: 0.98rem;
+    padding: 0.75rem 1.6rem;
+    border-radius: 28px;
+    box-shadow: 0 4px 14px rgba(254, 229, 0, 0.4);
+}
+
+.auth-locked-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(254, 229, 0, 0.5);
+}
+
 /* Search Bar Container */
 .search-container {
     position: relative;

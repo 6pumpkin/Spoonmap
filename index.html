@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202608180038">
+    <link rel="stylesheet" href="style.css?v=202608180056">
 </head>
 
 <body class="light-theme">
@@ -81,7 +81,8 @@
         </div>
 
         <div id="list-view" class="tab-content">
-            <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="필터 접기/열기">🎛️</button>
+            <div class="auth-protected-content" id="list-protected-content">
+                <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="필터 접기/열기">🎛️</button>
 
             <aside class="sidebar" id="main-sidebar">
                 <div class="sidebar-header-bar">
@@ -181,6 +182,8 @@
                     </button>
                 </div>
             </section>
+            </div>
+            <div class="auth-locked-placeholder" id="list-locked-view" style="display:none;"></div>
         </div>
 
         <!-- Mobile card detail overlay -->
@@ -352,88 +355,92 @@
 
         <!-- Food Insights Dedicated Tab Content -->
         <div id="insights-view" class="tab-content">
-            <div class="insights-container">
-                <div class="insights-hero">
-                    <div class="hero-badge">📊 FOOD INSIGHTS</div>
-                    <h2>나의 미식 데이터 분석 대시보드</h2>
-                    <p id="insights-total-summary">미식 기록을 분석하고 있습니다...</p>
-                </div>
-
-                <!-- 4 Counter Summary Cards -->
-                <div class="insights-stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-icon">🍱</span>
-                        <div class="stat-info">
-                            <span class="stat-label">총 기록 맛집</span>
-                            <span class="stat-val" id="stat-total-count">0곳</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-icon">🔥</span>
-                        <div class="stat-info">
-                            <span class="stat-label">또간집 비율</span>
-                            <span class="stat-val" id="stat-visited-count">0%</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-icon">👑</span>
-                        <div class="stat-info">
-                            <span class="stat-label">최다 방문 단골</span>
-                            <span class="stat-val stat-small" id="stat-top-place">-</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-icon">🥇</span>
-                        <div class="stat-info">
-                            <span class="stat-label">최애 카테고리</span>
-                            <span class="stat-val stat-small" id="stat-top-category">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Detailed Insights Sections -->
-                <div class="insights-sections">
-                    <!-- Region Section -->
-                    <div class="insights-box">
-                        <div class="box-header">
-                            <h3>📍 미식 정복 지역</h3>
-                            <button id="btn-toggle-regions" class="insights-toggle-btn">전체 ▼</button>
-                        </div>
-                        <div id="insights-region-list" class="insights-bar-list"></div>
+            <div class="auth-protected-content" id="insights-protected-content">
+                <div class="insights-container">
+                    <div class="insights-hero">
+                        <div class="hero-badge">📊 FOOD INSIGHTS</div>
+                        <h2>나의 미식 데이터 분석 대시보드</h2>
+                        <p id="insights-total-summary">미식 기록을 분석하고 있습니다...</p>
                     </div>
 
-                    <!-- Category Section -->
-                    <div class="insights-box">
-                        <div class="box-header">
-                            <h3>🍚 카테고리별 미식 비율</h3>
-                            <button id="btn-toggle-categories" class="insights-toggle-btn">전체 ▼</button>
+                    <!-- 4 Counter Summary Cards -->
+                    <div class="insights-stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-icon">🍱</span>
+                            <div class="stat-info">
+                                <span class="stat-label">총 기록 맛집</span>
+                                <span class="stat-val" id="stat-total-count">0곳</span>
+                            </div>
                         </div>
-                        <div id="insights-category-list" class="insights-bar-list"></div>
+                        <div class="stat-card">
+                            <span class="stat-icon">🔥</span>
+                            <div class="stat-info">
+                                <span class="stat-label">또간집 비율</span>
+                                <span class="stat-val" id="stat-visited-count">0%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon">👑</span>
+                            <div class="stat-info">
+                                <span class="stat-label">최다 방문 단골</span>
+                                <span class="stat-val stat-small" id="stat-top-place">-</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon">🥇</span>
+                            <div class="stat-info">
+                                <span class="stat-label">최애 카테고리</span>
+                                <span class="stat-val stat-small" id="stat-top-category">-</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Spoon Rating Distribution -->
-                    <div class="insights-box">
-                        <div class="box-header">
-                            <h3>🥄 수저 평점 등급 분포</h3>
+                    <!-- Detailed Insights Sections -->
+                    <div class="insights-sections">
+                        <!-- Region Section -->
+                        <div class="insights-box">
+                            <div class="box-header">
+                                <h3>📍 미식 정복 지역</h3>
+                                <button id="btn-toggle-regions" class="insights-toggle-btn">전체 ▼</button>
+                            </div>
+                            <div id="insights-region-list" class="insights-bar-list"></div>
                         </div>
-                        <div id="insights-rate-list" class="insights-bar-list"></div>
-                    </div>
 
-                    <!-- Hall of Fame Section -->
-                    <div class="insights-box full-width-box">
-                        <div class="box-header">
-                            <h3>👑 찐 단골집 명예의 전당 (또간집 랭킹)</h3>
-                            <button id="btn-toggle-top-places" class="insights-toggle-btn">전체 ▼</button>
+                        <!-- Category Section -->
+                        <div class="insights-box">
+                            <div class="box-header">
+                                <h3>🍚 카테고리별 미식 비율</h3>
+                                <button id="btn-toggle-categories" class="insights-toggle-btn">전체 ▼</button>
+                            </div>
+                            <div id="insights-category-list" class="insights-bar-list"></div>
                         </div>
-                        <div id="insights-top-places-list" class="insights-rank-list"></div>
+
+                        <!-- Spoon Rating Distribution -->
+                        <div class="insights-box">
+                            <div class="box-header">
+                                <h3>🥄 수저 평점 등급 분포</h3>
+                            </div>
+                            <div id="insights-rate-list" class="insights-bar-list"></div>
+                        </div>
+
+                        <!-- Hall of Fame Section -->
+                        <div class="insights-box full-width-box">
+                            <div class="box-header">
+                                <h3>👑 찐 단골집 명예의 전당 (또간집 랭킹)</h3>
+                                <button id="btn-toggle-top-places" class="insights-toggle-btn">전체 ▼</button>
+                            </div>
+                            <div id="insights-top-places-list" class="insights-rank-list"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div class="auth-locked-placeholder" id="insights-locked-view" style="display:none;"></div>
         </div>
 
         <!-- ─── 식사 일기 영역 ─── -->
-        <div id="diary-view" class="tab-content active">
-            <div class="diary-container">
+        <div id="diary-view" class="tab-content">
+            <div class="auth-protected-content" id="diary-protected-content">
+                <div class="diary-container">
                 <div class="diary-header">
                     <div class="diary-nav-group">
                         <button id="btn-diary-prev" class="diary-nav-btn" title="이전 달">&#9664;</button>
@@ -580,6 +587,8 @@
                     </div>
                 </div>
             </div>
+            </div>
+            <div class="auth-locked-placeholder" id="diary-locked-view" style="display:none;"></div>
         </div>
         <!-- /식사 일기 영역 -->
 
@@ -832,8 +841,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202608180038"></script>
-    <script src="app.js?v=202608180038"></script>
+    <script src="data.js?v=202608180056"></script>
+    <script src="app.js?v=202608180056"></script>
 </body>
 
 </html>
