@@ -263,7 +263,7 @@ function isPlaceInWishlist(name) {
     return list.some(item => item.name === name);
 }
 
-window.handleToggleWishlist = function(name, category, location, mapUrl) {
+window.handleToggleWishlist = function(name, category, location, mapUrl, x = '', y = '') {
     if (!isUserLoggedIn()) {
         alert('카카오 로그인 후 이용하실 수 있습니다.');
         return;
@@ -283,6 +283,8 @@ window.handleToggleWishlist = function(name, category, location, mapUrl) {
             category: category || '음식점',
             location: location || '',
             map_url: mapUrl || '',
+            x: x ? String(x) : '',
+            y: y ? String(y) : '',
             savedAt: new Date().toISOString()
         });
         isNowWishlisted = true;
@@ -1183,6 +1185,15 @@ document.addEventListener('DOMContentLoaded', () => {
         detailPanel.style.display = 'none';
         resultsList.style.display = 'block';
 
+        const quickFilters = document.querySelector('.map-quick-filters');
+        if (quickFilters) {
+            if (mapSearchValue || window.currCategory || window.currSubKeyword) {
+                quickFilters.style.display = 'none';
+            } else {
+                quickFilters.style.display = 'flex';
+            }
+        }
+
         const ps = new kakao.maps.services.Places();
         const bounds = new kakao.maps.LatLngBounds();
 
@@ -1762,6 +1773,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Detailed category
         const displayCategory = placeData?.category_name || item.category || '기타';
         const displayAddress = placeData?.address_name || item.location_large || preciseAddress;
+        const placeX = placeData?.x || item.x || '';
+        const placeY = placeData?.y || item.y || '';
+
+        // Hide quick filters when place detail is open
+        const quickFilters = document.querySelector('.map-quick-filters');
+        if (quickFilters) quickFilters.style.display = 'none';
 
         const isWishlisted = isPlaceInWishlist(item.name);
         const safeName = (item.name || '').replace(/'/g, "\\'");
@@ -1772,13 +1789,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionsHtml = `
             <div class="place-detail-actions">
                 <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}')">내 맛집에 추가</button>
-                <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
+                <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
             </div>
         `;
 
         detailPanel.innerHTML = `
             <div class="detail-body">
-                <button class="back-to-list-btn" onclick="if (window.location.hash.includes('/place')) { window.location.hash = '#map'; } else { document.getElementById('map-results-list').style.display='block'; document.getElementById('map-place-detail').style.display='none'; }">
+                <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">
                     ← 목록으로 돌아가기
                 </button>
                 <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
@@ -1834,18 +1851,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add map search reset button listener
     document.getElementById('map-reset-btn').addEventListener('click', () => {
-        const input = document.getElementById('map-search-input');
-        input.value = '';
-        window.currCategory = '';
-        window.currSubKeyword = '';
-        document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
-        document.getElementById('map-results-list').style.display = 'block';
-        document.getElementById('map-place-detail').style.display = 'none';
-        updateMapMarkers();
+        resetMapSearchToInitial();
     });
 
+    window.resetMapSearchToInitial = function() {
+        const input = document.getElementById('map-search-input');
+        if (input) input.value = '';
+        window.currCategory = '';
+        window.currSubKeyword = '';
+        if (currentFilters) currentFilters.searchQuery = '';
+        document.querySelectorAll('#category-menu > li').forEach(li => {
+            li.classList.remove('on');
+            li.classList.remove('sub-open');
+        });
+        document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
+
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        const quickFilters = document.querySelector('.map-quick-filters');
+
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (resultsList) {
+            resultsList.style.display = 'block';
+            resultsList.innerHTML = `
+                <div class="map-empty-state">
+                    <i class="icon-search"></i>
+                    <p>검색어를 입력하여 대사전에서 찾아보세요</p>
+                </div>
+            `;
+        }
+        if (quickFilters) quickFilters.style.display = 'flex';
+
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+    };
+
+    window.handleBackFromPlaceDetail = function() {
+        if (window.location.hash.includes('/place')) {
+            window.location.hash = '#map';
+        }
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        const quickFilters = document.querySelector('.map-quick-filters');
+        const searchInput = document.getElementById('map-search-input');
+
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (resultsList) resultsList.style.display = 'block';
+
+        const isSearchEmpty = (!searchInput || !searchInput.value.trim()) && !window.currCategory && !window.currSubKeyword;
+        const hasEmptyState = resultsList.querySelector('.map-empty-state');
+        if (quickFilters) {
+            if (isSearchEmpty && hasEmptyState) {
+                quickFilters.style.display = 'flex';
+            } else {
+                quickFilters.style.display = 'none';
+            }
+        }
+    };
+
     // ─── Show Wishlist Places on Map ───
-    function showWishlistPlacesOnMap() {
+    async function showWishlistPlacesOnMap() {
         if (!isUserLoggedIn()) {
             alert('카카오 로그인 후 찜 목록을 확인하실 수 있습니다.');
             return;
@@ -1854,98 +1923,192 @@ document.addEventListener('DOMContentLoaded', () => {
         const wishlist = getUserWishlist();
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');
+        const quickFilters = document.querySelector('.map-quick-filters');
+
         if (detailPanel) detailPanel.style.display = 'none';
         if (resultsList) resultsList.style.display = 'block';
+        if (quickFilters) quickFilters.style.display = 'none';
+
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
 
         if (!wishlist || wishlist.length === 0) {
-            clearMarkers();
-            if (window.currentMapOverlay) {
-                window.currentMapOverlay.setMap(null);
-                window.currentMapOverlay = null;
-            }
             if (resultsList) {
                 resultsList.innerHTML = `
                     <div class="map-empty-state">
+                        <button class="back-to-list-btn" onclick="resetMapSearchToInitial()" style="margin-bottom:16px;">← 검색 초기화면으로</button>
                         <p style="font-size:1.4rem; margin-bottom:8px;">⭐</p>
                         <p><b>찜한 식당이 아직 없습니다.</b></p>
-                        <p style="font-size:0.82rem; margin-top:6px; color:#888;">지도에서 마음에 드는 식당을 찾아 [찜하기]를 눌러보세요!</p>
+                        <p style="font-size:0.82rem; margin-top:6px; color:#888;">지도에서 식당을 찾아 [찜하기]를 누르면 여기에 모아볼 수 있습니다.</p>
                     </div>
                 `;
             }
             return;
         }
 
-        clearMarkers();
-        if (window.currentMapOverlay) {
-            window.currentMapOverlay.setMap(null);
-            window.currentMapOverlay = null;
-        }
+        resultsList.innerHTML = `
+            <div class="map-empty-state">
+                <p>⌛ 찜한 식당 ${wishlist.length}곳을 지도에 불러오는 중...</p>
+            </div>
+        `;
 
-        const ps = new kakao.maps.services.Places();
-        const geocoder = new kakao.maps.services.Geocoder();
+        const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
+        const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
         const bounds = new kakao.maps.LatLngBounds();
         const allWishlistResults = [];
-        let completed = 0;
 
-        resultsList.innerHTML = `<div class="map-empty-state"><p>⌛ 찜한 식당 ${wishlist.length}곳을 지도에 불러오는 중...</p></div>`;
-
-        wishlist.forEach((wItem) => {
-            const query = wItem.location ? `${wItem.location} ${wItem.name}` : wItem.name;
-            ps.keywordSearch(query, (data, status) => {
-                completed++;
-                if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                    const place = data[0];
+        const resolveItem = (wItem) => {
+            return new Promise((resolve) => {
+                // Case 1: Coordinate already saved
+                if (wItem.x && wItem.y) {
+                    const place = {
+                        place_name: wItem.name,
+                        x: wItem.x,
+                        y: wItem.y,
+                        address_name: wItem.location || '',
+                        road_address_name: wItem.location || '',
+                        category_name: wItem.category || '음식점',
+                        place_url: wItem.map_url || ''
+                    };
                     const item = {
                         name: wItem.name,
-                        category: wItem.category || place.category_name || '음식점',
-                        location_large: wItem.location || place.address_name || '',
-                        location_small: place.road_address_name || place.address_name || '',
-                        map_url: wItem.map_url || place.place_url || '',
+                        category: wItem.category || '음식점',
+                        location_large: wItem.location || '',
+                        location_small: wItem.location || '',
+                        map_url: wItem.map_url || '',
                         rate: '',
                         visit_count: 0
                     };
                     renderSingleMarker(item, place, false, bounds, true, true);
                     allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
-                } else if (wItem.location) {
-                    geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
-                        if (geoStatus === kakao.maps.services.Status.OK && geoRes.length > 0) {
+                    return resolve(true);
+                }
+
+                // Case 2: Keyword search with kakao places
+                if (ps) {
+                    ps.keywordSearch(wItem.name, (data, status) => {
+                        if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                            const place = data[0];
+                            const item = {
+                                name: wItem.name,
+                                category: wItem.category || place.category_name || '음식점',
+                                location_large: wItem.location || place.address_name || '',
+                                location_small: place.road_address_name || place.address_name || '',
+                                map_url: wItem.map_url || place.place_url || '',
+                                rate: '',
+                                visit_count: 0
+                            };
+                            renderSingleMarker(item, place, false, bounds, true, true);
+                            allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                            return resolve(true);
+                        }
+
+                        // Case 3: Geocode with address
+                        if (geocoder && wItem.location) {
+                            geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
+                                if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
+                                    const place = {
+                                        place_name: wItem.name,
+                                        x: geoRes[0].x,
+                                        y: geoRes[0].y,
+                                        address_name: geoRes[0].address_name,
+                                        road_address_name: geoRes[0].road_address?.address_name || '',
+                                        category_name: wItem.category || '음식점',
+                                        place_url: wItem.map_url || ''
+                                    };
+                                    const item = {
+                                        name: wItem.name,
+                                        category: wItem.category || '음식점',
+                                        location_large: wItem.location,
+                                        location_small: place.address_name,
+                                        map_url: wItem.map_url || '',
+                                        rate: '',
+                                        visit_count: 0
+                                    };
+                                    renderSingleMarker(item, place, false, bounds, true, true);
+                                    allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                                    return resolve(true);
+                                }
+                                // Fallback without map coordinate
+                                const place = {
+                                    place_name: wItem.name,
+                                    x: '126.9780',
+                                    y: '37.5665',
+                                    address_name: wItem.location || '',
+                                    category_name: wItem.category || '음식점',
+                                    place_url: wItem.map_url || ''
+                                };
+                                const item = {
+                                    name: wItem.name,
+                                    category: wItem.category || '음식점',
+                                    location_large: wItem.location || '',
+                                    location_small: wItem.location || '',
+                                    map_url: wItem.map_url || '',
+                                    rate: '',
+                                    visit_count: 0
+                                };
+                                allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                                return resolve(true);
+                            });
+                        } else {
+                            // Fallback without coordinates
                             const place = {
                                 place_name: wItem.name,
-                                x: geoRes[0].x,
-                                y: geoRes[0].y,
-                                address_name: geoRes[0].address_name,
-                                road_address_name: geoRes[0].road_address?.address_name || '',
+                                x: '126.9780',
+                                y: '37.5665',
+                                address_name: wItem.location || '',
                                 category_name: wItem.category || '음식점',
                                 place_url: wItem.map_url || ''
                             };
                             const item = {
                                 name: wItem.name,
                                 category: wItem.category || '음식점',
-                                location_large: wItem.location,
-                                location_small: place.address_name,
+                                location_large: wItem.location || '',
+                                location_small: wItem.location || '',
                                 map_url: wItem.map_url || '',
                                 rate: '',
                                 visit_count: 0
                             };
-                            renderSingleMarker(item, place, false, bounds, true, true);
                             allWishlistResults.push({ item, place, isSaved: false, isWishlist: true });
+                            return resolve(true);
                         }
                     });
-                }
-
-                if (completed === wishlist.length) {
-                    setTimeout(() => {
-                        if (allWishlistResults.length > 0) {
-                            renderPaginatedList(allWishlistResults, 1);
-                            map.setBounds(bounds);
-                            if (allWishlistResults.length === 1) map.setLevel(3);
-                        } else {
-                            resultsList.innerHTML = `<div class="map-empty-state"><p>찜한 식당들의 위치 정보를 지도에서 찾지 못했습니다.</p></div>`;
-                        }
-                    }, 350);
+                } else {
+                    return resolve(false);
                 }
             });
-        });
+        };
+
+        // Run all concurrently
+        await Promise.all(wishlist.map(resolveItem));
+
+        if (allWishlistResults.length > 0) {
+            renderPaginatedList(allWishlistResults, 1);
+            // Prepend a return-to-initial-state button at the top of results list
+            const backBtnEl = document.createElement('button');
+            backBtnEl.className = 'back-to-list-btn';
+            backBtnEl.style.marginBottom = '12px';
+            backBtnEl.style.display = 'block';
+            backBtnEl.textContent = '← 검색 초기화면으로';
+            backBtnEl.onclick = () => resetMapSearchToInitial();
+            resultsList.insertBefore(backBtnEl, resultsList.firstChild);
+
+            if (markers.length > 0) {
+                map.setBounds(bounds);
+                if (markers.length === 1) map.setLevel(3);
+            }
+        } else {
+            resultsList.innerHTML = `
+                <div class="map-empty-state">
+                    <button class="back-to-list-btn" onclick="resetMapSearchToInitial()" style="margin-bottom:16px;">← 검색 초기화면으로</button>
+                    <p>찜한 식당 정보를 불러오지 못했습니다.</p>
+                </div>
+            `;
+        }
     }
 
     const btnShowWishlist = document.getElementById('btn-show-wishlist');
