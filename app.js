@@ -1,6 +1,5 @@
 // ─── Kakao OAuth 2.0 & Owner Auth Guard Module ───
 const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
-const MASTER_OWNER_EMAIL = 'jhp_99@naver.com';
 
 function getCurrentUser() {
     try {
@@ -16,52 +15,70 @@ function isUserLoggedIn() {
     return !!(u && u.id);
 }
 
+// ─── Master Account Identifiers ───
+const MASTER_EMAIL = 'jhp_99@naver.com';
+const MASTER_PHONE = '01098819418';
+
 function isOwnerUser() {
     const u = getCurrentUser();
     if (!u || !u.id) return false;
     
-    const userId = String(u.id);
-
-    // 1. Direct email match with registered master account
-    if (u.email && u.email.toLowerCase().trim() === MASTER_OWNER_EMAIL.toLowerCase()) {
-        localStorage.setItem('spoonmap_master_kakao_id', userId);
+    // 1. Check if user email matches master email
+    if (u.email && (u.email.toLowerCase() === MASTER_EMAIL.toLowerCase() || u.email.toLowerCase().startsWith('jhp_99@'))) {
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
         return true;
     }
-
-    // 2. Previously verified master Kakao ID (set either by email check or legacy migration)
-    const masterId = localStorage.getItem('spoonmap_master_kakao_id');
-    if (masterId && userId === String(masterId)) {
-        return true;
-    }
-
-    // 3. Legacy key fallback: previous sessions stored owner under spoonmap_owner_kakao_id
-    const legacyId = localStorage.getItem('spoonmap_owner_kakao_id');
-    if (legacyId && userId === String(legacyId)) {
-        localStorage.setItem('spoonmap_master_kakao_id', userId);
-        return true;
-    }
-
-    // 4. Safety net: if NO master ID is registered at all (brand new environment),
-    //    treat the first logged-in user as master ONLY if there is existing diary data
-    //    in the legacy spoonmap_diary key (meaning they were the original owner)
-    const noMasterSet = !masterId && !legacyId;
-    if (noMasterSet) {
-        const legacyDiary = localStorage.getItem('spoonmap_diary');
-        if (legacyDiary) {
-            try {
-                const parsed = JSON.parse(legacyDiary);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    // This user has existing diary data in the legacy key → they are the master
-                    localStorage.setItem('spoonmap_master_kakao_id', userId);
-                    console.log('[Spoonmap] Auto-recovered master from existing diary data, Kakao ID:', userId);
-                    return true;
-                }
-            } catch (e) {}
+    
+    // 2. Check if user phone matches master phone
+    if (u.phoneNumber) {
+        const cleanPhone = String(u.phoneNumber).replace(/[^0-9]/g, '');
+        if (cleanPhone.includes(MASTER_PHONE) || cleanPhone.endsWith(MASTER_PHONE.slice(1))) {
+            localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+            return true;
         }
     }
+    
+    // 3. Check if user nickname is jhp_99 or matches master email
+    if (u.nickname && (u.nickname.toLowerCase() === 'jhp_99' || u.nickname.toLowerCase() === MASTER_EMAIL.toLowerCase())) {
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+        return true;
+    }
 
+    // 4. Check explicitly verified master Kakao ID in localStorage
+    const masterKakaoId = localStorage.getItem('spoonmap_master_kakao_id');
+    if (masterKakaoId && String(u.id) === String(masterKakaoId)) {
+        return true;
+    }
+
+    // 5. Check manual master secret verification in this browser
+    if (localStorage.getItem('spoonmap_master_verified_id') === String(u.id)) {
+        return true;
+    }
+
+    // ⛔ 그 외 모든 계정은 일반 사용자(General User)입니다!
     return false;
 }
+
+window.verifyMasterSecret = function() {
+    const u = getCurrentUser();
+    if (!u || !u.id) {
+        alert('먼저 카카오 로그인을 진행해 주세요.');
+        return;
+    }
+    const input = prompt('Spoonmap 마스터 인증을 위해 이메일(jhp_99@naver.com) 또는 휴대폰번호(01098819418)를 입력해 주세요:');
+    if (!input) return;
+    const cleanInput = input.trim().replace(/[^0-9a-zA-Z@._-]/g, '').toLowerCase();
+    if (cleanInput === 'jhp_99@naver.com' || cleanInput === 'jhp_99' || cleanInput === '01098819418' || cleanInput.includes('98819418')) {
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+        localStorage.setItem('spoonmap_master_verified_id', String(u.id));
+        alert(`인증 성공! ${u.nickname}님이 Spoonmap의 마스터로 등록되었습니다 👑✨`);
+        updateUserAuthUI();
+        if (typeof window.handleRouteGlobal === 'function') window.handleRouteGlobal();
+        else window.location.reload();
+    } else {
+        alert('입력하신 정보가 마스터 정보와 일치하지 않습니다.');
+    }
+};
 
 function getUserDiaryStorageKey() {
     const u = getCurrentUser();
@@ -197,27 +214,33 @@ window.handleKakaoLogin = function() {
                             console.log('[Spoonmap] Kakao User Profile:', res);
                             const kakaoAccount = res.kakao_account || {};
                             const profile = kakaoAccount.profile || {};
-                            const email = (kakaoAccount.email || '').toLowerCase().trim();
+                            const email = kakaoAccount.email || '';
+                            const phone = kakaoAccount.phone_number || '';
                             const user = {
                                 id: String(res.id),
                                 nickname: profile.nickname || '카카오 미식가',
-                                email: email,
                                 profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
+                                email: email,
+                                phoneNumber: phone,
                                 connectedAt: res.connected_at || new Date().toISOString()
                             };
                             localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
                             
-                            // If this user's email is the registered Master account, record master Kakao ID
-                            if (email === MASTER_OWNER_EMAIL.toLowerCase()) {
-                                localStorage.setItem('spoonmap_master_kakao_id', String(user.id));
+                            // Check if this user is the master owner
+                            const isMasterEmail = email && (email.toLowerCase() === MASTER_EMAIL.toLowerCase() || email.toLowerCase().startsWith('jhp_99@'));
+                            const isMasterPhone = phone && (phone.replace(/[^0-9]/g, '').includes(MASTER_PHONE));
+                            if (isMasterEmail || isMasterPhone) {
+                                localStorage.setItem('spoonmap_master_kakao_id', user.id);
+                                console.log('[Spoonmap] Recognized Master Owner Login:', user.id, email, phone);
                             }
 
                             updateUserAuthUI();
                             const isOwner = isOwnerUser();
-                            const welcomeMsg = isOwner
-                                ? `👑 마스터(${user.nickname})님 환영합니다! Spoonmap 마스터 모드로 로그인되었습니다.`
-                                : `환영합니다, ${user.nickname}님! 나만의 Spoonmap에 로그인되었습니다 🥄✨`;
-                            alert(welcomeMsg);
+                            if (isOwner) {
+                                alert(`👑 환영합니다, 마스터 ${user.nickname}님! 전체 맛집(${typeof restaurantData !== 'undefined' ? restaurantData.length : 0}곳)과 일기 데이터가 로드되었습니다.`);
+                            } else {
+                                alert(`환영합니다, ${user.nickname}님! 나만의 Spoonmap 맛집 공간에 로그인되었습니다 🥄✨`);
+                            }
                             
                             // Keep current tab / route and refresh view
                             if (typeof window.handleRouteGlobal === 'function') {
@@ -279,20 +302,21 @@ function updateUserAuthUI() {
     let currentUser = getCurrentUser();
 
     if (currentUser && currentUser.nickname) {
+        const isOwner = isOwnerUser();
         const avatarHtml = currentUser.profileImage
             ? `<img src="${currentUser.profileImage}" alt="${currentUser.nickname}" class="user-avatar" onerror="this.outerHTML='<div class=\\'user-avatar-placeholder\\'>🥄</div>'">`
             : `<div class="user-avatar-placeholder">🥄</div>`;
 
-        const isOwner = isOwnerUser();
-        const roleBadge = isOwner 
-            ? '<span class="user-role-badge master" style="font-size:0.75em;background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:6px;margin-left:5px;font-weight:700;">👑 마스터</span>' 
-            : '<span class="user-role-badge user" style="font-size:0.75em;background:#E1EFFE;color:#1E429F;padding:2px 6px;border-radius:6px;margin-left:5px;font-weight:600;">👤 미식가</span>';
+        const roleBadge = isOwner
+            ? `<span class="user-role-badge master" style="font-size:0.7em;background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:700;" title="Spoonmap 마스터 계정">👑 마스터</span>`
+            : `<span class="user-role-badge general" onclick="verifyMasterSecret()" style="font-size:0.7em;background:#F3F4F6;color:#4B5563;padding:2px 6px;border-radius:4px;margin-left:4px;cursor:pointer;" title="클릭하여 마스터 인증">👤 내 맛집</span>`;
 
         authContainer.innerHTML = `
             <div class="user-profile-badge">
                 ${avatarHtml}
                 <div class="user-info-text">
-                    <span class="user-name" title="${currentUser.nickname}${currentUser.email ? ` (${currentUser.email})` : ''}">${currentUser.nickname}${roleBadge}</span>
+                    <span class="user-name" title="${currentUser.nickname}">${currentUser.nickname}</span>
+                    ${roleBadge}
                 </div>
                 <button class="user-logout-btn" onclick="handleKakaoLogout()" title="로그아웃">로그아웃</button>
             </div>
@@ -492,32 +516,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialization
     function init() {
-        // Always setup tabs and routing (needed even for non-owner users / empty data)
+        if (typeof restaurantData === 'undefined') {
+            grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
+            return;
+        }
+        setupFilters();
+        setupSearch();
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
         if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
-
-        if (typeof restaurantData === 'undefined') {
-            // For non-owner users or when data not loaded: just show empty grid, but tabs still work
-            if (grid) {
-                const activeData = getUnifiedRestaurantData();
-                if (activeData.length === 0) {
-                    grid.innerHTML = `
-                        <div class="empty-list-state">
-                            <div class="empty-icon">🍽️</div>
-                            <h4>아직 등록된 나만의 맛집이 없습니다</h4>
-                            <p>지도(MAP)에서 나만의 맛집을 추가하거나 찜해보세요!</p>
-                            <button class="empty-reset-btn" onclick="window.location.hash='#map'" style="background:#E85D4A;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;">지도에서 맛집 찾기 📍</button>
-                        </div>
-                    `;
-                }
-            }
-        } else {
-            setupFilters();
-            setupSearch();
-            render();
-        }
+        render();
     }
 
     const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary'];
@@ -603,8 +612,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.getElementById('mobile-card-overlay');
         if (route.subPath === 'detail' && route.queryParams.name) {
             const targetName = decodeURIComponent(route.queryParams.name);
-            const activeData = getUnifiedRestaurantData();
-            const found = activeData.find(r => r.name === targetName);
+            const allUnified = getUnifiedRestaurantData();
+            const found = allUnified.find(r => r.name === targetName);
             if (found) {
                 openMobileOverlay(found, false);
             }
@@ -630,8 +639,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (route.queryParams.name && mapPlaceDetail && mapPlaceDetail.style.display !== 'flex') {
                 const targetName = decodeURIComponent(route.queryParams.name);
-                const activeData = getUnifiedRestaurantData();
-                const found = activeData.find(r => r.name === targetName);
+                const allUnified = getUnifiedRestaurantData();
+                const found = allUnified.find(r => r.name === targetName);
                 if (found) {
                     showPlaceDetail(found, found.location_large || '', true, found.map_url);
                 }
@@ -2938,7 +2947,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Grid / Table Render
         grid.innerHTML = '';
-        if (filtered.length === 0) {
+        if (unifiedData.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-list-state">
+                    <div class="empty-icon">🥄</div>
+                    <h4>아직 등록된 나만의 맛집이 없습니다</h4>
+                    <p>지도(MAP)에서 마음에 드는 식당을 <b>[내 맛집에 추가]</b>하거나 <b>[찜하기]</b>로 나만의 맛집 리스트를 만들어보세요!</p>
+                    <button class="empty-reset-btn" onclick="window.location.hash='#map'">지도에서 맛집 찾기 📍</button>
+                </div>
+            `;
+        } else if (filtered.length === 0) {
             grid.innerHTML = `
                 <div class="empty-list-state">
                     <div class="empty-icon">🍽️</div>
@@ -3863,16 +3881,12 @@ function initFoodInsightsTab() {
 
 
 function computeAndRenderFoodInsights() {
-    const masterData = getUnifiedRestaurantData();
-    const isOwner = isOwnerUser();
-    const summaryEl = document.getElementById('insights-total-summary');
+    const masterData = getUnifiedRestaurantData() || [];
+    const totalCount = masterData.length;
 
-    if (!masterData || !masterData.length) {
-        if (summaryEl) {
-            summaryEl.textContent = isOwner 
-                ? '등록된 맛집 데이터가 없습니다.' 
-                : '아직 등록된 나만의 맛집이 없습니다. 지도에서 나만의 맛집을 추가해보세요!';
-        }
+    if (totalCount === 0) {
+        const summaryEl = document.getElementById('insights-total-summary');
+        if (summaryEl) summaryEl.textContent = '아직 등록된 미식 탐방 기록이 없습니다. 식사 일기를 작성해 보세요!';
         const countEl = document.getElementById('stat-total-count');
         if (countEl) countEl.textContent = '0곳';
         const visEl = document.getElementById('stat-visited-count');
@@ -3881,10 +3895,18 @@ function computeAndRenderFoodInsights() {
         if (topPlaceEl) topPlaceEl.textContent = '-';
         const topCatEl = document.getElementById('stat-top-category');
         if (topCatEl) topCatEl.textContent = '-';
+
+        const regionContainer = document.getElementById('insights-region-list');
+        if (regionContainer) regionContainer.innerHTML = '<div style="text-align:center;color:#9CA3AF;padding:2rem;">등록된 지역 데이터가 없습니다.</div>';
+        const categoryContainer = document.getElementById('insights-category-list');
+        if (categoryContainer) categoryContainer.innerHTML = '<div style="text-align:center;color:#9CA3AF;padding:2rem;">등록된 카테고리 데이터가 없습니다.</div>';
+        const rateContainer = document.getElementById('insights-rate-list');
+        if (rateContainer) rateContainer.innerHTML = '<div style="text-align:center;color:#9CA3AF;padding:2rem;">등록된 평점 데이터가 없습니다.</div>';
+        const topPlacesContainer = document.getElementById('insights-top-places-list');
+        if (topPlacesContainer) topPlacesContainer.innerHTML = '<div style="text-align:center;color:#9CA3AF;padding:2rem;">재방문 식당이 없습니다.</div>';
         return;
     }
 
-    const totalCount = masterData.length;
     let totalVisitsSum = 0;
     let reVisitedCount = 0;
     const regionCounts = {};
@@ -5659,10 +5681,16 @@ function setupDiaryNameSearch() {
 
     const getNamesList = () => {
         const namesSet = new Set();
-        const activeData = getUnifiedRestaurantData();
-        activeData.forEach(r => {
-            if (r.name) namesSet.add(r.name);
-        });
+        if (isOwnerUser()) {
+            if (typeof restaurantData !== 'undefined') {
+                restaurantData.forEach(r => namesSet.add(r.name));
+            }
+            if (typeof diaryData !== 'undefined') {
+                diaryData.forEach(r => namesSet.add(r.name));
+            }
+        }
+        const unified = getUnifiedRestaurantData();
+        unified.forEach(r => namesSet.add(r.name));
         return Array.from(namesSet).sort();
     };
 
