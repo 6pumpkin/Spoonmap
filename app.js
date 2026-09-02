@@ -5349,19 +5349,43 @@ class NotionTagSelector {
         // Toggle popover on bar click with stopPropagation
         const bar = this.fieldEl.querySelector('.notion-tag-input-bar');
         if (bar) {
+            bar.setAttribute('tabindex', '0');
             bar.onclick = (e) => {
                 if (e.target.classList.contains('notion-tag-remove')) return;
                 e.stopPropagation();
                 this.togglePopover();
             };
+            bar.onkeydown = (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    this.closePopover();
+                    handleNotionTagTabNavigation(this.fieldType, e.shiftKey);
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.openPopover();
+                }
+            };
         }
 
-        // Search input filtering
+        // Search input filtering & Tab Navigation
         if (this.searchEl) {
             this.searchEl.oninput = () => {
                 this.renderOptions(this.searchEl.value.trim());
             };
             this.searchEl.onkeydown = (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    this.closePopover();
+                    handleNotionTagTabNavigation(this.fieldType, e.shiftKey);
+                    return;
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.closePopover();
+                    return;
+                }
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const query = this.searchEl.value.trim();
@@ -5769,6 +5793,119 @@ function initAllNotionSelectors() {
                     b.classList.toggle('active', i < val);
                 });
             };
+        });
+    }
+
+    setupGlobalTabNavigationHooks();
+}
+
+// ─── Tab Key Chaining & Navigation Engine ───
+function handleNotionTagTabNavigation(currentFieldType, isShiftKey) {
+    const isModal = currentFieldType.startsWith('modal_');
+
+    const diaryChain = [
+        'diary-input-name',
+        'diary-input-date',
+        'category',
+        'menu',
+        'location_large',
+        'location_small',
+        'diary-input-map',
+        'diary-input-memo'
+    ];
+
+    const modalChain = [
+        'modal_category',
+        'modal_menu',
+        'modal_location_large',
+        'modal_location_small',
+        'modal-edit-input-map',
+        'modal-edit-input-memo'
+    ];
+
+    const chain = isModal ? modalChain : diaryChain;
+    const currentIndex = chain.indexOf(currentFieldType);
+    if (currentIndex === -1) return;
+
+    const nextIndex = isShiftKey ? currentIndex - 1 : currentIndex + 1;
+    if (nextIndex < 0 || nextIndex >= chain.length) return;
+
+    const targetKey = chain[nextIndex];
+    focusFormField(targetKey);
+}
+
+function focusFormField(targetKey) {
+    // Close any currently open notion popovers
+    document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => p.classList.remove('open'));
+
+    // 1. If it's a NotionTagSelector
+    if (typeof notionSelectors !== 'undefined' && notionSelectors[targetKey]) {
+        const selector = notionSelectors[targetKey];
+        selector.openPopover();
+        return;
+    }
+
+    // 2. If it's a standard DOM Element
+    const el = document.getElementById(targetKey);
+    if (el) {
+        // If date field is hidden in drawer (e.g. edit restaurant master info), skip to category
+        if (targetKey === 'diary-input-date') {
+            const dateField = document.getElementById('diary-drawer-field-date');
+            if (dateField && (dateField.style.display === 'none' || dateField.offsetParent === null)) {
+                focusFormField('category');
+                return;
+            }
+        }
+        el.focus();
+        if (typeof el.select === 'function') el.select();
+    }
+}
+
+function setupGlobalTabNavigationHooks() {
+    // 1. Diary Drawer Date -> Category on Tab
+    const diaryDate = document.getElementById('diary-input-date');
+    if (diaryDate) {
+        diaryDate.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && !e.shiftKey) {
+                e.preventDefault();
+                focusFormField('category');
+            }
+        });
+    }
+
+    // 2. Diary Drawer Name -> Date or Category on Tab
+    const diaryName = document.getElementById('diary-input-name');
+    if (diaryName) {
+        diaryName.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && !e.shiftKey) {
+                const dateField = document.getElementById('diary-drawer-field-date');
+                if (dateField && (dateField.style.display === 'none' || dateField.offsetParent === null)) {
+                    e.preventDefault();
+                    focusFormField('category');
+                }
+            }
+        });
+    }
+
+    // 3. Diary Drawer Map URL -> Shift+Tab to Location Small
+    const diaryMap = document.getElementById('diary-input-map');
+    if (diaryMap) {
+        diaryMap.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                focusFormField('location_small');
+            }
+        });
+    }
+
+    // 4. Modal Map URL -> Shift+Tab to Modal Location Small
+    const modalMap = document.getElementById('modal-edit-input-map');
+    if (modalMap) {
+        modalMap.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                focusFormField('modal_location_small');
+            }
         });
     }
 }
