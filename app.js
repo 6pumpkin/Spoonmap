@@ -20,25 +20,44 @@ function isOwnerUser() {
     const u = getCurrentUser();
     if (!u || !u.id) return false;
     
-    // 1. Direct check by registered Master email (jhp_99@naver.com)
+    const userId = String(u.id);
+
+    // 1. Direct email match with registered master account
     if (u.email && u.email.toLowerCase().trim() === MASTER_OWNER_EMAIL.toLowerCase()) {
-        // Persist the verified Kakao ID for future sessions (even without email)
-        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+        localStorage.setItem('spoonmap_master_kakao_id', userId);
         return true;
     }
 
-    // 2. Check if this Kakao ID was previously verified with the master email
-    const verifiedMasterId = localStorage.getItem('spoonmap_master_kakao_id');
-    if (verifiedMasterId && String(u.id) === String(verifiedMasterId)) {
+    // 2. Previously verified master Kakao ID (set either by email check or legacy migration)
+    const masterId = localStorage.getItem('spoonmap_master_kakao_id');
+    if (masterId && userId === String(masterId)) {
         return true;
     }
 
-    // 3. Fallback: Check legacy spoonmap_owner_kakao_id key (for sessions before email was required)
-    const legacyOwnerId = localStorage.getItem('spoonmap_owner_kakao_id');
-    if (legacyOwnerId && String(u.id) === String(legacyOwnerId)) {
-        // Migrate to new key
-        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+    // 3. Legacy key fallback: previous sessions stored owner under spoonmap_owner_kakao_id
+    const legacyId = localStorage.getItem('spoonmap_owner_kakao_id');
+    if (legacyId && userId === String(legacyId)) {
+        localStorage.setItem('spoonmap_master_kakao_id', userId);
         return true;
+    }
+
+    // 4. Safety net: if NO master ID is registered at all (brand new environment),
+    //    treat the first logged-in user as master ONLY if there is existing diary data
+    //    in the legacy spoonmap_diary key (meaning they were the original owner)
+    const noMasterSet = !masterId && !legacyId;
+    if (noMasterSet) {
+        const legacyDiary = localStorage.getItem('spoonmap_diary');
+        if (legacyDiary) {
+            try {
+                const parsed = JSON.parse(legacyDiary);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // This user has existing diary data in the legacy key → they are the master
+                    localStorage.setItem('spoonmap_master_kakao_id', userId);
+                    console.log('[Spoonmap] Auto-recovered master from existing diary data, Kakao ID:', userId);
+                    return true;
+                }
+            } catch (e) {}
+        }
     }
 
     return false;
@@ -473,17 +492,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialization
     function init() {
-        if (typeof restaurantData === 'undefined') {
-            grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
-            return;
-        }
-        setupFilters();
-        setupSearch();
+        // Always setup tabs and routing (needed even for non-owner users / empty data)
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
         if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
-        render();
+
+        if (typeof restaurantData === 'undefined') {
+            // For non-owner users or when data not loaded: just show empty grid, but tabs still work
+            if (grid) {
+                const activeData = getUnifiedRestaurantData();
+                if (activeData.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-list-state">
+                            <div class="empty-icon">🍽️</div>
+                            <h4>아직 등록된 나만의 맛집이 없습니다</h4>
+                            <p>지도(MAP)에서 나만의 맛집을 추가하거나 찜해보세요!</p>
+                            <button class="empty-reset-btn" onclick="window.location.hash='#map'" style="background:#E85D4A;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;">지도에서 맛집 찾기 📍</button>
+                        </div>
+                    `;
+                }
+            }
+        } else {
+            setupFilters();
+            setupSearch();
+            render();
+        }
     }
 
     const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary'];
