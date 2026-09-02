@@ -1,5 +1,6 @@
 // ─── Kakao OAuth 2.0 & Owner Auth Guard Module ───
 const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
+const MASTER_OWNER_EMAIL = 'jhp_99@naver.com';
 
 function getCurrentUser() {
     try {
@@ -19,14 +20,19 @@ function isOwnerUser() {
     const u = getCurrentUser();
     if (!u || !u.id) return false;
     
-    // Auto-bind the first logged-in user as the master Owner if not set
-    let ownerId = localStorage.getItem('spoonmap_owner_kakao_id');
-    if (!ownerId) {
-        ownerId = String(u.id);
-        localStorage.setItem('spoonmap_owner_kakao_id', ownerId);
-        console.log('[Spoonmap] Auto-assigned Master Owner Kakao ID:', ownerId);
+    // 1. Direct check by registered Master email (jhp_99@naver.com)
+    if (u.email && u.email.toLowerCase().trim() === MASTER_OWNER_EMAIL.toLowerCase()) {
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+        return true;
     }
-    return String(u.id) === String(ownerId);
+
+    // 2. Check if this Kakao ID was previously verified with the master email
+    const verifiedMasterId = localStorage.getItem('spoonmap_master_kakao_id');
+    if (verifiedMasterId && String(u.id) === String(verifiedMasterId)) {
+        return true;
+    }
+
+    return false;
 }
 
 function getUserDiaryStorageKey() {
@@ -154,7 +160,7 @@ window.handleKakaoLogin = function() {
     if (loginMethod) {
         try {
             loginMethod.call(Kakao.Auth, {
-                scope: 'profile_nickname,profile_image',
+                scope: 'profile_nickname,profile_image,account_email',
                 success: function(authObj) {
                     console.log('[Spoonmap] Kakao Auth Success:', authObj);
                     Kakao.API.request({
@@ -163,22 +169,27 @@ window.handleKakaoLogin = function() {
                             console.log('[Spoonmap] Kakao User Profile:', res);
                             const kakaoAccount = res.kakao_account || {};
                             const profile = kakaoAccount.profile || {};
+                            const email = (kakaoAccount.email || '').toLowerCase().trim();
                             const user = {
                                 id: String(res.id),
                                 nickname: profile.nickname || '카카오 미식가',
+                                email: email,
                                 profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
                                 connectedAt: res.connected_at || new Date().toISOString()
                             };
                             localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
                             
-                            // Auto assign owner ID if not set
-                            let ownerId = localStorage.getItem('spoonmap_owner_kakao_id');
-                            if (!ownerId) {
-                                localStorage.setItem('spoonmap_owner_kakao_id', user.id);
+                            // If this user's email is the registered Master account, record master Kakao ID
+                            if (email === MASTER_OWNER_EMAIL.toLowerCase()) {
+                                localStorage.setItem('spoonmap_master_kakao_id', String(user.id));
                             }
 
                             updateUserAuthUI();
-                            alert(`환영합니다, ${user.nickname}님! 나만의 Spoonmap에 로그인되었습니다 🥄✨`);
+                            const isOwner = isOwnerUser();
+                            const welcomeMsg = isOwner
+                                ? `👑 마스터(${user.nickname})님 환영합니다! Spoonmap 마스터 모드로 로그인되었습니다.`
+                                : `환영합니다, ${user.nickname}님! 나만의 Spoonmap에 로그인되었습니다 🥄✨`;
+                            alert(welcomeMsg);
                             
                             // Keep current tab / route and refresh view
                             if (typeof window.handleRouteGlobal === 'function') {
@@ -244,11 +255,16 @@ function updateUserAuthUI() {
             ? `<img src="${currentUser.profileImage}" alt="${currentUser.nickname}" class="user-avatar" onerror="this.outerHTML='<div class=\\'user-avatar-placeholder\\'>🥄</div>'">`
             : `<div class="user-avatar-placeholder">🥄</div>`;
 
+        const isOwner = isOwnerUser();
+        const roleBadge = isOwner 
+            ? '<span class="user-role-badge master" style="font-size:0.75em;background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:6px;margin-left:5px;font-weight:700;">👑 마스터</span>' 
+            : '<span class="user-role-badge user" style="font-size:0.75em;background:#E1EFFE;color:#1E429F;padding:2px 6px;border-radius:6px;margin-left:5px;font-weight:600;">👤 미식가</span>';
+
         authContainer.innerHTML = `
             <div class="user-profile-badge">
                 ${avatarHtml}
                 <div class="user-info-text">
-                    <span class="user-name" title="${currentUser.nickname}">${currentUser.nickname}</span>
+                    <span class="user-name" title="${currentUser.nickname}${currentUser.email ? ` (${currentUser.email})` : ''}">${currentUser.nickname}${roleBadge}</span>
                 </div>
                 <button class="user-logout-btn" onclick="handleKakaoLogout()" title="로그아웃">로그아웃</button>
             </div>
@@ -544,11 +560,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.getElementById('mobile-card-overlay');
         if (route.subPath === 'detail' && route.queryParams.name) {
             const targetName = decodeURIComponent(route.queryParams.name);
-            if (typeof restaurantData !== 'undefined') {
-                const found = restaurantData.find(r => r.name === targetName);
-                if (found) {
-                    openMobileOverlay(found, false);
-                }
+            const activeData = getUnifiedRestaurantData();
+            const found = activeData.find(r => r.name === targetName);
+            if (found) {
+                openMobileOverlay(found, false);
             }
         } else {
             if (overlay && overlay.classList.contains('open')) {
@@ -572,11 +587,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else if (route.queryParams.name && mapPlaceDetail && mapPlaceDetail.style.display !== 'flex') {
                 const targetName = decodeURIComponent(route.queryParams.name);
-                if (typeof restaurantData !== 'undefined') {
-                    const found = restaurantData.find(r => r.name === targetName);
-                    if (found) {
-                        showPlaceDetail(found, found.location_large || '', true, found.map_url);
-                    }
+                const activeData = getUnifiedRestaurantData();
+                const found = activeData.find(r => r.name === targetName);
+                if (found) {
+                    showPlaceDetail(found, found.location_large || '', true, found.map_url);
                 }
             }
         }
@@ -2167,8 +2181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const useName = document.getElementById('search-name').checked;
         const useCat = document.getElementById('search-category').checked;
         const useSub = document.getElementById('search-subloc').checked;
+        const activeData = getUnifiedRestaurantData();
 
-        return restaurantData.filter(item => {
+        return activeData.filter(item => {
             const catMatch = currentFilters.category.length === 0 || 
                            currentFilters.category.some(c => item.category && item.category.includes(c));
             const largeMatch = currentFilters.location_large.length === 0 || 
@@ -2503,8 +2518,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Filter saved places
-        let matched = restaurantData.filter(item => {
+        // Filter saved places from current user's unified data
+        const activeSavedData = getUnifiedRestaurantData();
+        let matched = activeSavedData.filter(item => {
             if (useName && item.name.toLowerCase().includes(query)) return true;
             if (useCat && item.category && item.category.toLowerCase().includes(query)) return true;
             if (useSub && item.location_small && item.location_small.toLowerCase().includes(query)) return true;
@@ -3027,7 +3043,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetAllFilters = resetAllFilters;
 
     function getFilteredData() {
-        return restaurantData.filter(item => {
+        const activeData = getUnifiedRestaurantData();
+        return activeData.filter(item => {
             if (!item.map_url) return false;
 
             const catMatch = currentFilters.category === 'all' || 
@@ -3804,7 +3821,25 @@ function initFoodInsightsTab() {
 
 function computeAndRenderFoodInsights() {
     const masterData = getUnifiedRestaurantData();
-    if (!masterData || !masterData.length) return;
+    const isOwner = isOwnerUser();
+    const summaryEl = document.getElementById('insights-total-summary');
+
+    if (!masterData || !masterData.length) {
+        if (summaryEl) {
+            summaryEl.textContent = isOwner 
+                ? '등록된 맛집 데이터가 없습니다.' 
+                : '아직 등록된 나만의 맛집이 없습니다. 지도에서 나만의 맛집을 추가해보세요!';
+        }
+        const countEl = document.getElementById('stat-total-count');
+        if (countEl) countEl.textContent = '0곳';
+        const visEl = document.getElementById('stat-visited-count');
+        if (visEl) visEl.textContent = '0곳 (0%)';
+        const topPlaceEl = document.getElementById('stat-top-place');
+        if (topPlaceEl) topPlaceEl.textContent = '-';
+        const topCatEl = document.getElementById('stat-top-category');
+        if (topCatEl) topCatEl.textContent = '-';
+        return;
+    }
 
     const totalCount = masterData.length;
     let totalVisitsSum = 0;
@@ -4604,9 +4639,10 @@ function processSommelierQuery(query, callback) {
         const kwSingle_primary = `${baseLoc} ${mainCatDisplay || '맛집'}`.trim();
         const kwSingle_fallback = `${baseLoc} 맛집`.trim();
 
-        const localCandidates = (isOwnerUser() && targetLocDisplay && typeof restaurantData !== 'undefined')
-            ? restaurantData.filter(item => {
-                const addr = (item.location_large || '') + (item.address || '');
+        const activeData = getUnifiedRestaurantData();
+        const localCandidates = (targetLocDisplay && activeData.length > 0)
+            ? activeData.filter(item => {
+                const addr = (item.location_large || '') + (item.location_small || '') + (item.address || '');
                 return addr.includes(targetLocDisplay) || (locSearch && addr.includes(locSearch));
               }).slice(0, 8)
             : [];
@@ -5580,12 +5616,10 @@ function setupDiaryNameSearch() {
 
     const getNamesList = () => {
         const namesSet = new Set();
-        if (typeof restaurantData !== 'undefined') {
-            restaurantData.forEach(r => namesSet.add(r.name));
-        }
-        if (typeof diaryData !== 'undefined') {
-            diaryData.forEach(r => namesSet.add(r.name));
-        }
+        const activeData = getUnifiedRestaurantData();
+        activeData.forEach(r => {
+            if (r.name) namesSet.add(r.name);
+        });
         return Array.from(namesSet).sort();
     };
 
@@ -5642,12 +5676,10 @@ function setupDiaryNameSearch() {
 }
 
 function autoFillRestaurantData(restaurantName) {
-    if (!restaurantName || typeof restaurantData === 'undefined') return;
+    if (!restaurantName) return;
 
-    let match = restaurantData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
-    if (!match && typeof diaryData !== 'undefined') {
-        match = diaryData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
-    }
+    const activeData = getUnifiedRestaurantData();
+    let match = activeData.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
 
     if (match) {
         if (match.category) notionSelectors.category.setValues(match.category);
