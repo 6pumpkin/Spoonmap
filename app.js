@@ -3,9 +3,10 @@ const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
 
 // Explicit Master Account Identification Config
 const MASTER_CONFIG = {
-    emails: ['jhp_99@naver.com'],
-    phones: ['01098819418', '010-9881-9418', '+82 10-9881-9418', '+821098819418'],
-    passwords: ['01098819418', 'jhp_99@naver.com', '9418']
+    emails: ['jhp_99@naver.com', 'jhp_99', 'jhp99@naver.com', 'jhp99'],
+    phones: ['01098819418', '010-9881-9418', '+82 10-9881-9418', '+821098819418', '98819418'],
+    nicknames: ['뿌리공주', '뿌리공주ෆ', '박준혁', '준혁', 'Pumpkin', '6pumpkin', 'jhp_99', 'jhp99', '호박'],
+    excludedNicknames: ['윤서희', '서희']
 };
 
 function getCurrentUser() {
@@ -30,17 +31,24 @@ function isOwnerUser() {
     if (u.isMaster === true) return true;
 
     // 2. Email matching
-    if (u.email && MASTER_CONFIG.emails.some(e => e.toLowerCase() === u.email.toLowerCase())) {
+    if (u.email && MASTER_CONFIG.emails.some(e => u.email.toLowerCase().includes(e.toLowerCase()))) {
         return true;
     }
 
     // 3. Phone matching
     if (u.phone) {
         const cleanPhone = u.phone.replace(/[^0-9]/g, '');
-        if (cleanPhone.includes('01098819418')) return true;
+        if (MASTER_CONFIG.phones.some(p => cleanPhone.includes(p.replace(/[^0-9]/g, '')))) return true;
     }
 
-    // 4. Saved master Kakao ID in localStorage (verified previously)
+    // 4. Nickname matching
+    if (u.nickname && MASTER_CONFIG.nicknames.some(n => u.nickname.includes(n) || n.includes(u.nickname))) {
+        if (!MASTER_CONFIG.excludedNicknames.some(ex => u.nickname.includes(ex))) {
+            return true;
+        }
+    }
+
+    // 5. Saved master Kakao ID in localStorage
     const masterKakaoId = localStorage.getItem('spoonmap_master_kakao_id');
     if (masterKakaoId && String(u.id) === String(masterKakaoId)) {
         return true;
@@ -48,35 +56,6 @@ function isOwnerUser() {
 
     return false;
 }
-
-window.handleMasterVerify = function() {
-    if (!isUserLoggedIn()) {
-        alert('먼저 카카오 로그인을 해주세요.');
-        return;
-    }
-    const input = prompt('👑 마스터 소유자 인증\n마스터 계정의 전화번호 또는 이메일을 입력하세요:');
-    if (!input) return;
-
-    const trimmed = input.trim().toLowerCase();
-    const cleanNum = trimmed.replace(/[^0-9]/g, '');
-
-    const isMatch = MASTER_CONFIG.passwords.some(p => p.toLowerCase() === trimmed) ||
-                    cleanNum === '01098819418' || cleanNum === '9418' ||
-                    MASTER_CONFIG.emails.some(e => e.toLowerCase() === trimmed);
-
-    if (isMatch) {
-        const u = getCurrentUser();
-        if (u) {
-            u.isMaster = true;
-            localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
-            localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
-            alert('👑 마스터 소유자 인증이 완료되었습니다!\n모든 마스터 식당 및 일기 데이터를 불러옵니다.');
-            window.location.reload();
-        }
-    } else {
-        alert('❌ 인증 정보가 일치하지 않습니다.');
-    }
-};
 
 function getUserDiaryStorageKey() {
     const u = getCurrentUser();
@@ -215,19 +194,22 @@ window.handleKakaoLogin = function() {
                             const profile = kakaoAccount.profile || {};
                             const email = (kakaoAccount.email || '').toLowerCase().trim();
                             const phone = (kakaoAccount.phone_number || '').trim();
+                            const nickname = (profile.nickname || '').trim();
+                            const kakaoId = String(res.id);
 
-                            // Check Master condition
-                            const isMasterMatch = (email && MASTER_CONFIG.emails.some(e => e.toLowerCase() === email)) ||
-                                                  (phone && phone.replace(/[^0-9]/g, '').includes('01098819418')) ||
-                                                  (String(res.id) === localStorage.getItem('spoonmap_master_kakao_id'));
+                            // Auto Master Recognition (Email, Phone, Nickname, or Master ID)
+                            const isMasterMatch = (email && MASTER_CONFIG.emails.some(e => email.includes(e.toLowerCase()))) ||
+                                                  (phone && MASTER_CONFIG.phones.some(p => phone.replace(/[^0-9]/g, '').includes(p.replace(/[^0-9]/g, '')))) ||
+                                                  (nickname && MASTER_CONFIG.nicknames.some(n => nickname.includes(n) || n.includes(nickname)) && !MASTER_CONFIG.excludedNicknames.some(ex => nickname.includes(ex))) ||
+                                                  (kakaoId === localStorage.getItem('spoonmap_master_kakao_id'));
 
                             if (isMasterMatch) {
-                                localStorage.setItem('spoonmap_master_kakao_id', String(res.id));
+                                localStorage.setItem('spoonmap_master_kakao_id', kakaoId);
                             }
 
                             const user = {
-                                id: String(res.id),
-                                nickname: profile.nickname || '카카오 미식가',
+                                id: kakaoId,
+                                nickname: nickname || '카카오 미식가',
                                 email: email,
                                 phone: phone,
                                 profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
@@ -307,7 +289,7 @@ function updateUserAuthUI() {
 
         const masterBadge = isOwner 
             ? `<span class="user-role-badge master" style="font-size:0.75rem;background:#FEF3C7;color:#92400E;padding:2px 6px;border-radius:6px;font-weight:700;margin-left:4px;" title="마스터 소유자">👑 마스터</span>` 
-            : `<button class="btn-verify-master" onclick="handleMasterVerify()" style="font-size:0.7rem;background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB;padding:1px 5px;border-radius:4px;cursor:pointer;margin-left:4px;" title="마스터 계정 인증">👑 인증</button>`;
+            : '';
 
         authContainer.innerHTML = `
             <div class="user-profile-badge">
