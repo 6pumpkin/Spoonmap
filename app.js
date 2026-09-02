@@ -1,3 +1,159 @@
+// ─── Firebase Cloud Sync Module (Firestore Realtime Multi-Device Sync) ───
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBYzyzAjtazA0R-VKU6psbnormWExi0NFM",
+    authDomain: "spoonmap-3df1a.firebaseapp.com",
+    projectId: "spoonmap-3df1a",
+    storageBucket: "spoonmap-3df1a.firebasestorage.app",
+    messagingSenderId: "995065560253",
+    appId: "1:995065560253:web:ab63af4faaacca05b8cbd4",
+    measurementId: "G-KRD217KNZS"
+};
+
+let db = null;
+let isFirebaseReady = false;
+
+function initFirebase() {
+    try {
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+            db = firebase.firestore();
+            isFirebaseReady = true;
+            console.log('[Spoonmap] Firebase Firestore Initialized Successfully! ☁️');
+        } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
+            db = firebase.firestore();
+            isFirebaseReady = true;
+        }
+    } catch (e) {
+        console.warn('[Spoonmap] Firebase Init Warning:', e);
+    }
+}
+
+// Get Firestore document reference path for current user
+function getFirestoreUserDocPath() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return null;
+    if (isOwnerUser()) {
+        return 'master_data'; // Unified cloud collection for Master
+    }
+    return `user_${u.id}`; // Cloud collection for each General User
+}
+
+// Sync all data from Firestore Cloud to LocalStorage (Download)
+async function syncFromCloud() {
+    if (!isFirebaseReady || !db) return;
+    const docPath = getFirestoreUserDocPath();
+    if (!docPath) return;
+
+    try {
+        const docRef = db.collection('spoonmap_users').doc(docPath);
+        const docSnap = await docRef.get();
+
+        const diaryKey = getDiaryStorageKey();
+        const wishlistKey = getUserWishlistKey();
+        const overridesKey = getUserOverridesStorageKey();
+        const customOptKey = getUserCustomOptionsKey();
+
+        const localDiary = JSON.parse(localStorage.getItem(diaryKey) || '[]');
+        const localWishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
+        const localOverrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
+        const localCustomOpt = JSON.parse(localStorage.getItem(customOptKey) || '{}');
+
+        if (docSnap.exists) {
+            const cloudData = docSnap.data() || {};
+            console.log('[Spoonmap] Cloud data loaded from Firestore:', cloudData);
+
+            let hasChanges = false;
+
+            // Merge / Sync Diary (Combine local & cloud without loss)
+            if (cloudData.diary && Array.isArray(cloudData.diary)) {
+                const cloudDiaryMap = new Map();
+                cloudData.diary.forEach(e => cloudDiaryMap.set(String(e.id || e.name + '_' + e.date), e));
+                localDiary.forEach(e => {
+                    const k = String(e.id || e.name + '_' + e.date);
+                    if (!cloudDiaryMap.has(k)) {
+                        cloudDiaryMap.set(k, e);
+                    }
+                });
+                const mergedDiary = Array.from(cloudDiaryMap.values());
+                localStorage.setItem(diaryKey, JSON.stringify(mergedDiary));
+                hasChanges = true;
+            } else if (localDiary.length > 0) {
+                await saveToCloud('diary', localDiary);
+            }
+
+            // Sync Wishlist
+            if (cloudData.wishlist && Array.isArray(cloudData.wishlist)) {
+                const cloudWishMap = new Map();
+                cloudData.wishlist.forEach(w => cloudWishMap.set(w.name, w));
+                localWishlist.forEach(w => {
+                    if (!cloudWishMap.has(w.name)) cloudWishMap.set(w.name, w);
+                });
+                localStorage.setItem(wishlistKey, JSON.stringify(Array.from(cloudWishMap.values())));
+                hasChanges = true;
+            } else if (localWishlist.length > 0) {
+                await saveToCloud('wishlist', localWishlist);
+            }
+
+            // Sync Overrides
+            if (cloudData.overrides && typeof cloudData.overrides === 'object') {
+                const mergedOverrides = { ...cloudData.overrides, ...localOverrides };
+                localStorage.setItem(overridesKey, JSON.stringify(mergedOverrides));
+                hasChanges = true;
+            } else if (Object.keys(localOverrides).length > 0) {
+                await saveToCloud('overrides', localOverrides);
+            }
+
+            // Sync Custom Options
+            if (cloudData.custom_options && typeof cloudData.custom_options === 'object') {
+                const mergedCustomOpt = { ...cloudData.custom_options, ...localCustomOpt };
+                localStorage.setItem(customOptKey, JSON.stringify(mergedCustomOpt));
+                hasChanges = true;
+            } else if (Object.keys(localCustomOpt).length > 0) {
+                await saveToCloud('custom_options', localCustomOpt);
+            }
+        } else {
+            // First time cloud initialization: Upload all existing local data! (Auto-Migration)
+            console.log('[Spoonmap] First-time cloud sync: Uploading local data to Firestore...');
+            await docRef.set({
+                diary: localDiary,
+                wishlist: localWishlist,
+                overrides: localOverrides,
+                custom_options: localCustomOpt,
+                updated_at: new Date().toISOString(),
+                user_info: getCurrentUser()
+            }, { merge: true });
+            console.log('[Spoonmap] Auto-Migration to Cloud Complete! ☁️✨');
+        }
+
+        // Re-render Views with latest synced data
+        if (typeof window.renderApp === 'function') window.renderApp();
+        if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
+        if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
+        if (typeof window.populateRecommendCategories === 'function') window.populateRecommendCategories();
+    } catch (err) {
+        console.error('[Spoonmap] Firestore Sync Error:', err);
+    }
+}
+
+// Save specific data segment to Cloud Firestore (Upload)
+async function saveToCloud(segment, data) {
+    if (!isFirebaseReady || !db) return;
+    const docPath = getFirestoreUserDocPath();
+    if (!docPath) return;
+
+    try {
+        const docRef = db.collection('spoonmap_users').doc(docPath);
+        const updateObj = {
+            [segment]: data,
+            updated_at: new Date().toISOString()
+        };
+        await docRef.set(updateObj, { merge: true });
+        console.log(`[Spoonmap] Cloud Sync: "${segment}" successfully saved to Firestore ☁️`);
+    } catch (err) {
+        console.error(`[Spoonmap] Cloud Save Error (${segment}):`, err);
+    }
+}
+
 // ─── Kakao OAuth 2.0 & Master Owner Auth Guard Module ───
 const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
 
@@ -148,6 +304,7 @@ function updateAuthProtectedViews() {
 }
 
 function initKakaoAuth() {
+    initFirebase();
     try {
         if (typeof Kakao !== 'undefined') {
             if (!Kakao.isInitialized()) {
@@ -159,6 +316,9 @@ function initKakaoAuth() {
         console.warn('[Spoonmap] Kakao SDK Init Warning:', err);
     }
     updateUserAuthUI();
+    if (isUserLoggedIn()) {
+        syncFromCloud();
+    }
 }
 
 window.handleKakaoLogin = function() {
@@ -188,7 +348,7 @@ window.handleKakaoLogin = function() {
                     console.log('[Spoonmap] Kakao Auth Success:', authObj);
                     Kakao.API.request({
                         url: '/v2/user/me',
-                        success: function(res) {
+                        success: async function(res) {
                             console.log('[Spoonmap] Kakao User Profile:', res);
                             const kakaoAccount = res.kakao_account || {};
                             const profile = kakaoAccount.profile || {};
@@ -219,6 +379,11 @@ window.handleKakaoLogin = function() {
                             localStorage.setItem('spoonmap_current_user', JSON.stringify(user));
 
                             updateUserAuthUI();
+                            
+                            // Initialize & Sync from Cloud Firestore
+                            initFirebase();
+                            await syncFromCloud();
+
                             const welcomeName = user.isMaster ? '👑 마스터님' : `${user.nickname}님`;
                             alert(`환영합니다, ${welcomeName}! Spoonmap에 로그인되었습니다 🥄✨`);
                             
@@ -331,6 +496,9 @@ function getUserWishlist() {
 
 function saveUserWishlist(list) {
     localStorage.setItem(getUserWishlistKey(), JSON.stringify(list));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('wishlist', list);
+    }
 }
 
 function isPlaceInWishlist(name) {
@@ -3440,8 +3608,10 @@ function saveRestaurantMasterFromModal() {
     const map_url = document.getElementById('modal-edit-input-map')?.value.trim() || '';
     const memo = document.getElementById('modal-edit-input-memo')?.value.trim() || '';
 
-    // 1. Save to spoonmap_restaurant_overrides
-    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    // 1. Save to overrides
+    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
     overrides[key] = {
         name,
         category,
@@ -3453,9 +3623,10 @@ function saveRestaurantMasterFromModal() {
         memo,
         updated_at: new Date().toISOString()
     };
-    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
-    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
     localStorage.setItem(overridesKey, JSON.stringify(overrides));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('overrides', overrides);
+    }
 
     // 2. Batch sync all entries in user diary for this restaurant
     const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -3473,6 +3644,9 @@ function saveRestaurantMasterFromModal() {
     });
     if (diaryUpdated) {
         localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('diary', existing);
+        }
     }
 
     // 3. Re-render List, Diary Calendar, Map, Insights & Roulette Categories
@@ -5252,11 +5426,15 @@ class NotionTagSelector {
         this.availableOptions.add(optName);
 
         // Save custom option to localStorage using baseKey
-        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : (typeof DIARY_CUSTOM_OPTIONS_KEY !== 'undefined' ? DIARY_CUSTOM_OPTIONS_KEY : 'spoonmap_custom_options');
+        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
         if (!customStore[this.baseKey]) customStore[this.baseKey] = [];
         if (!customStore[this.baseKey].includes(optName)) {
             customStore[this.baseKey].push(optName);
-            localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
+            localStorage.setItem(customStoreKey, JSON.stringify(customStore));
+            if (typeof saveToCloud === 'function') {
+                saveToCloud('custom_options', customStore);
+            }
         }
 
         // Global Sync: Also propagate to sibling selector instance
@@ -5459,11 +5637,15 @@ document.addEventListener('click', (e) => {
 function deleteOptionGlobally(optName, baseKey) {
     if (!optName || !baseKey) return;
 
-    // 1. Remove from spoonmap_custom_options localStorage
-    const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
+    // 1. Remove from custom options localStorage
+    const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : (typeof DIARY_CUSTOM_OPTIONS_KEY !== 'undefined' ? DIARY_CUSTOM_OPTIONS_KEY : 'spoonmap_custom_options');
+    const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
     if (customStore[baseKey] && Array.isArray(customStore[baseKey])) {
         customStore[baseKey] = customStore[baseKey].filter(item => item !== optName);
-        localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
+        localStorage.setItem(customStoreKey, JSON.stringify(customStore));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('custom_options', customStore);
+        }
     }
 
     // 2. Remove from all active NotionTagSelector instances
@@ -5479,7 +5661,9 @@ function deleteOptionGlobally(optName, baseKey) {
     }
 
     // 3. Remove tag from master overrides & diary entries if present
-    const overrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
     let overrideChanged = false;
     Object.keys(overrides).forEach(key => {
         const item = overrides[key];
@@ -5494,11 +5678,12 @@ function deleteOptionGlobally(optName, baseKey) {
             }
         }
     });
-    const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
-    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
 
     if (overrideChanged) {
         localStorage.setItem(overridesKey, JSON.stringify(overrides));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('overrides', overrides);
+        }
     }
 
     const diaryEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -5517,6 +5702,9 @@ function deleteOptionGlobally(optName, baseKey) {
     });
     if (diaryChanged) {
         localStorage.setItem(diaryStorageKey, JSON.stringify(diaryEntries));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('diary', diaryEntries);
+        }
     }
 
     // 4. Re-render app, side filters & diary calendar
@@ -6078,6 +6266,9 @@ function moveDiaryEntryToDate(entry, newDate) {
     }
 
     localStorage.setItem(diaryStorageKey, JSON.stringify(localEntries));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('diary', localEntries);
+    }
     renderDiaryCalendar();
     if (window.renderApp) window.renderApp();
     showDiaryToast(`📍 "${entry.name}" 항목이 ${newDate} 날짜로 이동되었습니다!`);
@@ -6218,6 +6409,9 @@ function deleteCurrentDiaryEntry() {
     const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
     const updated = localEntries.filter(e => String(e.id) !== String(editId));
     localStorage.setItem(diaryStorageKey, JSON.stringify(updated));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('diary', updated);
+    }
 
     closeDiaryDrawer();
     renderDiaryCalendar();
@@ -6276,6 +6470,9 @@ function saveDiaryEntry() {
             updated_at: new Date().toISOString()
         };
         localStorage.setItem(overridesKey, JSON.stringify(overrides));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('overrides', overrides);
+        }
 
         // 2. Batch sync all entries in user diary for this restaurant
         const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -6293,6 +6490,9 @@ function saveDiaryEntry() {
         });
         if (diaryUpdated) {
             localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
+            if (typeof saveToCloud === 'function') {
+                saveToCloud('diary', existing);
+            }
         }
 
         closeDiaryDrawer();
@@ -6383,6 +6583,12 @@ function saveDiaryEntry() {
         }
     });
     localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
+
+    // Save to Cloud Firestore
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('diary', existing);
+        saveToCloud('overrides', overrides);
+    }
 
     closeDiaryDrawer();
     renderDiaryCalendar();
