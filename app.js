@@ -2,55 +2,6 @@
 const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
 const MASTER_OWNER_EMAIL = 'jhp_99@naver.com';
 
-const DIARY_STORAGE_KEY = 'spoonmap_diary';
-const DIARY_CUSTOM_OPTIONS_KEY = 'spoonmap_custom_options';
-
-let diaryInitialized = false;
-let currentDiaryYear = new Date().getFullYear();
-let currentDiaryMonth = new Date().getMonth(); // 0-indexed
-
-const RATE_LABELS = ['', '별로야 😕', '나쁘지 않아 😐', '맛있어! 😊', '또 가고 싶어 😍', '인생 맛집 🤩'];
-
-// Notion style pastel color palette for tags
-const NOTION_COLORS = [
-    { bg: '#FDE8E8', color: '#9B1C1C' }, // Red
-    { bg: '#FEF3C7', color: '#92400E' }, // Yellow
-    { bg: '#DEF7EC', color: '#03543F' }, // Green
-    { bg: '#E1EFFE', color: '#1E429F' }, // Blue
-    { bg: '#F3E8FF', color: '#6B21A8' }, // Purple
-    { bg: '#FCE8F3', color: '#99154B' }, // Pink
-    { bg: '#EDF2F7', color: '#2D3748' }, // Gray
-    { bg: '#FFEDD5', color: '#9A3412' }  // Orange
-];
-
-const ORIGINAL_CATEGORY_EMOJIS = {
-    '한식': '🍚', '중식': '🥟', '일식': '🍣', '양식': '🍝', '카페': '☕', '디저트': '🍰',
-    '패스트푸드': '🍔', '멕시칸': '🌮', '피자': '🍕', '치킨': '🍗', '고기': '🥩', '술집': '🍺',
-    '일반식당': '🍽️', '아시안': '🍜'
-};
-
-function getFormattedTagDisplay(text) {
-    if (!text) return '';
-    const trimmed = text.trim();
-    const hasEmojiPrefix = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed);
-    if (hasEmojiPrefix) return trimmed;
-    for (const [key, emoji] of Object.entries(ORIGINAL_CATEGORY_EMOJIS)) {
-        if (trimmed === key) {
-            return `${emoji} ${trimmed}`;
-        }
-    }
-    return trimmed;
-}
-
-function getNotionTagColor(text) {
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-        hash = text.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % NOTION_COLORS.length;
-    return NOTION_COLORS[index];
-}
-
 function getCurrentUser() {
     try {
         const saved = localStorage.getItem('spoonmap_current_user');
@@ -71,6 +22,7 @@ function isOwnerUser() {
     
     // 1. Direct check by registered Master email (jhp_99@naver.com)
     if (u.email && u.email.toLowerCase().trim() === MASTER_OWNER_EMAIL.toLowerCase()) {
+        // Persist the verified Kakao ID for future sessions (even without email)
         localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
         return true;
     }
@@ -78,6 +30,14 @@ function isOwnerUser() {
     // 2. Check if this Kakao ID was previously verified with the master email
     const verifiedMasterId = localStorage.getItem('spoonmap_master_kakao_id');
     if (verifiedMasterId && String(u.id) === String(verifiedMasterId)) {
+        return true;
+    }
+
+    // 3. Fallback: Check legacy spoonmap_owner_kakao_id key (for sessions before email was required)
+    const legacyOwnerId = localStorage.getItem('spoonmap_owner_kakao_id');
+    if (legacyOwnerId && String(u.id) === String(legacyOwnerId)) {
+        // Migrate to new key
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
         return true;
     }
 
@@ -477,7 +437,7 @@ function getSpoonBadgeHtml(item) {
     `;
 }
 
-function initializeMainApp() {
+document.addEventListener('DOMContentLoaded', () => {
     initKakaoAuth();
     let currentFilters = {
         category: [],
@@ -704,9 +664,8 @@ function initializeMainApp() {
             if (item.location_large) locations.add(item.location_large.trim());
         });
 
-        // Collect custom options from user storage
-        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
-        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
+        // Collect custom options from spoonmap_custom_options
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
         if (customStore.category && Array.isArray(customStore.category)) {
             customStore.category.forEach(c => {
                 if (c && c.trim()) categories.add(c.trim());
@@ -2448,9 +2407,8 @@ function initializeMainApp() {
             }
         });
 
-        // Also collect custom categories added by user in user storage
-        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
-        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
+        // Also collect custom categories added by user in spoonmap_custom_options
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
         if (customStore.category && Array.isArray(customStore.category)) {
             customStore.category.forEach(c => {
                 if (c && c.trim()) categories.add(c.trim());
@@ -3200,13 +3158,7 @@ function initializeMainApp() {
     });
 
     init();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeMainApp);
-} else {
-    initializeMainApp();
-}
+});
 
 // ─── List View Restaurant Detail Modal (View & Inline Edit) ───
 let currentDetailModalItem = null;
@@ -5061,6 +5013,60 @@ function processSommelierFallbackOnly(query, callback) {
 // ─── 📅 식사 일기 캘린더 (노션 스타일 태그 & 다중 선택 옵션) ───────────────
 // ════════════════════════════════════════════════════════════════════════════
 
+let diaryInitialized = false;
+let currentDiaryYear = new Date().getFullYear();
+let currentDiaryMonth = new Date().getMonth(); // 0-indexed
+const DIARY_STORAGE_KEY = 'spoonmap_diary';
+const DIARY_CUSTOM_OPTIONS_KEY = 'spoonmap_custom_options';
+
+const RATE_LABELS = ['', '별로야 😕', '나쁘지 않아 😐', '맛있어! 😊', '또 가고 싶어 😍', '인생 맛집 🤩'];
+
+// Notion style pastel color palette for tags
+const NOTION_COLORS = [
+    { bg: '#FDE8E8', color: '#9B1C1C' }, // Red
+    { bg: '#FEF3C7', color: '#92400E' }, // Yellow
+    { bg: '#DEF7EC', color: '#03543F' }, // Green
+    { bg: '#E1EFFE', color: '#1E429F' }, // Blue
+    { bg: '#F3E8FF', color: '#6B21A8' }, // Purple
+    { bg: '#FCE8F3', color: '#99154B' }, // Pink
+    { bg: '#EDF2F7', color: '#2D3748' }, // Gray
+    { bg: '#FFEDD5', color: '#9A3412' }  // Orange
+];
+
+const ORIGINAL_CATEGORY_EMOJIS = {
+    '한식': '🍚', '중식': '🥟', '일식': '🍣', '양식': '🍝', '카페': '☕', '디저트': '🍰',
+    '패스트푸드': '🍔', '멕시칸': '🌮', '피자': '🍕', '치킨': '🍗', '고기': '🥩', '술집': '🍺',
+    '일반식당': '🍽️', '아시안': '🍜'
+};
+
+function getFormattedTagDisplay(text) {
+    if (!text) return '';
+    const trimmed = text.trim();
+
+    // Check if text already starts with an emoji (if user typed emoji directly)
+    const hasEmojiPrefix = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed);
+    if (hasEmojiPrefix) return trimmed;
+
+    // Check original dataset category matches
+    for (const [key, emoji] of Object.entries(ORIGINAL_CATEGORY_EMOJIS)) {
+        if (trimmed === key) {
+            return `${emoji} ${trimmed}`;
+        }
+    }
+
+    // Return user-entered text directly without adding random emojis
+    return trimmed;
+}
+
+function getNotionTagColor(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+        hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % NOTION_COLORS.length;
+    return NOTION_COLORS[index];
+}
+
 // Notion Tag Selector Manager Class
 class NotionTagSelector {
     constructor(fieldType, isMultiSelect = true) {
@@ -5216,13 +5222,12 @@ class NotionTagSelector {
         if (!optName) return;
         this.availableOptions.add(optName);
 
-        // Save custom option to user storage using baseKey
-        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
-        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
+        // Save custom option to localStorage using baseKey
+        const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
         if (!customStore[this.baseKey]) customStore[this.baseKey] = [];
         if (!customStore[this.baseKey].includes(optName)) {
             customStore[this.baseKey].push(optName);
-            localStorage.setItem(customStoreKey, JSON.stringify(customStore));
+            localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
         }
 
         // Global Sync: Also propagate to sibling selector instance
@@ -5425,12 +5430,11 @@ document.addEventListener('click', (e) => {
 function deleteOptionGlobally(optName, baseKey) {
     if (!optName || !baseKey) return;
 
-    // 1. Remove from user custom options localStorage
-    const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
-    const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
+    // 1. Remove from spoonmap_custom_options localStorage
+    const customStore = JSON.parse(localStorage.getItem(DIARY_CUSTOM_OPTIONS_KEY) || '{}');
     if (customStore[baseKey] && Array.isArray(customStore[baseKey])) {
         customStore[baseKey] = customStore[baseKey].filter(item => item !== optName);
-        localStorage.setItem(customStoreKey, JSON.stringify(customStore));
+        localStorage.setItem(DIARY_CUSTOM_OPTIONS_KEY, JSON.stringify(customStore));
     }
 
     // 2. Remove from all active NotionTagSelector instances
