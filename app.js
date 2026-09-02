@@ -161,7 +161,7 @@ const KAKAO_JAVASCRIPT_KEY = '7d1898e936717ce9a0b768bc21807a99';
 const MASTER_CONFIG = {
     emails: ['jhp_99@naver.com', 'jhp_99', 'jhp99@naver.com', 'jhp99'],
     phones: ['01098819418', '010-9881-9418', '+82 10-9881-9418', '+821098819418', '98819418'],
-    nicknames: ['뿌리공주', '뿌리공주ෆ', '박준혁', '준혁', 'Pumpkin', '6pumpkin', 'jhp_99', 'jhp99', '호박'],
+    nicknames: ['박준호', '준호', '뿌리공주', '뿌리공주ෆ', '박준혁', '준혁', '박정호', 'Pumpkin', '6pumpkin', 'jhp_99', 'jhp99', '호박'],
     excludedNicknames: ['윤서희', '서희']
 };
 
@@ -315,6 +315,15 @@ function initKakaoAuth() {
     } catch (err) {
         console.warn('[Spoonmap] Kakao SDK Init Warning:', err);
     }
+
+    // Auto-update Master status for current logged-in session if matched
+    const u = getCurrentUser();
+    if (u && !u.isMaster && isOwnerUser()) {
+        u.isMaster = true;
+        localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
+        localStorage.setItem('spoonmap_master_kakao_id', String(u.id));
+    }
+
     updateUserAuthUI();
     if (isUserLoggedIn()) {
         syncFromCloud();
