@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609030051">
+    <link rel="stylesheet" href="style.css?v=202609040103">
 </head>
 
 <body class="light-theme">
@@ -55,6 +55,7 @@
             <button class="tab-btn" data-tab="sommelier">AI</button>
             <button class="tab-btn" data-tab="recommend">ROULETTE</button>
             <button class="tab-btn" data-tab="insights">INSIGHT</button>
+            <button class="tab-btn" data-tab="profile">PROFILE</button>
         </div>
     </nav>
 
@@ -72,6 +73,7 @@
                     <button class="mobile-tab-btn" data-tab="sommelier">AI</button>
                     <button class="mobile-tab-btn" data-tab="recommend">ROULETTE</button>
                     <button class="mobile-tab-btn" data-tab="insights">INSIGHT</button>
+                    <button class="mobile-tab-btn" data-tab="profile">PROFILE</button>
                 </div>
             </div>
             
@@ -168,6 +170,15 @@
                         <button id="view-mode-grid" class="view-mode-btn active" title="카드 그리드 뷰">📱 큰 카드</button>
                         <button id="view-mode-compact" class="view-mode-btn" title="컴팩트 한줄 목록 뷰">☰ 한줄 목록</button>
                     </div>
+                </div>
+
+                <!-- Gourmet Viewing Banner (When exploring a followed user's list) -->
+                <div id="gourmet-viewing-banner" class="gourmet-viewing-banner" style="display:none;">
+                    <div class="banner-content">
+                        <span class="banner-avatar">🍽️</span>
+                        <span class="banner-text"><strong id="gourmet-viewing-name">미식가</strong> 님의 추천 맛집 목록을 둘러보고 있습니다.</span>
+                    </div>
+                    <button class="banner-return-btn" onclick="exitGourmetViewingMode()">내 맛집으로 돌아가기 ↺</button>
                 </div>
 
                 <div class="restaurant-grid" id="restaurant-grid">
@@ -646,6 +657,91 @@
                 </aside>
             </div>
         </div>
+
+        <!-- ─── 소셜 프로필 & 팔로우/팔로잉 영역 ─── -->
+        <div id="profile-view" class="tab-content">
+            <div class="auth-protected-content" id="profile-protected-content">
+                <div class="profile-container">
+                    
+                    <!-- 1. Profile Hero Card -->
+                    <div class="profile-hero-card">
+                        <div class="profile-banner"></div>
+                        <div class="profile-hero-content">
+                            <div class="profile-avatar-row">
+                                <div class="profile-avatar-wrap">
+                                    <img id="profile-avatar-img" src="" alt="프로필 사진" class="profile-avatar-img" onerror="this.outerHTML='<div class=\'profile-avatar-fallback\'>🥄</div>'">
+                                    <button class="profile-avatar-edit-btn" onclick="openProfileEditModal()" title="프로필 사진 및 정보 수정">📷</button>
+                                </div>
+                                <div class="profile-main-info">
+                                    <div class="profile-name-row">
+                                        <h2 id="profile-display-name" class="profile-name">박준호</h2>
+                                        <span id="profile-role-badge" class="profile-role-badge">👑 마스터</span>
+                                    </div>
+                                    <p id="profile-display-handle" class="profile-handle">@junho_spoon</p>
+                                    <p id="profile-display-bio" class="profile-bio">서울 마포/용산 일식·고기 맛집 위주로 기록합니다. 직접 가보고 재방문한 찐 맛집만 남겨요 🥢</p>
+                                </div>
+                            </div>
+                            <div class="profile-action-btns">
+                                <button class="profile-btn btn-edit-profile" onclick="openProfileEditModal()">✏️ 프로필 수정</button>
+                                <button class="profile-btn btn-share-profile" onclick="handleShareMyMap()">🔗 내 맛집 공유</button>
+                            </div>
+                        </div>
+
+                        <!-- Social Metrics -->
+                        <div class="profile-stats-bar">
+                            <div class="profile-stat-item">
+                                <span class="stat-num" id="profile-stat-restaurants">0</span>
+                                <span class="stat-label">등록 맛집 🍽️</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-num" id="profile-stat-visits">0</span>
+                                <span class="stat-label">방문 일기 📅</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-num" id="profile-stat-followers">28</span>
+                                <span class="stat-label">팔로워 👥</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="stat-num" id="profile-stat-following">14</span>
+                                <span class="stat-label">팔로잉 ⭐</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Following Gourmets Section (팔로잉한 사람 식당 리스트 보기) -->
+                    <div class="profile-section-card">
+                        <div class="profile-section-header">
+                            <div>
+                                <h3 class="profile-section-title">👥 내가 팔로잉한 미식가 <span id="following-badge-count" class="badge-count">0명</span></h3>
+                                <p class="profile-section-desc">미식가를 선택하면 그 사람만의 맛집 목록을 열람할 수 있습니다.</p>
+                            </div>
+                        </div>
+                        <div class="following-grid" id="following-users-grid">
+                            <!-- Injected dynamically via app.js -->
+                        </div>
+                    </div>
+
+                    <!-- 3. Discover & Follow Section (새로운 미식가 찾기) -->
+                    <div class="profile-section-card">
+                        <div class="profile-section-header with-search">
+                            <div>
+                                <h3 class="profile-section-title">🔍 새로운 미식가 찾기 & 추천</h3>
+                                <p class="profile-section-desc">내 입맛 취향과 맞는 다른 유저를 팔로우하고 맛집 지도를 교환하세요.</p>
+                            </div>
+                            <div class="profile-search-wrap">
+                                <input type="text" id="discover-user-search" class="profile-search-input" placeholder="닉네임 또는 @핸들 검색...">
+                                <span class="search-icon">🔍</span>
+                            </div>
+                        </div>
+                        <div class="discover-users-list" id="discover-users-list">
+                            <!-- Injected dynamically via app.js -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="auth-locked-placeholder" id="profile-locked-view" style="display:none;"></div>
+        </div>
     </main>
 
     <!-- Restaurant Detail View & Inline Edit Modal -->
@@ -838,6 +934,34 @@
         </div>
     </div>
 
+    <!-- ─── Profile Edit Modal ─── -->
+    <div id="profile-edit-modal" class="profile-edit-modal" onclick="if(event.target===this)closeProfileEditModal()">
+        <div class="profile-modal-card">
+            <div class="profile-modal-header">
+                <h3>프로필 정보 수정 ✏️</h3>
+                <button class="profile-modal-close" onclick="closeProfileEditModal()">&times;</button>
+            </div>
+            <div class="profile-modal-body">
+                <div class="modal-field">
+                    <label>닉네임 <span class="required">*</span></label>
+                    <input type="text" id="edit-profile-name" class="modal-input" placeholder="이름 또는 닉네임" maxlength="20">
+                </div>
+                <div class="modal-field">
+                    <label>고유 핸들 ID (@영문/숫자)</label>
+                    <input type="text" id="edit-profile-handle" class="modal-input" placeholder="@handle" maxlength="25">
+                </div>
+                <div class="modal-field">
+                    <label>한 줄 소개 (Bio)</label>
+                    <textarea id="edit-profile-bio" class="modal-textarea" rows="3" placeholder="나의 미식 취향을 자유롭게 소개해 보세요..." maxlength="120"></textarea>
+                </div>
+            </div>
+            <div class="profile-modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeProfileEditModal()">취소</button>
+                <button type="button" class="btn-modal-save" onclick="saveProfileFromModal()">저장 완료 ✓</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK (Cloud Firestore Sync) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -848,8 +972,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202609030051"></script>
-    <script src="app.js?v=202609030051"></script>
+    <script src="data.js?v=202609040103"></script>
+    <script src="app.js?v=202609040103"></script>
 </body>
 
 </html>

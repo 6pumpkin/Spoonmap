@@ -111,6 +111,24 @@ async function syncFromCloud() {
             } else if (Object.keys(localCustomOpt).length > 0) {
                 await saveToCloud('custom_options', localCustomOpt);
             }
+
+            // Sync Profile
+            const profileKey = typeof getUserProfileKey === 'function' ? getUserProfileKey() : null;
+            if (profileKey && cloudData.profile && typeof cloudData.profile === 'object') {
+                localStorage.setItem(profileKey, JSON.stringify(cloudData.profile));
+                hasChanges = true;
+            } else if (profileKey && localStorage.getItem(profileKey)) {
+                await saveToCloud('profile', JSON.parse(localStorage.getItem(profileKey)));
+            }
+
+            // Sync Following
+            const followingKey = typeof getUserFollowingKey === 'function' ? getUserFollowingKey() : null;
+            if (followingKey && Array.isArray(cloudData.following)) {
+                localStorage.setItem(followingKey, JSON.stringify(cloudData.following));
+                hasChanges = true;
+            } else if (followingKey && localStorage.getItem(followingKey)) {
+                await saveToCloud('following', JSON.parse(localStorage.getItem(followingKey)));
+            }
         } else {
             // First time cloud initialization: Upload all existing local data! (Auto-Migration)
             console.log('[Spoonmap] First-time cloud sync: Uploading local data to Firestore...');
@@ -119,6 +137,8 @@ async function syncFromCloud() {
                 wishlist: localWishlist,
                 overrides: localOverrides,
                 custom_options: localCustomOpt,
+                profile: (typeof getUserProfile === 'function') ? getUserProfile() : null,
+                following: (typeof getUserFollowingList === 'function') ? getUserFollowingList() : null,
                 updated_at: new Date().toISOString(),
                 user_info: getCurrentUser()
             }, { merge: true });
@@ -130,6 +150,7 @@ async function syncFromCloud() {
         if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
         if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
         if (typeof window.populateRecommendCategories === 'function') window.populateRecommendCategories();
+        if (typeof renderProfileView === 'function') renderProfileView();
     } catch (err) {
         console.error('[Spoonmap] Firestore Sync Error:', err);
     }
@@ -267,7 +288,8 @@ function updateAuthProtectedViews() {
     const protectedSections = [
         { protectedId: 'list-protected-content', lockedId: 'list-locked-view' },
         { protectedId: 'insights-protected-content', lockedId: 'insights-locked-view' },
-        { protectedId: 'diary-protected-content', lockedId: 'diary-locked-view' }
+        { protectedId: 'diary-protected-content', lockedId: 'diary-locked-view' },
+        { protectedId: 'profile-protected-content', lockedId: 'profile-locked-view' }
     ];
 
     protectedSections.forEach(({ protectedId, lockedId }) => {
@@ -292,7 +314,8 @@ function updateAuthProtectedViews() {
         { tab: 'map', name: 'MAP', locked: false },
         { tab: 'sommelier', name: 'AI', locked: false },
         { tab: 'recommend', name: 'ROULETTE', locked: false },
-        { tab: 'insights', name: 'INSIGHT', locked: !loggedIn }
+        { tab: 'insights', name: 'INSIGHT', locked: !loggedIn },
+        { tab: 'profile', name: 'PROFILE', locked: !loggedIn }
     ];
 
     tabLabels.forEach(({ tab, name, locked }) => {
@@ -466,12 +489,12 @@ function updateUserAuthUI() {
             : '';
 
         authContainer.innerHTML = `
-            <div class="user-profile-badge">
+            <div class="user-profile-badge" onclick="navigateToProfileTab()" title="내 프로필 보기" style="cursor:pointer;">
                 ${avatarHtml}
                 <div class="user-info-text">
                     <span class="user-name" title="${currentUser.nickname}">${currentUser.nickname}${masterBadge}</span>
                 </div>
-                <button class="user-logout-btn" onclick="handleKakaoLogout()" title="로그아웃">로그아웃</button>
+                <button class="user-logout-btn" onclick="event.stopPropagation(); handleKakaoLogout();" title="로그아웃">로그아웃</button>
             </div>
         `;
     } else {
@@ -685,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary'];
+    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary', 'profile'];
 
     function parseRoute() {
         const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
@@ -754,8 +777,21 @@ document.addEventListener('DOMContentLoaded', () => {
             initDiaryTab();
         } else if (targetTab === 'list' && isUserLoggedIn()) {
             if (typeof render === 'function') render();
+        } else if (targetTab === 'profile' && isUserLoggedIn()) {
+            if (typeof renderProfileView === 'function') renderProfileView();
         }
     }
+
+    function navigateToProfileTab() {
+        window.location.hash = '#profile';
+        const profileTabBtn = document.querySelector('.tab-btn[data-tab="profile"]') || document.querySelector('.mobile-tab-btn[data-tab="profile"]');
+        if (profileTabBtn) {
+            profileTabBtn.click();
+        } else {
+            switchTabUI('profile');
+        }
+    }
+    window.navigateToProfileTab = navigateToProfileTab;
 
     function handleRoute() {
         const route = parseRoute();
@@ -2990,6 +3026,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: latestDate
             });
         });
+
+        if (window.currentViewingGourmet && Array.isArray(window.currentViewingGourmet.restaurants)) {
+            return window.currentViewingGourmet.restaurants;
+        }
 
         return unified;
     }
@@ -6781,3 +6821,455 @@ function exportDiaryCSV() {
     a.click();
     URL.revokeObjectURL(url);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// 12. 소셜 프로필 (PROFILE) & 팔로우/팔로잉 미식 네트워크 엔진
+// ═══════════════════════════════════════════════════════════════════
+
+const GOURMET_COMMUNITY_DATA = {
+    'master': {
+        id: 'master',
+        name: '박준호',
+        handle: '@junho_spoon',
+        role: '👑 Spoonmap 마스터',
+        isMaster: true,
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=junho',
+        bio: '서울 마포/용산 일식·고기 맛집 위주로 기록합니다. 직접 가보고 재방문한 찐 맛집만 남겨요 🥢',
+        count: 708,
+        tags: '일식, 고기, 평양냉면, 마포/용산'
+    },
+    'seongsu_foodie': {
+        id: 'seongsu_foodie',
+        name: '성수동미식로드',
+        handle: '@seongsu_foodie',
+        role: '🥄 미식가',
+        isMaster: false,
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+        bio: '성수/뚝섬/건대 일대 카페와 힙한 식당 120곳 아카이브 ☕',
+        count: 124,
+        tags: '카페, 양식, 성수/뚝섬'
+    },
+    'wine_lover': {
+        id: 'wine_lover',
+        name: '와인앤다이닝',
+        handle: '@wine_lover',
+        role: '🥄 미식가',
+        isMaster: false,
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+        bio: '콜키지 프리 및 내추럴 와인바 위주 기록 🍷',
+        count: 89,
+        tags: '와인바, 양식, 다이닝'
+    },
+    'gukbap_master': {
+        id: 'gukbap_master',
+        name: '국밥로드대동여지도',
+        handle: '@gukbap_master',
+        role: '🥄 미식가',
+        isMaster: false,
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
+        bio: '전국 노포 순대국, 돼지국밥, 설렁탕 완식 탐방기 🍚',
+        count: 241,
+        tags: '한식, 국밥, 노포'
+    },
+    'bakery_zoe': {
+        id: 'bakery_zoe',
+        name: '망원동빵순이',
+        handle: '@bakery_zoe',
+        role: '🥄 미식가',
+        isMaster: false,
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
+        bio: '베이커리·디저트 성지 전문 🥐',
+        count: 54,
+        tags: '베이커리, 디저트, 망원'
+    },
+    'yeonnam_chef': {
+        id: 'yeonnam_chef',
+        name: '연남동미식가',
+        handle: '@yeonnam_chef',
+        role: '🥄 미식가',
+        isMaster: false,
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
+        bio: '파스타·와인바·캐주얼 다이닝 🍝',
+        count: 76,
+        tags: '파스타, 이탈리안, 연남'
+    }
+};
+
+function getUserProfileKey() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return 'spoonmap_guest_profile';
+    if (isOwnerUser()) return 'spoonmap_master_profile';
+    return `spoonmap_user_${u.id}_profile`;
+}
+
+function getUserProfile() {
+    const key = getUserProfileKey();
+    const u = getCurrentUser() || {};
+    const isOwner = isOwnerUser();
+
+    try {
+        const saved = localStorage.getItem(key);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {
+        console.warn('Failed to parse user profile', e);
+    }
+
+    // Default Profile Generation
+    const defaultProfile = {
+        userId: u.id || 'guest',
+        nickname: u.nickname || (isOwner ? '박준호' : '미식가'),
+        handle: isOwner ? '@junho_spoon' : `@user_${String(u.id || '1004').slice(-4)}`,
+        bio: isOwner 
+            ? '서울 마포/용산 일식·고기 맛집 위주로 기록합니다. 직접 가보고 재방문한 찐 맛집만 남겨요 🥢' 
+            : '나만의 맛집을 기록하고 공유하는 미식가입니다 🥄',
+        profileImage: u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : 'https://api.dicebear.com/7.x/avataaars/svg?seed=gourmet'),
+        isMaster: isOwner,
+        followersCount: isOwner ? 28 : 2
+    };
+
+    localStorage.setItem(key, JSON.stringify(defaultProfile));
+    return defaultProfile;
+}
+
+function saveUserProfile(updated) {
+    const key = getUserProfileKey();
+    localStorage.setItem(key, JSON.stringify(updated));
+
+    // Update current session user nickname if changed
+    const u = getCurrentUser();
+    if (u) {
+        u.nickname = updated.nickname;
+        localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
+    }
+
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('profile', updated);
+    }
+
+    updateUserAuthUI();
+}
+
+function getUserFollowingKey() {
+    const u = getCurrentUser();
+    if (!u || !u.id) return 'spoonmap_guest_following';
+    return `spoonmap_user_${u.id}_following`;
+}
+
+function getUserFollowingList() {
+    const key = getUserFollowingKey();
+    const isOwner = isOwnerUser();
+    try {
+        const saved = localStorage.getItem(key);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {
+        console.warn('Failed to parse following list', e);
+    }
+
+    // Default following list
+    const defaults = isOwner 
+        ? ['seongsu_foodie', 'wine_lover', 'gukbap_master']
+        : ['master', 'seongsu_foodie', 'wine_lover'];
+
+    localStorage.setItem(key, JSON.stringify(defaults));
+    return defaults;
+}
+
+function saveUserFollowingList(list) {
+    const key = getUserFollowingKey();
+    localStorage.setItem(key, JSON.stringify(list));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('following', list);
+    }
+}
+
+function toggleFollowUser(targetId) {
+    let list = getUserFollowingList();
+    const idx = list.indexOf(targetId);
+    let isNowFollowing = false;
+
+    if (idx > -1) {
+        list.splice(idx, 1);
+        isNowFollowing = false;
+        showDiaryToast(`언팔로우했습니다.`);
+    } else {
+        list.push(targetId);
+        isNowFollowing = true;
+        const target = GOURMET_COMMUNITY_DATA[targetId];
+        showDiaryToast(`⭐ [${target ? target.name : targetId}] 님을 팔로우했습니다!`);
+    }
+
+    saveUserFollowingList(list);
+    renderProfileView();
+}
+window.toggleFollowUser = toggleFollowUser;
+
+function renderProfileView() {
+    const profile = getUserProfile();
+    const isOwner = isOwnerUser();
+    const followingList = getUserFollowingList();
+
+    // 1. Profile Header
+    const nameEl = document.getElementById('profile-display-name');
+    const badgeEl = document.getElementById('profile-role-badge');
+    const handleEl = document.getElementById('profile-display-handle');
+    const bioEl = document.getElementById('profile-display-bio');
+    const avatarEl = document.getElementById('profile-avatar-img');
+
+    if (nameEl) nameEl.textContent = profile.nickname;
+    if (badgeEl) {
+        badgeEl.textContent = isOwner ? '👑 Spoonmap 마스터' : '🥄 미식가';
+        badgeEl.className = isOwner ? 'profile-role-badge' : 'profile-role-badge gourmet-badge';
+    }
+    if (handleEl) handleEl.textContent = profile.handle;
+    if (bioEl) bioEl.textContent = profile.bio;
+    if (avatarEl && profile.profileImage) {
+        avatarEl.src = profile.profileImage;
+    }
+
+    // 2. Metrics
+    const restStatEl = document.getElementById('profile-stat-restaurants');
+    const visitStatEl = document.getElementById('profile-stat-visits');
+    const followerStatEl = document.getElementById('profile-stat-followers');
+    const followingStatEl = document.getElementById('profile-stat-following');
+    const badgeCountEl = document.getElementById('following-badge-count');
+
+    const totalRestaurants = isOwner 
+        ? ((typeof restaurantData !== 'undefined') ? restaurantData.length : 708)
+        : (getUserWishlist().length);
+
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+    const diaryEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
+    const totalVisits = diaryEntries.length;
+
+    if (restStatEl) restStatEl.textContent = totalRestaurants.toLocaleString();
+    if (visitStatEl) visitStatEl.textContent = totalVisits.toLocaleString();
+    if (followerStatEl) followerStatEl.textContent = profile.followersCount || 28;
+    if (followingStatEl) followingStatEl.textContent = followingList.length;
+    if (badgeCountEl) badgeCountEl.textContent = `${followingList.length}명`;
+
+    // 3. Render Following Cards
+    const followingGrid = document.getElementById('following-users-grid');
+    if (followingGrid) {
+        if (followingList.length === 0) {
+            followingGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align:center; padding: 2rem; color:#9CA3AF; font-size:0.85rem;">
+                    아직 팔로잉한 미식가가 없습니다. 아래에서 마음에 드는 미식가를 팔로우해 보세요! 👥
+                </div>
+            `;
+        } else {
+            followingGrid.innerHTML = followingList.map(fid => {
+                const g = GOURMET_COMMUNITY_DATA[fid];
+                if (!g) return '';
+                return `
+                    <div class="following-user-card">
+                        <div class="following-card-top">
+                            <img src="${g.avatar}" alt="${g.name}" class="following-user-avatar">
+                            <div class="following-user-info">
+                                <div class="following-user-name">${g.name}</div>
+                                <div class="following-user-handle">${g.handle}</div>
+                            </div>
+                        </div>
+                        <p class="following-user-bio">${g.bio}</p>
+                        <div class="following-card-bottom">
+                            <span class="following-stats-text">맛집 <b>${g.count}곳</b></span>
+                            <button class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${g.id}')">식당 목록 보기 🍽️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // 4. Render Discover Users List
+    renderDiscoverUsersList();
+}
+window.renderProfileView = renderProfileView;
+
+function renderDiscoverUsersList(searchQuery = '') {
+    const listEl = document.getElementById('discover-users-list');
+    if (!listEl) return;
+
+    const followingList = getUserFollowingList();
+    const q = searchQuery.toLowerCase().trim();
+
+    const allGourmets = Object.values(GOURMET_COMMUNITY_DATA);
+    const filtered = allGourmets.filter(g => {
+        // Exclude self if master
+        if (isOwnerUser() && g.id === 'master') return false;
+        if (!q) return true;
+        return g.name.toLowerCase().includes(q) || g.handle.toLowerCase().includes(q) || g.tags.toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; padding: 1.5rem; color:#9CA3AF; font-size:0.82rem;">검색 결과가 없습니다.</div>`;
+        return;
+    }
+
+    listEl.innerHTML = filtered.map(g => {
+        const isFollowing = followingList.includes(g.id);
+        return `
+            <div class="discover-user-item">
+                <div class="discover-user-left">
+                    <img src="${g.avatar}" alt="${g.name}">
+                    <div>
+                        <div class="discover-user-names">${g.name} <span>${g.handle}</span></div>
+                        <div class="discover-user-desc">${g.bio} (맛집 ${g.count}곳)</div>
+                    </div>
+                </div>
+                <button class="btn-toggle-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollowUser('${g.id}')">
+                    ${isFollowing ? '팔로잉 ✓' : '+ 팔로우'}
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// ─── Discover Search Listener ───
+document.addEventListener('DOMContentLoaded', () => {
+    const discoverSearch = document.getElementById('discover-user-search');
+    if (discoverSearch) {
+        discoverSearch.addEventListener('input', () => {
+            renderDiscoverUsersList(discoverSearch.value);
+        });
+    }
+});
+
+// ─── Shared Gourmet Viewer Mode (팔로잉한 사람 식당 리스트 열람) ───
+function getRestaurantsForGourmet(gourmetId) {
+    const base = (typeof restaurantData !== 'undefined') ? restaurantData : [];
+    if (gourmetId === 'master') {
+        return base;
+    }
+    if (gourmetId === 'seongsu_foodie') {
+        return base.filter(r => (r.location_small && (r.location_small.includes('성수') || r.location_small.includes('광진') || r.location_small.includes('뚝섬'))) || (r.category && r.category.includes('카페')));
+    }
+    if (gourmetId === 'wine_lover') {
+        return base.filter(r => (r.category && (r.category.includes('양식') || r.category.includes('술집') || r.category.includes('바'))) || (r.menu && r.menu.some(m => m.includes('와인') || m.includes('스테이크') || m.includes('파스타'))));
+    }
+    if (gourmetId === 'gukbap_master') {
+        return base.filter(r => (r.category && r.category.includes('한식')) || (r.name && (r.name.includes('순대') || r.name.includes('국밥') || r.name.includes('설렁탕') || r.name.includes('해장국'))));
+    }
+    if (gourmetId === 'bakery_zoe') {
+        return base.filter(r => (r.category && (r.category.includes('카페') || r.category.includes('간식'))) || (r.name && (r.name.includes('베이커리') || r.name.includes('빵') || r.name.includes('제과'))));
+    }
+    if (gourmetId === 'yeonnam_chef') {
+        return base.filter(r => (r.location_small && (r.location_small.includes('연남') || r.location_small.includes('홍대') || r.location_small.includes('서교'))) || (r.category && r.category.includes('양식')));
+    }
+    return base.slice(0, 30);
+}
+
+window.viewGourmetRestaurantList = function(gourmetId) {
+    const g = GOURMET_COMMUNITY_DATA[gourmetId];
+    if (!g) return;
+
+    const curatedList = getRestaurantsForGourmet(gourmetId);
+
+    window.currentViewingGourmet = {
+        id: gourmetId,
+        name: g.name,
+        handle: g.handle,
+        restaurants: curatedList
+    };
+
+    // 1. Switch to LIST Tab
+    window.location.hash = '#list';
+    const listTabBtn = document.querySelector('.tab-btn[data-tab="list"]') || document.querySelector('.mobile-tab-btn[data-tab="list"]');
+    if (listTabBtn) listTabBtn.click();
+
+    // 2. Show Viewing Banner
+    const banner = document.getElementById('gourmet-viewing-banner');
+    const nameEl = document.getElementById('gourmet-viewing-name');
+    if (banner) {
+        if (nameEl) nameEl.textContent = `${g.name} (${g.handle})`;
+        banner.style.display = 'flex';
+    }
+
+    // 3. Re-render List
+    if (typeof window.renderApp === 'function') {
+        window.renderApp();
+    } else if (typeof render === 'function') {
+        render();
+    }
+
+    showDiaryToast(`🍽️ [${g.name}] 님의 추천 맛집 ${curatedList.length}곳을 둘러봅니다.`);
+};
+
+window.exitGourmetViewingMode = function() {
+    window.currentViewingGourmet = null;
+    const banner = document.getElementById('gourmet-viewing-banner');
+    if (banner) banner.style.display = 'none';
+
+    if (typeof window.renderApp === 'function') {
+        window.renderApp();
+    } else if (typeof render === 'function') {
+        render();
+    }
+
+    showDiaryToast(`🏠 내 맛집 목록으로 돌아왔습니다.`);
+};
+
+// ─── Profile Edit Modal ───
+window.openProfileEditModal = function() {
+    const profile = getUserProfile();
+    const modal = document.getElementById('profile-edit-modal');
+    const nameInput = document.getElementById('edit-profile-name');
+    const handleInput = document.getElementById('edit-profile-handle');
+    const bioInput = document.getElementById('edit-profile-bio');
+
+    if (nameInput) nameInput.value = profile.nickname || '';
+    if (handleInput) handleInput.value = profile.handle || '';
+    if (bioInput) bioInput.value = profile.bio || '';
+
+    if (modal) modal.classList.add('open');
+};
+
+window.closeProfileEditModal = function() {
+    const modal = document.getElementById('profile-edit-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+window.saveProfileFromModal = function() {
+    const nameInput = document.getElementById('edit-profile-name');
+    const handleInput = document.getElementById('edit-profile-handle');
+    const bioInput = document.getElementById('edit-profile-bio');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    let handle = handleInput ? handleInput.value.trim() : '';
+    const bio = bioInput ? bioInput.value.trim() : '';
+
+    if (!name) {
+        alert('닉네임을 입력해 주세요.');
+        return;
+    }
+
+    if (handle && !handle.startsWith('@')) {
+        handle = '@' + handle;
+    }
+
+    const current = getUserProfile();
+    const updated = {
+        ...current,
+        nickname: name,
+        handle: handle || current.handle,
+        bio: bio
+    };
+
+    saveUserProfile(updated);
+    closeProfileEditModal();
+    renderProfileView();
+    showDiaryToast('✅ 프로필 정보가 성공적으로 수정되었습니다!');
+};
+
+window.handleShareMyMap = function() {
+    const profile = getUserProfile();
+    const shareUrl = `${window.location.origin}${window.location.pathname}#profile`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showDiaryToast(`🔗 ${profile.nickname}님의 미식 지도 링크가 복사되었습니다!`);
+        }).catch(() => {
+            prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
+        });
+    } else {
+        prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
+    }
+};
