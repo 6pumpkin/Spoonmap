@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609040129">
+    <link rel="stylesheet" href="style.css?v=202609040139">
 </head>
 
 <body class="light-theme">
@@ -54,7 +54,6 @@
             <button class="tab-btn" data-tab="map">MAP</button>
             <button class="tab-btn" data-tab="sommelier">AI</button>
             <button class="tab-btn" data-tab="recommend">ROULETTE</button>
-            <button class="tab-btn" data-tab="insights">INSIGHT</button>
             <button class="tab-btn" data-tab="profile">PROFILE</button>
         </div>
     </nav>
@@ -72,7 +71,6 @@
                     <button class="mobile-tab-btn" data-tab="map">MAP</button>
                     <button class="mobile-tab-btn" data-tab="sommelier">AI</button>
                     <button class="mobile-tab-btn" data-tab="recommend">ROULETTE</button>
-                    <button class="mobile-tab-btn" data-tab="insights">INSIGHT</button>
                     <button class="mobile-tab-btn" data-tab="profile">PROFILE</button>
                 </div>
             </div>
@@ -364,89 +362,6 @@
             </div>
         </div>
 
-        <!-- Food Insights Dedicated Tab Content -->
-        <div id="insights-view" class="tab-content">
-            <div class="auth-protected-content" id="insights-protected-content">
-                <div class="insights-container">
-                    <div class="insights-hero">
-                        <div class="hero-badge">📊 FOOD INSIGHTS</div>
-                        <h2>나의 미식 데이터 분석 대시보드</h2>
-                        <p id="insights-total-summary">미식 기록을 분석하고 있습니다...</p>
-                    </div>
-
-                    <!-- 4 Counter Summary Cards -->
-                    <div class="insights-stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-icon">🍱</span>
-                            <div class="stat-info">
-                                <span class="stat-label">총 기록 맛집</span>
-                                <span class="stat-val" id="stat-total-count">0곳</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-icon">🔥</span>
-                            <div class="stat-info">
-                                <span class="stat-label">또간집 비율</span>
-                                <span class="stat-val" id="stat-visited-count">0%</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-icon">👑</span>
-                            <div class="stat-info">
-                                <span class="stat-label">최다 방문 단골</span>
-                                <span class="stat-val stat-small" id="stat-top-place">-</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-icon">🥇</span>
-                            <div class="stat-info">
-                                <span class="stat-label">최애 카테고리</span>
-                                <span class="stat-val stat-small" id="stat-top-category">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detailed Insights Sections -->
-                    <div class="insights-sections">
-                        <!-- Region Section -->
-                        <div class="insights-box">
-                            <div class="box-header">
-                                <h3>📍 미식 정복 지역</h3>
-                                <button id="btn-toggle-regions" class="insights-toggle-btn">전체 ▼</button>
-                            </div>
-                            <div id="insights-region-list" class="insights-bar-list"></div>
-                        </div>
-
-                        <!-- Category Section -->
-                        <div class="insights-box">
-                            <div class="box-header">
-                                <h3>🍚 카테고리별 미식 비율</h3>
-                                <button id="btn-toggle-categories" class="insights-toggle-btn">전체 ▼</button>
-                            </div>
-                            <div id="insights-category-list" class="insights-bar-list"></div>
-                        </div>
-
-                        <!-- Spoon Rating Distribution -->
-                        <div class="insights-box">
-                            <div class="box-header">
-                                <h3>🥄 수저 평점 등급 분포</h3>
-                            </div>
-                            <div id="insights-rate-list" class="insights-bar-list"></div>
-                        </div>
-
-                        <!-- Hall of Fame Section -->
-                        <div class="insights-box full-width-box">
-                            <div class="box-header">
-                                <h3>👑 찐 단골집 명예의 전당 (또간집 랭킹)</h3>
-                                <button id="btn-toggle-top-places" class="insights-toggle-btn">전체 ▼</button>
-                            </div>
-                            <div id="insights-top-places-list" class="insights-rank-list"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="auth-locked-placeholder" id="insights-locked-view" style="display:none;"></div>
-        </div>
 
         <!-- ─── 식사 일기 영역 ─── -->
         <div id="diary-view" class="tab-content">
@@ -684,8 +599,15 @@
                                 </div>
                             </div>
                             <div class="profile-action-btns">
-                                <button class="profile-btn btn-edit-profile" onclick="openProfileEditModal()">✏️ 프로필 수정</button>
-                                <button class="profile-btn btn-share-profile" onclick="handleShareMyMap()">🔗 내 맛집 공유</button>
+                                <div class="profile-action-left">
+                                    <button class="profile-btn btn-edit-profile" onclick="openProfileEditModal()">✏️ 프로필 수정</button>
+                                    <button class="profile-btn btn-share-profile" onclick="handleShareMyMap()">🔗 내 맛집 공유</button>
+                                </div>
+                                <div class="profile-action-right">
+                                    <button class="profile-btn btn-insight-open" onclick="openInsightModal()" title="나의 미식 분석 데이터 보기">
+                                        📊 나의 미식 인사이트
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -700,11 +622,11 @@
                                 <span class="stat-label">방문 일기 📅</span>
                             </div>
                             <div class="profile-stat-item">
-                                <span class="stat-num" id="profile-stat-followers">28</span>
+                                <span class="stat-num" id="profile-stat-followers">0</span>
                                 <span class="stat-label">팔로워 👥</span>
                             </div>
                             <div class="profile-stat-item">
-                                <span class="stat-num" id="profile-stat-following">14</span>
+                                <span class="stat-num" id="profile-stat-following">0</span>
                                 <span class="stat-label">팔로잉 ⭐</span>
                             </div>
                         </div>
@@ -981,6 +903,95 @@
         </div>
     </div>
 
+    <!-- ─── Food Insights Floating Modal (미식 데이터 분석 모달) ─── -->
+    <div id="insight-modal" class="profile-edit-modal insight-modal-wrap" onclick="if(event.target===this)closeInsightModal()">
+        <div class="profile-modal-card insight-modal-card">
+            <div class="profile-modal-header insight-modal-header">
+                <div class="insight-modal-header-text">
+                    <h3>📊 나의 미식 인사이트 리포트</h3>
+                    <p id="insights-total-summary">미식 기록을 분석하고 있습니다...</p>
+                </div>
+                <button class="profile-modal-close" onclick="closeInsightModal()">&times;</button>
+            </div>
+            
+            <div class="insight-modal-body">
+                <!-- 4 Counter Summary Cards -->
+                <div class="insights-stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-icon">🍱</span>
+                        <div class="stat-info">
+                            <span class="stat-label">총 기록 맛집</span>
+                            <span class="stat-val" id="stat-total-count">0곳</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">🔥</span>
+                        <div class="stat-info">
+                            <span class="stat-label">또간집 비율</span>
+                            <span class="stat-val" id="stat-visited-count">0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">👑</span>
+                        <div class="stat-info">
+                            <span class="stat-label">최다 방문 단골</span>
+                            <span class="stat-val stat-small" id="stat-top-place">-</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">🥇</span>
+                        <div class="stat-info">
+                            <span class="stat-label">최애 카테고리</span>
+                            <span class="stat-val stat-small" id="stat-top-category">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Insights Sections -->
+                <div class="insights-sections">
+                    <!-- Region Section -->
+                    <div class="insights-box">
+                        <div class="box-header">
+                            <h3>📍 미식 정복 지역</h3>
+                            <button id="btn-toggle-regions" class="insights-toggle-btn">전체 ▼</button>
+                        </div>
+                        <div id="insights-region-list" class="insights-bar-list"></div>
+                    </div>
+
+                    <!-- Category Section -->
+                    <div class="insights-box">
+                        <div class="box-header">
+                            <h3>🍚 카테고리별 미식 비율</h3>
+                            <button id="btn-toggle-categories" class="insights-toggle-btn">전체 ▼</button>
+                        </div>
+                        <div id="insights-category-list" class="insights-bar-list"></div>
+                    </div>
+
+                    <!-- Spoon Rating Distribution -->
+                    <div class="insights-box">
+                        <div class="box-header">
+                            <h3>🥄 수저 평점 등급 분포</h3>
+                        </div>
+                        <div id="insights-rate-list" class="insights-bar-list"></div>
+                    </div>
+
+                    <!-- Hall of Fame Section -->
+                    <div class="insights-box full-width-box">
+                        <div class="box-header">
+                            <h3>👑 찐 단골집 명예의 전당 (또간집 랭킹)</h3>
+                            <button id="btn-toggle-top-places" class="insights-toggle-btn">전체 ▼</button>
+                        </div>
+                        <div id="insights-top-places-list" class="insights-rank-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeInsightModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK (Cloud Firestore Sync) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -991,8 +1002,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202609040129"></script>
-    <script src="app.js?v=202609040129"></script>
+    <script src="data.js?v=202609040139"></script>
+    <script src="app.js?v=202609040139"></script>
 </body>
 
 </html>

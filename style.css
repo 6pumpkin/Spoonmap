@@ -5025,8 +5025,23 @@ input[type="date"].drawer-input {
 
 .profile-action-btns {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-action-left {
+    display: flex;
     gap: 8px;
-    align-self: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.profile-action-right {
+    display: flex;
+    align-items: center;
 }
 
 .profile-btn {
@@ -5039,6 +5054,21 @@ input[type="date"].drawer-input {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.btn-insight-open {
+    background: #ffffff;
+    color: #4338CA;
+    border: 1.5px solid #C7D2FE;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+}
+
+.btn-insight-open:hover {
+    background: #EEF2FF;
+    border-color: #6366F1;
+    color: #3730A3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.16);
 }
 
 .btn-edit-profile {
@@ -5583,6 +5613,54 @@ input[type="date"].drawer-input {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
+}
+
+/* ─── Insight Floating Modal Styles ─── */
+.insight-modal-card {
+    max-width: 880px !important;
+    width: 94% !important;
+    max-height: 88vh !important;
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 24px;
+}
+
+.insight-modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    background: #FAF9F6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.insight-modal-header-text h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.insight-modal-header-text p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #6B7280;
+}
+
+.insight-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.insight-modal-body .insights-stats-grid {
+    margin-bottom: 20px;
+}
+
+.insight-modal-body .insights-sections {
+    margin-top: 0;
 }
 
 

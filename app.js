@@ -708,12 +708,21 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
-    const VALID_TABS = ['list', 'map', 'recommend', 'insights', 'sommelier', 'diary', 'profile'];
+    const VALID_TABS = ['list', 'map', 'recommend', 'sommelier', 'diary', 'profile'];
 
     function parseRoute() {
         const rawHash = (window.location.hash || '').replace(/^#\/?/, '');
         const parts = rawHash.split('/');
         const mainPart = parts[0].split('?')[0];
+
+        // Legacy compatibility: #insights -> redirect to #profile and open insight modal
+        if (mainPart === 'insights') {
+            setTimeout(() => {
+                if (typeof openInsightModal === 'function') openInsightModal();
+            }, 200);
+            return { tab: 'profile', rawHash, subPath: '', queryParams: {} };
+        }
+
         const defaultTab = isOwnerUser() ? 'diary' : 'map';
         const tab = VALID_TABS.includes(mainPart) ? mainPart : defaultTab;
         
@@ -769,8 +778,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentActiveTab = targetTab;
         if (targetTab === 'map') {
             initMap();
-        } else if (targetTab === 'insights' && isUserLoggedIn()) {
-            computeAndRenderFoodInsights();
         } else if (targetTab === 'sommelier') {
             initSommelierTab();
         } else if (targetTab === 'diary' && isUserLoggedIn()) {
@@ -7551,3 +7558,19 @@ window.handleShareMyMap = function() {
         prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
     }
 };
+
+// ─── Food Insights Floating Modal Controls ───
+window.openInsightModal = function() {
+    const modal = document.getElementById('insight-modal');
+    if (!modal) return;
+    if (typeof computeAndRenderFoodInsights === 'function') {
+        computeAndRenderFoodInsights();
+    }
+    modal.classList.add('open');
+};
+
+window.closeInsightModal = function() {
+    const modal = document.getElementById('insight-modal');
+    if (modal) modal.classList.remove('open');
+};
+
