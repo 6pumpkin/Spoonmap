@@ -6948,7 +6948,13 @@ async function publishPublicProfile(profile) {
     }
 }
 
-let cachedDiscoveredUsers = [];
+let cachedDiscoveredUsers = (function() {
+    try {
+        return JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
+    } catch (_) {
+        return [];
+    }
+})();
 
 async function fetchDiscoveredUsersFromCloud() {
     if (!isFirebaseReady || !db) {
@@ -7107,48 +7113,58 @@ function renderProfileView() {
     if (badgeCountEl) badgeCountEl.textContent = `${followingList.length}명`;
 
     // 3. Render Following Cards
-    const followingGrid = document.getElementById('following-users-grid');
-    if (followingGrid) {
-        if (followingList.length === 0) {
-            followingGrid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align:center; padding: 2.2rem 1rem; color:#9CA3AF; font-size:0.85rem; line-height: 1.6;">
-                    아직 팔로잉한 미식가가 없습니다.<br>아래 [새로운 미식가 찾기]에서 다른 유저를 찾아 팔로우해 보세요! 👥
-                </div>
-            `;
-        } else {
-            followingGrid.innerHTML = followingList.map(fid => {
-                const u = cachedDiscoveredUsers.find(cu => String(cu.id) === String(fid)) || {
-                    id: fid,
-                    name: `미식가 #${String(fid).slice(-4)}`,
-                    handle: `@user_${String(fid).slice(-4)}`,
-                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${fid}`,
-                    bio: '맛집을 기록하고 공유하는 미식가입니다 🥄',
-                    count: 0
-                };
-                return `
-                    <div class="following-user-card">
-                        <div class="following-card-top">
-                            <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}" class="following-user-avatar">
-                            <div class="following-user-info">
-                                <div class="following-user-name">${u.name}</div>
-                                <div class="following-user-handle">${u.handle}</div>
-                            </div>
-                        </div>
-                        <p class="following-user-bio">${u.bio || '등록된 소개글이 없습니다.'}</p>
-                        <div class="following-card-bottom">
-                            <span class="following-stats-text">맛집 <b>${u.count || 0}곳</b></span>
-                            <button class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}')">식당 목록 보기 🍽️</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-    }
+    renderFollowingCards();
 
     // 4. Render Discover Users List from Cloud
     renderDiscoverUsersList();
 }
 window.renderProfileView = renderProfileView;
+
+function renderFollowingCards() {
+    const followingGrid = document.getElementById('following-users-grid');
+    if (!followingGrid) return;
+    const followingList = getUserFollowingList();
+
+    if (followingList.length === 0) {
+        followingGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align:center; padding: 2.2rem 1rem; color:#9CA3AF; font-size:0.85rem; line-height: 1.6;">
+                아직 팔로잉한 미식가가 없습니다.<br>아래 [새로운 미식가 찾기]에서 다른 유저를 찾아 팔로우해 보세요! 👥
+            </div>
+        `;
+        return;
+    }
+
+    followingGrid.innerHTML = followingList.map(fid => {
+        let u = cachedDiscoveredUsers.find(cu => String(cu.id) === String(fid));
+        if (!u) {
+            u = {
+                id: fid,
+                name: `미식가 #${String(fid).slice(-4)}`,
+                handle: `@user_${String(fid).slice(-4)}`,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${fid}`,
+                bio: '맛집을 기록하고 공유하는 미식가입니다 🥄',
+                count: 0
+            };
+        }
+        return `
+            <div class="following-user-card">
+                <div class="following-card-top">
+                    <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}" class="following-user-avatar">
+                    <div class="following-user-info">
+                        <div class="following-user-name">${u.name}</div>
+                        <div class="following-user-handle">${u.handle}</div>
+                    </div>
+                </div>
+                <p class="following-user-bio">${u.bio || '등록된 소개글이 없습니다.'}</p>
+                <div class="following-card-bottom">
+                    <span class="following-stats-text">맛집 <b>${u.count || 0}곳</b></span>
+                    <button class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}')">식당 목록 보기 🍽️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+window.renderFollowingCards = renderFollowingCards;
 
 async function renderDiscoverUsersList(searchQuery = '') {
     const listEl = document.getElementById('discover-users-list');
@@ -7159,6 +7175,23 @@ async function renderDiscoverUsersList(searchQuery = '') {
 
     // Fetch from Firestore
     const cloudUsers = await fetchDiscoveredUsersFromCloud();
+
+    // If any followed user was missing from cachedDiscoveredUsers, fetch individually
+    const missingFids = followingList.filter(fid => !cachedDiscoveredUsers.some(cu => String(cu.id) === String(fid)));
+    if (missingFids.length > 0 && isFirebaseReady && db) {
+        await Promise.all(missingFids.map(async (fid) => {
+            try {
+                const doc = await db.collection('spoonmap_public_profiles').doc(String(fid)).get();
+                if (doc.exists && doc.data()) {
+                    cachedDiscoveredUsers.push(doc.data());
+                }
+            } catch (e) {}
+        }));
+        localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(cachedDiscoveredUsers));
+    }
+
+    // Refresh following cards with resolved user names & avatars!
+    renderFollowingCards();
 
     const filtered = cloudUsers.filter(u => {
         if (!q) return true;
