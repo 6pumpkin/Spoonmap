@@ -6856,7 +6856,17 @@ function getUserProfile() {
 
     try {
         const saved = localStorage.getItem(key);
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Clean legacy mock counts (force to 0)
+            if (parsed.followersCount === 28 || parsed.followersCount === 2 || typeof parsed.followersCount !== 'number') {
+                parsed.followersCount = 0;
+            }
+            if (!parsed.profileImage) {
+                parsed.profileImage = u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : 'https://api.dicebear.com/7.x/avataaars/svg?seed=gourmet');
+            }
+            return parsed;
+        }
     } catch (e) {
         console.warn('Failed to parse user profile', e);
     }
@@ -6882,7 +6892,7 @@ function saveUserProfile(updated) {
     const key = getUserProfileKey();
     localStorage.setItem(key, JSON.stringify(updated));
 
-    // Update current session user nickname if changed
+    // Update current session user nickname & avatar if changed
     const u = getCurrentUser();
     if (u) {
         u.nickname = updated.nickname;
@@ -6974,7 +6984,18 @@ function getUserFollowingList() {
     const key = getUserFollowingKey();
     try {
         const saved = localStorage.getItem(key);
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+            const list = JSON.parse(saved);
+            if (Array.isArray(list)) {
+                // Filter out any legacy mock ids!
+                const legacyMockIds = ['master', 'seongsu_foodie', 'wine_lover', 'gukbap_master', 'bakery_zoe', 'yeonnam_chef'];
+                const cleaned = list.filter(id => !legacyMockIds.includes(String(id)));
+                if (cleaned.length !== list.length) {
+                    saveUserFollowingList(cleaned);
+                }
+                return cleaned;
+            }
+        }
     } catch (e) {
         console.warn('Failed to parse following list', e);
     }
@@ -6986,6 +7007,16 @@ function saveUserFollowingList(list) {
     localStorage.setItem(key, JSON.stringify(list));
     if (typeof saveToCloud === 'function') {
         saveToCloud('following', list);
+    }
+}
+
+function updateProfileAvatarDisplay(url) {
+    const contentEl = document.getElementById('profile-avatar-content');
+    if (!contentEl) return;
+    if (url) {
+        contentEl.innerHTML = `<img id="profile-avatar-img" src="${url}" alt="프로필 사진" class="profile-avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=fallback';">`;
+    } else {
+        contentEl.innerHTML = `<div class="profile-avatar-fallback">🥄</div>`;
     }
 }
 
@@ -7013,13 +7044,13 @@ function renderProfileView() {
     const profile = getUserProfile();
     const isOwner = isOwnerUser();
     const followingList = getUserFollowingList();
+    const u = getCurrentUser() || {};
 
     // 1. Profile Header
     const nameEl = document.getElementById('profile-display-name');
     const badgeEl = document.getElementById('profile-role-badge');
     const handleEl = document.getElementById('profile-display-handle');
     const bioEl = document.getElementById('profile-display-bio');
-    const avatarEl = document.getElementById('profile-avatar-img');
 
     if (nameEl) nameEl.textContent = profile.nickname;
     if (badgeEl) {
@@ -7028,9 +7059,10 @@ function renderProfileView() {
     }
     if (handleEl) handleEl.textContent = profile.handle;
     if (bioEl) bioEl.textContent = profile.bio;
-    if (avatarEl && profile.profileImage) {
-        avatarEl.src = profile.profileImage;
-    }
+
+    // Render Avatar cleanly into profile-avatar-content
+    const currentAvatarUrl = profile.profileImage || u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : 'https://api.dicebear.com/7.x/avataaars/svg?seed=gourmet');
+    updateProfileAvatarDisplay(currentAvatarUrl);
 
     // 2. Exact Metrics: Registered Restaurants & Diary Visits
     const restStatEl = document.getElementById('profile-stat-restaurants');

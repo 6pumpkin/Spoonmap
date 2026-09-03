@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609040116">
+    <link rel="stylesheet" href="style.css?v=202609040123">
 </head>
 
 <body class="light-theme">
@@ -668,8 +668,10 @@
                         <div class="profile-banner"></div>
                         <div class="profile-hero-content">
                             <div class="profile-avatar-row">
-                                <div class="profile-avatar-wrap" onclick="openAvatarPickerModal()" title="프로필 사진 변경" style="cursor:pointer;">
-                                    <img id="profile-avatar-img" src="" alt="프로필 사진" class="profile-avatar-img" onerror="this.outerHTML='<div class=\'profile-avatar-fallback\'>🥄</div>'">
+                                <div class="profile-avatar-wrap" id="profile-avatar-wrap" onclick="openAvatarPickerModal()" title="프로필 사진 변경" style="cursor:pointer;">
+                                    <div id="profile-avatar-content" class="profile-avatar-inner">
+                                        <div class="profile-avatar-fallback">🥄</div>
+                                    </div>
                                     <button class="profile-avatar-edit-btn" onclick="event.stopPropagation(); openAvatarPickerModal()" title="프로필 사진 변경">📷</button>
                                 </div>
                                 <div class="profile-main-info">
@@ -989,8 +991,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202609040116"></script>
-    <script src="app.js?v=202609040116"></script>
+    <script src="data.js?v=202609040123"></script>
+    <script src="app.js?v=202609040123"></script>
 </body>
 
 </html>

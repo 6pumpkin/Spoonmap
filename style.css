@@ -4935,6 +4935,13 @@ input[type="date"].drawer-input {
     flex-shrink: 0;
 }
 
+.profile-avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+}
+
 .profile-avatar-img {
     width: 100%;
     height: 100%;
