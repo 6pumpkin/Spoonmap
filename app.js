@@ -7202,6 +7202,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ─── Helper: Get Master's Full 728 Restaurants List ───
+function getMasterRestaurantList() {
+    const mapByName = new Map();
+    const visitsByName = new Map();
+    const datesByName = new Map();
+
+    // 1. Base restaurantData (from data.js)
+    if (typeof restaurantData !== 'undefined' && Array.isArray(restaurantData)) {
+        restaurantData.forEach(r => {
+            const key = r.name.trim().toLowerCase();
+            mapByName.set(key, { ...r, menu: [...(r.menu || [])] });
+            if (r.date) datesByName.set(key, r.date);
+        });
+    }
+
+    // 2. Historical diary visits (from data.js)
+    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+        diaryData.forEach(item => {
+            if (!item.name) return;
+            const key = item.name.trim().toLowerCase();
+            visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
+            if (item.date) {
+                const prevDate = datesByName.get(key) || '';
+                if (!prevDate || item.date > prevDate) datesByName.set(key, item.date);
+            }
+        });
+    }
+
+    // 3. User local added diary entries for master if on master machine
+    const masterLocalDiary = JSON.parse(localStorage.getItem('spoonmap_diary') || '[]');
+    masterLocalDiary.forEach(item => {
+        if (!item.name) return;
+        const key = item.name.trim().toLowerCase();
+        visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
+        if (item.date) {
+            const prevDate = datesByName.get(key) || '';
+            if (!prevDate || item.date > prevDate) datesByName.set(key, item.date);
+        }
+        const existing = mapByName.get(key);
+        const menuArray = Array.isArray(item.menu) 
+            ? item.menu 
+            : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+        if (existing) {
+            if (item.category) existing.category = item.category;
+            if (item.rate) existing.rate = item.rate;
+            if (menuArray.length > 0) existing.menu = menuArray;
+            if (item.location_large) existing.location_large = item.location_large;
+            if (item.location_small) existing.location_small = item.location_small;
+            if (item.map_url) existing.map_url = item.map_url;
+        } else {
+            mapByName.set(key, {
+                name: item.name,
+                category: item.category || '기타',
+                rate: item.rate || '🥄',
+                menu: menuArray,
+                location_large: item.location_large || '기타',
+                location_small: item.location_small || '',
+                map_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+                visit_count: 1
+            });
+        }
+    });
+
+    // 4. Overrides
+    const masterOverrides = JSON.parse(localStorage.getItem('spoonmap_restaurant_overrides') || '{}');
+    Object.keys(masterOverrides).forEach(rawKey => {
+        const key = rawKey.trim().toLowerCase();
+        const ov = masterOverrides[rawKey];
+        if (!ov) return;
+        const existing = mapByName.get(key);
+        if (existing) {
+            if (ov.category) existing.category = ov.category;
+            if (ov.rate) existing.rate = ov.rate;
+            if (ov.location_large) existing.location_large = ov.location_large;
+            if (ov.location_small) existing.location_small = ov.location_small;
+            if (ov.map_url) existing.map_url = ov.map_url;
+        }
+    });
+
+    const list = [];
+    mapByName.forEach((item, key) => {
+        const count = visitsByName.get(key) || item.visit_count || 1;
+        const latestDate = datesByName.get(key) || item.date || '';
+        list.push({
+            ...item,
+            visit_count: count,
+            date: latestDate
+        });
+    });
+
+    return list;
+}
+window.getMasterRestaurantList = getMasterRestaurantList;
+
 // ─── Shared Gourmet Viewer Mode (팔로잉한 실제 유저의 식당 리스트 열람) ───
 window.viewGourmetRestaurantList = async function(userId) {
     let targetUser = cachedDiscoveredUsers.find(u => String(u.id) === String(userId));
@@ -7213,34 +7307,83 @@ window.viewGourmetRestaurantList = async function(userId) {
     }
 
     if (!targetUser) {
-        alert('해당 미식가 정보를 찾을 수 없습니다.');
-        return;
+        // Fallback for Master
+        if (String(userId) === 'master' || String(userId).includes('master')) {
+            targetUser = {
+                id: 'master',
+                name: '박준호',
+                handle: '@junho_spoon',
+                isMaster: true
+            };
+        } else {
+            alert('해당 미식가 정보를 찾을 수 없습니다.');
+            return;
+        }
     }
 
     showDiaryToast(`🍽️ [${targetUser.name}] 님의 맛집 리스트를 불러오는 중...`);
 
-    // Fetch user's wishlist/restaurants from Firestore
     let userRestaurants = [];
-    try {
-        if (db) {
-            const userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
-            if (userDoc.exists) {
-                const uData = userDoc.data();
-                if (uData.wishlist && Array.isArray(uData.wishlist)) {
-                    userRestaurants = uData.wishlist.map(w => ({
-                        name: w.name,
-                        category: w.category || '기타',
-                        location_large: w.location || '기타',
-                        location_small: w.location || '',
-                        rate: '🥄🥄🥄',
-                        map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
-                        visit_count: 1
-                    }));
+
+    // 1. Is this Master (박준호)?
+    const isMaster = targetUser.isMaster === true || 
+                     targetUser.name === '박준호' || 
+                     targetUser.handle === '@junho_spoon' || 
+                     String(userId) === 'master' || 
+                     String(targetUser.id) === 'master';
+
+    if (isMaster) {
+        userRestaurants = getMasterRestaurantList();
+    } else {
+        // 2. Regular user from Firestore
+        try {
+            if (db) {
+                let userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
+                if (!userDoc.exists) {
+                    userDoc = await db.collection('spoonmap_users').doc(String(userId)).get();
+                }
+                if (userDoc.exists) {
+                    const uData = userDoc.data();
+                    const seenNames = new Set();
+
+                    // From Wishlist
+                    if (uData.wishlist && Array.isArray(uData.wishlist)) {
+                        uData.wishlist.forEach(w => {
+                            if (!w || !w.name || seenNames.has(w.name)) return;
+                            seenNames.add(w.name);
+                            userRestaurants.push({
+                                name: w.name,
+                                category: w.category || '기타',
+                                location_large: w.location || '기타',
+                                location_small: w.location || '',
+                                rate: '🥄🥄🥄',
+                                map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
+                                visit_count: 1
+                            });
+                        });
+                    }
+
+                    // From Diary
+                    if (uData.diary && Array.isArray(uData.diary)) {
+                        uData.diary.forEach(d => {
+                            if (!d || !d.name || seenNames.has(d.name)) return;
+                            seenNames.add(d.name);
+                            userRestaurants.push({
+                                name: d.name,
+                                category: d.category || '기타',
+                                location_large: d.location_large || '기타',
+                                location_small: d.location_small || '',
+                                rate: d.rate || '🥄🥄🥄',
+                                map_url: d.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(d.name)}`,
+                                visit_count: 1
+                            });
+                        });
+                    }
                 }
             }
+        } catch (e) {
+            console.warn('Error fetching user restaurants:', e);
         }
-    } catch (e) {
-        console.warn('Error fetching user restaurants:', e);
     }
 
     if (userRestaurants.length === 0) {
