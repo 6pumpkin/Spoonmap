@@ -654,6 +654,121 @@ function isSavedRestaurantMatch(r, place) {
 }
 window.isSavedRestaurantMatch = isSavedRestaurantMatch;
 
+// ─── Food-Related Place Filtering Utility ───
+// Strictly keeps dining, cafes, bars, wedding halls, convenience stores, and food retailers.
+// Completely filters out non-food establishments (hair salons, dental clinics, crossroads, subway exits, apartments, etc.)
+function isFoodRelatedPlace(place, masterData = []) {
+    if (!place) return false;
+
+    // 1. Saved Restaurant Priority: Any restaurant saved by user is always kept!
+    if (Array.isArray(masterData) && masterData.length > 0 && typeof isSavedRestaurantMatch === 'function') {
+        const isSaved = masterData.some(r => isSavedRestaurantMatch(r, place));
+        if (isSaved) return true;
+    }
+
+    const groupCode = (place.category_group_code || '').trim().toUpperCase();
+    const catName = (place.category_name || '').trim().toLowerCase();
+    const placeName = (place.place_name || '').trim().toLowerCase();
+
+    // 2. Strict Exclusions by Category Group Code
+    // Non-food groups: Hospitals(HP8), Pharmacies(PM9), Subway/Stations(SW8), Banks(BK9), 
+    // Gas stations(OL7), Public offices(PO3), Schools(SC4), Academies(AC5), Parking(PK6), Real estate(AG2)
+    const nonFoodGroupCodes = ['HP8', 'PM9', 'SW8', 'BK9', 'OL7', 'PO3', 'SC4', 'AC5', 'PK6', 'AG2', 'AT4', 'AD5'];
+    if (nonFoodGroupCodes.includes(groupCode)) {
+        // Exception: Check if it's explicitly a wedding hall/banquet inside hotel or food store
+        const isWeddingOrFood = catName.includes('웨딩') || catName.includes('예식장') || catName.includes('음식점') || catName.includes('식품');
+        if (!isWeddingOrFood) {
+            return false;
+        }
+    }
+
+    // 3. Strict Exclusions by Place Name Keywords (Common infrastructure & non-food services)
+    const negativeNameKeywords = [
+        '교차로', '사거리', '삼거리', '오거리', '번출구', '지하철출구', '역출구',
+        '치과의원', '치과', '성형외과', '피부과의원', '한의원', '동물병원', '약국',
+        '헤어', '미용실', '네일', '바버샵', '피부관리', '에스테틱', '왁싱', '마사지',
+        'kt플라자', 't월드', 't world', 'u+스퀘어', 'lg유플러스', '알뜰폰',
+        '공인중개사', '부동산', '세무사', '법무사', '행정사', '변호사', '회계사',
+        '아파트', '빌라', '오피스텔', '주상복합', '타운하우스', '연립주택',
+        '주유소', '충전소', '세차장', '정비소', '타이어',
+        '빨래방', '세탁소', '크린토피아',
+        '독서실', '스터디룸', '고시원', '고시텔',
+        '피트니스', '필라테스', '헬스장', '스크린골프', '골프연습장', '볼링장', '당구장'
+    ];
+    for (let i = 0; i < negativeNameKeywords.length; i++) {
+        if (placeName.includes(negativeNameKeywords[i])) {
+            if (!catName.startsWith('음식점') && !catName.startsWith('카페')) {
+                return false;
+            }
+        }
+    }
+
+    // 4. Strict Exclusions by Category Name Keywords
+    const negativeCatKeywords = [
+        '미용', '헤어', '네일', '피부', '마사지', '스파', '왁싱', '이발', '이용원', '메이크업',
+        '병원', '의원', '치과', '한의원', '약국', '보건소', '산후조리원', '동물병원', '안과', '피부과', '성형외과', '정형외과', '내과', '이비인후과',
+        '교통', '지하철', '지하철출구', '버스', '정류장', '교차로', '도로시설', '주차장', '주유소', '세차장', '정비소', '터미널', '철도',
+        '통신', '통신사대리점', '대리점', '휴대폰',
+        '부동산', '공인중개사', '아파트', '주거시설', '빌라', '오피스텔', '주택', '건물', '빌딩',
+        '학원', '학교', '독서실', '스터디룸', '고시원',
+        '은행', '금융', '보험', '증권', 'atm', '새마을금고', '신협',
+        '세탁', '수리', '인테리어', '철물', '열쇠', '도장',
+        '의류', '패션', '잡화', '신발', '안경', '화장품',
+        '스포츠', '헬스', '피트니스', '필라테스', '요가', '골프', '당구', '볼링', '수영',
+        '종교', '교회', '성당', '사찰', '절',
+        '사회,공공', '공공기관', '주민센터', '경찰서', '소방서', '우체국'
+    ];
+    for (let i = 0; i < negativeCatKeywords.length; i++) {
+        if (catName.includes(negativeCatKeywords[i])) {
+            const isException = catName.includes('웨딩') || catName.includes('예식장') || catName.includes('편의점') || catName.includes('음식점') || catName.includes('카페');
+            if (!isException) {
+                return false;
+            }
+        }
+    }
+
+    // 5. Positive Group Codes
+    // FD6 = 음식점, CE7 = 카페, CS2 = 편의점
+    if (groupCode === 'FD6' || groupCode === 'CE7' || groupCode === 'CS2') {
+        return true;
+    }
+
+    // 6. Positive Category Name Keywords
+    const positiveCatKeywords = [
+        '음식점', '카페', '커피', '디저트',
+        '술집', '주점', '호프', '바(bar)', '와인바', '이자카야', '포차', '맥주', '선술집', '간이주점', '포장마차', '유흥주점',
+        '한식', '중식', '일식', '양식', '분식', '패스트푸드', '치킨', '피자', '도시락', '야식', '뷔페', '패밀리레스토랑', '퓨전요리', '아시아음식',
+        '베이커리', '제과', '제빵', '떡집', '방앗간', '도넛', '와플', '베이글', '아이스크림', '빙수', '찻집', '티하우스',
+        '웨딩홀', '예식장', '웨딩',
+        '편의점',
+        '푸드코트', '식품관', '식료품', '식자재', '식품판매', '식품',
+        '정육점', '수산물', '청과', '과일', '반찬', '축산물',
+        '슈퍼,마트'
+    ];
+    for (let i = 0; i < positiveCatKeywords.length; i++) {
+        if (catName.includes(positiveCatKeywords[i])) {
+            return true;
+        }
+    }
+
+    // 7. Positive Place Name Keywords Fallback
+    const positiveNameKeywords = [
+        '식당', '키친', '베이커리', '카페', '커피', '호프', '포차', '치킨', '피자', '버거',
+        '갈비', '삼겹살', '곱창', '막창', '초밥', '스시', '라멘', '우동', '돈까스', '돈가스',
+        '짜장', '짬뽕', '마라탕', '떡볶이', '김밥', '국밥', '설렁탕', '순대', '보쌈', '족발',
+        '횟집', '회집', '수산', '정육', '반찬', '웨딩홀', '예식장', '편의점',
+        'gs25', 'cu', '세븐일레븐', '이마트24', '푸드'
+    ];
+    for (let i = 0; i < positiveNameKeywords.length; i++) {
+        if (placeName.includes(positiveNameKeywords[i])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+window.isFoodRelatedPlace = isFoodRelatedPlace;
+
 function isPlaceInWishlist(name, place = null) {
     if (!name) return false;
     const list = getUserWishlist();
@@ -1817,15 +1932,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            const uniquePlaces = Array.from(uniquePlacesMap.values());
+            const masterData = getUnifiedRestaurantData();
+
+            // Filter by Food-Related Places ONLY! (No hair salons, dental clinics, crossroads, subway exits, apartments, etc.)
+            let uniquePlaces = Array.from(uniquePlacesMap.values()).filter(p => isFoodRelatedPlace(p, masterData));
+
+            // Supplementary Search: If station/region query or few food places found, also fetch '[query] 맛집' to discover real restaurants!
+            const isStationOrArea = /(?:역|동|구|군|시|거리|길|로|\d+가)$/.test(query.trim()) || 
+                ['홍대', '신촌', '이태원', '강남', '건대', '대학로', '압구정', '여의도', '명동', '성수', '한남', '을지로', '문래', '연남', '망원', '혜화', '잠실', '판교', '서현', '정자'].includes(query.trim());
+
+            if (searchType === 'keyword' && (isStationOrArea || uniquePlaces.length < 15) && !query.includes('맛집')) {
+                try {
+                    const extraResults = await Promise.all(
+                        targetBoundsList.map(b => fetchPlacesForBounds(ps, searchType, `${query} 맛집`, b))
+                    );
+                    const extraPlaces = extraResults.flat();
+                    extraPlaces.forEach(p => {
+                        const key = p.id || `${p.place_name}_${p.x}_${p.y}`;
+                        if (!uniquePlacesMap.has(key) && isFoodRelatedPlace(p, masterData)) {
+                            uniquePlacesMap.set(key, p);
+                            uniquePlaces.push(p);
+                        }
+                    });
+                } catch (err) {
+                    console.error('Supplementary food places search error:', err);
+                }
+            }
 
             if (uniquePlaces.length === 0) {
-                if (resultsList) resultsList.innerHTML = `<div class="map-empty-state"><p>검색 결과가 없습니다.</p></div>`;
+                if (resultsList) resultsList.innerHTML = `<div class="map-empty-state"><p>음식/식당 관련 검색 결과가 없습니다.</p></div>`;
                 return;
             }
 
             // Match with Unified Master Data (My Saved Restaurants / Diary)
-            const masterData = getUnifiedRestaurantData();
             const processedResults = [];
             const searchBounds = new kakao.maps.LatLngBounds();
 
@@ -1834,7 +1973,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const item = savedMatch || {
                     name: place.place_name,
-                    category: place.category_name.split(' > ').pop(),
+                    category: place.category_name ? place.category_name.split(' > ').pop() : (place.category_group_name || '음식점'),
                     location_large: place.address_name,
                     rate: '카카오맵 데이터'
                 };
