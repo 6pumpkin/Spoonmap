@@ -1222,16 +1222,20 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
             return;
         }
-        if (typeof mergeDynamicLocationsIntoKoreaRegions === 'function') {
-            mergeDynamicLocationsIntoKoreaRegions(restaurantData);
-            if (typeof diaryData !== 'undefined') mergeDynamicLocationsIntoKoreaRegions(diaryData);
-        }
         setupFilters();
         setupDynamicLocationFilter();
         setupSearch();
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
+        try {
+            const cKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
+            const cStore = JSON.parse(localStorage.getItem(cKey) || '{}');
+            if (cStore.location_small) {
+                delete cStore.location_small;
+                localStorage.setItem(cKey, JSON.stringify(cStore));
+            }
+        } catch (e) { }
         if (typeof initPhotoStorage === 'function') initPhotoStorage();
         if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
         render();
@@ -6190,33 +6194,35 @@ class NotionTagSelector {
             });
         };
 
-        // Always collect locations from master dataset so all users get location options
-        if (typeof restaurantData !== 'undefined') {
-            if (isOwnerUser() || this.baseKey === 'location_large' || this.baseKey === 'location_small') {
-                collect(restaurantData, this.baseKey);
+        // Location small is strictly scoped to parent location_large from KOREA_REGIONS DB, not arbitrary global tags
+        if (this.baseKey !== 'location_small') {
+            if (typeof restaurantData !== 'undefined') {
+                if (isOwnerUser() || this.baseKey === 'location_large') {
+                    collect(restaurantData, this.baseKey);
+                }
             }
-        }
-        if (isOwnerUser()) {
-            if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
-        }
-
-        // Preload nationwide regions for location_large
-        if (this.baseKey === 'location_large') {
-            if (typeof getAllKoreaLargeLocations === 'function') {
-                getAllKoreaLargeLocations().forEach(loc => this.availableOptions.add(loc));
+            if (isOwnerUser()) {
+                if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
             }
-        }
 
-        // Load from user's diary
-        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
-        const localDiary = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-        collect(localDiary, this.baseKey);
+            // Preload nationwide regions for location_large
+            if (this.baseKey === 'location_large') {
+                if (typeof getAllKoreaLargeLocations === 'function') {
+                    getAllKoreaLargeLocations().forEach(loc => this.availableOptions.add(loc));
+                }
+            }
 
-        // Load custom options created by user from localStorage
-        const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
-        const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
-        if (customStore[this.baseKey] && Array.isArray(customStore[this.baseKey])) {
-            customStore[this.baseKey].forEach(opt => this.availableOptions.add(opt));
+            // Load from user's diary
+            const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
+            const localDiary = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
+            collect(localDiary, this.baseKey);
+
+            // Load custom options created by user from localStorage
+            const customStoreKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
+            const customStore = JSON.parse(localStorage.getItem(customStoreKey) || '{}');
+            if (customStore[this.baseKey] && Array.isArray(customStore[this.baseKey])) {
+                customStore[this.baseKey].forEach(opt => this.availableOptions.add(opt));
+            }
         }
     }
 
@@ -6437,11 +6443,16 @@ class NotionTagSelector {
         if (parentLarge && typeof getKoreaSmallLocations === 'function') {
             const validSmalls = getKoreaSmallLocations(parentLarge);
             if (this.selectedValues.length > 0) {
-                const stillValid = this.selectedValues.filter(val => validSmalls.includes(val) || this.availableOptions.has(val));
+                const stillValid = this.selectedValues.filter(val => validSmalls.includes(val));
                 if (stillValid.length === 0) {
                     this.clear();
+                } else if (stillValid.length !== this.selectedValues.length) {
+                    this.selectedValues = stillValid;
+                    this.renderSelectedTags();
                 }
             }
+        } else {
+            this.clear();
         }
         this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
     }
@@ -6512,10 +6523,10 @@ class NotionTagSelector {
                 : '';
 
             if (parentLarge) {
-                // Sub-locations for selected parentLarge
-                let smallOpts = (typeof getKoreaSmallLocations === 'function') ? getKoreaSmallLocations(parentLarge) : [];
-                this.availableOptions.forEach(opt => {
-                    if (!smallOpts.includes(opt)) smallOpts.push(opt);
+                // Sub-locations strictly for selected parentLarge from DB
+                let smallOpts = (typeof getKoreaSmallLocations === 'function') ? [...getKoreaSmallLocations(parentLarge)] : [];
+                this.selectedValues.forEach(val => {
+                    if (val && !smallOpts.includes(val)) smallOpts.push(val);
                 });
 
                 const filtered = query 
