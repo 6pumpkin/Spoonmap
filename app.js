@@ -145,6 +145,11 @@ async function syncFromCloud() {
             console.log('[Spoonmap] Auto-Migration to Cloud Complete! ☁️✨');
         }
 
+        // Sync Photos from Cloud
+        if (typeof syncPhotosFromCloud === 'function') {
+            await syncPhotosFromCloud();
+        }
+
         // Re-render Views with latest synced data
         if (typeof window.renderApp === 'function') window.renderApp();
         if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
@@ -7695,6 +7700,10 @@ async function initPhotoStorage() {
             if (typeof renderDiaryCalendar === 'function') {
                 renderDiaryCalendar();
             }
+            // Background sync with Firebase Cloud
+            setTimeout(() => {
+                if (typeof syncPhotosFromCloud === 'function') syncPhotosFromCloud();
+            }, 1200);
         };
     } catch (e) {
         console.warn('initPhotoStorage error:', e);
@@ -7771,11 +7780,10 @@ async function saveRestaurantPhotosToStore(name, photosArray) {
     // 2. Cloud Backup to Firestore
     if (isFirebaseReady && db) {
         try {
-            const u = getCurrentUser();
-            const userId = u ? String(u.id) : 'guest';
-            const docId = `${userId}_${key}`;
+            const userScope = (typeof getFirestoreUserDocPath === 'function' ? getFirestoreUserDocPath() : null) || (isOwnerUser() ? 'master_data' : 'guest');
+            const docId = `${userScope}_${key}`;
             await db.collection('spoonmap_restaurant_photos').doc(docId).set({
-                userId,
+                userScope,
                 restaurantKey: key,
                 restaurantName: name,
                 photos: photosArray,
@@ -7786,6 +7794,52 @@ async function saveRestaurantPhotosToStore(name, photosArray) {
         }
     }
 }
+
+async function syncPhotosFromCloud() {
+    if (!isFirebaseReady || !db) return;
+    const userScope = (typeof getFirestoreUserDocPath === 'function' ? getFirestoreUserDocPath() : null) || (isOwnerUser() ? 'master_data' : null);
+    if (!userScope || userScope === 'guest') return;
+
+    try {
+        const snap = await db.collection('spoonmap_restaurant_photos')
+            .where('userScope', '==', userScope)
+            .get();
+
+        if (!snap.empty) {
+            const idb = await getPhotoDb();
+            const tx = idb ? idb.transaction(PHOTO_STORE_NAME, 'readwrite') : null;
+            const store = tx ? tx.objectStore(PHOTO_STORE_NAME) : null;
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                if (data && data.restaurantKey && Array.isArray(data.photos)) {
+                    // Update in-memory cache
+                    window.restaurantPhotoCache.set(data.restaurantKey, data.photos);
+                    // Persist to local IndexedDB on this device
+                    if (store) {
+                        store.put({
+                            restaurantKey: data.restaurantKey,
+                            restaurantName: data.restaurantName || '',
+                            photos: data.photos,
+                            updatedAt: data.updatedAt || new Date().toISOString()
+                        });
+                    }
+                }
+            });
+
+            console.log(`[Spoonmap] Synced ${snap.size} restaurant photo albums from Firebase Cloud (${userScope}) ☁️📷`);
+
+            // Refresh UI
+            if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
+            if (currentDetailModalItem && typeof refreshListModalPhotoGrid === 'function') {
+                refreshListModalPhotoGrid(currentDetailModalItem.name);
+            }
+        }
+    } catch (e) {
+        console.warn('syncPhotosFromCloud error:', e);
+    }
+}
+window.syncPhotosFromCloud = syncPhotosFromCloud;
 
 async function addRestaurantPhotos(name, dataUrls) {
     if (!name || !dataUrls || dataUrls.length === 0) return [];
