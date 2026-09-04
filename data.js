@@ -426,7 +426,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1484816380",
         "location_large":  "경기 남양주",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ],
         "visit_count":  2
     },
@@ -544,7 +544,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살",
-                     "제육"
+                     "제육볶음"
                  ],
         "visit_count":  1
     },
@@ -614,7 +614,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "name":  "밀플랜비 서강대점",
         "date":  "2026-06-05",
         "location_small":  "대흥",
@@ -936,7 +936,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ],
@@ -1135,7 +1135,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ],
         "visit_count":  11
@@ -1162,7 +1162,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ],
         "visit_count":  5
@@ -1189,7 +1189,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1048556062",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ],
         "visit_count":  3
     },
@@ -1226,7 +1226,7 @@ const restaurantData = [
         "location_small":  "동문",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1773834978",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "주먹밥"
                  ],
@@ -1453,7 +1453,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ],
         "visit_count":  19
     },
@@ -1536,7 +1536,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "name":  "갓잇 용산점",
         "date":  "2026-05-02",
         "location_small":  "용산",
@@ -1806,7 +1806,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ],
@@ -1923,7 +1923,7 @@ const restaurantData = [
         "location_small":  "동문",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/587249375",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "카페"
                  ],
@@ -1988,7 +1988,7 @@ const restaurantData = [
         "location_small":  "동문",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/899155913",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "떡"
                  ],
@@ -2024,7 +2024,7 @@ const restaurantData = [
         "category":  "🥩고기",
         "name":  "단막 종각점",
         "date":  "2026-03-22",
-        "location_small":  "종막",
+        "location_small":  "종각",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/944030617",
         "location_large":  "서울 중구",
@@ -2174,7 +2174,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "불고기",
-                     "쭈불"
+                     "쭈꾸미불고기"
                  ],
         "visit_count":  3
     },
@@ -2422,7 +2422,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/2114260452",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "소바"
+                     "메밀소바"
                  ],
         "visit_count":  1
     },
@@ -2500,7 +2500,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/336646124",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ],
@@ -2684,7 +2684,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/211096332",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "탕수육"
                  ],
         "visit_count":  1
@@ -3431,7 +3431,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/923480400",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ],
         "visit_count":  1
     },
@@ -3614,7 +3614,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/174870783",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ],
         "visit_count":  3
     },
@@ -3746,7 +3746,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  4
     },
@@ -3786,7 +3786,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/891364647",
         "location_large":  "서울 영등포구",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ],
         "visit_count":  1
     },
@@ -3851,7 +3851,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/127867629",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "샤브"
+                     "샤브샤브"
                  ],
         "visit_count":  3
     },
@@ -3970,7 +3970,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ],
         "visit_count":  10
@@ -4076,7 +4076,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1365191842",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ],
         "visit_count":  1
@@ -4482,7 +4482,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/745963542",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "퓨전음식"
+                     "퓨전요리"
                  ],
         "visit_count":  1
     },
@@ -4573,7 +4573,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/15526292",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  4
     },
@@ -4612,7 +4612,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1362579800",
         "location_large":  "서울 성동구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -4706,7 +4706,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/7892863",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "탕수육"
                  ],
         "visit_count":  1
@@ -4720,7 +4720,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/908159543",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -4865,7 +4865,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "전",
-                     "한식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -4931,7 +4931,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/24985617",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -5051,7 +5051,7 @@ const restaurantData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ],
         "visit_count":  8
     },
@@ -5103,7 +5103,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/171171267",
         "location_large":  "서울 송파구",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -5129,7 +5129,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1251519679",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -5288,7 +5288,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1604269239",
         "location_large":  "서울 은평구",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -5796,7 +5796,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/133871935",
         "location_large":  "경북 경주",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -6115,7 +6115,7 @@ const restaurantData = [
         "menu":  [
                      "떡볶이",
                      "만두",
-                     "오뎅"
+                     "어묵"
                  ],
         "visit_count":  1
     },
@@ -6167,7 +6167,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/2114131901",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ],
         "visit_count":  1
     },
@@ -6298,7 +6298,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1536467186",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ],
         "visit_count":  1
     },
@@ -6335,7 +6335,7 @@ const restaurantData = [
         "location_small":  "덕양구",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/10068499",
-        "location_large":  "경기 고양시",
+        "location_large":  "경기 고양",
         "menu":  [
                      "삼계탕",
                      "옻닭"
@@ -6486,10 +6486,10 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "name":  "타코로코",
         "date":  "2025-03-12",
-        "location_small":  "타코",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26524405",
         "location_large":  "서울 서대문구",
@@ -6771,7 +6771,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/581963667",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ],
         "visit_count":  2
     },
@@ -6838,7 +6838,7 @@ const restaurantData = [
         "location_large":  "광주 광산구",
         "menu":  [
                      "돈까스",
-                     "모밀"
+                     "메밀소바"
                  ],
         "visit_count":  1
     },
@@ -6856,7 +6856,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "name":  "포엔띠우",
         "date":  "2025-02-11",
         "location_small":  "대흥",
@@ -7088,7 +7088,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/662047130",
         "location_large":  "경기 수원",
         "menu":  [
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7101,7 +7101,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1317927211",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7154,7 +7154,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/887161079",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7195,7 +7195,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1458421452",
         "location_large":  "서울 동작구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7222,7 +7222,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/203277944",
         "location_large":  "서울 강남구",
         "menu":  [
-                     "펍"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7616,7 +7616,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/184124450",
         "location_large":  "부산 동구",
         "menu":  [
-                     "샌드"
+                     "샌드위치"
                  ],
         "visit_count":  1
     },
@@ -7669,7 +7669,7 @@ const restaurantData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "떡볶이",
-                     "오뎅"
+                     "어묵"
                  ],
         "visit_count":  2
     },
@@ -7801,12 +7801,12 @@ const restaurantData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "닭꼬치",
-                     "오뎅"
+                     "어묵"
                  ],
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "name":  "베어스타코 아현공덕점",
         "date":  "2024-10-11",
         "location_small":  "아현",
@@ -7820,7 +7820,7 @@ const restaurantData = [
         "visit_count":  2
     },
     {
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "name":  "포옹남",
         "date":  "2024-10-11",
         "location_small":  "대흥",
@@ -7908,7 +7908,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/920906713",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "포장마차"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -7944,10 +7944,10 @@ const restaurantData = [
         "category":  "☕카페",
         "name":  "성심당 본점",
         "date":  "2024-07-10",
-        "location_small":  "대전 중구",
+        "location_small":  "중구",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17733090",
-        "location_large":  "대전",
+        "location_large":  "대전 중구",
         "menu":  [
                      "빵"
                  ],
@@ -7962,7 +7962,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1410747507",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ],
         "visit_count":  2
     },
@@ -8033,7 +8033,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "name":  "반미362 신촌점",
         "date":  "2024-09-03",
         "location_small":  "신촌",
@@ -8065,7 +8065,7 @@ const restaurantData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1544446763",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "짬뽕",
                      "탕수육"
@@ -8079,7 +8079,7 @@ const restaurantData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26611615",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "샤브샤브"
                  ],
@@ -8092,7 +8092,7 @@ const restaurantData = [
         "location_small":  "군산",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/934006931",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "도시락"
                  ],
@@ -8105,7 +8105,7 @@ const restaurantData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1005319024",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "맥주",
                      "치킨"
@@ -8165,7 +8165,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🥡태국음식",
+        "category":  "🥡아시안",
         "name":  "퐁타이",
         "date":  "2024-08-22",
         "location_small":  "신촌",
@@ -8206,7 +8206,7 @@ const restaurantData = [
         "visit_count":  2
     },
     {
-        "category":  "🥡태국음식",
+        "category":  "🥡아시안",
         "name":  "타이반쩜",
         "date":  "2024-08-16",
         "location_small":  "공덕",
@@ -8319,7 +8319,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1430251798",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -8467,7 +8467,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/9672649",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ],
@@ -8482,7 +8482,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/18168123",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -8523,7 +8523,7 @@ const restaurantData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "전",
-                     "탕"
+                     "닭볶음탕"
                  ],
         "visit_count":  1
     },
@@ -8557,10 +8557,10 @@ const restaurantData = [
         "category":  "🍽️뷔페",
         "name":  "호텔오노마대전오토그래프컬렉션",
         "date":  "2024-07-10",
-        "location_small":  "대전 유성",
+        "location_small":  "유성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/31629985",
-        "location_large":  "대전",
+        "location_large":  "대전 유성구",
         "menu":  [
                      "뷔페"
                  ],
@@ -8601,12 +8601,12 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1095501911",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
     {
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "name":  "포가레 신촌점",
         "date":  "2024-07-04",
         "location_small":  "신촌",
@@ -8752,7 +8752,7 @@ const restaurantData = [
         "category":  "🍚한식",
         "name":  "서령",
         "date":  "2024-06-22",
-        "location_small":  "희현",
+        "location_small":  "회현",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1644608542",
         "location_large":  "서울 중구",
@@ -8797,7 +8797,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1705841050",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "바치케",
+                     "바스크치즈케이크",
                      "커피"
                  ],
         "visit_count":  1
@@ -8812,7 +8812,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ],
         "visit_count":  1
     },
@@ -8871,7 +8871,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "name":  "바토스 파르나스몰점",
         "date":  "2024-05-24",
         "location_small":  "삼성, 코엑스",
@@ -8999,7 +8999,6 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1851200859",
         "location_large":  "서울 중구",
         "menu":  [
-                     "안주",
                      "찌개"
                  ],
         "visit_count":  1
@@ -9109,7 +9108,7 @@ const restaurantData = [
         "visit_count":  1
     },
     {
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "name":  "할리스코 마곡점",
         "date":  "2024-05-05",
         "location_small":  "마곡",
@@ -9131,7 +9130,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/2104864628",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -9144,7 +9143,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/1585759764",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -9158,7 +9157,7 @@ const restaurantData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스",
-                     "제육"
+                     "제육볶음"
                  ],
         "visit_count":  1
     },
@@ -9171,7 +9170,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/197316893",
         "location_large":  "서울 송파구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -9277,7 +9276,7 @@ const restaurantData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "맥주",
-                     "호프"
+                     "술집"
                  ],
         "visit_count":  1
     },
@@ -9290,7 +9289,7 @@ const restaurantData = [
         "map_url":  "https://place.map.kakao.com/127242418",
         "location_large":  "서울 성동구",
         "menu":  [
-                     "구이",
+                     "닭구이",
                      "닭고기"
                  ],
         "visit_count":  1
@@ -9429,7 +9428,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -9442,7 +9441,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -9481,7 +9480,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -9494,7 +9493,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/127242418",
         "location_large":  "서울 성동구",
         "menu":  [
-                     "구이",
+                     "닭구이",
                      "닭고기"
                  ]
     },
@@ -9508,7 +9507,7 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "맥주",
-                     "호프"
+                     "술집"
                  ]
     },
     {
@@ -9630,7 +9629,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -9703,7 +9702,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/197316893",
         "location_large":  "서울 송파구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ]
     },
     {
@@ -9716,7 +9715,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스",
-                     "제육"
+                     "제육볶음"
                  ]
     },
     {
@@ -9741,7 +9740,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1585759764",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -9753,13 +9752,13 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/2104864628",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ]
     },
     {
         "date":  "2024-05-05",
         "name":  "할리스코 마곡점",
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "location_small":  "마곡",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1615433470",
@@ -9828,7 +9827,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -9840,7 +9839,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -9997,7 +9996,6 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1851200859",
         "location_large":  "서울 중구",
         "menu":  [
-                     "안주",
                      "찌개"
                  ]
     },
@@ -10151,7 +10149,7 @@ const diaryData = [
     {
         "date":  "2024-05-24",
         "name":  "바토스 파르나스몰점",
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "location_small":  "삼성, 코엑스",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1635696078",
@@ -10369,7 +10367,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -10393,7 +10391,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -10432,7 +10430,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -10444,7 +10442,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1705841050",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "바치케",
+                     "바스크치즈케이크",
                      "커피"
                  ]
     },
@@ -10457,7 +10455,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -10539,7 +10537,7 @@ const diaryData = [
         "date":  "2024-06-22",
         "name":  "서령",
         "category":  "🍚한식",
-        "location_small":  "희현",
+        "location_small":  "회현",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1644608542",
         "location_large":  "서울 중구",
@@ -10776,7 +10774,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/336646124",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -10814,7 +10812,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -10840,7 +10838,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1410747507",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
@@ -10894,7 +10892,7 @@ const diaryData = [
     {
         "date":  "2024-07-04",
         "name":  "포가레 신촌점",
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/140618987",
@@ -10924,7 +10922,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1095501911",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -11040,10 +11038,10 @@ const diaryData = [
         "date":  "2024-07-10",
         "name":  "호텔오노마대전오토그래프컬렉션",
         "category":  "🍽️뷔페",
-        "location_small":  "대전 유성",
+        "location_small":  "유성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/31629985",
-        "location_large":  "대전",
+        "location_large":  "대전 유성구",
         "menu":  [
                      "뷔페"
                  ]
@@ -11081,7 +11079,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -11106,7 +11104,7 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "전",
-                     "탕"
+                     "닭볶음탕"
                  ]
     },
     {
@@ -11116,7 +11114,7 @@ const diaryData = [
         "location_small":  "덕양구",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/10068499",
-        "location_large":  "경기 고양시",
+        "location_large":  "경기 고양",
         "menu":  [
                      "삼계탕",
                      "옻닭"
@@ -11230,7 +11228,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/18168123",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
@@ -11267,7 +11265,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/581963667",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
@@ -11381,7 +11379,7 @@ const diaryData = [
     {
         "date":  "2024-07-22",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -11412,7 +11410,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "불고기",
-                     "쭈불"
+                     "쭈꾸미불고기"
                  ]
     },
     {
@@ -11461,7 +11459,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/9672649",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -11673,7 +11671,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1430251798",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
@@ -11772,7 +11770,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -11845,14 +11843,14 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
     {
         "date":  "2024-08-16",
         "name":  "타이반쩜",
-        "category":  "🥡태국음식",
+        "category":  "🥡아시안",
         "location_small":  "공덕",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1593321233",
@@ -11920,7 +11918,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -11940,7 +11938,7 @@ const diaryData = [
     {
         "date":  "2024-08-22",
         "name":  "퐁타이",
-        "category":  "🥡태국음식",
+        "category":  "🥡아시안",
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/370730135",
@@ -11972,7 +11970,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -12094,7 +12092,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -12129,7 +12127,7 @@ const diaryData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1005319024",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "맥주",
                      "치킨"
@@ -12142,7 +12140,7 @@ const diaryData = [
         "location_small":  "군산",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/934006931",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "도시락"
                  ]
@@ -12154,7 +12152,7 @@ const diaryData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26611615",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "샤브샤브"
                  ]
@@ -12166,7 +12164,7 @@ const diaryData = [
         "location_small":  "군산",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1544446763",
-        "location_large":  "전북 군산시",
+        "location_large":  "전북 군산",
         "menu":  [
                      "짬뽕",
                      "탕수육"
@@ -12205,14 +12203,14 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
     {
         "date":  "2024-09-03",
         "name":  "반미362 신촌점",
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/134850295",
@@ -12400,7 +12398,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -12448,13 +12446,13 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1410747507",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
         "date":  "2024-09-13",
         "name":  "베어스타코 아현공덕점",
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "location_small":  "아현",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/981286710",
@@ -12493,10 +12491,10 @@ const diaryData = [
         "date":  "2024-07-10",
         "name":  "성심당 본점",
         "category":  "☕카페",
-        "location_small":  "대전 중구",
+        "location_small":  "중구",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17733090",
-        "location_large":  "대전",
+        "location_large":  "대전 중구",
         "menu":  [
                      "빵"
                  ]
@@ -12548,7 +12546,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/920906713",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "포장마차"
+                     "술집"
                  ]
     },
     {
@@ -12645,7 +12643,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -12836,7 +12834,7 @@ const diaryData = [
     {
         "date":  "2024-10-07",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -12937,7 +12935,7 @@ const diaryData = [
     {
         "date":  "2024-10-11",
         "name":  "포옹남",
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "location_small":  "대흥",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/931810511",
@@ -12949,7 +12947,7 @@ const diaryData = [
     {
         "date":  "2024-10-11",
         "name":  "베어스타코 아현공덕점",
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "location_small":  "아현",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/981286710",
@@ -13042,7 +13040,7 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "닭꼬치",
-                     "오뎅"
+                     "어묵"
                  ]
     },
     {
@@ -13152,7 +13150,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -13178,7 +13176,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -13300,7 +13298,7 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "떡볶이",
-                     "오뎅"
+                     "어묵"
                  ]
     },
     {
@@ -13348,7 +13346,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/184124450",
         "location_large":  "부산 동구",
         "menu":  [
-                     "샌드"
+                     "샌드위치"
                  ]
     },
     {
@@ -13735,7 +13733,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -13747,7 +13745,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/15526292",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -13882,7 +13880,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -13942,7 +13940,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -14181,7 +14179,7 @@ const diaryData = [
     {
         "date":  "2025-01-22",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -14224,7 +14222,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -14274,7 +14272,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/203277944",
         "location_large":  "서울 강남구",
         "menu":  [
-                     "펍"
+                     "술집"
                  ]
     },
     {
@@ -14311,7 +14309,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1458421452",
         "location_large":  "서울 동작구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ]
     },
     {
@@ -14349,7 +14347,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/887161079",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -14398,7 +14396,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1317927211",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -14411,7 +14409,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -14424,7 +14422,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -14436,7 +14434,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/662047130",
         "location_large":  "경기 수원",
         "menu":  [
-                     "호프"
+                     "술집"
                  ]
     },
     {
@@ -14520,7 +14518,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -14534,7 +14532,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -14549,7 +14547,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "불고기",
-                     "쭈불"
+                     "쭈꾸미불고기"
                  ]
     },
     {
@@ -14676,7 +14674,7 @@ const diaryData = [
     {
         "date":  "2024-12-19",
         "name":  "포엔띠우",
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1853354235",
@@ -14720,7 +14718,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -14746,7 +14744,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -14770,7 +14768,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -14783,7 +14781,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/336646124",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -14915,7 +14913,7 @@ const diaryData = [
     {
         "date":  "2024-12-04",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -14945,7 +14943,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -14993,7 +14991,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/127867629",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "샤브"
+                     "샤브샤브"
                  ]
     },
     {
@@ -15036,7 +15034,7 @@ const diaryData = [
     {
         "date":  "2025-02-11",
         "name":  "포엔띠우",
-        "category":  "🧆베트남음식",
+        "category":  "🥡아시안",
         "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1853354235",
@@ -15091,7 +15089,7 @@ const diaryData = [
         "location_large":  "광주 광산구",
         "menu":  [
                      "돈까스",
-                     "모밀"
+                     "메밀소바"
                  ]
     },
     {
@@ -15153,7 +15151,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/15526292",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -15191,7 +15189,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -15239,7 +15237,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/127867629",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "샤브"
+                     "샤브샤브"
                  ]
     },
     {
@@ -15288,7 +15286,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -15327,7 +15325,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/581963667",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "안주"
+                     "술집"
                  ]
     },
     {
@@ -15351,7 +15349,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
@@ -15571,7 +15569,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -15699,7 +15697,7 @@ const diaryData = [
     {
         "date":  "2025-03-06",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -15779,7 +15777,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -15842,7 +15840,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -15885,8 +15883,8 @@ const diaryData = [
     {
         "date":  "2025-03-12",
         "name":  "타코로코",
-        "category":  "🌮멕시칸",
-        "location_small":  "타코",
+        "category":  "🌮세계요리",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26524405",
         "location_large":  "서울 서대문구",
@@ -15951,7 +15949,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -16025,7 +16023,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -16144,7 +16142,7 @@ const diaryData = [
         "location_small":  "덕양구",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/10068499",
-        "location_large":  "경기 고양시",
+        "location_large":  "경기 고양",
         "menu":  [
                      "삼계탕",
                      "옻닭"
@@ -16183,13 +16181,13 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1536467186",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ]
     },
     {
         "date":  "2025-03-31",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -16245,7 +16243,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -16392,7 +16390,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -16467,7 +16465,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/2114131901",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ]
     },
     {
@@ -16479,7 +16477,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1048556062",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -16614,7 +16612,7 @@ const diaryData = [
         "menu":  [
                      "떡볶이",
                      "만두",
-                     "오뎅"
+                     "어묵"
                  ]
     },
     {
@@ -16662,7 +16660,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/15526292",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -16883,7 +16881,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -17101,7 +17099,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/174870783",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "탕수육"
                  ]
     },
@@ -17138,7 +17136,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/133871935",
         "location_large":  "경북 경주",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ]
     },
     {
@@ -17471,7 +17469,7 @@ const diaryData = [
     {
         "date":  "2025-05-16",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -17639,7 +17637,7 @@ const diaryData = [
     {
         "date":  "2025-05-07",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -17695,7 +17693,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -17714,7 +17712,7 @@ const diaryData = [
     {
         "date":  "2025-06-02",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -17828,7 +17826,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1604269239",
         "location_large":  "서울 은평구",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ]
     },
     {
@@ -18084,7 +18082,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1251519679",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "호프"
+                     "술집"
                  ]
     },
     {
@@ -18096,7 +18094,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -18157,7 +18155,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/171171267",
         "location_large":  "서울 송파구",
         "menu":  [
-                     "한식주점"
+                     "술집"
                  ]
     },
     {
@@ -18193,7 +18191,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -18205,7 +18203,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/174870783",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ]
     },
     {
@@ -18290,7 +18288,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -18329,7 +18327,7 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "돈까스",
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -18378,7 +18376,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -18391,7 +18389,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
@@ -18611,7 +18609,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/24985617",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -18684,7 +18682,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -18789,7 +18787,7 @@ const diaryData = [
     {
         "date":  "2025-08-07",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -18832,7 +18830,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "전",
-                     "한식주점"
+                     "술집"
                  ]
     },
     {
@@ -18856,7 +18854,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -18918,7 +18916,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1484816380",
         "location_large":  "경기 남양주",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ]
     },
     {
@@ -19124,7 +19122,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/908159543",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -19160,7 +19158,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/7892863",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "탕수육"
                  ]
     },
@@ -19321,7 +19319,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1362579800",
         "location_large":  "서울 성동구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -19405,7 +19403,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/15526292",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -19525,7 +19523,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/745963542",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "퓨전음식"
+                     "퓨전요리"
                  ]
     },
     {
@@ -19670,7 +19668,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -20009,7 +20007,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -20108,7 +20106,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1365191842",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
@@ -20280,7 +20278,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고등어구이",
-                     "제육",
+                     "제육볶음",
                      "찌개"
                  ]
     },
@@ -20475,7 +20473,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1048556062",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -20523,7 +20521,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/127867629",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "샤브"
+                     "샤브샤브"
                  ]
     },
     {
@@ -20583,7 +20581,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
@@ -20608,7 +20606,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/891364647",
         "location_large":  "서울 영등포구",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ]
     },
     {
@@ -20670,7 +20668,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
-                     "일본식주점"
+                     "술집"
                  ]
     },
     {
@@ -20700,7 +20698,7 @@ const diaryData = [
     {
         "date":  "2025-10-13",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -20911,7 +20909,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/174870783",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ]
     },
     {
@@ -21031,7 +21029,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -21116,7 +21114,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/923480400",
         "location_large":  "서울 강서구",
         "menu":  [
-                     "자장면"
+                     "짜장면"
                  ]
     },
     {
@@ -21461,7 +21459,7 @@ const diaryData = [
     {
         "date":  "2025-12-01",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -21539,7 +21537,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -21785,7 +21783,7 @@ const diaryData = [
     {
         "date":  "2025-12-20",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -21937,7 +21935,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -22129,7 +22127,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -22167,7 +22165,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -22302,7 +22300,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/211096332",
         "location_large":  "서울 용산구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "탕수육"
                  ]
     },
@@ -22616,7 +22614,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/336646124",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -22750,7 +22748,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/2114260452",
         "location_large":  "서울 서대문구",
         "menu":  [
-                     "소바"
+                     "메밀소바"
                  ]
     },
     {
@@ -22786,7 +22784,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -23053,7 +23051,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -23151,7 +23149,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "불고기",
-                     "쭈불"
+                     "쭈꾸미불고기"
                  ]
     },
     {
@@ -23314,7 +23312,7 @@ const diaryData = [
     {
         "date":  "2026-03-25",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -23364,7 +23362,7 @@ const diaryData = [
         "date":  "2026-03-22",
         "name":  "단막 종각점",
         "category":  "🥩고기",
-        "location_small":  "종막",
+        "location_small":  "종각",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/944030617",
         "location_large":  "서울 중구",
@@ -23464,7 +23462,7 @@ const diaryData = [
         "location_small":  "동문",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/899155913",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "떡"
                  ]
@@ -23524,7 +23522,7 @@ const diaryData = [
         "location_small":  "동문",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/587249375",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "카페"
                  ]
@@ -23658,7 +23656,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "짜장",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -23828,7 +23826,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -23994,7 +23992,7 @@ const diaryData = [
     {
         "date":  "2026-05-02",
         "name":  "갓잇 용산점",
-        "category":  "🌮멕시칸",
+        "category":  "🌮세계요리",
         "location_small":  "용산",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/2027527525",
@@ -24108,7 +24106,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -24374,7 +24372,7 @@ const diaryData = [
         "location_small":  "동문",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1773834978",
-        "location_large":  "제주 동문",
+        "location_large":  "제주 제주",
         "menu":  [
                      "주먹밥"
                  ]
@@ -24424,7 +24422,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1048556062",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "만두국"
+                     "만둣국"
                  ]
     },
     {
@@ -24448,7 +24446,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1231701730",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕"
                  ]
     },
@@ -24485,7 +24483,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "제육",
+                     "제육볶음",
                      "파전"
                  ]
     },
@@ -24740,7 +24738,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/131878421",
         "location_large":  "서울 마포구",
         "menu":  [
-                     "자장면",
+                     "짜장면",
                      "짬뽕",
                      "탕수육"
                  ]
@@ -25038,7 +25036,7 @@ const diaryData = [
     {
         "date":  "2026-06-05",
         "name":  "밀플랜비 서강대점",
-        "category":  "🌮멕시칸, 🍔패스트푸드",
+        "category":  "🌮세계요리, 🍔패스트푸드",
         "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/960971083",
@@ -25117,7 +25115,7 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살",
-                     "제육"
+                     "제육볶음"
                  ]
     },
     {
@@ -25249,7 +25247,7 @@ const diaryData = [
         "map_url":  "https://place.map.kakao.com/1484816380",
         "location_large":  "경기 남양주",
         "menu":  [
-                     "함박"
+                     "함박스테이크"
                  ]
     },
     {

@@ -28,6 +28,260 @@ function initFirebase() {
     }
 }
 
+// ─── Standard Canonical Taxonomy (Categories & Menus) ───
+const DEFAULT_CATEGORIES = [
+    '🍚한식',
+    '🥩고기',
+    '🍣일식',
+    '🍜중식',
+    '🍝양식',
+    '🥡아시안',
+    '🌮세계요리',
+    '🍙분식',
+    '🍗치킨',
+    '🍔패스트푸드',
+    '🍕피자',
+    '🐟해산물',
+    '🥗샐러드',
+    '☕카페',
+    '🍺술집',
+    '🍽️뷔페'
+];
+
+const DEFAULT_MENUS = [
+    "가츠동", "간장게장", "갈매기살", "갈비찜", "갈비탕", "갈치조림", "감자탕", "개성주악", "게국지", "고기국수",
+    "고등어구이", "곱창", "곱창전골", "국밥", "국수", "김밥", "김치찌개", "김치찜", "꼬치", "꼼장어",
+    "나시고랭", "낙곱새", "냉면", "뇨끼", "닭갈비", "닭강정", "닭고기", "닭곰탕", "닭구이", "닭꼬치",
+    "닭똥집", "닭발", "닭볶음탕", "닭한마리", "덮밥", "도래창", "도시락", "돈까스", "돌문어삼합", "돼지갈비",
+    "돼지고기", "돼지김치구이", "등갈비", "디저트", "딸기모찌", "떡", "떡볶이", "라멘", "리조또", "마라샹궈",
+    "마라탕", "마제소바", "막걸리", "막국수", "막창", "만두", "만둣국", "만화카페", "맥주", "메밀소바",
+    "몬자야끼", "뭉티기", "밀면", "밀크티", "바스크치즈케이크", "반미", "밥버거", "백반", "보쌈", "볶음밥",
+    "부대찌개", "불고기", "뷔페", "브런치", "브리또", "비빔밥", "빈대떡", "빙수", "빵", "뼈구이",
+    "삼겹살", "삼계탕", "샌드위치", "샐러드", "샤브샤브", "석갈비", "소갈비", "소고기", "솥밥", "수제비",
+    "수플레", "순두부", "술집", "스테이크", "쌀국수", "쌈밥", "아구찜", "아이스크림", "야끼소바", "양꼬치",
+    "어묵", "오꼬노미야끼", "오리", "오므라이스", "오징어순대", "오차즈케", "옻닭", "와플", "요거트", "우동",
+    "유부초밥", "육회비빔밥", "이자카야", "장어구이", "장어탕", "전", "제육볶음", "젤라또", "조개구이", "족발",
+    "주먹밥", "죽", "짜글이", "짜장면", "짬뽕", "쭈꾸미", "쭈꾸미불고기", "찌개", "찜닭", "초계국수",
+    "초밥", "추어탕", "치즈밥", "치킨", "카레", "카이센동", "카페", "칼국수", "커피", "컵밥",
+    "케이크", "콩국", "콩국수", "퀘사디아", "크루키", "타코", "탄탄면", "탕수육", "텐동", "튀김",
+    "티라미수", "파스타", "파이", "파전", "팟타이", "평양냉면", "포케", "푸딩", "퓨전요리", "프레첼",
+    "피자", "필라프", "함박스테이크", "핫도그", "해장국", "햄버거", "호두과자", "호떡", "황남빵", "회",
+    "회덮밥", "회전초밥", "휘낭시에"
+];
+
+function mapKakaoCategoryToStandard(kakaoCat, placeName = '') {
+    if (!kakaoCat) return '🍚한식';
+    const raw = kakaoCat.toLowerCase();
+    const name = (placeName || '').toLowerCase();
+
+    if (raw.includes('카페') || raw.includes('커피') || raw.includes('디저트') || raw.includes('베이커리') || raw.includes('제과') || raw.includes('아이스크림') || raw.includes('빙수')) {
+        return '☕카페';
+    }
+    if (raw.includes('술집') || raw.includes('호프') || raw.includes('주점') || raw.includes('포장마차') || raw.includes('와인바') || raw.includes('펍') || raw.includes('칵테일') || raw.includes('바(bar)')) {
+        return '🍺술집';
+    }
+    if (raw.includes('뷔페')) {
+        return '🍽️뷔페';
+    }
+    if (raw.includes('육류') || raw.includes('고기') || raw.includes('삼겹살') || raw.includes('갈비') || raw.includes('곱창') || raw.includes('막창') || raw.includes('양꼬치') || raw.includes('스테이크')) {
+        return '🥩고기';
+    }
+    if (raw.includes('치킨') || raw.includes('닭강정') || raw.includes('통닭')) {
+        return '🍗치킨';
+    }
+    if (raw.includes('패스트푸드') || raw.includes('햄버거') || raw.includes('버거') || raw.includes('샌드위치') || raw.includes('토스트') || raw.includes('핫도그')) {
+        return '🍔패스트푸드';
+    }
+    if (raw.includes('피자')) {
+        return '🍕피자';
+    }
+    if (raw.includes('샐러드') || raw.includes('포케') || raw.includes('다이어트')) {
+        return '🥗샐러드';
+    }
+    if (raw.includes('해물') || raw.includes('생선') || raw.includes('회') || raw.includes('일식 > 참치') || raw.includes('게장') || raw.includes('장어') || raw.includes('조개')) {
+        return '🐟해산물';
+    }
+    if (raw.includes('일식') || raw.includes('초밥') || raw.includes('돈까스') || raw.includes('라멘') || raw.includes('우동') || raw.includes('소바') || raw.includes('이자카야')) {
+        return '🍣일식';
+    }
+    if (raw.includes('중식') || raw.includes('중국집') || raw.includes('짜장') || raw.includes('짬뽕') || raw.includes('마라탕') || raw.includes('양꼬치') || raw.includes('딤섬')) {
+        return '🍜중식';
+    }
+    if (raw.includes('양식') || raw.includes('이탈리안') || raw.includes('파스타') || raw.includes('프렌치')) {
+        return '🍝양식';
+    }
+    if (raw.includes('멕시코') || raw.includes('남미') || raw.includes('타코') || raw.includes('브라질') || raw.includes('터키') || raw.includes('중동') || raw.includes('세계')) {
+        return '🌮세계요리';
+    }
+    if (raw.includes('아시아') || raw.includes('베트남') || raw.includes('태국') || raw.includes('쌀국수') || raw.includes('인도') || raw.includes('커리')) {
+        return '🥡아시안';
+    }
+    if (raw.includes('분식') || raw.includes('떡볶이') || raw.includes('김밥') || raw.includes('순대')) {
+        return '🍙분식';
+    }
+    if (raw.includes('한식') || raw.includes('찌개') || raw.includes('국밥') || raw.includes('백반') || raw.includes('설렁탕') || raw.includes('곰탕')) {
+        return '🍚한식';
+    }
+    return '🍚한식';
+}
+
+function parseStandardLocation(addressName = '', roadAddressName = '') {
+    const raw = (addressName || roadAddressName || '').trim();
+    if (!raw) return { large: '', small: '' };
+
+    const parts = raw.split(/\s+/);
+    if (parts.length < 2) return { large: parts[0] || '', small: '' };
+
+    const p0 = parts[0];
+    const p1 = parts[1];
+
+    let regionPrefix = p0;
+    if (p0.startsWith('서울')) regionPrefix = '서울';
+    else if (p0.startsWith('부산')) regionPrefix = '부산';
+    else if (p0.startsWith('대구')) regionPrefix = '대구';
+    else if (p0.startsWith('인천')) regionPrefix = '인천';
+    else if (p0.startsWith('광주')) regionPrefix = '광주';
+    else if (p0.startsWith('대전')) regionPrefix = '대전';
+    else if (p0.startsWith('울산')) regionPrefix = '울산';
+    else if (p0.startsWith('세종')) regionPrefix = '세종';
+    else if (p0.startsWith('경기')) regionPrefix = '경기';
+    else if (p0.startsWith('강원')) regionPrefix = '강원';
+    else if (p0.startsWith('충북') || p0.startsWith('충청북')) regionPrefix = '충북';
+    else if (p0.startsWith('충남') || p0.startsWith('충청남')) regionPrefix = '충남';
+    else if (p0.startsWith('전북') || p0.startsWith('전라북')) regionPrefix = '전북';
+    else if (p0.startsWith('전남') || p0.startsWith('전라남')) regionPrefix = '전남';
+    else if (p0.startsWith('경북') || p0.startsWith('경상북')) regionPrefix = '경북';
+    else if (p0.startsWith('경남') || p0.startsWith('경상남')) regionPrefix = '경남';
+    else if (p0.startsWith('제주')) regionPrefix = '제주';
+
+    let large = '';
+    if (['서울', '부산', '대구', '인천', '광주', '대전', '울산'].includes(regionPrefix)) {
+        large = `${regionPrefix} ${p1}`;
+    } else if (regionPrefix === '세종') {
+        large = '세종 세종';
+    } else if (regionPrefix === '제주') {
+        const c = p1.replace(/시$/, '');
+        large = `제주 ${c}`;
+    } else {
+        const c = p1.replace(/시$/, '');
+        large = `${regionPrefix} ${c}`;
+    }
+
+    let small = '';
+    for (let i = 2; i < parts.length; i++) {
+        const part = parts[i];
+        if (part.endsWith('동') || part.endsWith('읍') || part.endsWith('면') || part.endsWith('리') || part.endsWith('가')) {
+            small = part.replace(/(동|읍|면|리|가)$/, '');
+            break;
+        }
+    }
+    if (!small && parts.length >= 3) {
+        small = parts[2].replace(/[0-9]+.*$/, '');
+    }
+
+    return { large, small };
+}
+
+// Global Cloud Shared Menus Module
+async function syncSharedMenuToCloud(menuName) {
+    if (!menuName || !isFirebaseReady || !db) return;
+    try {
+        const docRef = db.collection('spoonmap_shared').doc('menus');
+        await docRef.set({
+            list: firebase.firestore.FieldValue.arrayUnion(menuName)
+        }, { merge: true });
+        console.log('[Spoonmap] New menu shared to global cloud:', menuName);
+    } catch (e) {
+        console.warn('[Spoonmap] syncSharedMenuToCloud warning:', e);
+    }
+}
+
+async function loadSharedMenusFromCloud() {
+    if (!isFirebaseReady || !db) return;
+    try {
+        const docRef = db.collection('spoonmap_shared').doc('menus');
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+            const data = docSnap.data();
+            if (data && Array.isArray(data.list)) {
+                window._spoonmapSharedMenus = data.list;
+                if (typeof notionSelectors !== 'undefined') {
+                    ['menu', 'modal_menu'].forEach(k => {
+                        if (notionSelectors[k]) {
+                            data.list.forEach(m => notionSelectors[k].availableOptions.add(m));
+                            if (typeof notionSelectors[k].renderOptions === 'function') {
+                                notionSelectors[k].renderOptions('');
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('[Spoonmap] loadSharedMenusFromCloud warning:', e);
+    }
+}
+
+function migrateLocalStorageData() {
+    try {
+        const migratedKey = 'spoonmap_taxonomy_v2_migrated';
+        if (localStorage.getItem(migratedKey)) return;
+
+        const migrateItem = (item) => {
+            if (!item) return false;
+            let changed = false;
+            if (item.category) {
+                const norm = item.category.split(',').map(c => {
+                    let s = c.trim();
+                    if (s === '고기구이' || s === '🥩고기구이') return '🥩고기';
+                    if (s === '샐러드포케' || s === '🥗샐러드포케') return '🥗샐러드';
+                    if (s === '술집주점' || s === '🍺술집주점') return '🍺술집';
+                    if (s === '카페디저트' || s === '☕카페디저트') return '☕카페';
+                    if (s === '해산물·회' || s === '🐟해산물·회' || s === '해산물') return '🐟해산물';
+                    if (s === '🧆베트남음식' || s === '베트남음식' || s === '🥡태국음식' || s === '태국음식') return '🥡아시안';
+                    if (s === '🌮멕시칸' || s === '멕시칸') return '🌮세계요리';
+                    return s;
+                }).filter(Boolean);
+                const newCat = Array.from(new Set(norm)).join(', ');
+                if (newCat !== item.category) { item.category = newCat; changed = true; }
+            }
+            if (item.location_large) {
+                let lL = item.location_large;
+                if (lL === '경기 고양시') lL = '경기 고양';
+                else if (lL === '전북 군산시') lL = '전북 군산';
+                else if (lL === '제주 동문') lL = '제주 제주';
+                if (lL !== item.location_large) { item.location_large = lL; changed = true; }
+            }
+            if (item.location_small) {
+                let lS = item.location_small;
+                if (lS === '종막') lS = '종각';
+                else if (lS === '타코') lS = '신촌';
+                else if (lS === '희현') lS = '회현';
+                if (lS !== item.location_small) { item.location_small = lS; changed = true; }
+            }
+            return changed;
+        };
+
+        ['spoonmap_restaurant_overrides', 'master_spoonmap_restaurant_overrides'].forEach(k => {
+            const data = JSON.parse(localStorage.getItem(k) || '{}');
+            let anyChg = false;
+            Object.values(data).forEach(obj => { if (migrateItem(obj)) anyChg = true; });
+            if (anyChg) localStorage.setItem(k, JSON.stringify(data));
+        });
+
+        ['spoonmap_diary', 'spoonmap_user_diary'].forEach(k => {
+            const arr = JSON.parse(localStorage.getItem(k) || '[]');
+            let anyChg = false;
+            arr.forEach(obj => { if (migrateItem(obj)) anyChg = true; });
+            if (anyChg) localStorage.setItem(k, JSON.stringify(arr));
+        });
+
+        localStorage.setItem(migratedKey, 'true');
+    } catch (e) {
+        console.warn('[Spoonmap] migrateLocalStorageData warning:', e);
+    }
+}
+
 // Get Firestore document reference path for current user
 function getFirestoreUserDocPath() {
     const u = getCurrentUser();
@@ -148,6 +402,11 @@ async function syncFromCloud() {
         // Sync Photos from Cloud
         if (typeof syncPhotosFromCloud === 'function') {
             await syncPhotosFromCloud();
+        }
+
+        // Load Global Shared Menus
+        if (typeof loadSharedMenusFromCloud === 'function') {
+            await loadSharedMenusFromCloud();
         }
 
         // Re-render Views with latest synced data
@@ -923,6 +1182,7 @@ function getSpoonBadgeHtml(item) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    migrateLocalStorageData();
     initKakaoAuth();
     let currentFilters = {
         category: [],
@@ -1160,6 +1420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = new Set();
         const locations = new Set();
 
+        DEFAULT_CATEGORIES.forEach(cat => categories.add(cat));
+
         masterData.forEach(item => {
             if (item.category) {
                 item.category.split(',').forEach(c => {
@@ -1178,9 +1440,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Refresh Category Options
+        // Refresh Category Options (Canonical Sort)
         catSelect.innerHTML = '<option value="all">전체 (All)</option>';
-        Array.from(categories).sort().forEach(cat => {
+        const sortedCats = Array.from(categories).sort((a, b) => {
+            const idxA = DEFAULT_CATEGORIES.indexOf(a);
+            const idxB = DEFAULT_CATEGORIES.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b, 'ko');
+        });
+        sortedCats.forEach(cat => {
             const opt = document.createElement('option');
             opt.value = cat;
             opt.textContent = typeof getFormattedTagDisplay === 'function' ? getFormattedTagDisplay(cat) : cat;
@@ -1406,11 +1676,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const d = getDistanceMeters(centerCoords.lat, centerCoords.lng, pLat, pLng);
                                     distText = d >= 1000 ? `${(d/1000).toFixed(1)}km` : `${Math.round(d)}m`;
                                 }
+                                const parsedLoc = parseStandardLocation(place.address_name, place.road_address_name);
                                 return {
                                     name: place.place_name,
-                                    category: place.category_name ? place.category_name.split('>').pop().trim() : (selectedCat !== 'all' ? selectedCat : '음식점'),
-                                    location_large: place.address_name ? place.address_name.split(' ').slice(0, 2).join(' ') : '지역 정보',
-                                    location_small: distText ? `📍 기준지에서 ${distText}` : (place.road_address_name || place.address_name || ''),
+                                    category: place.category_name ? mapKakaoCategoryToStandard(place.category_name, place.place_name) : (selectedCat !== 'all' ? selectedCat : '🍚한식'),
+                                    location_large: parsedLoc.large || (place.address_name ? place.address_name.split(' ').slice(0, 2).join(' ') : '지역 정보'),
+                                    location_small: distText ? `📍 기준지에서 ${distText}` : (parsedLoc.small || place.road_address_name || place.address_name || ''),
                                     displayDistance: distText ? `${distText} 거리` : '',
                                     rate: '',
                                     map_url: place.place_url || `https://map.kakao.com/link/map/${place.id}`,
@@ -1971,10 +2242,12 @@ document.addEventListener('DOMContentLoaded', () => {
             uniquePlaces.forEach(place => {
                 const savedMatch = masterData.find(r => isSavedRestaurantMatch(r, place));
 
+                const parsedLoc = parseStandardLocation(place.address_name, place.road_address_name);
                 const item = savedMatch || {
                     name: place.place_name,
-                    category: place.category_name ? place.category_name.split(' > ').pop() : (place.category_group_name || '음식점'),
-                    location_large: place.address_name,
+                    category: place.category_name ? mapKakaoCategoryToStandard(place.category_name, place.place_name) : (place.category_group_name || '🍚한식'),
+                    location_large: parsedLoc.large || place.address_name,
+                    location_small: parsedLoc.small || '',
                     rate: '카카오맵 데이터'
                 };
 
@@ -2589,7 +2862,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const place = data.find(d => isSavedRestaurantMatch({ name: wItem.name, map_url: wItem.map_url, location_large: wItem.location }, d)) || data[0];
                             const item = {
                                 name: wItem.name,
-                                category: wItem.category || place.category_name || '음식점',
+                                category: wItem.category || (place.category_name ? mapKakaoCategoryToStandard(place.category_name, wItem.name) : '🍚한식'),
                                 location_large: wItem.location || place.address_name || '',
                                 location_small: place.road_address_name || place.address_name || '',
                                 map_url: wItem.map_url || place.place_url || '',
@@ -2920,6 +3193,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const categories = new Set();
         const locationCounts = {};
 
+        // Seed with standard categories
+        DEFAULT_CATEGORIES.forEach(cat => categories.add(cat));
+
         unifiedData.forEach(item => {
             if (item.category) {
                 item.category.split(',').forEach(cat => {
@@ -2940,12 +3216,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Refresh Category Buttons (Keep 'all' button)
+        // Refresh Category Buttons (Keep 'all' button) - Canonical Sort
         if (categoryFilterGroup) {
             const existingCatBtns = categoryFilterGroup.querySelectorAll('.filter-btn:not([data-value="all"])');
             existingCatBtns.forEach(b => b.remove());
 
-            Array.from(categories).sort().forEach(cat => {
+            const sortedCats = Array.from(categories).sort((a, b) => {
+                const idxA = DEFAULT_CATEGORIES.indexOf(a);
+                const idxB = DEFAULT_CATEGORIES.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b, 'ko');
+            });
+
+            sortedCats.forEach(cat => {
                 const btn = createFilterBtn('category', cat);
                 if (currentFilters.category.includes(cat)) btn.classList.add('active');
                 categoryFilterGroup.appendChild(btn);
@@ -5637,6 +5922,17 @@ class NotionTagSelector {
 
     initOptions() {
         this.availableOptions = new Set();
+
+        // 1. Seed canonical standard options
+        if (this.baseKey === 'category') {
+            DEFAULT_CATEGORIES.forEach(cat => this.availableOptions.add(cat));
+        } else if (this.baseKey === 'menu') {
+            DEFAULT_MENUS.forEach(m => this.availableOptions.add(m));
+            if (window._spoonmapSharedMenus && Array.isArray(window._spoonmapSharedMenus)) {
+                window._spoonmapSharedMenus.forEach(m => this.availableOptions.add(m));
+            }
+        }
+
         // Collect & split tags from dataset using baseKey
         const collect = (dataset, key) => {
             if (!dataset || !Array.isArray(dataset)) return;
@@ -5661,8 +5957,13 @@ class NotionTagSelector {
             });
         };
 
+        // Always collect locations from master dataset so all users get location options
+        if (typeof restaurantData !== 'undefined') {
+            if (isOwnerUser() || this.baseKey === 'location_large' || this.baseKey === 'location_small') {
+                collect(restaurantData, this.baseKey);
+            }
+        }
         if (isOwnerUser()) {
-            if (typeof restaurantData !== 'undefined') collect(restaurantData, this.baseKey);
             if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
         }
 
@@ -5792,6 +6093,13 @@ class NotionTagSelector {
 
     addOptionAndSelect(optName) {
         if (!optName) return;
+        if (this.baseKey === 'menu') {
+            optName = optName.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+            if (!optName) return;
+            if (typeof syncSharedMenuToCloud === 'function') {
+                syncSharedMenuToCloud(optName);
+            }
+        }
         this.availableOptions.add(optName);
 
         // Save custom option to localStorage using baseKey
@@ -5907,7 +6215,19 @@ class NotionTagSelector {
         if (!this.optionsEl) return;
         this.optionsEl.innerHTML = '';
 
-        const allOpts = Array.from(this.availableOptions).sort();
+        let allOpts = Array.from(this.availableOptions);
+        if (this.baseKey === 'category') {
+            allOpts.sort((a, b) => {
+                const idxA = DEFAULT_CATEGORIES.indexOf(a);
+                const idxB = DEFAULT_CATEGORIES.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b, 'ko');
+            });
+        } else {
+            allOpts.sort((a, b) => a.localeCompare(b, 'ko'));
+        }
         const filtered = allOpts.filter(opt => opt.toLowerCase().includes(query.toLowerCase()));
 
         filtered.forEach(opt => {
