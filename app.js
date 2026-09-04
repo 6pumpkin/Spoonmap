@@ -1223,6 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         setupFilters();
+        setupDynamicLocationFilter();
         setupSearch();
         setupTabs();
         initRecommendTab();
@@ -2331,7 +2332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultItem.className = `result-item ${itemClass}`;
             resultItem.innerHTML = `
                 <div class="result-item-top">
-                    <h4>${place.place_name || item.name}</h4>
+                    <h4>${(item?.closed || res?.isClosed) ? '<s>' + (place.place_name || item.name) + '</s> <span class="badge-closed">폐점</span>' : (place.place_name || item.name)}</h4>
                     ${tagBadge}
                 </div>
                 <p>${place.category_name?.split(' > ').pop() || item.category} • ${place.address_name || item.location_large}</p>
@@ -2660,7 +2661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ← 목록으로 돌아가기
                 </button>
                 <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
-                <h3 class="detail-title">${item.name}</h3>
+                <h3 class="detail-title ${item.closed ? 'is-closed' : ''}">${item.closed ? '<s>' + item.name + '</s> <span class="badge-closed">폐점</span>' : item.name}</h3>
                 <div class="detail-tags">
                     <span class="detail-tag tag-category">${displayCategory}</span>
                     ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
@@ -3019,16 +3020,20 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshSidebarFilters();
 
         // More Button Event
-        btnMoreLocation.addEventListener('click', () => {
-            locationLargeVisibleCount += locationLargePageSize;
-            renderLocationButtons();
-        });
+        if (btnMoreLocation) {
+            btnMoreLocation.addEventListener('click', () => {
+                locationLargeVisibleCount += locationLargePageSize;
+                renderLocationButtons();
+            });
+        }
 
         // Collapse Button Event
-        btnCollapseLocation.addEventListener('click', () => {
-            locationLargeVisibleCount = 10;
-            renderLocationButtons();
-        });
+        if (btnCollapseLocation) {
+            btnCollapseLocation.addEventListener('click', () => {
+                locationLargeVisibleCount = 10;
+                renderLocationButtons();
+            });
+        }
 
         // Rate Filter Event Handlers
         document.querySelectorAll('#rate-filters .filter-btn').forEach(btn => {
@@ -3237,68 +3242,279 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Sorted Locations by Count
-        sortedLocationsLarge = Object.entries(locationCounts)
-            .sort((a, b) => b[1] - a[1])
-            .map(entry => entry[0]);
-
-        renderLocationButtons();
+        // Refresh Dynamic Location Filter UI
+        renderDynamicLocationFilters();
+        updateLocationActiveBadges();
         updateFilterButtonsUI();
     }
     window.refreshSidebarFilters = refreshSidebarFilters;
+
+    let locationSearchQuery = '';
+
+    function setupDynamicLocationFilter() {
+        const locInput = document.getElementById('location-filter-input');
+        const clearBtn = document.getElementById('btn-clear-loc-filter');
+        const resetBtn = document.getElementById('btn-reset-location-filter');
+
+        if (locInput) {
+            locInput.addEventListener('input', (e) => {
+                locationSearchQuery = e.target.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.style.display = locationSearchQuery ? 'block' : 'none';
+                renderDynamicLocationFilters();
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (locInput) locInput.value = '';
+                locationSearchQuery = '';
+                clearBtn.style.display = 'none';
+                renderDynamicLocationFilters();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                clearLocationFilters();
+            });
+        }
+    }
+
+    function clearLocationFilters() {
+        currentFilters.location_large = [];
+        currentFilters.location_small = [];
+        const locInput = document.getElementById('location-filter-input');
+        if (locInput) locInput.value = '';
+        locationSearchQuery = '';
+        const clearBtn = document.getElementById('btn-clear-loc-filter');
+        if (clearBtn) clearBtn.style.display = 'none';
+        renderDynamicLocationFilters();
+        updateLocationActiveBadges();
+        listDisplayCount = 50;
+        render();
+    }
+    window.clearLocationFilters = clearLocationFilters;
+
+    function updateLocationActiveBadges() {
+        const badgesContainer = document.getElementById('location-active-badges');
+        const resetBtn = document.getElementById('btn-reset-location-filter');
+        if (!badgesContainer) return;
+
+        const hasLarge = currentFilters.location_large && currentFilters.location_large.length > 0;
+        const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
+
+        if (!hasLarge && !hasSmall) {
+            badgesContainer.style.display = 'none';
+            badgesContainer.innerHTML = '';
+            if (resetBtn) resetBtn.style.display = 'none';
+            return;
+        }
+
+        badgesContainer.style.display = 'flex';
+        if (resetBtn) resetBtn.style.display = 'inline-block';
+        badgesContainer.innerHTML = '';
+
+        if (hasLarge) {
+            currentFilters.location_large.forEach(loc => {
+                const chip = document.createElement('span');
+                chip.className = 'loc-active-chip';
+                chip.innerHTML = `🏛️ ${loc} <span class="loc-active-chip-remove" title="해제">&times;</span>`;
+                chip.querySelector('.loc-active-chip-remove').onclick = (e) => {
+                    e.stopPropagation();
+                    currentFilters.location_large = currentFilters.location_large.filter(l => l !== loc);
+                    updateLocationActiveBadges();
+                    renderDynamicLocationFilters();
+                    listDisplayCount = 50;
+                    render();
+                };
+                badgesContainer.appendChild(chip);
+            });
+        }
+
+        if (hasSmall) {
+            currentFilters.location_small.forEach(loc => {
+                const chip = document.createElement('span');
+                chip.className = 'loc-active-chip';
+                chip.innerHTML = `📍 ${loc} <span class="loc-active-chip-remove" title="해제">&times;</span>`;
+                chip.querySelector('.loc-active-chip-remove').onclick = (e) => {
+                    e.stopPropagation();
+                    currentFilters.location_small = currentFilters.location_small.filter(l => l !== loc);
+                    updateLocationActiveBadges();
+                    renderDynamicLocationFilters();
+                    listDisplayCount = 50;
+                    render();
+                };
+                badgesContainer.appendChild(chip);
+            });
+        }
+    }
+
+    function renderDynamicLocationFilters() {
+        const matchedGroup = document.getElementById('location-matched-filters');
+        if (!matchedGroup) return;
+
+        matchedGroup.innerHTML = '';
+
+        const unifiedData = getUnifiedRestaurantData();
+        const largeCounts = {};
+        const smallCounts = {};
+        const smallToLarge = {};
+
+        unifiedData.forEach(item => {
+            if (item.location_large) {
+                largeCounts[item.location_large] = (largeCounts[item.location_large] || 0) + 1;
+            }
+            if (item.location_small) {
+                smallCounts[item.location_small] = (smallCounts[item.location_small] || 0) + 1;
+                if (item.location_large) smallToLarge[item.location_small] = item.location_large;
+            }
+        });
+
+        const isAllActive = (!currentFilters.location_large || currentFilters.location_large.length === 0) &&
+                            (!currentFilters.location_small || currentFilters.location_small.length === 0);
+
+        // "All" button
+        const allBtn = document.createElement('button');
+        allBtn.className = 'filter-btn' + (isAllActive ? ' active' : '');
+        allBtn.dataset.value = 'all';
+        allBtn.textContent = `전체 (${unifiedData.length})`;
+        allBtn.onclick = () => {
+            clearLocationFilters();
+        };
+        matchedGroup.appendChild(allBtn);
+
+        if (!locationSearchQuery) {
+            // When no query: show top 5 frequently visited regions as quick chips
+            const topLarges = Object.entries(largeCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            topLarges.forEach(([loc, count]) => {
+                const btn = document.createElement('button');
+                const isActive = currentFilters.location_large && currentFilters.location_large.includes(loc);
+                btn.className = 'filter-btn' + (isActive ? ' active' : '');
+                btn.textContent = `${loc} (${count})`;
+                btn.onclick = () => {
+                    if (isActive) {
+                        currentFilters.location_large = currentFilters.location_large.filter(l => l !== loc);
+                    } else {
+                        currentFilters.location_large = [loc];
+                        currentFilters.location_small = [];
+                    }
+                    updateLocationActiveBadges();
+                    renderDynamicLocationFilters();
+                    listDisplayCount = 50;
+                    render();
+                };
+                matchedGroup.appendChild(btn);
+            });
+
+            const hint = document.createElement('div');
+            hint.className = 'loc-match-hint';
+            hint.textContent = '💡 지역명을 검색하면 연관된 모든 대/소분류가 나타납니다.';
+            matchedGroup.appendChild(hint);
+        } else {
+            const q = locationSearchQuery;
+            const matchedLarge = Object.entries(largeCounts)
+                .filter(([loc]) => loc.toLowerCase().includes(q))
+                .sort((a, b) => b[1] - a[1]);
+
+            const matchedSmall = Object.entries(smallCounts)
+                .filter(([loc]) => loc.toLowerCase().includes(q))
+                .sort((a, b) => b[1] - a[1]);
+
+            if (matchedLarge.length === 0 && matchedSmall.length === 0) {
+                const noMatch = document.createElement('div');
+                noMatch.className = 'loc-match-hint';
+                noMatch.textContent = `"${q}" 관련 지역이 없습니다.`;
+                matchedGroup.appendChild(noMatch);
+                return;
+            }
+
+            // Matched Large locations
+            matchedLarge.forEach(([loc, count]) => {
+                const btn = document.createElement('button');
+                const isActive = currentFilters.location_large && currentFilters.location_large.includes(loc);
+                btn.className = 'filter-btn' + (isActive ? ' active' : '');
+                btn.textContent = `🏛️ ${loc} (${count})`;
+                btn.onclick = () => {
+                    if (isActive) {
+                        currentFilters.location_large = currentFilters.location_large.filter(l => l !== loc);
+                    } else {
+                        currentFilters.location_large = [loc];
+                        currentFilters.location_small = [];
+                    }
+                    updateLocationActiveBadges();
+                    renderDynamicLocationFilters();
+                    listDisplayCount = 50;
+                    render();
+                };
+                matchedGroup.appendChild(btn);
+            });
+
+            // Matched Small locations
+            matchedSmall.forEach(([loc, count]) => {
+                const btn = document.createElement('button');
+                const isActive = currentFilters.location_small && currentFilters.location_small.includes(loc);
+                btn.className = 'filter-btn' + (isActive ? ' active' : '');
+                const parent = smallToLarge[loc] ? `${smallToLarge[loc]} · ` : '';
+                btn.textContent = `📍 ${parent}${loc} (${count})`;
+                btn.onclick = () => {
+                    if (isActive) {
+                        currentFilters.location_small = currentFilters.location_small.filter(l => l !== loc);
+                    } else {
+                        currentFilters.location_small = [loc];
+                        if (smallToLarge[loc]) {
+                            currentFilters.location_large = [smallToLarge[loc]];
+                        }
+                    }
+                    updateLocationActiveBadges();
+                    renderDynamicLocationFilters();
+                    listDisplayCount = 50;
+                    render();
+                };
+                matchedGroup.appendChild(btn);
+            });
+        }
+    }
+
+    function renderLocationButtons() {
+        renderDynamicLocationFilters();
+        updateLocationActiveBadges();
+    }
 
     function updateFilterButtonsUI() {
         ['category', 'rate', 'location_large', 'location_small'].forEach(type => {
             let groupEl = null;
             if (type === 'category') groupEl = document.getElementById('category-filters');
             else if (type === 'rate') groupEl = document.getElementById('rate-filters');
-            else if (type === 'location_large') groupEl = document.getElementById('location-large-filters');
-            else if (type === 'location_small') groupEl = document.getElementById('location-small-filters');
+            else if (type === 'location_large') groupEl = document.getElementById('location-matched-filters');
+            else if (type === 'location_small') groupEl = document.getElementById('location-matched-filters');
 
             if (!groupEl) return;
 
             const filterValues = currentFilters[type] || [];
             const allBtn = groupEl.querySelector('.filter-btn[data-value="all"]');
 
-            if (filterValues.length === 0) {
-                groupEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if (filterValues.length === 0 && (!currentFilters.location_large || currentFilters.location_large.length === 0) && (!currentFilters.location_small || currentFilters.location_small.length === 0)) {
                 if (allBtn) allBtn.classList.add('active');
-            } else {
-                if (allBtn) allBtn.classList.remove('active');
-                groupEl.querySelectorAll('.filter-btn').forEach(b => {
-                    const val = b.dataset.value;
-                    if (val !== 'all') {
-                        b.classList.toggle('active', filterValues.includes(val));
-                    }
-                });
+            } else if (type === 'category' || type === 'rate') {
+                if (filterValues.length === 0) {
+                    groupEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    if (allBtn) allBtn.classList.add('active');
+                } else {
+                    if (allBtn) allBtn.classList.remove('active');
+                    groupEl.querySelectorAll('.filter-btn').forEach(b => {
+                        const val = b.dataset.value;
+                        if (val !== 'all') {
+                            b.classList.toggle('active', filterValues.includes(val));
+                        }
+                    });
+                }
             }
         });
     }
     window.updateFilterButtonsUI = updateFilterButtonsUI;
-
-    function renderLocationButtons() {
-        // Clear previous buttons EXCEPT 'all'
-        const existing = locationLargeFilterGroup.querySelectorAll('.filter-btn:not([data-value="all"])');
-        existing.forEach(e => e.remove());
-
-        const toShow = sortedLocationsLarge.slice(0, locationLargeVisibleCount);
-        toShow.forEach(loc => {
-            const btn = createFilterBtn('location_large', loc);
-            if (currentFilters.location_large.includes(loc)) btn.classList.add('active');
-            locationLargeFilterGroup.appendChild(btn);
-        });
-
-        // Logic for More/Collapse buttons visibility
-        btnMoreLocation.style.display = locationLargeVisibleCount >= sortedLocationsLarge.length ? 'none' : 'flex';
-        btnCollapseLocation.style.display = locationLargeVisibleCount > 10 ? 'flex' : 'none';
-        
-        // Hide container if both buttons are hidden
-        if (btnMoreLocation.style.display === 'none' && btnCollapseLocation.style.display === 'none') {
-            moreLocContainer.style.display = 'none';
-        } else {
-            moreLocContainer.style.display = 'flex';
-        }
-    }
 
     function setupSearch() {
         searchInput.addEventListener('keydown', (e) => {
@@ -3439,19 +3655,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSmallLocationFilters(largeValuesArray) {
-        locationSmallFilterGroup.innerHTML = '';
-        
-        // Re-create the "All" button properly to keep event listener
-        const allBtn = document.createElement('button');
-        allBtn.className = 'filter-btn active';
-        allBtn.dataset.filter = 'location_small';
-        allBtn.dataset.value = 'all';
-        allBtn.textContent = '전체';
-        allBtn.addEventListener('click', () => handleFilterClick('location_small', 'all', allBtn));
-        locationSmallFilterGroup.appendChild(allBtn);
+        if (locationSmallFilterGroup) {
+            locationSmallFilterGroup.innerHTML = '';
+            
+            // Re-create the "All" button properly to keep event listener
+            const allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.dataset.filter = 'location_small';
+            allBtn.dataset.value = 'all';
+            allBtn.textContent = '전체';
+            allBtn.addEventListener('click', () => handleFilterClick('location_small', 'all', allBtn));
+            locationSmallFilterGroup.appendChild(allBtn);
+        }
         
         if (!Array.isArray(largeValuesArray) || largeValuesArray.length === 0) {
-            smallLocSection.style.display = 'none';
+            if (smallLocSection) smallLocSection.style.display = 'none';
             return;
         }
 
@@ -3464,14 +3682,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (smallLocs.size > 0) {
-            smallLocSection.style.display = 'block';
-            Array.from(smallLocs).sort().forEach(loc => {
-                const btn = createFilterBtn('location_small', loc);
-                if (currentFilters.location_small.includes(loc)) btn.classList.add('active');
-                locationSmallFilterGroup.appendChild(btn);
-            });
+            if (smallLocSection) smallLocSection.style.display = 'block';
+            if (locationSmallFilterGroup) {
+                Array.from(smallLocs).sort().forEach(loc => {
+                    const btn = createFilterBtn('location_small', loc);
+                    if (currentFilters.location_small.includes(loc)) btn.classList.add('active');
+                    locationSmallFilterGroup.appendChild(btn);
+                });
+            }
         } else {
-            smallLocSection.style.display = 'none';
+            if (smallLocSection) smallLocSection.style.display = 'none';
         }
     }
 
@@ -3902,7 +4122,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
 
         if (isCompact) {
-            card.className = 'compact-card-row';
+            card.className = 'compact-card-row' + (item.closed ? ' is-closed' : '');
+            const compactTitleHtml = item.closed ? `<s>${item.name}</s> <span class="badge-closed">폐점</span>` : item.name;
             
             const catTag = item.category ? item.category.split(',')[0].trim() : '기타';
             const catColor = getNotionTagColor(catTag);
@@ -3915,7 +4136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const locSmallColor = item.location_small ? getNotionTagColor(item.location_small) : { bg: '#F1F1EF', color: '#37352F' };
 
             card.innerHTML = `
-                <div class="compact-col-name" title="${item.name}">${item.name}</div>
+                <div class="compact-col-name" title="${item.name}">${compactTitleHtml}</div>
                 <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${catColor.bg}; color:${catColor.color}">${catTag}</span>
                 </div>
@@ -3928,6 +4149,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="compact-col-cell">
                     <span class="diary-mini-tag" style="background:${locSmallColor.bg}; color:${locSmallColor.color}">${item.location_small || '-'}</span>
                 </div>
+                <div class="compact-col-cell compact-visit-cell">
+                    <span class="compact-visit-badge ${item.visit_count >= 2 ? 'is-frequent' : ''}">
+                        ${item.visit_count >= 2 ? '🔥 ' + item.visit_count + '회' : '1회'}
+                    </span>
+                </div>
                 <div class="compact-col-rate">
                     ${'🥄'.repeat(spoonCount)}
                 </div>
@@ -3937,7 +4163,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else {
-            card.className = 'restaurant-card';
+            card.className = 'restaurant-card' + (item.closed ? ' is-closed' : '');
+            const cardTitleHtml = item.closed ? `<s>${item.name}</s> <span class="badge-closed">폐점</span>` : item.name;
             const menuTagsHtml = item.menu && item.menu.length > 0 
                 ? item.menu.slice(0, 3).map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
                 : '';
@@ -3948,7 +4175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${getSpoonBadgeHtml(item)}
                 </div>
                 <div class="card-body">
-                    <h2 class="card-title">${item.name}</h2>
+                    <h2 class="card-title">${cardTitleHtml}</h2>
                     <div class="location-info">
                         <span class="loc-badge loc-large">${item.location_large}</span>
                         ${item.location_small ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
@@ -4014,7 +4241,9 @@ function openRestaurantDetailModal(item) {
     }
 
     // 1. Title & Visit Badge
-    if (nameEl) nameEl.textContent = item.name;
+    if (nameEl) {
+        nameEl.innerHTML = item.closed ? `<s>${item.name}</s> <span class="badge-closed">폐점</span>` : item.name;
+    }
     
     const visits = getAllVisitsForRestaurant(item.name);
     const totalCount = visits.length || item.visit_count || 1;

@@ -10,7 +10,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -24,7 +25,8 @@ const restaurantData = [
                      "삼계탕",
                      "오리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -37,7 +39,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -50,7 +53,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -63,7 +67,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -76,7 +81,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -89,7 +95,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  8
+        "visit_count":  8,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -102,7 +109,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -115,7 +123,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -128,7 +137,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -141,7 +151,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -154,7 +165,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -167,7 +179,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -180,7 +193,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -193,7 +207,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -207,7 +222,8 @@ const restaurantData = [
                      "샤브샤브",
                      "쭈꾸미"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -220,7 +236,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -233,7 +250,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -246,7 +264,8 @@ const restaurantData = [
         "menu":  [
                      "추어탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -259,7 +278,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -272,7 +292,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -285,7 +306,8 @@ const restaurantData = [
         "menu":  [
                      "요거트"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -298,7 +320,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -311,7 +334,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -324,7 +348,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -337,7 +362,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -350,7 +376,8 @@ const restaurantData = [
         "menu":  [
                      "오차즈케"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -363,7 +390,8 @@ const restaurantData = [
         "menu":  [
                      "찜닭"
                  ],
-        "visit_count":  10
+        "visit_count":  10,
+        "closed":  true
     },
     {
         "category":  "🍔패스트푸드",
@@ -376,7 +404,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -389,7 +418,8 @@ const restaurantData = [
         "menu":  [
                      "고기국수"
                  ],
-        "visit_count":  34
+        "visit_count":  34,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -402,7 +432,8 @@ const restaurantData = [
         "menu":  [
                      "카레"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -415,7 +446,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -428,7 +460,8 @@ const restaurantData = [
         "menu":  [
                      "함박스테이크"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -441,7 +474,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -454,7 +488,8 @@ const restaurantData = [
         "menu":  [
                      "빵"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -467,7 +502,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -480,7 +516,8 @@ const restaurantData = [
         "menu":  [
                      "텐동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -493,7 +530,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -506,7 +544,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -519,7 +558,8 @@ const restaurantData = [
         "menu":  [
                      "등갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -532,7 +572,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -546,7 +587,8 @@ const restaurantData = [
                      "삼겹살",
                      "제육볶음"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -555,24 +597,26 @@ const restaurantData = [
         "location_small":  "가좌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1869215772",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "짜글이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
         "name":  "수저가",
         "date":  "2026-06-02",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
                  ],
-        "visit_count":  11
+        "visit_count":  11,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -585,7 +629,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -598,7 +643,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -611,7 +657,8 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🌮세계요리, 🍔패스트푸드",
@@ -624,7 +671,8 @@ const restaurantData = [
         "menu":  [
                      "브리또"
                  ],
-        "visit_count":  15
+        "visit_count":  15,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -637,7 +685,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -650,7 +699,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -663,7 +713,8 @@ const restaurantData = [
         "menu":  [
                      "포케"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -676,7 +727,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -689,7 +741,8 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -703,7 +756,8 @@ const restaurantData = [
                      "비빔밥",
                      "죽"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -716,7 +770,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -729,7 +784,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -742,7 +798,8 @@ const restaurantData = [
         "menu":  [
                      "장어구이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -756,7 +813,8 @@ const restaurantData = [
                      "불고기",
                      "평양냉면"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -769,7 +827,8 @@ const restaurantData = [
         "menu":  [
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -782,20 +841,22 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "대한카츠 마포점",
         "date":  "2026-06-16",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1042643162",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -808,7 +869,8 @@ const restaurantData = [
         "menu":  [
                      "카레"
                  ],
-        "visit_count":  8
+        "visit_count":  8,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -821,20 +883,22 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
         "name":  "TOL",
         "date":  "2026-06-17",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
                  ],
-        "visit_count":  19
+        "visit_count":  19,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -847,7 +911,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  16
+        "visit_count":  16,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -860,7 +925,8 @@ const restaurantData = [
         "menu":  [
                      "솥밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -873,7 +939,8 @@ const restaurantData = [
         "menu":  [
                      "회전초밥"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -886,7 +953,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -899,7 +967,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -912,7 +981,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -925,7 +995,8 @@ const restaurantData = [
         "menu":  [
                      "스테이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -940,7 +1011,8 @@ const restaurantData = [
                      "짬뽕",
                      "탕수육"
                  ],
-        "visit_count":  8
+        "visit_count":  8,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -953,7 +1025,8 @@ const restaurantData = [
         "menu":  [
                      "돼지김치구이"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -966,20 +1039,22 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "봉구스밥버거 서강대점",
         "date":  "2026-06-24",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
                  ],
-        "visit_count":  32
+        "visit_count":  32,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -992,7 +1067,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1005,7 +1081,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  6
+        "visit_count":  6,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -1019,7 +1096,8 @@ const restaurantData = [
                      "술집",
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1032,7 +1110,8 @@ const restaurantData = [
         "menu":  [
                      "냉면"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1045,7 +1124,8 @@ const restaurantData = [
         "menu":  [
                      "국밥"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1058,7 +1138,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -1072,20 +1153,22 @@ const restaurantData = [
                      "고등어구이",
                      "카레"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "르봉뺑",
         "date":  "2026-05-23",
-        "location_small":  "가평",
+        "location_small":  "가평읍 읍내리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1695937616",
         "location_large":  "경기 가평",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1094,24 +1177,26 @@ const restaurantData = [
         "location_small":  "가평",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1708311659",
-        "location_large":  "경기 가평",
+        "location_large":  "강원 춘천",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "초원닭갈비막국수",
         "date":  "2026-05-24",
-        "location_small":  "가평",
+        "location_small":  "가평읍 달전리",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17082781",
         "location_large":  "경기 가평",
         "menu":  [
                      "닭갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -1124,13 +1209,14 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "미가",
         "date":  "2026-05-26",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
@@ -1138,7 +1224,8 @@ const restaurantData = [
                      "제육볶음",
                      "파전"
                  ],
-        "visit_count":  11
+        "visit_count":  11,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1151,7 +1238,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -1165,7 +1253,8 @@ const restaurantData = [
                      "짜장면",
                      "짬뽕"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -1178,7 +1267,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1191,7 +1281,8 @@ const restaurantData = [
         "menu":  [
                      "만둣국"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "☕카페, 🥗샐러드",
@@ -1204,7 +1295,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1217,7 +1309,8 @@ const restaurantData = [
         "menu":  [
                      "육회비빔밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1226,11 +1319,12 @@ const restaurantData = [
         "location_small":  "동문",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1773834978",
-        "location_large":  "제주 제주",
+        "location_large":  "충북 청주",
         "menu":  [
                      "주먹밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1243,7 +1337,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -1256,7 +1351,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1269,7 +1365,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1282,7 +1379,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1296,7 +1394,8 @@ const restaurantData = [
                      "삼겹살",
                      "찌개"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -1309,7 +1408,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1322,7 +1422,8 @@ const restaurantData = [
         "menu":  [
                      "막국수"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1336,20 +1437,22 @@ const restaurantData = [
                      "덮밥",
                      "도시락"
                  ],
-        "visit_count":  20
+        "visit_count":  20,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
         "name":  "프랭크버거 서강대점",
         "date":  "2026-04-22",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  9
+        "visit_count":  9,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1362,7 +1465,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -1375,7 +1479,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -1389,7 +1494,8 @@ const restaurantData = [
                      "국밥",
                      "찌개"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -1402,7 +1508,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1415,7 +1522,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1428,7 +1536,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1442,20 +1551,22 @@ const restaurantData = [
                      "김치찌개",
                      "불고기"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "개성손만두 마포점",
         "date":  "2026-04-29",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
                  ],
-        "visit_count":  19
+        "visit_count":  19,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1468,7 +1579,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1481,7 +1593,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -1494,7 +1607,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -1507,7 +1621,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1520,7 +1635,8 @@ const restaurantData = [
         "menu":  [
                      "오리"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -1533,7 +1649,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🌮세계요리",
@@ -1546,7 +1663,8 @@ const restaurantData = [
         "menu":  [
                      "타코"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1559,7 +1677,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  10
+        "visit_count":  10,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -1572,7 +1691,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1585,7 +1705,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1594,11 +1715,12 @@ const restaurantData = [
         "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/131735695",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 중랑구",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -1612,7 +1734,8 @@ const restaurantData = [
                      "파스타",
                      "피자"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -1625,7 +1748,8 @@ const restaurantData = [
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1638,7 +1762,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1651,7 +1776,8 @@ const restaurantData = [
         "menu":  [
                      "케이크"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -1665,7 +1791,8 @@ const restaurantData = [
                      "몬자야끼",
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1678,7 +1805,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1691,20 +1819,22 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "마포쌈밥식당",
         "date":  "2026-05-12",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
                  ],
-        "visit_count":  12
+        "visit_count":  12,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1717,7 +1847,8 @@ const restaurantData = [
         "menu":  [
                      "핫도그"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -1730,7 +1861,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -1743,7 +1875,8 @@ const restaurantData = [
         "menu":  [
                      "포케"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -1756,7 +1889,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1769,7 +1903,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -1782,7 +1917,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  12
+        "visit_count":  12,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -1791,17 +1927,18 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/17735995",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "카레"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
         "name":  "홍원",
         "date":  "2026-04-09",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -1810,7 +1947,8 @@ const restaurantData = [
                      "짬뽕",
                      "탕수육"
                  ],
-        "visit_count":  6
+        "visit_count":  6,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -1823,7 +1961,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1836,7 +1975,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1849,7 +1989,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -1862,7 +2003,8 @@ const restaurantData = [
         "menu":  [
                      "샐러드"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -1875,7 +2017,8 @@ const restaurantData = [
         "menu":  [
                      "파스타"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -1888,7 +2031,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍺술집",
@@ -1901,7 +2045,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -1914,7 +2059,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1927,7 +2073,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1936,24 +2083,26 @@ const restaurantData = [
         "location_small":  "제주공항",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1588732308",
-        "location_large":  "제주 서귀포",
+        "location_large":  "제주 제주",
         "menu":  [
                      "고기국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "마농치킨 본점",
         "date":  "2026-04-16",
-        "location_small":  "서귀포",
+        "location_small":  "서귀동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/11291724",
         "location_large":  "제주 서귀포",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1966,7 +2115,8 @@ const restaurantData = [
         "menu":  [
                      "갈치조림"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -1979,7 +2129,8 @@ const restaurantData = [
         "menu":  [
                      "순두부"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -1992,7 +2143,8 @@ const restaurantData = [
         "menu":  [
                      "떡"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -2005,7 +2157,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -2018,7 +2171,8 @@ const restaurantData = [
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -2027,11 +2181,12 @@ const restaurantData = [
         "location_small":  "종각",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/944030617",
-        "location_large":  "서울 중구",
+        "location_large":  "서울 종로구",
         "menu":  [
                      "막창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2044,7 +2199,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2057,7 +2213,8 @@ const restaurantData = [
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  10
+        "visit_count":  10,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -2070,7 +2227,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -2083,7 +2241,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2097,7 +2256,8 @@ const restaurantData = [
                      "술집",
                      "파전"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2110,7 +2270,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2123,7 +2284,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -2136,7 +2298,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2149,7 +2312,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2162,7 +2326,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2176,7 +2341,8 @@ const restaurantData = [
                      "불고기",
                      "쭈꾸미불고기"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍙분식",
@@ -2189,7 +2355,8 @@ const restaurantData = [
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -2202,7 +2369,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -2215,7 +2383,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2228,7 +2397,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2241,7 +2411,8 @@ const restaurantData = [
         "menu":  [
                      "국밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2254,20 +2425,22 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "date":  "2026-03-12",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -2280,7 +2453,8 @@ const restaurantData = [
         "menu":  [
                      "탄탄면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -2293,7 +2467,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2306,7 +2481,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2319,7 +2495,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -2332,7 +2509,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2345,7 +2523,8 @@ const restaurantData = [
         "menu":  [
                      "감자탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2358,7 +2537,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2371,7 +2551,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2385,7 +2566,8 @@ const restaurantData = [
                      "닭곰탕",
                      "부대찌개"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍺술집, 🥩고기",
@@ -2398,7 +2580,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2411,7 +2594,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -2424,7 +2608,8 @@ const restaurantData = [
         "menu":  [
                      "메밀소바"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2437,7 +2622,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2450,7 +2636,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2463,7 +2650,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  10
+        "visit_count":  10,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -2476,7 +2664,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -2489,7 +2678,8 @@ const restaurantData = [
         "menu":  [
                      "카이센동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -2504,7 +2694,8 @@ const restaurantData = [
                      "짬뽕",
                      "탕수육"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -2517,7 +2708,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2530,7 +2722,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -2543,7 +2736,8 @@ const restaurantData = [
         "menu":  [
                      "등갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2556,7 +2750,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -2569,7 +2764,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2582,7 +2778,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -2595,7 +2792,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -2608,7 +2806,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2621,7 +2820,8 @@ const restaurantData = [
         "menu":  [
                      "수제비"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2634,7 +2834,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -2647,7 +2848,8 @@ const restaurantData = [
         "menu":  [
                      "닭고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2660,7 +2862,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -2673,7 +2876,8 @@ const restaurantData = [
         "menu":  [
                      "오므라이스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -2687,7 +2891,8 @@ const restaurantData = [
                      "짜장면",
                      "탕수육"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2696,12 +2901,13 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/357150027",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "이자카야"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2714,7 +2920,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -2727,7 +2934,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2740,7 +2948,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2753,7 +2962,8 @@ const restaurantData = [
         "menu":  [
                      "아구찜"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2766,7 +2976,8 @@ const restaurantData = [
         "menu":  [
                      "조개구이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2779,7 +2990,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -2792,7 +3004,8 @@ const restaurantData = [
         "menu":  [
                      "브리또"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -2805,7 +3018,8 @@ const restaurantData = [
         "menu":  [
                      "오리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -2818,7 +3032,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2831,7 +3046,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -2844,7 +3060,8 @@ const restaurantData = [
         "menu":  [
                      "부대찌개"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍺술집",
@@ -2857,7 +3074,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2870,7 +3088,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  true
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -2883,7 +3102,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍚한식",
@@ -2896,7 +3116,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2909,7 +3130,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -2923,7 +3145,8 @@ const restaurantData = [
                      "돼지고기",
                      "소고기"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -2936,7 +3159,8 @@ const restaurantData = [
         "menu":  [
                      "백반"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2949,7 +3173,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -2962,7 +3187,8 @@ const restaurantData = [
         "menu":  [
                      "회전초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -2976,7 +3202,8 @@ const restaurantData = [
                      "카페",
                      "휘낭시에"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -2989,20 +3216,22 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
-        "category":  "☕카페",
+        "category":  "dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
         "name":  "콘서트",
         "date":  "2025-12-21",
-        "location_small":  "송파",
-        "rate":  "🥄🥄🥄🥄🥄",
-        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00,0,0,0,dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
-        "location_large":  "서울 송파구",
+        "location_small":  "서울 송파구 : 송파, 폐점",
+        "rate":  "0",
+        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00",
+        "location_large":  "",
         "menu":  [
-                     "카페"
+                     "🥄🥄🥄🥄🥄"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3015,7 +3244,8 @@ const restaurantData = [
         "menu":  [
                      "유부초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -3028,7 +3258,8 @@ const restaurantData = [
         "menu":  [
                      "소고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3041,7 +3272,8 @@ const restaurantData = [
         "menu":  [
                      "국밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -3054,7 +3286,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3067,7 +3300,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -3080,7 +3314,8 @@ const restaurantData = [
         "menu":  [
                      "카레"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3093,7 +3328,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3106,7 +3342,8 @@ const restaurantData = [
         "menu":  [
                      "쭈꾸미"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3119,7 +3356,8 @@ const restaurantData = [
         "menu":  [
                      "컵밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3132,7 +3370,8 @@ const restaurantData = [
         "menu":  [
                      "호두과자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3145,7 +3384,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3158,7 +3398,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3171,7 +3412,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -3184,7 +3426,8 @@ const restaurantData = [
         "menu":  [
                      "파스타"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3197,7 +3440,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -3210,7 +3454,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3223,7 +3468,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -3236,7 +3482,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3249,7 +3496,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3263,7 +3511,8 @@ const restaurantData = [
                      "돼지고기",
                      "찌개"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -3276,7 +3525,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3289,7 +3539,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3302,7 +3553,8 @@ const restaurantData = [
         "menu":  [
                      "호두과자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -3315,7 +3567,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -3328,7 +3581,8 @@ const restaurantData = [
         "menu":  [
                      "도래창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3341,7 +3595,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3354,7 +3609,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -3367,7 +3623,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -3381,7 +3638,8 @@ const restaurantData = [
                      "가츠동",
                      "마제소바"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3394,7 +3652,8 @@ const restaurantData = [
         "menu":  [
                      "갈비찜"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -3407,7 +3666,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3420,7 +3680,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -3433,7 +3694,8 @@ const restaurantData = [
         "menu":  [
                      "짜장면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3446,7 +3708,8 @@ const restaurantData = [
         "menu":  [
                      "막걸리"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3459,7 +3722,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -3473,7 +3737,8 @@ const restaurantData = [
                      "샌드위치",
                      "샐러드"
                  ],
-        "visit_count":  14
+        "visit_count":  14,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -3482,11 +3747,12 @@ const restaurantData = [
         "location_small":  "이대",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/164159610",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍙분식, 🍜중식",
@@ -3499,7 +3765,8 @@ const restaurantData = [
         "menu":  [
                      "만두"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3512,7 +3779,8 @@ const restaurantData = [
         "menu":  [
                      "어묵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3525,7 +3793,8 @@ const restaurantData = [
         "menu":  [
                      "꼼장어"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3538,7 +3807,8 @@ const restaurantData = [
         "menu":  [
                      "젤라또"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3551,7 +3821,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -3564,7 +3835,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3577,7 +3849,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -3590,7 +3863,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -3603,7 +3877,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -3616,7 +3891,8 @@ const restaurantData = [
         "menu":  [
                      "짜장면"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3629,7 +3905,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3642,7 +3919,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3655,7 +3933,8 @@ const restaurantData = [
         "menu":  [
                      "닭한마리"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -3664,12 +3943,13 @@ const restaurantData = [
         "location_small":  "을지로",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9802643",
-        "location_large":  "서울 종로구",
+        "location_large":  "서울 중구",
         "menu":  [
                      "막창",
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3682,7 +3962,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3695,7 +3976,8 @@ const restaurantData = [
         "menu":  [
                      "뼈구이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3708,7 +3990,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3721,7 +4004,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3734,13 +4018,14 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
         "name":  "락희돈",
         "date":  "2025-10-22",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/814587106",
         "location_large":  "서울 마포구",
@@ -3748,7 +4033,8 @@ const restaurantData = [
                      "꼬치",
                      "술집"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3761,7 +4047,8 @@ const restaurantData = [
         "menu":  [
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3775,7 +4062,8 @@ const restaurantData = [
                      "육회비빔밥",
                      "회"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -3788,7 +4076,8 @@ const restaurantData = [
         "menu":  [
                      "함박스테이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -3801,7 +4090,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3814,7 +4104,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -3827,7 +4118,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3840,7 +4132,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3853,7 +4146,8 @@ const restaurantData = [
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3866,7 +4160,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -3879,7 +4174,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -3892,20 +4188,22 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "남강마황오리전문점",
         "date":  "2025-10-26",
-        "location_small":  "등촌/염창",
+        "location_small":  "등촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/8881928",
-        "location_large":  "서울 강서구",
+        "location_large":  "서울 양천구",
         "menu":  [
                      "오리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -3914,12 +4212,13 @@ const restaurantData = [
         "location_small":  "강화도",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9077469",
-        "location_large":  "인천 강화",
+        "location_large":  "인천 강화군",
         "menu":  [
                      "회",
                      "회덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍽️뷔페",
@@ -3932,7 +4231,8 @@ const restaurantData = [
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -3945,7 +4245,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -3958,13 +4259,14 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "남매밥상",
         "date":  "2025-10-31",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -3973,7 +4275,8 @@ const restaurantData = [
                      "제육볶음",
                      "찌개"
                  ],
-        "visit_count":  10
+        "visit_count":  10,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -3986,7 +4289,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -3999,7 +4303,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4012,7 +4317,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4025,7 +4331,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  true
     },
     {
         "category":  "☕카페",
@@ -4038,7 +4345,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -4052,7 +4360,8 @@ const restaurantData = [
                      "이자카야",
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4065,7 +4374,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -4079,7 +4389,8 @@ const restaurantData = [
                      "짜장면",
                      "짬뽕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4092,7 +4403,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4105,7 +4417,8 @@ const restaurantData = [
         "menu":  [
                      "막국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4118,7 +4431,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -4131,7 +4445,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4144,7 +4459,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -4157,20 +4473,22 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "태광식당",
         "date":  "2025-10-01",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4183,7 +4501,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -4196,7 +4515,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4209,7 +4529,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4222,13 +4543,14 @@ const restaurantData = [
         "menu":  [
                      "브런치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "덕수식당",
         "date":  "2025-10-04",
-        "location_small":  "태안",
+        "location_small":  "태안읍 동문리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/8891473",
         "location_large":  "충남 태안",
@@ -4236,7 +4558,8 @@ const restaurantData = [
                      "간장게장",
                      "게국지"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4249,7 +4572,8 @@ const restaurantData = [
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -4262,7 +4586,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4275,7 +4600,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4289,7 +4615,8 @@ const restaurantData = [
                      "콩국",
                      "콩국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4302,7 +4629,8 @@ const restaurantData = [
         "menu":  [
                      "뭉티기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4315,7 +4643,8 @@ const restaurantData = [
         "menu":  [
                      "갈매기살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4328,7 +4657,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4341,7 +4671,8 @@ const restaurantData = [
         "menu":  [
                      "국밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4354,7 +4685,8 @@ const restaurantData = [
         "menu":  [
                      "낙곱새"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -4367,7 +4699,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4380,7 +4713,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4393,7 +4727,8 @@ const restaurantData = [
         "menu":  [
                      "밀면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -4406,7 +4741,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4419,7 +4755,8 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4432,7 +4769,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4445,7 +4783,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4458,7 +4797,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4471,7 +4811,8 @@ const restaurantData = [
         "menu":  [
                      "육회비빔밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍝양식, 🍣일식",
@@ -4484,7 +4825,8 @@ const restaurantData = [
         "menu":  [
                      "퓨전요리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4497,7 +4839,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -4510,7 +4853,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4523,20 +4867,22 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "스탠다드브레드 안국",
         "date":  "2025-09-07",
-        "location_small":  "북촌, 안국",
+        "location_small":  "북촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1532324202",
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -4549,7 +4895,8 @@ const restaurantData = [
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4562,7 +4909,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4575,20 +4923,22 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "바른치킨 서강대 로봇점",
         "date":  "2025-09-11",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4601,7 +4951,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -4614,7 +4965,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4627,7 +4979,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4641,7 +4994,8 @@ const restaurantData = [
                      "빵",
                      "커피"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -4654,7 +5008,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4668,7 +5023,8 @@ const restaurantData = [
                      "김밥",
                      "닭강정"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -4681,7 +5037,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4695,7 +5052,8 @@ const restaurantData = [
                      "커피",
                      "크루키"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -4709,7 +5067,8 @@ const restaurantData = [
                      "짜장면",
                      "탕수육"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -4722,7 +5081,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4735,7 +5095,8 @@ const restaurantData = [
         "menu":  [
                      "평양냉면"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4748,7 +5109,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -4761,7 +5123,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4774,7 +5137,8 @@ const restaurantData = [
         "menu":  [
                      "아구찜"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -4788,7 +5152,8 @@ const restaurantData = [
                      "뇨끼",
                      "파스타"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍽️뷔페",
@@ -4801,7 +5166,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  8
+        "visit_count":  8,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -4814,7 +5180,8 @@ const restaurantData = [
         "menu":  [
                      "포케"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4827,7 +5194,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -4840,7 +5208,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4853,7 +5222,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -4867,7 +5237,8 @@ const restaurantData = [
                      "전",
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -4881,7 +5252,8 @@ const restaurantData = [
                      "돈까스",
                      "카레"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -4894,7 +5266,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4907,7 +5280,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4920,7 +5294,8 @@ const restaurantData = [
         "menu":  [
                      "만화카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -4933,7 +5308,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -4946,7 +5322,8 @@ const restaurantData = [
         "menu":  [
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4959,7 +5336,8 @@ const restaurantData = [
         "menu":  [
                      "보쌈"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4972,7 +5350,8 @@ const restaurantData = [
         "menu":  [
                      "국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -4985,7 +5364,8 @@ const restaurantData = [
         "menu":  [
                      "솥밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -4998,20 +5378,22 @@ const restaurantData = [
         "menu":  [
                      "전"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "문지리535",
         "date":  "2025-07-13",
-        "location_small":  "파주",
+        "location_small":  "탄현면 문지리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1455161506",
         "location_large":  "경기 파주",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -5020,11 +5402,12 @@ const restaurantData = [
         "location_small":  "인천공항",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1298926904",
-        "location_large":  "인천 중구",
+        "location_large":  "인천 영종구",
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5038,13 +5421,14 @@ const restaurantData = [
                      "닭곰탕",
                      "초계국수"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
         "name":  "정든그릇",
         "date":  "2025-07-25",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -5053,7 +5437,8 @@ const restaurantData = [
                      "돈까스",
                      "메밀소바"
                  ],
-        "visit_count":  8
+        "visit_count":  8,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5066,7 +5451,8 @@ const restaurantData = [
         "menu":  [
                      "볶음밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -5079,7 +5465,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5092,7 +5479,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5105,7 +5493,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페, 🥗샐러드",
@@ -5118,7 +5507,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5131,7 +5521,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5144,7 +5535,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -5158,7 +5550,8 @@ const restaurantData = [
                      "리조또",
                      "파스타"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍙분식, 🍚한식",
@@ -5172,7 +5565,8 @@ const restaurantData = [
                      "닭발",
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5185,7 +5579,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5198,7 +5593,8 @@ const restaurantData = [
         "menu":  [
                      "유부초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍗치킨, 🍚한식",
@@ -5212,7 +5608,8 @@ const restaurantData = [
                      "백반",
                      "치킨"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  true
     },
     {
         "category":  "🍚한식",
@@ -5225,7 +5622,8 @@ const restaurantData = [
         "menu":  [
                      "등갈비"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5238,7 +5636,8 @@ const restaurantData = [
         "menu":  [
                      "닭똥집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5251,7 +5650,8 @@ const restaurantData = [
         "menu":  [
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식, 🍽️뷔페",
@@ -5264,7 +5664,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5277,7 +5678,8 @@ const restaurantData = [
         "menu":  [
                      "꼬치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -5290,7 +5692,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5303,7 +5706,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5316,7 +5720,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -5329,7 +5734,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5342,7 +5748,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5355,7 +5762,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -5368,7 +5776,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -5381,7 +5790,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -5394,7 +5804,8 @@ const restaurantData = [
         "menu":  [
                      "핫도그"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5407,7 +5818,8 @@ const restaurantData = [
         "menu":  [
                      "국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5420,7 +5832,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5433,7 +5846,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5446,72 +5860,78 @@ const restaurantData = [
         "menu":  [
                      "막국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
         "name":  "오징어순대나라",
         "date":  "2025-05-05",
-        "location_small":  "강릉",
+        "location_small":  "성남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/637492057",
         "location_large":  "강원 강릉",
         "menu":  [
                      "오징어순대"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "배니닭강정",
         "date":  "2025-05-05",
-        "location_small":  "강릉",
+        "location_small":  "성남동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/19660110",
         "location_large":  "강원 강릉",
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "애시당초",
         "date":  "2025-05-05",
-        "location_small":  "강릉",
+        "location_small":  "초당동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1168878886",
         "location_large":  "강원 강릉",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "초당110",
         "date":  "2025-05-05",
-        "location_small":  "강릉",
+        "location_small":  "강문동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1647908801",
         "location_large":  "강원 강릉",
         "menu":  [
                      "젤라또"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "강릉짬뽕순두부 강릉본점",
         "date":  "2025-05-05",
-        "location_small":  "강릉",
+        "location_small":  "강문동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/731412427",
         "location_large":  "강원 강릉",
         "menu":  [
                      "순두부"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -5524,7 +5944,8 @@ const restaurantData = [
         "menu":  [
                      "돼지고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -5537,7 +5958,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍺술집",
@@ -5550,7 +5972,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5563,7 +5986,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "☕카페, 🍺술집",
@@ -5576,7 +6000,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -5585,11 +6010,12 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/790690407",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -5602,7 +6028,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5615,7 +6042,8 @@ const restaurantData = [
         "menu":  [
                      "꼼장어"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5628,7 +6056,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5641,7 +6070,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -5654,7 +6084,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -5667,7 +6098,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5680,52 +6112,56 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "테를지",
         "date":  "2025-05-23",
-        "location_small":  "경주",
+        "location_small":  "사정동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1647204680",
         "location_large":  "경북 경주",
         "menu":  [
                      "프레첼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "황남빵",
         "date":  "2025-05-23",
-        "location_small":  "경주",
+        "location_small":  "황오동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26519092",
         "location_large":  "경북 경주",
         "menu":  [
                      "황남빵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "반카이막 경주본점",
         "date":  "2025-05-23",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1798751627",
         "location_large":  "경북 경주",
         "menu":  [
                      "아이스크림"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자, 🍝양식",
         "name":  "피자옥",
         "date":  "2025-05-23",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1225134792",
         "location_large":  "경북 경주",
@@ -5733,85 +6169,92 @@ const restaurantData = [
                      "파스타",
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "아덴 보문호수점",
         "date":  "2025-05-22",
-        "location_small":  "경주",
+        "location_small":  "신평동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/425270187",
         "location_large":  "경북 경주",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "기와메밀막국수",
         "date":  "2025-05-22",
-        "location_small":  "경주",
+        "location_small":  "구황동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/725002926",
         "location_large":  "경북 경주",
         "menu":  [
                      "막국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "경주약과방",
         "date":  "2025-05-21",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1507806813",
         "location_large":  "경북 경주",
         "menu":  [
                      "개성주악"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "경주대게닭강정",
         "date":  "2025-05-21",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1054251976",
         "location_large":  "경북 경주",
         "menu":  [
                      "닭강정"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
         "name":  "점점",
         "date":  "2025-05-21",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/133871935",
         "location_large":  "경북 경주",
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "황남두꺼비",
         "date":  "2025-05-21",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "http://xn--place-961v.map.kakao.com/1952344699",
         "location_large":  "경북 경주",
         "menu":  [
                      "갈비찜"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -5824,7 +6267,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5833,11 +6277,12 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/192785425",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5846,11 +6291,12 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/187738410",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "딸기모찌"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5859,11 +6305,12 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/116932008",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "장어탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5872,11 +6319,12 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1676638559",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "돌문어삼합"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5885,11 +6333,12 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1650221658",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -5898,12 +6347,13 @@ const restaurantData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1266581709",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "간장게장",
                      "갈치조림"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드, 🍕피자",
@@ -5916,7 +6366,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -5929,7 +6380,8 @@ const restaurantData = [
         "menu":  [
                      "파스타"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -5943,7 +6395,8 @@ const restaurantData = [
                      "커피",
                      "푸딩"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -5956,7 +6409,8 @@ const restaurantData = [
         "menu":  [
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -5969,7 +6423,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -5983,7 +6438,8 @@ const restaurantData = [
                      "스테이크",
                      "파스타"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -5996,7 +6452,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6009,7 +6466,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -6023,7 +6481,8 @@ const restaurantData = [
                      "파스타",
                      "피자"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6036,7 +6495,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6049,7 +6509,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -6062,7 +6523,8 @@ const restaurantData = [
         "menu":  [
                      "돼지갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6075,7 +6537,8 @@ const restaurantData = [
         "menu":  [
                      "개성주악"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식, 🍚한식",
@@ -6089,7 +6552,8 @@ const restaurantData = [
                      "떡볶이",
                      "튀김"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6102,7 +6566,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식, 🍚한식",
@@ -6117,7 +6582,8 @@ const restaurantData = [
                      "만두",
                      "어묵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6130,7 +6596,8 @@ const restaurantData = [
         "menu":  [
                      "감자탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -6143,7 +6610,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -6156,7 +6624,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -6169,7 +6638,8 @@ const restaurantData = [
         "menu":  [
                      "함박스테이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6182,7 +6652,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6195,7 +6666,8 @@ const restaurantData = [
         "menu":  [
                      "뭉티기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -6209,7 +6681,8 @@ const restaurantData = [
                      "돈까스",
                      "우동"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -6222,7 +6695,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -6235,7 +6709,8 @@ const restaurantData = [
         "menu":  [
                      "닭발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "☕카페",
@@ -6248,7 +6723,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6261,7 +6737,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  true
     },
     {
         "category":  "☕카페",
@@ -6274,7 +6751,8 @@ const restaurantData = [
         "menu":  [
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -6287,7 +6765,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -6300,7 +6779,8 @@ const restaurantData = [
         "menu":  [
                      "짜장면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자, 🍝양식",
@@ -6313,7 +6793,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -6326,7 +6807,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6340,7 +6822,8 @@ const restaurantData = [
                      "삼계탕",
                      "옻닭"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6353,7 +6836,8 @@ const restaurantData = [
         "menu":  [
                      "오리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6366,7 +6850,8 @@ const restaurantData = [
         "menu":  [
                      "국밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6379,7 +6864,8 @@ const restaurantData = [
         "menu":  [
 
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자, 🍝양식",
@@ -6392,7 +6878,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6405,20 +6892,22 @@ const restaurantData = [
         "menu":  [
                      "오리"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
         "name":  "겐로쿠우동 홍대본점",
         "date":  "2025-03-25",
-        "location_small":  "상수, 홍대",
+        "location_small":  "상수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/12437276",
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6431,7 +6920,8 @@ const restaurantData = [
         "menu":  [
                      "유부초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6444,7 +6934,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -6457,7 +6948,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -6470,7 +6962,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -6483,7 +6976,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🌮세계요리",
@@ -6496,7 +6990,8 @@ const restaurantData = [
         "menu":  [
                      "타코"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -6509,7 +7004,8 @@ const restaurantData = [
         "menu":  [
                      "짬뽕"
                  ],
-        "visit_count":  4
+        "visit_count":  4,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -6522,7 +7018,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -6535,7 +7032,8 @@ const restaurantData = [
         "menu":  [
                      "마라탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6548,7 +7046,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6561,7 +7060,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -6575,7 +7075,8 @@ const restaurantData = [
                      "닭고기",
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6588,7 +7089,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍜중식, 🍣일식",
@@ -6601,7 +7103,8 @@ const restaurantData = [
         "menu":  [
 
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6614,7 +7117,8 @@ const restaurantData = [
         "menu":  [
                      "오꼬노미야끼"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6627,7 +7131,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -6641,7 +7146,8 @@ const restaurantData = [
                      "떡볶이",
                      "핫도그"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6654,7 +7160,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6668,13 +7175,14 @@ const restaurantData = [
                      "닭볶음탕",
                      "닭한마리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "브라운시티 로스팅랩",
         "date":  "2025-02-22",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/327828139",
         "location_large":  "서울 마포구",
@@ -6682,7 +7190,8 @@ const restaurantData = [
                      "카페",
                      "커피"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6695,7 +7204,8 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6708,7 +7218,8 @@ const restaurantData = [
         "menu":  [
                      "돈까스"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -6721,7 +7232,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6734,7 +7246,8 @@ const restaurantData = [
         "menu":  [
                      "케이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -6747,7 +7260,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6760,7 +7274,8 @@ const restaurantData = [
         "menu":  [
                      "아이스크림"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6773,7 +7288,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -6786,7 +7302,8 @@ const restaurantData = [
         "menu":  [
                      "포케"
                  ],
-        "visit_count":  5
+        "visit_count":  5,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6799,7 +7316,8 @@ const restaurantData = [
         "menu":  [
                      "솥밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -6812,7 +7330,8 @@ const restaurantData = [
         "menu":  [
                      "마라탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -6826,7 +7345,8 @@ const restaurantData = [
                      "술집",
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍣일식",
@@ -6840,7 +7360,8 @@ const restaurantData = [
                      "돈까스",
                      "메밀소바"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6853,7 +7374,8 @@ const restaurantData = [
         "menu":  [
                      "칼국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -6866,7 +7388,8 @@ const restaurantData = [
         "menu":  [
                      "쌀국수"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6879,7 +7402,8 @@ const restaurantData = [
         "menu":  [
                      "해장국"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍗치킨",
@@ -6892,7 +7416,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6905,7 +7430,8 @@ const restaurantData = [
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  7
+        "visit_count":  7,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -6918,7 +7444,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6931,7 +7458,8 @@ const restaurantData = [
         "menu":  [
                      "김치찜"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -6945,7 +7473,8 @@ const restaurantData = [
                      "샐러드",
                      "포케"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6959,7 +7488,8 @@ const restaurantData = [
                      "빵",
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -6973,7 +7503,8 @@ const restaurantData = [
                      "커피",
                      "케이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -6986,7 +7517,8 @@ const restaurantData = [
         "menu":  [
                      "카레"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -6999,7 +7531,8 @@ const restaurantData = [
         "menu":  [
                      "삼계탕"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7012,7 +7545,8 @@ const restaurantData = [
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -7025,7 +7559,8 @@ const restaurantData = [
         "menu":  [
                      "마라탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -7038,7 +7573,8 @@ const restaurantData = [
         "menu":  [
                      "라멘"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7051,7 +7587,8 @@ const restaurantData = [
         "menu":  [
                      "티라미수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -7064,7 +7601,8 @@ const restaurantData = [
         "menu":  [
                      "짬뽕"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7077,20 +7615,22 @@ const restaurantData = [
         "menu":  [
                      "고등어구이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
         "name":  "한식주점 제일회관 수원직영점",
         "date":  "2024-12-20",
-        "location_small":  "수원역, 팔달구",
+        "location_small":  "수원역",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/662047130",
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -7103,7 +7643,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7116,7 +7657,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -7130,7 +7672,8 @@ const restaurantData = [
                      "스테이크",
                      "파스타"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7143,7 +7686,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -7156,7 +7700,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7170,7 +7715,8 @@ const restaurantData = [
                      "곱창",
                      "곱창전골"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7184,7 +7730,8 @@ const restaurantData = [
                      "커피",
                      "케이크"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -7197,7 +7744,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -7211,7 +7759,8 @@ const restaurantData = [
                      "마라샹궈",
                      "마라탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -7224,7 +7773,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7237,7 +7787,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7251,7 +7802,8 @@ const restaurantData = [
                      "커피",
                      "파이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -7264,7 +7816,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -7277,7 +7830,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7290,7 +7844,8 @@ const restaurantData = [
         "menu":  [
                      "요거트"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7303,13 +7858,14 @@ const restaurantData = [
         "menu":  [
                      "빵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "아소정",
         "date":  "2025-01-24",
-        "location_small":  "공덕, 대흥",
+        "location_small":  "공덕",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/7990640",
         "location_large":  "서울 마포구",
@@ -7318,7 +7874,8 @@ const restaurantData = [
                      "갈비탕",
                      "냉면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7331,7 +7888,8 @@ const restaurantData = [
         "menu":  [
                      "빙수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -7344,7 +7902,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -7357,7 +7916,8 @@ const restaurantData = [
         "menu":  [
                      "양꼬치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7370,7 +7930,8 @@ const restaurantData = [
         "menu":  [
                      "회"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7384,7 +7945,8 @@ const restaurantData = [
                      "샌드위치",
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -7397,7 +7959,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7410,7 +7973,8 @@ const restaurantData = [
         "menu":  [
                      "감자탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -7423,7 +7987,8 @@ const restaurantData = [
         "menu":  [
                      "돼지고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -7436,20 +8001,22 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "네네치킨 대명비발디점",
         "date":  "2025-01-02",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/24093740",
         "location_large":  "강원 홍천",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -7462,33 +8029,36 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "이디야커피 홍천서면점",
         "date":  "2025-01-03",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/381231413",
         "location_large":  "강원 홍천",
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
         "name":  "홍천조박사화로구이",
         "date":  "2025-01-03",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1925458047",
         "location_large":  "강원 홍천",
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7501,7 +8071,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -7514,7 +8085,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -7527,7 +8099,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -7540,7 +8113,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -7553,7 +8127,8 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7566,7 +8141,8 @@ const restaurantData = [
         "menu":  [
                      "찜닭"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7579,7 +8155,8 @@ const restaurantData = [
         "menu":  [
                      "칼국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7592,7 +8169,8 @@ const restaurantData = [
         "menu":  [
                      "불고기"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7605,7 +8183,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7618,7 +8197,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -7631,7 +8211,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7644,7 +8225,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -7657,7 +8239,8 @@ const restaurantData = [
         "menu":  [
                      "호떡"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -7666,12 +8249,13 @@ const restaurantData = [
         "location_small":  "부평",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/241371594",
-        "location_large":  "부산 중구",
+        "location_large":  "부산 해운대구",
         "menu":  [
                      "떡볶이",
                      "어묵"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -7684,7 +8268,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -7697,7 +8282,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7710,7 +8296,8 @@ const restaurantData = [
         "menu":  [
 
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7723,7 +8310,8 @@ const restaurantData = [
         "menu":  [
                      "빵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -7736,7 +8324,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7749,7 +8338,8 @@ const restaurantData = [
         "menu":  [
                      "밀면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -7762,7 +8352,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -7776,7 +8367,8 @@ const restaurantData = [
                      "샌드위치",
                      "샐러드"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -7785,11 +8377,12 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26949275",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -7803,7 +8396,8 @@ const restaurantData = [
                      "닭꼬치",
                      "어묵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🌮세계요리",
@@ -7817,7 +8411,8 @@ const restaurantData = [
                      "퀘사디아",
                      "타코"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -7830,7 +8425,8 @@ const restaurantData = [
         "menu":  [
                      "쌀국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
@@ -7844,7 +8440,8 @@ const restaurantData = [
                      "마라샹궈",
                      "마라탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자, 🍺술집",
@@ -7858,7 +8455,8 @@ const restaurantData = [
                      "맥주",
                      "피자"
                  ],
-        "visit_count":  3
+        "visit_count":  3,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7871,7 +8469,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7884,7 +8483,8 @@ const restaurantData = [
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7897,7 +8497,8 @@ const restaurantData = [
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7910,7 +8511,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7924,7 +8526,8 @@ const restaurantData = [
                      "덮밥",
                      "찌개"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7938,20 +8541,22 @@ const restaurantData = [
                      "김치찌개",
                      "불고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "성심당 본점",
         "date":  "2024-07-10",
-        "location_small":  "중구",
+        "location_small":  "은행동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17733090",
         "location_large":  "대전 중구",
         "menu":  [
                      "빵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -7964,7 +8569,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -7977,7 +8583,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -7990,7 +8597,8 @@ const restaurantData = [
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -8004,7 +8612,8 @@ const restaurantData = [
                      "닭꼬치",
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍺술집",
@@ -8017,7 +8626,8 @@ const restaurantData = [
         "menu":  [
                      "이자카야"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8030,7 +8640,8 @@ const restaurantData = [
         "menu":  [
                      "삼겹살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -8043,7 +8654,8 @@ const restaurantData = [
         "menu":  [
                      "반미"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식",
@@ -8056,13 +8668,14 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식",
         "name":  "짬뽕공장 군산점",
         "date":  "2024-08-30",
-        "location_small":  "군산",
+        "location_small":  "수송동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1544446763",
         "location_large":  "전북 군산",
@@ -8070,39 +8683,42 @@ const restaurantData = [
                      "짬뽕",
                      "탕수육"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "바르미샤브샤브칼국수",
         "date":  "2024-08-29",
-        "location_small":  "군산",
+        "location_small":  "수송동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26611615",
         "location_large":  "전북 군산",
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "뽕나무한그루 멀베리케이터링",
         "date":  "2024-08-29",
-        "location_small":  "군산",
+        "location_small":  "기타",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/934006931",
         "location_large":  "전북 군산",
         "menu":  [
                      "도시락"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍺술집",
         "name":  "군산비어포트",
         "date":  "2024-08-28",
-        "location_small":  "군산",
+        "location_small":  "금암동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1005319024",
         "location_large":  "전북 군산",
@@ -8110,7 +8726,8 @@ const restaurantData = [
                      "맥주",
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8123,7 +8740,8 @@ const restaurantData = [
         "menu":  [
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8136,7 +8754,8 @@ const restaurantData = [
         "menu":  [
                      "빵"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8149,7 +8768,8 @@ const restaurantData = [
         "menu":  [
                      "유부초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -8162,7 +8782,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -8176,7 +8797,8 @@ const restaurantData = [
                      "쌀국수",
                      "팟타이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8190,20 +8812,22 @@ const restaurantData = [
                      "아이스크림",
                      "요거트"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
         "name":  "김영곤초밥",
         "date":  "2024-08-19",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/892664076",
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -8217,7 +8841,8 @@ const restaurantData = [
                      "나시고랭",
                      "팟타이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8230,7 +8855,8 @@ const restaurantData = [
         "menu":  [
                      "삼계탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -8243,20 +8869,22 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "망향비빔국수 강서점",
         "date":  "2024-08-11",
-        "location_small":  "등촌/염창",
+        "location_small":  "염창",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9016062",
         "location_large":  "서울 강서구",
         "menu":  [
                      "국수"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🥩고기",
@@ -8269,7 +8897,8 @@ const restaurantData = [
         "menu":  [
                      "소갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -8282,7 +8911,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -8295,7 +8925,8 @@ const restaurantData = [
         "menu":  [
                      "초밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -8308,7 +8939,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식, 🍺술집",
@@ -8321,7 +8953,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자, 🍺술집",
@@ -8334,7 +8967,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍜중식, 🍝양식",
@@ -8348,7 +8982,8 @@ const restaurantData = [
                      "짬뽕",
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8362,7 +8997,8 @@ const restaurantData = [
                      "김치찌개",
                      "김치찜"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨, 🍙분식",
@@ -8376,20 +9012,22 @@ const restaurantData = [
                      "떡볶이",
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
         "name":  "춤추는왕만두 등촌점",
         "date":  "2024-07-21",
-        "location_small":  "등촌/염창",
+        "location_small":  "등촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1817978313",
         "location_large":  "서울 양천구",
         "menu":  [
                      "만두"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8403,7 +9041,8 @@ const restaurantData = [
                      "빙수",
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8412,11 +9051,12 @@ const restaurantData = [
         "location_small":  "흑석",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/147755006",
-        "location_large":  "서울 동작구",
+        "location_large":  "서울 용산구",
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -8429,7 +9069,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -8442,7 +9083,8 @@ const restaurantData = [
         "menu":  [
                      "샌드위치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍝양식",
@@ -8456,7 +9098,8 @@ const restaurantData = [
                      "파스타",
                      "필라프"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍜중식",
@@ -8471,7 +9114,8 @@ const restaurantData = [
                      "짬뽕",
                      "탕수육"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -8484,7 +9128,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍕피자",
@@ -8497,7 +9142,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8511,7 +9157,8 @@ const restaurantData = [
                      "소고기",
                      "평양냉면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -8525,7 +9172,8 @@ const restaurantData = [
                      "전",
                      "닭볶음탕"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8538,7 +9186,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8551,7 +9200,8 @@ const restaurantData = [
         "menu":  [
                      "김밥"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -8564,7 +9214,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8577,7 +9228,8 @@ const restaurantData = [
         "menu":  [
                      "솥밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식",
@@ -8590,7 +9242,8 @@ const restaurantData = [
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -8603,7 +9256,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥡아시안",
@@ -8616,7 +9270,8 @@ const restaurantData = [
         "menu":  [
                      "쌀국수"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -8629,7 +9284,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "☕카페",
@@ -8642,7 +9298,8 @@ const restaurantData = [
         "menu":  [
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8655,7 +9312,8 @@ const restaurantData = [
         "menu":  [
                      "냉면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -8668,7 +9326,8 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8681,7 +9340,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🥩고기",
@@ -8694,7 +9354,8 @@ const restaurantData = [
         "menu":  [
                      "곱창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍽️뷔페",
@@ -8707,7 +9368,8 @@ const restaurantData = [
         "menu":  [
                      "뷔페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -8720,7 +9382,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8733,7 +9396,8 @@ const restaurantData = [
         "menu":  [
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8746,7 +9410,8 @@ const restaurantData = [
         "menu":  [
                      "수플레"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8759,7 +9424,8 @@ const restaurantData = [
         "menu":  [
                      "평양냉면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -8772,7 +9438,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍝양식",
@@ -8786,7 +9453,8 @@ const restaurantData = [
                      "스테이크",
                      "파스타"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -8800,7 +9468,8 @@ const restaurantData = [
                      "바스크치즈케이크",
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
@@ -8814,7 +9483,8 @@ const restaurantData = [
                      "돈까스",
                      "메밀소바"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -8827,7 +9497,8 @@ const restaurantData = [
         "menu":  [
                      "막걸리"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍣일식",
@@ -8840,13 +9511,14 @@ const restaurantData = [
         "menu":  [
                      "우동"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "카페드리옹 코엑스점",
         "date":  "2024-05-24",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1092315691",
         "location_large":  "서울 강남구",
@@ -8854,13 +9526,14 @@ const restaurantData = [
                      "디저트",
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
         "name":  "클로리스티룸 코엑스몰점",
         "date":  "2024-05-23",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26897290",
         "location_large":  "서울 강남구",
@@ -8868,13 +9541,14 @@ const restaurantData = [
                      "밀크티",
                      "카페"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🌮세계요리",
         "name":  "바토스 파르나스몰점",
         "date":  "2024-05-24",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1635696078",
         "location_large":  "서울 강남구",
@@ -8882,7 +9556,8 @@ const restaurantData = [
                      "브리또",
                      "타코"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8896,20 +9571,22 @@ const restaurantData = [
                      "냉면",
                      "평양냉면"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "광화문석갈비 코엑스점",
         "date":  "2024-05-23",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/885622105",
         "location_large":  "서울 강남구",
         "menu":  [
                      "석갈비"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -8922,7 +9599,8 @@ const restaurantData = [
         "menu":  [
                      "샤브샤브"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -8935,7 +9613,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -8949,7 +9628,8 @@ const restaurantData = [
                      "곱창",
                      "막창"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식",
@@ -8962,20 +9642,22 @@ const restaurantData = [
         "menu":  [
                      "치즈밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "가마치통닭 서강대점",
         "date":  "2024-05-14",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1874156592",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -8988,7 +9670,8 @@ const restaurantData = [
         "menu":  [
                      "갈매기살"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍺술집",
@@ -9001,20 +9684,22 @@ const restaurantData = [
         "menu":  [
                      "찌개"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
         "name":  "통큰갈비 마포공덕점",
         "date":  "2024-05-17",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/971261193",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돼지고기"
                  ],
-        "visit_count":  2
+        "visit_count":  2,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
@@ -9027,20 +9712,22 @@ const restaurantData = [
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
         "name":  "찌니네마약통닭 염리 2호점",
         "date":  "2024-05-09",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/827520709",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -9053,7 +9740,8 @@ const restaurantData = [
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
@@ -9066,7 +9754,8 @@ const restaurantData = [
         "menu":  [
                      "닭꼬치"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식, 🍜중식",
@@ -9079,7 +9768,8 @@ const restaurantData = [
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍗치킨",
@@ -9092,7 +9782,8 @@ const restaurantData = [
         "menu":  [
                      "치킨"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
@@ -9101,11 +9792,12 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/398715963",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "돼지김치구이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🌮세계요리",
@@ -9119,7 +9811,8 @@ const restaurantData = [
                      "퀘사디아",
                      "타코"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -9132,7 +9825,8 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍺술집",
@@ -9145,13 +9839,14 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  true
     },
     {
         "category":  "🍚한식",
         "name":  "재모식당",
         "date":  "2024-05-03",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/622222463",
         "location_large":  "서울 마포구",
@@ -9159,7 +9854,8 @@ const restaurantData = [
                      "돈까스",
                      "제육볶음"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -9172,26 +9868,28 @@ const restaurantData = [
         "menu":  [
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍕피자",
         "name":  "미드티운피자",
         "date":  "2024-05-01",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1620087875",
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍣일식",
         "name":  "멘야요시",
         "date":  "2024-04-30",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/2013584419",
         "location_large":  "서울 마포구",
@@ -9199,7 +9897,8 @@ const restaurantData = [
                      "라멘",
                      "야끼소바"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "☕카페",
@@ -9212,33 +9911,36 @@ const restaurantData = [
         "menu":  [
                      "커피"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "원조광명할머니빈대떡",
         "date":  "2024-04-07",
-        "location_small":  "광명",
+        "location_small":  "광명동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18598029",
         "location_large":  "경기 광명",
         "menu":  [
                      "빈대떡"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "오목집 신도림점",
         "date":  "2024-03-29",
-        "location_small":  "구로, 신도림",
+        "location_small":  "구로",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1774627288",
         "location_large":  "서울 구로구",
         "menu":  [
                      "족발"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -9251,7 +9953,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍔패스트푸드",
@@ -9264,7 +9967,8 @@ const restaurantData = [
         "menu":  [
                      "햄버거"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍺술집",
@@ -9278,7 +9982,8 @@ const restaurantData = [
                      "맥주",
                      "술집"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥩고기",
@@ -9292,33 +9997,36 @@ const restaurantData = [
                      "닭구이",
                      "닭고기"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍚한식",
         "name":  "뜸들이다 신촌직영점",
         "date":  "",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/641152180",
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🍙분식",
         "name":  "신촌맛집 떡볶이돈까스",
         "date":  "2024-04-23",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1710216831",
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     },
     {
         "category":  "🥗샐러드",
@@ -9327,11 +10035,12 @@ const restaurantData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929376837",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "샐러드"
                  ],
-        "visit_count":  1
+        "visit_count":  1,
+        "closed":  false
     }
 ];
 const diaryData = [
@@ -9339,13 +10048,14 @@ const diaryData = [
         "date":  "2025-04-17",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-18",
@@ -9357,19 +10067,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-12",
         "name":  "양지분식",
         "category":  "🍙분식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/21410030",
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-04-22",
@@ -9378,34 +10090,37 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26949275",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-13",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-02",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-22",
@@ -9414,29 +10129,31 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929376837",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-05",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-08",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -9444,37 +10161,40 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-04",
         "name":  "김영곤초밥",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/892664076",
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-23",
         "name":  "신촌맛집 떡볶이돈까스",
         "category":  "🍙분식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1710216831",
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-03",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -9482,7 +10202,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-10",
@@ -9495,7 +10216,8 @@ const diaryData = [
         "menu":  [
                      "닭구이",
                      "닭고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-10",
@@ -9508,7 +10230,8 @@ const diaryData = [
         "menu":  [
                      "맥주",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-24",
@@ -9520,7 +10243,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-25",
@@ -9533,7 +10257,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-26",
@@ -9546,7 +10271,8 @@ const diaryData = [
         "menu":  [
                      "스테이크",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-03-29",
@@ -9558,31 +10284,34 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-03-29",
         "name":  "오목집 신도림점",
         "category":  "🍚한식",
-        "location_small":  "구로, 신도림",
+        "location_small":  "구로",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1774627288",
         "location_large":  "서울 구로구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-07",
         "name":  "원조광명할머니빈대떡",
         "category":  "🍚한식",
-        "location_small":  "광명",
+        "location_small":  "광명동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18598029",
         "location_large":  "경기 광명",
         "menu":  [
                      "빈대떡"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-10",
@@ -9594,7 +10323,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-10",
@@ -9606,7 +10336,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-14",
@@ -9618,80 +10349,87 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-29",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-29",
         "name":  "바른치킨 서강대 로봇점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-30",
         "name":  "멘야요시",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/2013584419",
         "location_large":  "서울 마포구",
         "menu":  [
                      "라멘",
                      "야끼소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-01",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-01",
         "name":  "미드티운피자",
         "category":  "🍕피자",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1620087875",
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-02",
         "name":  "통큰갈비 마포공덕점",
         "category":  "🥩고기",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/971261193",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돼지고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-03",
@@ -9703,20 +10441,22 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-03",
         "name":  "재모식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/622222463",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스",
                      "제육볶음"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-04",
@@ -9729,7 +10469,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "크루키"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-04",
@@ -9741,7 +10482,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-04",
@@ -9753,7 +10495,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-05",
@@ -9766,7 +10509,8 @@ const diaryData = [
         "menu":  [
                      "퀘사디아",
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-04-09",
@@ -9775,10 +10519,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/398715963",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "돼지김치구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-03-08",
@@ -9790,7 +10535,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-03-10",
@@ -9802,7 +10548,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "닭꼬치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-03-02",
@@ -9814,13 +10561,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-14",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -9828,44 +10576,48 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-08",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-08",
         "name":  "태광식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-09",
         "name":  "찌니네마약통닭 염리 2호점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/827520709",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-10",
@@ -9877,7 +10629,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-10",
@@ -9889,7 +10642,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-10",
@@ -9901,7 +10655,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-11",
@@ -9913,19 +10668,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-13",
         "name":  "태광식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-13",
@@ -9937,7 +10694,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-16",
@@ -9949,7 +10707,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-16",
@@ -9961,31 +10720,34 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-15",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-17",
         "name":  "통큰갈비 마포공덕점",
         "category":  "🥩고기",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/971261193",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돼지고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-11",
@@ -9997,7 +10759,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-11",
@@ -10009,7 +10772,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "막걸리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-18",
@@ -10021,7 +10785,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "갈매기살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-18",
@@ -10034,7 +10799,8 @@ const diaryData = [
         "menu":  [
                      "맥주",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-14",
@@ -10046,19 +10812,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-14",
         "name":  "가마치통닭 서강대점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1874156592",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-20",
@@ -10070,7 +10838,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치즈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-20",
@@ -10083,19 +10852,21 @@ const diaryData = [
         "menu":  [
                      "곱창",
                      "막창"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-22",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-22",
@@ -10107,7 +10878,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-21",
@@ -10119,19 +10891,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-23",
         "name":  "광화문석갈비 코엑스점",
         "category":  "🍚한식",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/885622105",
         "location_large":  "서울 강남구",
         "menu":  [
                      "석갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-23",
@@ -10144,46 +10918,50 @@ const diaryData = [
         "menu":  [
                      "냉면",
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-24",
         "name":  "바토스 파르나스몰점",
         "category":  "🌮세계요리",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1635696078",
         "location_large":  "서울 강남구",
         "menu":  [
                      "브리또",
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-23",
         "name":  "클로리스티룸 코엑스몰점",
         "category":  "☕카페",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26897290",
         "location_large":  "서울 강남구",
         "menu":  [
                      "밀크티",
                      "카페"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-24",
         "name":  "카페드리옹 코엑스점",
         "category":  "☕카페",
-        "location_small":  "삼성, 코엑스",
+        "location_small":  "삼성",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1092315691",
         "location_large":  "서울 강남구",
         "menu":  [
                      "디저트",
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-24",
@@ -10192,10 +10970,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/17735995",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-25",
@@ -10207,7 +10986,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-27",
@@ -10219,7 +10999,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-28",
@@ -10231,7 +11012,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-28",
@@ -10243,7 +11025,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-29",
@@ -10255,7 +11038,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "요거트"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-30",
@@ -10267,7 +11051,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-30",
@@ -10279,7 +11064,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막걸리"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-31",
@@ -10291,7 +11077,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-31",
@@ -10304,7 +11091,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-27",
@@ -10317,7 +11105,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-05-28",
@@ -10329,7 +11118,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-26",
@@ -10342,25 +11132,27 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-04-11",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-07",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -10368,7 +11160,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-13",
@@ -10380,20 +11173,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-10",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-12",
@@ -10406,7 +11201,8 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-12",
@@ -10418,7 +11214,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-06-04",
@@ -10431,7 +11228,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-04",
@@ -10444,13 +11242,14 @@ const diaryData = [
         "menu":  [
                      "바스크치즈케이크",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-21",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -10458,7 +11257,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-20",
@@ -10470,7 +11270,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-20",
@@ -10483,7 +11284,8 @@ const diaryData = [
         "menu":  [
                      "스테이크",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-19",
@@ -10495,7 +11297,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-18",
@@ -10507,19 +11310,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-17",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-18",
@@ -10531,7 +11336,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-06-22",
@@ -10543,7 +11349,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-22",
@@ -10555,7 +11362,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "수플레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-14",
@@ -10567,7 +11375,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-14",
@@ -10579,7 +11388,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-15",
@@ -10591,7 +11401,8 @@ const diaryData = [
         "location_large":  "경기 하남",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-03",
@@ -10604,7 +11415,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-06-24",
@@ -10616,7 +11428,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-11",
@@ -10628,7 +11441,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-28",
@@ -10640,7 +11454,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-25",
@@ -10652,7 +11467,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-24",
@@ -10664,7 +11480,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-07",
@@ -10676,7 +11493,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-06-07",
@@ -10688,7 +11506,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-05",
@@ -10700,7 +11519,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-05",
@@ -10713,7 +11533,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-17",
@@ -10726,7 +11547,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-26",
@@ -10738,7 +11560,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-26",
@@ -10750,7 +11573,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-26",
@@ -10763,7 +11587,8 @@ const diaryData = [
         "menu":  [
                      "빵",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-27",
@@ -10777,7 +11602,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-28",
@@ -10789,7 +11615,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-06-28",
@@ -10801,13 +11628,14 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-01",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -10815,7 +11643,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-01",
@@ -10827,7 +11656,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-02",
@@ -10839,19 +11669,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-02",
         "name":  "바른치킨 서강대 로봇점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-03",
@@ -10863,7 +11695,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-04-16",
@@ -10875,19 +11708,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-03",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-04",
@@ -10899,7 +11734,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "쌀국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-04",
@@ -10911,7 +11747,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-05",
@@ -10923,19 +11760,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-05",
         "name":  "태광식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-05",
@@ -10947,7 +11786,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-06",
@@ -10959,7 +11799,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-06",
@@ -10972,19 +11813,21 @@ const diaryData = [
         "menu":  [
                      "맥주",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-07",
         "name":  "망향비빔국수 강서점",
         "category":  "🍚한식",
-        "location_small":  "등촌/염창",
+        "location_small":  "염창",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9016062",
         "location_large":  "서울 강서구",
         "menu":  [
                      "국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-08",
@@ -10996,7 +11839,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "솥밥"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-07-23",
@@ -11008,7 +11852,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-09",
@@ -11020,7 +11865,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-09",
@@ -11032,7 +11878,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-10",
@@ -11044,7 +11891,8 @@ const diaryData = [
         "location_large":  "대전 유성구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-11",
@@ -11056,7 +11904,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-11",
@@ -11068,19 +11917,21 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-12",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-12",
@@ -11092,7 +11943,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-12",
@@ -11105,7 +11957,8 @@ const diaryData = [
         "menu":  [
                      "전",
                      "닭볶음탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-13",
@@ -11118,7 +11971,8 @@ const diaryData = [
         "menu":  [
                      "삼계탕",
                      "옻닭"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-14",
@@ -11131,7 +11985,8 @@ const diaryData = [
         "menu":  [
                      "소고기",
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-15",
@@ -11143,7 +11998,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼계탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-15",
@@ -11156,7 +12012,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-16",
@@ -11169,7 +12026,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "초계국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-16",
@@ -11181,7 +12039,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-17",
@@ -11193,7 +12052,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-17",
@@ -11205,7 +12065,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-17",
@@ -11217,7 +12078,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-17",
@@ -11229,7 +12091,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-07-17",
@@ -11241,7 +12104,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-18",
@@ -11254,7 +12118,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-19",
@@ -11266,19 +12131,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-19",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-19",
@@ -11290,7 +12157,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-26",
@@ -11302,7 +12170,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-25",
@@ -11314,7 +12183,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-26",
@@ -11326,7 +12196,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-25",
@@ -11338,19 +12209,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-24",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-08",
@@ -11362,19 +12235,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-23",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-22",
@@ -11386,7 +12261,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-22",
@@ -11398,7 +12274,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-07-29",
@@ -11411,7 +12288,8 @@ const diaryData = [
         "menu":  [
                      "불고기",
                      "쭈꾸미불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-30",
@@ -11423,7 +12301,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-31",
@@ -11436,7 +12315,8 @@ const diaryData = [
         "menu":  [
                      "돼지고기",
                      "소고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-31",
@@ -11448,7 +12328,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-01",
@@ -11462,7 +12343,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-01",
@@ -11475,7 +12357,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "필라프"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-08-02",
@@ -11487,19 +12370,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-02",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-02",
@@ -11511,7 +12396,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-03",
@@ -11523,7 +12409,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-30",
@@ -11535,7 +12422,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-30",
@@ -11547,7 +12435,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "와플"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-28",
@@ -11556,22 +12445,24 @@ const diaryData = [
         "location_small":  "흑석",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/147755006",
-        "location_large":  "서울 동작구",
+        "location_large":  "서울 용산구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-28",
         "name":  "문지리535",
         "category":  "☕카페",
-        "location_small":  "파주",
+        "location_small":  "탄현면 문지리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1455161506",
         "location_large":  "경기 파주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-21",
@@ -11584,19 +12475,21 @@ const diaryData = [
         "menu":  [
                      "빙수",
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-21",
         "name":  "춤추는왕만두 등촌점",
         "category":  "🍙분식",
-        "location_small":  "등촌/염창",
+        "location_small":  "등촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1817978313",
         "location_large":  "서울 양천구",
         "menu":  [
                      "만두"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-29",
@@ -11609,7 +12502,8 @@ const diaryData = [
         "menu":  [
                      "떡볶이",
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-04",
@@ -11622,7 +12516,8 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "김치찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-05",
@@ -11635,7 +12530,8 @@ const diaryData = [
         "menu":  [
                      "짬뽕",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-06",
@@ -11648,7 +12544,8 @@ const diaryData = [
         "menu":  [
                      "불고기",
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-07",
@@ -11660,7 +12557,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-07",
@@ -11672,7 +12570,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-08",
@@ -11684,7 +12583,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-09",
@@ -11696,7 +12596,8 @@ const diaryData = [
         "location_large":  "서울 구로구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-09",
@@ -11708,7 +12609,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-10",
@@ -11720,7 +12622,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-10",
@@ -11733,7 +12636,8 @@ const diaryData = [
         "menu":  [
                      "빵",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-11",
@@ -11745,25 +12649,27 @@ const diaryData = [
         "location_large":  "경기 포천",
         "menu":  [
                      "소갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-11",
         "name":  "망향비빔국수 강서점",
         "category":  "🍚한식",
-        "location_small":  "등촌/염창",
+        "location_small":  "염창",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9016062",
         "location_large":  "서울 강서구",
         "menu":  [
                      "국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-12",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -11771,7 +12677,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-12",
@@ -11783,7 +12690,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-13",
@@ -11796,19 +12704,21 @@ const diaryData = [
         "menu":  [
                      "스테이크",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-14",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-14",
@@ -11820,7 +12730,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼계탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-15",
@@ -11832,7 +12743,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-16",
@@ -11845,7 +12757,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-16",
@@ -11858,19 +12771,21 @@ const diaryData = [
         "menu":  [
                      "나시고랭",
                      "팟타이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-19",
         "name":  "김영곤초밥",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/892664076",
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-20",
@@ -11882,7 +12797,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-20",
@@ -11894,7 +12810,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-19",
@@ -11907,20 +12824,22 @@ const diaryData = [
         "menu":  [
                      "아이스크림",
                      "요거트"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-21",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-21",
@@ -11933,7 +12852,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-22",
@@ -11946,7 +12866,8 @@ const diaryData = [
         "menu":  [
                      "쌀국수",
                      "팟타이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-22",
@@ -11958,13 +12879,14 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-23",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -11972,7 +12894,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-23",
@@ -11984,7 +12907,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-24",
@@ -11996,7 +12920,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "유부초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-24",
@@ -12008,7 +12933,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-24",
@@ -12020,7 +12946,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-24",
@@ -12032,19 +12959,21 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-26",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-23",
@@ -12056,7 +12985,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "아이스크림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-11",
@@ -12068,7 +12998,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "아이스크림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-26",
@@ -12081,19 +13012,21 @@ const diaryData = [
         "menu":  [
                      "샐러드",
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-27",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-27",
@@ -12105,7 +13038,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-08-28",
@@ -12118,57 +13052,62 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-28",
         "name":  "군산비어포트",
         "category":  "🍺술집",
-        "location_small":  "군산",
+        "location_small":  "금암동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1005319024",
         "location_large":  "전북 군산",
         "menu":  [
                      "맥주",
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-29",
         "name":  "뽕나무한그루 멀베리케이터링",
         "category":  "🍚한식",
-        "location_small":  "군산",
+        "location_small":  "기타",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/934006931",
         "location_large":  "전북 군산",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-08-29",
         "name":  "바르미샤브샤브칼국수",
         "category":  "🍚한식",
-        "location_small":  "군산",
+        "location_small":  "수송동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26611615",
         "location_large":  "전북 군산",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-08-30",
         "name":  "짬뽕공장 군산점",
         "category":  "🍜중식",
-        "location_small":  "군산",
+        "location_small":  "수송동",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1544446763",
         "location_large":  "전북 군산",
         "menu":  [
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-02",
@@ -12180,7 +13119,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-02",
@@ -12192,20 +13132,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-03",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-03",
@@ -12217,7 +13159,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "반미"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-09-05",
@@ -12229,7 +13172,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-04",
@@ -12241,7 +13185,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-10",
@@ -12250,10 +13195,11 @@ const diaryData = [
         "location_small":  "서울역",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18248679",
-        "location_large":  "서울 중구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-05",
@@ -12265,7 +13211,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-06",
@@ -12277,7 +13224,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-06",
@@ -12289,7 +13237,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-07",
@@ -12301,7 +13250,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-07",
@@ -12313,7 +13263,8 @@ const diaryData = [
         "location_large":  "경기 부천",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-07",
@@ -12326,7 +13277,8 @@ const diaryData = [
         "menu":  [
                      "닭꼬치",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-09-06",
@@ -12338,7 +13290,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-08",
@@ -12350,19 +13303,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-09",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-09",
@@ -12374,7 +13329,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-10",
@@ -12387,31 +13343,34 @@ const diaryData = [
         "menu":  [
                      "리조또",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-26",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-11",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-02",
@@ -12423,7 +13382,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-12",
@@ -12435,7 +13395,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-12",
@@ -12447,7 +13408,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-13",
@@ -12460,7 +13422,8 @@ const diaryData = [
         "menu":  [
                      "퀘사디아",
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-13",
@@ -12473,7 +13436,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-12",
@@ -12485,19 +13449,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-07-10",
         "name":  "성심당 본점",
         "category":  "☕카페",
-        "location_small":  "중구",
+        "location_small":  "은행동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17733090",
         "location_large":  "대전 중구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-04",
@@ -12506,10 +13472,11 @@ const diaryData = [
         "location_small":  "서울역",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18248679",
-        "location_large":  "서울 중구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-19",
@@ -12522,7 +13489,8 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-19",
@@ -12535,7 +13503,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-21",
@@ -12547,7 +13516,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-22",
@@ -12559,7 +13529,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-25",
@@ -12571,7 +13542,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-24",
@@ -12583,7 +13555,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-23",
@@ -12595,19 +13568,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-23",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-24",
@@ -12619,7 +13594,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-26",
@@ -12632,19 +13608,21 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-10",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-27",
@@ -12656,19 +13634,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-02",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-28",
@@ -12680,7 +13660,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "컵밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-28",
@@ -12692,7 +13673,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-23",
@@ -12705,7 +13687,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-30",
@@ -12717,7 +13700,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-30",
@@ -12729,7 +13713,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-03",
@@ -12742,7 +13727,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-01",
@@ -12755,19 +13741,21 @@ const diaryData = [
         "menu":  [
                      "리조또",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-27",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-09-11",
@@ -12779,7 +13767,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-03",
@@ -12791,7 +13780,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-01",
@@ -12804,7 +13794,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-04",
@@ -12817,7 +13808,8 @@ const diaryData = [
         "menu":  [
                      "맥주",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-04",
@@ -12829,7 +13821,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-07",
@@ -12841,7 +13834,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-07",
@@ -12854,7 +13848,8 @@ const diaryData = [
         "menu":  [
                      "마라샹궈",
                      "마라탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-07",
@@ -12866,7 +13861,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-08",
@@ -12879,7 +13875,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-09-29",
@@ -12892,7 +13889,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-09",
@@ -12905,7 +13903,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-10",
@@ -12917,7 +13916,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-10",
@@ -12930,7 +13930,8 @@ const diaryData = [
         "menu":  [
                      "리조또",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-11",
@@ -12942,7 +13943,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌀국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-11",
@@ -12955,7 +13957,8 @@ const diaryData = [
         "menu":  [
                      "퀘사디아",
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-12",
@@ -12967,7 +13970,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-27",
@@ -12979,7 +13983,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-01",
@@ -12992,7 +13997,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-05-14",
@@ -13004,7 +14010,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-15",
@@ -13016,7 +14023,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "등갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-15",
@@ -13028,7 +14036,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-16",
@@ -13041,7 +14050,8 @@ const diaryData = [
         "menu":  [
                      "닭꼬치",
                      "어묵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-17",
@@ -13050,10 +14060,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/26949275",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-17",
@@ -13065,7 +14076,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-18",
@@ -13077,7 +14089,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-18",
@@ -13089,7 +14102,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-19",
@@ -13102,7 +14116,8 @@ const diaryData = [
         "menu":  [
                      "김밥",
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-27",
@@ -13114,7 +14129,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-21",
@@ -13126,7 +14142,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-21",
@@ -13139,19 +14156,21 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-22",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-22",
@@ -13163,13 +14182,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-23",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -13177,7 +14197,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-08",
@@ -13190,7 +14211,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13202,7 +14224,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13214,7 +14237,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "밀면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13226,7 +14250,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13238,7 +14263,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13250,7 +14276,8 @@ const diaryData = [
         "location_large":  "부산 수영구",
         "menu":  [
 
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13262,7 +14289,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-24",
@@ -13274,7 +14302,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13286,7 +14315,8 @@ const diaryData = [
         "location_large":  "부산 해운대구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13295,11 +14325,12 @@ const diaryData = [
         "location_small":  "부평",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/241371594",
-        "location_large":  "부산 중구",
+        "location_large":  "부산 해운대구",
         "menu":  [
                      "떡볶이",
                      "어묵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13311,7 +14342,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "호떡"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13323,7 +14355,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13335,7 +14368,8 @@ const diaryData = [
         "location_large":  "부산 동구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-25",
@@ -13347,7 +14381,8 @@ const diaryData = [
         "location_large":  "부산 동구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-26",
@@ -13359,7 +14394,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-26",
@@ -13371,7 +14407,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-20",
@@ -13383,7 +14420,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-13",
@@ -13395,7 +14433,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-28",
@@ -13407,7 +14446,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-29",
@@ -13419,7 +14459,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼계탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-14",
@@ -13432,7 +14473,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-30",
@@ -13444,31 +14486,34 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "칼국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-30",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-31",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-26",
@@ -13481,19 +14526,21 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-01",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-31",
@@ -13505,7 +14552,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-02",
@@ -13517,19 +14565,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-17",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-17",
@@ -13538,10 +14588,11 @@ const diaryData = [
         "location_small":  "이대",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/164159610",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-16",
@@ -13553,7 +14604,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-16",
@@ -13565,7 +14617,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-15",
@@ -13578,7 +14631,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-01-15",
@@ -13590,7 +14644,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-14",
@@ -13602,7 +14657,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-14",
@@ -13614,7 +14670,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-13",
@@ -13626,7 +14683,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-13",
@@ -13638,7 +14696,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-12",
@@ -13650,7 +14709,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-11",
@@ -13662,7 +14722,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-10",
@@ -13674,7 +14735,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-09",
@@ -13686,19 +14748,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-04",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-08",
@@ -13707,10 +14771,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/20012019",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-08",
@@ -13722,19 +14787,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-06",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-06",
@@ -13746,7 +14813,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-07",
@@ -13759,55 +14827,60 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-05",
         "name":  "바른치킨 서강대 로봇점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-09",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-03",
         "name":  "홍천조박사화로구이",
         "category":  "🍚한식, 🥩고기",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1925458047",
         "location_large":  "강원 홍천",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-03",
         "name":  "이디야커피 홍천서면점",
         "category":  "☕카페",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/381231413",
         "location_large":  "강원 홍천",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-02",
@@ -13819,19 +14892,21 @@ const diaryData = [
         "location_large":  "서울 동작구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-02",
         "name":  "네네치킨 대명비발디점",
         "category":  "🍗치킨",
-        "location_small":  "홍천",
+        "location_small":  "서면 대곡리",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/24093740",
         "location_large":  "강원 홍천",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-01",
@@ -13843,7 +14918,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-31",
@@ -13855,7 +14931,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "돼지고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-08",
@@ -13867,13 +14944,14 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "감자탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-07",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -13881,7 +14959,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-07",
@@ -13893,19 +14972,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-06",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-06",
@@ -13917,7 +14998,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-05",
@@ -13929,19 +15011,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-03",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-04",
@@ -13954,7 +15038,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-26",
@@ -13966,7 +15051,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-03",
@@ -13979,7 +15065,8 @@ const diaryData = [
         "menu":  [
                      "삼겹살",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-03",
@@ -13991,7 +15078,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-01",
@@ -14003,32 +15091,35 @@ const diaryData = [
         "location_large":  "서울 동작구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-31",
         "name":  "브라운시티 로스팅랩",
         "category":  "☕카페",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/327828139",
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-31",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-31",
@@ -14040,7 +15131,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "양꼬치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-31",
@@ -14052,7 +15144,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-01-25",
@@ -14064,7 +15157,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-25",
@@ -14076,7 +15170,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-25",
@@ -14088,13 +15183,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-24",
         "name":  "아소정",
         "category":  "🍚한식",
-        "location_small":  "공덕, 대흥",
+        "location_small":  "공덕",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/7990640",
         "location_large":  "서울 마포구",
@@ -14102,7 +15198,8 @@ const diaryData = [
                      "갈비찜",
                      "갈비탕",
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-24",
@@ -14114,7 +15211,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-24",
@@ -14126,7 +15224,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "요거트"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-23",
@@ -14138,7 +15237,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-23",
@@ -14150,7 +15250,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-23",
@@ -14162,7 +15263,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-21",
@@ -14174,7 +15276,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-22",
@@ -14186,7 +15289,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-21",
@@ -14199,32 +15303,35 @@ const diaryData = [
         "menu":  [
                      "김밥",
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-20",
         "name":  "대한카츠 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1042643162",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-20",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-19",
@@ -14236,7 +15343,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-23",
@@ -14249,7 +15357,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "파이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-23",
@@ -14261,7 +15370,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-23",
@@ -14273,7 +15383,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-22",
@@ -14285,7 +15396,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-01",
@@ -14298,7 +15410,8 @@ const diaryData = [
         "menu":  [
                      "마라샹궈",
                      "마라탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-01",
@@ -14310,7 +15423,8 @@ const diaryData = [
         "location_large":  "서울 동작구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-07",
@@ -14323,7 +15437,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "케이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-07",
@@ -14336,7 +15451,8 @@ const diaryData = [
         "menu":  [
                      "곱창",
                      "곱창전골"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-07",
@@ -14348,7 +15464,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-07",
@@ -14360,7 +15477,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-13",
@@ -14373,7 +15491,8 @@ const diaryData = [
         "menu":  [
                      "스테이크",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-13",
@@ -14385,7 +15504,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-17",
@@ -14397,45 +15517,49 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-14",
         "name":  "락희돈",
         "category":  "🍺술집",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/814587106",
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-17",
         "name":  "락희돈",
         "category":  "🍺술집",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/814587106",
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-20",
         "name":  "한식주점 제일회관 수원직영점",
         "category":  "🍺술집",
-        "location_small":  "수원역, 팔달구",
+        "location_small":  "수원역",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/662047130",
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-24",
@@ -14447,7 +15571,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "고등어구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-25",
@@ -14459,7 +15584,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-25",
@@ -14471,7 +15597,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "티라미수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-15",
@@ -14483,7 +15610,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-10",
@@ -14495,7 +15623,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-09",
@@ -14507,7 +15636,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "마라탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-08",
@@ -14521,7 +15651,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-01-22",
@@ -14535,7 +15666,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-31",
@@ -14548,7 +15680,8 @@ const diaryData = [
         "menu":  [
                      "불고기",
                      "쭈꾸미불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-30",
@@ -14560,7 +15693,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-29",
@@ -14572,7 +15706,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-27",
@@ -14584,19 +15719,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-26",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-24",
@@ -14608,7 +15745,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼계탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-23",
@@ -14620,7 +15758,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-23",
@@ -14632,7 +15771,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-23",
@@ -14645,7 +15785,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "케이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-22",
@@ -14657,19 +15798,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-20",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-19",
@@ -14681,7 +15824,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌀국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-19",
@@ -14694,7 +15838,8 @@ const diaryData = [
         "menu":  [
                      "빵",
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-19",
@@ -14706,13 +15851,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2024-12-18",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -14720,7 +15866,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-18",
@@ -14733,19 +15880,21 @@ const diaryData = [
         "menu":  [
                      "샐러드",
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-17",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-16",
@@ -14757,20 +15906,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김치찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-16",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-15",
@@ -14784,7 +15935,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-12",
@@ -14796,7 +15948,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "솥밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-12",
@@ -14809,7 +15962,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-11",
@@ -14822,7 +15976,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-10",
@@ -14835,7 +15990,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-27",
@@ -14847,7 +16003,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-09",
@@ -14859,7 +16016,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-09",
@@ -14872,7 +16030,8 @@ const diaryData = [
         "menu":  [
                      "육회비빔밥",
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-06",
@@ -14884,7 +16043,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-06",
@@ -14896,7 +16056,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-05",
@@ -14908,7 +16069,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-04",
@@ -14920,7 +16082,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-04",
@@ -14932,19 +16095,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-05",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-03",
@@ -14956,19 +16121,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-02",
         "name":  "태광식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-12-02",
@@ -14980,7 +16147,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-10",
@@ -14992,7 +16160,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-10",
@@ -15004,7 +16173,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-10",
@@ -15017,7 +16187,8 @@ const diaryData = [
         "menu":  [
                      "떡볶이",
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-11",
@@ -15029,7 +16200,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "해장국"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-02-11",
@@ -15041,7 +16213,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌀국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-12",
@@ -15053,7 +16226,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "칼국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-04",
@@ -15065,19 +16239,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-13",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-14",
@@ -15090,7 +16266,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-14",
@@ -15103,7 +16280,8 @@ const diaryData = [
         "menu":  [
                      "술집",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-15",
@@ -15115,7 +16293,8 @@ const diaryData = [
         "location_large":  "광주 광산구",
         "menu":  [
                      "마라탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-19",
@@ -15127,7 +16306,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "수제비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-29",
@@ -15140,7 +16320,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-20",
@@ -15152,7 +16333,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-20",
@@ -15164,7 +16346,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-22",
@@ -15176,13 +16359,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-21",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -15190,7 +16374,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-24",
@@ -15202,19 +16387,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-25",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-25",
@@ -15226,7 +16413,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "솥밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-26",
@@ -15238,7 +16426,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-19",
@@ -15251,7 +16440,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-10-28",
@@ -15263,7 +16453,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-27",
@@ -15275,13 +16466,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-28",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -15289,7 +16481,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-28",
@@ -15302,7 +16495,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-29",
@@ -15314,7 +16508,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-29",
@@ -15326,19 +16521,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2024-11-30",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-17",
@@ -15351,7 +16548,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-17",
@@ -15363,7 +16561,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "아이스크림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-17",
@@ -15375,7 +16574,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-18",
@@ -15387,7 +16587,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-19",
@@ -15399,7 +16600,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "케이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-19",
@@ -15411,7 +16613,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-19",
@@ -15423,19 +16626,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-20",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-21",
@@ -15447,7 +16652,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-21",
@@ -15456,10 +16662,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/20012019",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-22",
@@ -15471,20 +16678,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-22",
         "name":  "브라운시티 로스팅랩",
         "category":  "☕카페",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/327828139",
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-24",
@@ -15497,7 +16706,8 @@ const diaryData = [
         "menu":  [
                      "닭볶음탕",
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-24",
@@ -15509,7 +16719,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-25",
@@ -15521,7 +16732,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-25",
@@ -15534,7 +16746,8 @@ const diaryData = [
         "menu":  [
                      "떡볶이",
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-13",
@@ -15546,7 +16759,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-26",
@@ -15558,19 +16772,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-02-27",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-27",
@@ -15582,7 +16798,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-27",
@@ -15594,7 +16811,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-27",
@@ -15606,7 +16824,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
 
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-28",
@@ -15618,7 +16837,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-28",
@@ -15630,7 +16850,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-24",
@@ -15643,7 +16864,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-02-20",
@@ -15655,7 +16877,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-02-18",
@@ -15667,7 +16890,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-04",
@@ -15679,7 +16903,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-05",
@@ -15692,7 +16917,8 @@ const diaryData = [
         "menu":  [
                      "닭고기",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-06",
@@ -15704,7 +16930,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-06",
@@ -15717,7 +16944,8 @@ const diaryData = [
         "menu":  [
                      "삼겹살",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-07",
@@ -15729,7 +16957,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-07",
@@ -15741,7 +16970,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-07",
@@ -15753,7 +16983,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-08",
@@ -15766,7 +16997,8 @@ const diaryData = [
         "menu":  [
                      "카페",
                      "휘낭시에"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-08",
@@ -15780,7 +17012,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-08",
@@ -15792,7 +17025,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-09",
@@ -15804,7 +17038,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "마라탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-09",
@@ -15816,7 +17051,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-10",
@@ -15828,13 +17064,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-11",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -15842,7 +17079,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-11",
@@ -15854,7 +17092,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-13",
@@ -15866,7 +17105,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-13",
@@ -15878,7 +17118,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-12",
@@ -15890,7 +17131,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-14",
@@ -15902,7 +17144,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-14",
@@ -15914,7 +17157,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-15",
@@ -15926,7 +17170,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-16",
@@ -15938,19 +17183,21 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-18",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-18",
@@ -15962,7 +17209,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-27",
@@ -15974,7 +17222,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-20",
@@ -15986,7 +17235,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-21",
@@ -15999,7 +17249,8 @@ const diaryData = [
         "menu":  [
                      "돼지고기",
                      "소고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-23",
@@ -16011,13 +17262,14 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "유부초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-25",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -16025,19 +17277,21 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-25",
         "name":  "겐로쿠우동 홍대본점",
         "category":  "🍣일식",
-        "location_small":  "상수, 홍대",
+        "location_small":  "상수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/12437276",
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-26",
@@ -16049,7 +17303,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-20",
@@ -16061,7 +17316,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-28",
@@ -16073,7 +17329,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-28",
@@ -16085,7 +17342,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
 
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-29",
@@ -16097,7 +17355,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-29",
@@ -16109,7 +17368,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-30",
@@ -16118,10 +17378,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/17735995",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-02",
@@ -16133,7 +17394,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-23",
@@ -16146,7 +17408,8 @@ const diaryData = [
         "menu":  [
                      "삼계탕",
                      "옻닭"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-17",
@@ -16158,7 +17421,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-19",
@@ -16170,7 +17434,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-24",
@@ -16182,7 +17447,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "짜장면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-31",
@@ -16194,7 +17460,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-03-31",
@@ -16206,7 +17473,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-01",
@@ -16218,7 +17486,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-02",
@@ -16230,13 +17499,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-03",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -16244,7 +17514,8 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-04",
@@ -16257,7 +17528,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-04",
@@ -16269,7 +17541,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-04",
@@ -16281,7 +17554,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-04-05",
@@ -16294,7 +17568,8 @@ const diaryData = [
         "menu":  [
                      "돼지고기",
                      "소고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-06",
@@ -16306,7 +17581,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-06",
@@ -16318,19 +17594,21 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-04-07",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-07",
@@ -16342,19 +17620,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-08",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-17",
@@ -16367,7 +17647,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-09",
@@ -16379,7 +17660,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-10",
@@ -16393,7 +17675,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-11",
@@ -16406,7 +17689,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-11",
@@ -16418,7 +17702,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "뭉티기"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-04-11",
@@ -16430,7 +17715,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-12",
@@ -16442,7 +17728,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-12",
@@ -16454,7 +17741,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-13",
@@ -16466,7 +17754,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "함박스테이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-14",
@@ -16478,7 +17767,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-14",
@@ -16490,7 +17780,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-15",
@@ -16502,7 +17793,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-21",
@@ -16514,7 +17806,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-16",
@@ -16526,19 +17819,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-16",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-08",
@@ -16551,7 +17846,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-18",
@@ -16563,7 +17859,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "아구찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-19",
@@ -16575,7 +17872,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-19",
@@ -16587,7 +17885,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-20",
@@ -16599,7 +17898,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "감자탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-13",
@@ -16613,7 +17913,8 @@ const diaryData = [
                      "떡볶이",
                      "만두",
                      "어묵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-21",
@@ -16625,7 +17926,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-20",
@@ -16637,7 +17939,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-15",
@@ -16649,7 +17952,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-22",
@@ -16661,7 +17965,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-16",
@@ -16673,7 +17978,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-22",
@@ -16686,7 +17992,8 @@ const diaryData = [
         "menu":  [
                      "떡볶이",
                      "튀김"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-23",
@@ -16698,7 +18005,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "개성주악"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-23",
@@ -16710,7 +18018,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "돼지갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-23",
@@ -16722,7 +18031,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-23",
@@ -16734,7 +18044,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-24",
@@ -16747,7 +18058,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-24",
@@ -16759,7 +18071,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-24",
@@ -16771,7 +18084,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-24",
@@ -16783,7 +18097,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-25",
@@ -16796,7 +18111,8 @@ const diaryData = [
         "menu":  [
                      "스테이크",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-27",
@@ -16808,7 +18124,8 @@ const diaryData = [
         "location_large":  "서울 동작구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-28",
@@ -16820,7 +18137,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-29",
@@ -16832,7 +18150,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-29",
@@ -16845,7 +18164,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-30",
@@ -16857,7 +18177,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-30",
@@ -16869,20 +18190,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-04-30",
         "name":  "락희돈",
         "category":  "🍺술집",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/814587106",
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-01",
@@ -16894,7 +18217,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-01",
@@ -16906,19 +18230,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-02",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-02",
@@ -16930,7 +18256,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-03",
@@ -16943,7 +18270,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "푸딩"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-03",
@@ -16955,7 +18283,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-01",
@@ -16967,7 +18296,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-29",
@@ -16976,11 +18306,12 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1266581709",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "간장게장",
                      "갈치조림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-29",
@@ -16989,10 +18320,11 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1650221658",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-29",
@@ -17001,10 +18333,11 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1676638559",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "돌문어삼합"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-30",
@@ -17013,10 +18346,11 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/116932008",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "장어탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-30",
@@ -17025,10 +18359,11 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/187738410",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "딸기모찌"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-30",
@@ -17037,10 +18372,11 @@ const diaryData = [
         "location_small":  "여수",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/192785425",
-        "location_large":  "전남 여수",
+        "location_large":  "광주 여수시",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-30",
@@ -17052,7 +18388,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-26",
@@ -17064,7 +18401,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-28",
@@ -17076,7 +18414,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-27",
@@ -17088,7 +18427,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-27",
@@ -17101,7 +18441,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-21",
@@ -17113,128 +18454,139 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-21",
         "name":  "황남두꺼비",
         "category":  "🍚한식",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "http://xn--place-961v.map.kakao.com/1952344699",
         "location_large":  "경북 경주",
         "menu":  [
                      "갈비찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-21",
         "name":  "점점",
         "category":  "🍺술집",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/133871935",
         "location_large":  "경북 경주",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-21",
         "name":  "경주대게닭강정",
         "category":  "🍗치킨",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1054251976",
         "location_large":  "경북 경주",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-21",
         "name":  "경주약과방",
         "category":  "☕카페",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1507806813",
         "location_large":  "경북 경주",
         "menu":  [
                      "개성주악"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-22",
         "name":  "기와메밀막국수",
         "category":  "🍚한식",
-        "location_small":  "경주",
+        "location_small":  "구황동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/725002926",
         "location_large":  "경북 경주",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-22",
         "name":  "아덴 보문호수점",
         "category":  "☕카페",
-        "location_small":  "경주",
+        "location_small":  "신평동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/425270187",
         "location_large":  "경북 경주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-23",
         "name":  "피자옥",
         "category":  "🍕피자, 🍝양식",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1225134792",
         "location_large":  "경북 경주",
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-23",
         "name":  "반카이막 경주본점",
         "category":  "☕카페",
-        "location_small":  "경주",
+        "location_small":  "황남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1798751627",
         "location_large":  "경북 경주",
         "menu":  [
                      "아이스크림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-23",
         "name":  "황남빵",
         "category":  "☕카페",
-        "location_small":  "경주",
+        "location_small":  "황오동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/26519092",
         "location_large":  "경북 경주",
         "menu":  [
                      "황남빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-23",
         "name":  "테를지",
         "category":  "☕카페",
-        "location_small":  "경주",
+        "location_small":  "사정동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1647204680",
         "location_large":  "경북 경주",
         "menu":  [
                      "프레첼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-24",
@@ -17246,7 +18598,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-24",
@@ -17258,7 +18611,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-25",
@@ -17270,7 +18624,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-25",
@@ -17282,7 +18637,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-19",
@@ -17294,19 +18650,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-19",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-20",
@@ -17318,7 +18676,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-20",
@@ -17331,7 +18690,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-17",
@@ -17343,7 +18703,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-17",
@@ -17355,7 +18716,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "케이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-18",
@@ -17367,7 +18729,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-18",
@@ -17379,19 +18742,21 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "꼼장어"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-12",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-12",
@@ -17403,7 +18768,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-13",
@@ -17412,10 +18778,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/790690407",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-14",
@@ -17427,7 +18794,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-14",
@@ -17439,7 +18807,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "육회비빔밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-14",
@@ -17451,7 +18820,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-15",
@@ -17464,7 +18834,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-16",
@@ -17476,7 +18847,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-16",
@@ -17488,7 +18860,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-10",
@@ -17500,7 +18873,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-05-10",
@@ -17512,7 +18886,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-10",
@@ -17524,7 +18899,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-11",
@@ -17536,67 +18912,73 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "돼지고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-05",
         "name":  "강릉짬뽕순두부 강릉본점",
         "category":  "🍚한식",
-        "location_small":  "강릉",
+        "location_small":  "강문동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/731412427",
         "location_large":  "강원 강릉",
         "menu":  [
                      "순두부"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-05",
         "name":  "초당110",
         "category":  "☕카페",
-        "location_small":  "강릉",
+        "location_small":  "강문동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1647908801",
         "location_large":  "강원 강릉",
         "menu":  [
                      "젤라또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-05",
         "name":  "애시당초",
         "category":  "☕카페",
-        "location_small":  "강릉",
+        "location_small":  "초당동",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1168878886",
         "location_large":  "강원 강릉",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-05",
         "name":  "배니닭강정",
         "category":  "🍗치킨",
-        "location_small":  "강릉",
+        "location_small":  "성남동",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/19660110",
         "location_large":  "강원 강릉",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-05",
         "name":  "오징어순대나라",
         "category":  "🍙분식",
-        "location_small":  "강릉",
+        "location_small":  "성남동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/637492057",
         "location_large":  "강원 강릉",
         "menu":  [
                      "오징어순대"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-06",
@@ -17608,7 +18990,8 @@ const diaryData = [
         "location_large":  "강원 강릉",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-06",
@@ -17620,7 +19003,8 @@ const diaryData = [
         "location_large":  "강원 강릉",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-06",
@@ -17632,7 +19016,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-07",
@@ -17644,7 +19029,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-07",
@@ -17657,7 +19043,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-08",
@@ -17669,7 +19056,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-08",
@@ -17681,13 +19069,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-09",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -17695,7 +19084,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-05-09",
@@ -17707,7 +19097,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-02",
@@ -17719,7 +19110,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-02",
@@ -17731,7 +19123,8 @@ const diaryData = [
         "location_large":  "서울 중랑구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-03",
@@ -17743,7 +19136,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-03",
@@ -17755,7 +19149,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-04",
@@ -17767,7 +19162,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-04",
@@ -17779,7 +19175,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-06-05",
@@ -17791,7 +19188,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-05",
@@ -17803,7 +19201,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-07",
@@ -17815,7 +19214,8 @@ const diaryData = [
         "location_large":  "서울 은평구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-07",
@@ -17827,7 +19227,8 @@ const diaryData = [
         "location_large":  "서울 은평구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-07",
@@ -17839,7 +19240,8 @@ const diaryData = [
         "location_large":  "서울 은평구",
         "menu":  [
                      "꼬치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-08",
@@ -17851,19 +19253,21 @@ const diaryData = [
         "location_large":  "서울 은평구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-27",
         "name":  "바른치킨 서강대 로봇점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-27",
@@ -17875,7 +19279,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-26",
@@ -17887,7 +19292,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-26",
@@ -17899,7 +19305,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-25",
@@ -17912,7 +19319,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-25",
@@ -17924,7 +19332,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-25",
@@ -17936,7 +19345,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "닭똥집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-24",
@@ -17948,7 +19358,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-24",
@@ -17960,7 +19371,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "등갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-23",
@@ -17973,7 +19385,8 @@ const diaryData = [
         "menu":  [
                      "백반",
                      "치킨"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-06-23",
@@ -17985,7 +19398,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "유부초밥"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-06-22",
@@ -17997,7 +19411,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-22",
@@ -18010,7 +19425,8 @@ const diaryData = [
         "menu":  [
                      "닭발",
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-21",
@@ -18022,7 +19438,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-20",
@@ -18035,7 +19452,8 @@ const diaryData = [
         "menu":  [
                      "리조또",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-20",
@@ -18047,7 +19465,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-20",
@@ -18059,19 +19478,21 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-19",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-14",
@@ -18083,19 +19504,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-18",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-18",
@@ -18108,19 +19531,21 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-17",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-17",
@@ -18132,19 +19557,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-16",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-16",
@@ -18156,19 +19583,21 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-16",
         "name":  "콘서트",
-        "category":  "☕카페",
-        "location_small":  "송파",
-        "rate":  "🥄🥄🥄🥄🥄",
-        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00,0,0,0,dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
-        "location_large":  "서울 송파구",
+        "category":  "dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
+        "location_small":  "서울 송파구 : 송파, 폐점",
+        "rate":  "0",
+        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00",
+        "location_large":  "",
         "menu":  [
-                     "카페"
-                 ]
+                     "🥄🥄🥄🥄🥄"
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-15",
@@ -18180,19 +19609,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-13",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-19",
@@ -18204,7 +19635,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짜장면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-13",
@@ -18216,7 +19648,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-12",
@@ -18228,7 +19661,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-12",
@@ -18240,7 +19674,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-11",
@@ -18252,7 +19687,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-11",
@@ -18264,7 +19700,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-11",
@@ -18276,13 +19713,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-10",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -18290,7 +19728,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-10",
@@ -18302,7 +19741,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-09",
@@ -18314,13 +19754,14 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "볶음밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-25",
         "name":  "정든그릇",
         "category":  "🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1069804608",
         "location_large":  "서울 마포구",
@@ -18328,19 +19769,21 @@ const diaryData = [
                      "덮밥",
                      "돈까스",
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-24",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-25",
@@ -18352,7 +19795,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-24",
@@ -18364,13 +19808,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-22",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -18378,7 +19823,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-23",
@@ -18391,7 +19837,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-23",
@@ -18403,7 +19850,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-22",
@@ -18415,7 +19863,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-07-21",
@@ -18428,7 +19877,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "초계국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-21",
@@ -18441,7 +19891,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-16",
@@ -18450,22 +19901,24 @@ const diaryData = [
         "location_small":  "인천공항",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1298926904",
-        "location_large":  "인천 중구",
+        "location_large":  "인천 영종구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-13",
         "name":  "문지리535",
         "category":  "☕카페",
-        "location_small":  "파주",
+        "location_small":  "탄현면 문지리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1455161506",
         "location_large":  "경기 파주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-13",
@@ -18477,7 +19930,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-11",
@@ -18489,7 +19943,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "솥밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-10",
@@ -18501,7 +19956,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-10",
@@ -18513,7 +19969,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "갈비찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-09",
@@ -18525,7 +19982,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-09",
@@ -18534,10 +19992,11 @@ const diaryData = [
         "location_small":  "이대",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/164159610",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-08",
@@ -18549,7 +20008,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-08",
@@ -18561,19 +20021,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-07",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-07",
@@ -18586,7 +20048,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-06",
@@ -18598,7 +20061,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-06",
@@ -18610,7 +20074,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-04",
@@ -18622,7 +20087,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-04",
@@ -18634,7 +20100,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "만화카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-03",
@@ -18647,7 +20114,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-03",
@@ -18659,7 +20127,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-02",
@@ -18671,20 +20140,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-01",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-01",
@@ -18696,7 +20167,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-29",
@@ -18708,7 +20180,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-29",
@@ -18720,19 +20193,21 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-30",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-06-30",
@@ -18745,7 +20220,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-09",
@@ -18757,7 +20233,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-08",
@@ -18770,7 +20247,8 @@ const diaryData = [
         "menu":  [
                      "돈까스",
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-08",
@@ -18782,7 +20260,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-07",
@@ -18794,7 +20273,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-07",
@@ -18806,7 +20286,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-06",
@@ -18818,7 +20299,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-06",
@@ -18831,7 +20313,8 @@ const diaryData = [
         "menu":  [
                      "전",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-05",
@@ -18843,7 +20326,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-04",
@@ -18857,7 +20341,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-05",
@@ -18869,7 +20354,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-04",
@@ -18881,7 +20367,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-02",
@@ -18893,7 +20380,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-02",
@@ -18905,7 +20393,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-03",
@@ -18917,7 +20406,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "함박스테이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-03",
@@ -18929,7 +20419,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-01",
@@ -18941,7 +20432,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-01",
@@ -18953,7 +20445,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-31",
@@ -18966,7 +20459,8 @@ const diaryData = [
         "menu":  [
                      "뇨끼",
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-31",
@@ -18978,7 +20472,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-30",
@@ -18990,19 +20485,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-27",
         "name":  "콘서트",
-        "category":  "☕카페",
-        "location_small":  "송파",
-        "rate":  "🥄🥄🥄🥄🥄",
-        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00,0,0,0,dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
-        "location_large":  "서울 송파구",
+        "category":  "dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
+        "location_small":  "서울 송파구 : 송파, 폐점",
+        "rate":  "0",
+        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00",
+        "location_large":  "",
         "menu":  [
-                     "카페"
-                 ]
+                     "🥄🥄🥄🥄🥄"
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-27",
@@ -19014,7 +20511,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "아구찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-28",
@@ -19026,7 +20524,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-30",
@@ -19038,7 +20537,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-29",
@@ -19050,7 +20550,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오차즈케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-29",
@@ -19063,7 +20564,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-28",
@@ -19075,7 +20577,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-22",
@@ -19087,7 +20590,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-21",
@@ -19099,7 +20603,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-20",
@@ -19111,7 +20616,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-20",
@@ -19123,19 +20629,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-19",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-18",
@@ -19147,7 +20655,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-18",
@@ -19160,7 +20669,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-17",
@@ -19173,7 +20683,8 @@ const diaryData = [
         "menu":  [
                      "커피",
                      "크루키"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-17",
@@ -19185,7 +20696,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-16",
@@ -19197,7 +20709,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-15",
@@ -19209,19 +20722,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-14",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-14",
@@ -19234,7 +20749,8 @@ const diaryData = [
         "menu":  [
                      "김밥",
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-13",
@@ -19246,7 +20762,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-13",
@@ -19259,7 +20776,8 @@ const diaryData = [
         "menu":  [
                      "빵",
                      "커피"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-12",
@@ -19271,7 +20789,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-12",
@@ -19284,7 +20803,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-11",
@@ -19296,7 +20816,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-10",
@@ -19308,7 +20829,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-10",
@@ -19320,7 +20842,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-11",
@@ -19332,7 +20855,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-13",
@@ -19344,7 +20868,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-12",
@@ -19356,7 +20881,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-12",
@@ -19368,7 +20894,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-11",
@@ -19380,19 +20907,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "육회비빔밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-11",
         "name":  "바른치킨 서강대 로봇점",
         "category":  "🍗치킨",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1446748474",
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-10",
@@ -19404,7 +20933,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-10",
@@ -19416,7 +20946,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-08",
@@ -19428,7 +20959,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-09-10",
@@ -19440,7 +20972,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-09",
@@ -19452,7 +20985,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오차즈케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-09",
@@ -19464,19 +20998,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-07",
         "name":  "스탠다드브레드 안국",
         "category":  "☕카페",
-        "location_small":  "북촌, 안국",
+        "location_small":  "북촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1532324202",
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-07",
@@ -19488,7 +21024,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-06",
@@ -19500,7 +21037,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-06",
@@ -19512,7 +21050,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-03",
@@ -19524,19 +21063,21 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "퓨전요리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-05",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-05",
@@ -19548,7 +21089,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-04",
@@ -19560,7 +21102,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-04",
@@ -19572,7 +21115,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "육회비빔밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-02",
@@ -19584,19 +21128,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-02",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-01",
@@ -19609,7 +21155,8 @@ const diaryData = [
         "menu":  [
                      "육회비빔밥",
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-01",
@@ -19621,7 +21168,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-24",
@@ -19633,7 +21181,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-24",
@@ -19645,7 +21194,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-26",
@@ -19657,19 +21207,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-26",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-25",
@@ -19681,7 +21233,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-27",
@@ -19693,7 +21246,8 @@ const diaryData = [
         "location_large":  "부산 동구",
         "menu":  [
                      "밀면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-28",
@@ -19705,7 +21259,8 @@ const diaryData = [
         "location_large":  "부산 부산진구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-28",
@@ -19717,7 +21272,8 @@ const diaryData = [
         "location_large":  "부산 부산진구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-28",
@@ -19729,7 +21285,8 @@ const diaryData = [
         "location_large":  "부산 수영구",
         "menu":  [
                      "낙곱새"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-29",
@@ -19741,7 +21298,8 @@ const diaryData = [
         "location_large":  "부산 부산진구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-29",
@@ -19753,7 +21311,8 @@ const diaryData = [
         "location_large":  "부산 동구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-29",
@@ -19765,7 +21324,8 @@ const diaryData = [
         "location_large":  "대구 달서구",
         "menu":  [
                      "갈매기살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-29",
@@ -19777,7 +21337,8 @@ const diaryData = [
         "location_large":  "대구 달서구",
         "menu":  [
                      "뭉티기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-30",
@@ -19790,7 +21351,8 @@ const diaryData = [
         "menu":  [
                      "콩국",
                      "콩국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-30",
@@ -19802,7 +21364,8 @@ const diaryData = [
         "location_large":  "대구 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-08-30",
@@ -19814,7 +21377,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-07",
@@ -19826,32 +21390,35 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-04",
         "name":  "덕수식당",
         "category":  "🍚한식",
-        "location_small":  "태안",
+        "location_small":  "태안읍 동문리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/8891473",
         "location_large":  "충남 태안",
         "menu":  [
                      "간장게장",
                      "게국지"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-04",
         "name":  "바다풍경카페",
         "category":  "☕카페",
-        "location_small":  "태안",
+        "location_small":  "기타",
         "rate":  "🥄🥄🥄",
         "map_url":  "about:blank",
         "location_large":  "충남 태안",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-03",
@@ -19863,7 +21430,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "브런치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-03",
@@ -19875,7 +21443,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-02",
@@ -19887,7 +21456,8 @@ const diaryData = [
         "location_large":  "경기 수원",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-02",
@@ -19899,19 +21469,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-01",
         "name":  "태광식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/27233428",
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-02",
@@ -19923,7 +21495,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-01",
@@ -19935,7 +21508,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-09-30",
@@ -19947,7 +21521,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-30",
@@ -19959,19 +21534,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-29",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-29",
@@ -19983,7 +21560,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-28",
@@ -19995,13 +21573,14 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-26",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -20009,7 +21588,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-28",
@@ -20021,7 +21601,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-25",
@@ -20033,7 +21614,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-25",
@@ -20046,19 +21628,21 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-24",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-24",
@@ -20071,7 +21655,8 @@ const diaryData = [
         "menu":  [
                      "닭꼬치",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-23",
@@ -20083,7 +21668,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-22",
@@ -20095,7 +21681,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-22",
@@ -20108,7 +21695,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-21",
@@ -20120,7 +21708,8 @@ const diaryData = [
         "location_large":  "서울 광진구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-21",
@@ -20133,7 +21722,8 @@ const diaryData = [
         "menu":  [
                      "이자카야",
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-19",
@@ -20145,7 +21735,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-18",
@@ -20157,7 +21748,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-18",
@@ -20169,7 +21761,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-09-17",
@@ -20181,7 +21774,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-16",
@@ -20194,7 +21788,8 @@ const diaryData = [
         "menu":  [
                      "갈치조림",
                      "고등어구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-16",
@@ -20206,7 +21801,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-09-15",
@@ -20218,7 +21814,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-15",
@@ -20230,7 +21827,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-14",
@@ -20242,7 +21840,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-09-14",
@@ -20254,7 +21853,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-07-02",
@@ -20266,13 +21866,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-31",
         "name":  "남매밥상",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/929653827",
         "location_large":  "서울 마포구",
@@ -20280,7 +21881,8 @@ const diaryData = [
                      "고등어구이",
                      "제육볶음",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-31",
@@ -20292,7 +21894,8 @@ const diaryData = [
         "location_large":  "인천 남동구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-30",
@@ -20305,7 +21908,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-30",
@@ -20314,10 +21918,11 @@ const diaryData = [
         "location_small":  "이대",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/164159610",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-29",
@@ -20329,7 +21934,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-29",
@@ -20341,19 +21947,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-28",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-28",
@@ -20365,7 +21973,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-27",
@@ -20377,7 +21986,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-27",
@@ -20389,7 +21999,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-26",
@@ -20398,23 +22009,25 @@ const diaryData = [
         "location_small":  "강화도",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9077469",
-        "location_large":  "인천 강화",
+        "location_large":  "인천 강화군",
         "menu":  [
                      "회",
                      "회덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-26",
         "name":  "남강마황오리전문점",
         "category":  "🍚한식",
-        "location_small":  "등촌/염창",
+        "location_small":  "등촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/8881928",
-        "location_large":  "서울 강서구",
+        "location_large":  "서울 양천구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-25",
@@ -20426,7 +22039,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-24",
@@ -20438,7 +22052,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-23",
@@ -20450,7 +22065,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-23",
@@ -20462,7 +22078,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-22",
@@ -20474,7 +22091,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-15",
@@ -20486,7 +22104,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-21",
@@ -20498,7 +22117,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "회전초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-21",
@@ -20510,7 +22130,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-10-20",
@@ -20522,7 +22143,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샤브샤브"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-20",
@@ -20534,7 +22156,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-19",
@@ -20546,7 +22169,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-19",
@@ -20558,7 +22182,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-19",
@@ -20570,7 +22195,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-17",
@@ -20583,7 +22209,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-17",
@@ -20595,7 +22222,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-17",
@@ -20607,7 +22235,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "함박스테이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-16",
@@ -20619,7 +22248,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-16",
@@ -20631,7 +22261,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-15",
@@ -20644,7 +22275,8 @@ const diaryData = [
         "menu":  [
                      "육회비빔밥",
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-22",
@@ -20656,20 +22288,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-22",
         "name":  "락희돈",
         "category":  "🍺술집",
-        "location_small":  "연남, 홍대",
+        "location_small":  "연남",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/814587106",
         "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-14",
@@ -20681,7 +22315,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-14",
@@ -20693,7 +22328,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-13",
@@ -20705,7 +22341,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-13",
@@ -20717,7 +22354,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-12",
@@ -20729,7 +22367,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-12",
@@ -20741,7 +22380,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "뼈구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-10",
@@ -20753,7 +22393,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-10",
@@ -20765,7 +22406,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2025-10-09",
@@ -20777,7 +22419,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-09",
@@ -20789,7 +22432,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-09",
@@ -20798,11 +22442,12 @@ const diaryData = [
         "location_small":  "을지로",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/9802643",
-        "location_large":  "서울 종로구",
+        "location_large":  "서울 중구",
         "menu":  [
                      "막창",
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-08",
@@ -20814,7 +22459,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-10-08",
@@ -20826,7 +22472,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-20",
@@ -20838,19 +22485,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "회전초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-19",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-19",
@@ -20862,7 +22511,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-18",
@@ -20874,7 +22524,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-18",
@@ -20886,7 +22537,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-17",
@@ -20898,7 +22550,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-17",
@@ -20910,7 +22563,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "짜장면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-16",
@@ -20922,7 +22576,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-12",
@@ -20934,7 +22589,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-12",
@@ -20946,7 +22602,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-12",
@@ -20958,7 +22615,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-12",
@@ -20970,7 +22628,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-12",
@@ -20982,7 +22641,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-13",
@@ -20994,7 +22654,8 @@ const diaryData = [
         "location_large":  "부산 서구",
         "menu":  [
                      "젤라또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-13",
@@ -21006,7 +22667,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "꼼장어"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-14",
@@ -21018,19 +22680,21 @@ const diaryData = [
         "location_large":  "부산 동구",
         "menu":  [
                      "어묵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-11",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-13",
@@ -21042,7 +22706,8 @@ const diaryData = [
         "location_large":  "부산 중구",
         "menu":  [
                      "만두"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-14",
@@ -21054,7 +22719,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-11",
@@ -21063,10 +22729,11 @@ const diaryData = [
         "location_small":  "이대",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/164159610",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-10",
@@ -21079,7 +22746,8 @@ const diaryData = [
         "menu":  [
                      "샌드위치",
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-09",
@@ -21091,7 +22759,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-09",
@@ -21103,7 +22772,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "막걸리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-08",
@@ -21115,7 +22785,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "짜장면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-07",
@@ -21127,7 +22798,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-07",
@@ -21139,7 +22811,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-06",
@@ -21151,7 +22824,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-06",
@@ -21163,19 +22837,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-05",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-05",
@@ -21187,7 +22863,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "갈비찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-04",
@@ -21200,7 +22877,8 @@ const diaryData = [
         "menu":  [
                      "가츠동",
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-04",
@@ -21212,19 +22890,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-03",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-03",
@@ -21236,7 +22916,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-02",
@@ -21248,7 +22929,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-02",
@@ -21260,7 +22942,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "도래창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-01",
@@ -21272,7 +22955,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-13",
@@ -21284,7 +22968,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "호두과자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-12",
@@ -21296,7 +22981,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-11",
@@ -21308,19 +22994,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-11",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-10",
@@ -21332,7 +23020,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-08",
@@ -21344,7 +23033,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-09",
@@ -21357,7 +23047,8 @@ const diaryData = [
         "menu":  [
                      "돼지고기",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-07",
@@ -21369,7 +23060,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-07",
@@ -21381,7 +23073,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-05",
@@ -21394,7 +23087,8 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-05",
@@ -21406,31 +23100,34 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-04",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-04",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-03",
@@ -21442,7 +23139,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-02",
@@ -21454,7 +23152,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-01",
@@ -21466,7 +23165,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-09",
@@ -21478,7 +23178,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-30",
@@ -21490,7 +23191,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-29",
@@ -21502,7 +23204,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-29",
@@ -21514,7 +23217,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-29",
@@ -21526,19 +23230,21 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-28",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-27",
@@ -21550,19 +23256,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-05",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-26",
@@ -21574,7 +23282,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-25",
@@ -21586,7 +23295,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "호두과자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-25",
@@ -21598,7 +23308,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-24",
@@ -21610,7 +23321,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "컵밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-23",
@@ -21622,7 +23334,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "쭈꾸미"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-23",
@@ -21634,7 +23347,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-21",
@@ -21646,7 +23360,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-21",
@@ -21658,7 +23373,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-27",
@@ -21670,7 +23386,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-27",
@@ -21682,7 +23399,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-26",
@@ -21694,7 +23412,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-26",
@@ -21706,7 +23425,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-24",
@@ -21718,7 +23438,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-23",
@@ -21730,19 +23451,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "소고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-23",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-22",
@@ -21754,7 +23477,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-22",
@@ -21766,19 +23490,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "유부초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-21",
         "name":  "콘서트",
-        "category":  "☕카페",
-        "location_small":  "송파",
-        "rate":  "🥄🥄🥄🥄🥄",
-        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00,0,0,0,dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
-        "location_large":  "서울 송파구",
+        "category":  "dh\u0026placePath=/home?from=map\u0026fromPanelNum=1\u0026additionalHeight=76\u0026timestamp=202506282140\u0026locale=ko\u0026svcName=map_pcv5",
+        "location_small":  "서울 송파구 : 송파, 폐점",
+        "rate":  "0",
+        "map_url":  "https://map.naver.com/p/entry/place/1650418825?c=14.00",
+        "location_large":  "",
         "menu":  [
-                     "카페"
-                 ]
+                     "🥄🥄🥄🥄🥄"
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-20",
@@ -21790,19 +23516,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-19",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-19",
@@ -21814,7 +23542,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-18",
@@ -21826,7 +23555,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-18",
@@ -21839,7 +23569,8 @@ const diaryData = [
         "menu":  [
                      "카페",
                      "휘낭시에"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-17",
@@ -21851,7 +23582,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "회전초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-17",
@@ -21863,7 +23595,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-16",
@@ -21875,7 +23608,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "백반"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-15",
@@ -21887,7 +23621,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-16",
@@ -21900,7 +23635,8 @@ const diaryData = [
         "menu":  [
                      "돼지고기",
                      "소고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-14",
@@ -21912,43 +23648,47 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-13",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-12",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-14",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-13",
@@ -21960,19 +23700,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-12",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-11",
@@ -21984,7 +23726,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-11",
@@ -21996,7 +23739,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-10",
@@ -22008,7 +23752,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-08",
@@ -22020,19 +23765,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-08",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-07",
@@ -22044,7 +23791,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2026-01-07",
@@ -22056,7 +23804,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-06",
@@ -22068,19 +23817,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-11-26",
         "name":  "톨",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-04",
@@ -22092,7 +23843,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-04",
@@ -22104,7 +23856,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-03",
@@ -22116,13 +23869,14 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-02",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -22130,7 +23884,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-31",
@@ -22139,10 +23894,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/20012019",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "닭한마리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-31",
@@ -22154,20 +23910,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-30",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-29",
@@ -22179,7 +23937,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-28",
@@ -22191,7 +23950,8 @@ const diaryData = [
         "location_large":  "서울 광진구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2025-12-28",
@@ -22203,7 +23963,8 @@ const diaryData = [
         "location_large":  "서울 광진구",
         "menu":  [
                      "조개구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-30",
@@ -22215,7 +23976,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "아구찜"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-30",
@@ -22227,7 +23989,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-29",
@@ -22239,7 +24002,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-29",
@@ -22251,7 +24015,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-29",
@@ -22260,11 +24025,12 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/357150027",
-        "location_large":  "서울 서대문구",
+        "location_large":  "서울 마포구",
         "menu":  [
                      "꼬치",
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-27",
@@ -22277,19 +24043,21 @@ const diaryData = [
         "menu":  [
                      "삼겹살",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-28",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-28",
@@ -22302,7 +24070,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-26",
@@ -22314,7 +24083,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "오므라이스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-25",
@@ -22326,7 +24096,8 @@ const diaryData = [
         "location_large":  "서울 서초구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-25",
@@ -22338,7 +24109,8 @@ const diaryData = [
         "location_large":  "서울 서초구",
         "menu":  [
                      "닭고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-24",
@@ -22350,19 +24122,21 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-23",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-23",
@@ -22374,7 +24148,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-26",
@@ -22386,19 +24161,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-23",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-22",
@@ -22410,7 +24187,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "수제비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-21",
@@ -22422,7 +24200,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-21",
@@ -22434,7 +24213,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-20",
@@ -22446,7 +24226,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-19",
@@ -22458,7 +24239,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-18",
@@ -22470,7 +24252,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-18",
@@ -22482,7 +24265,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-17",
@@ -22494,7 +24278,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-16",
@@ -22507,7 +24292,8 @@ const diaryData = [
         "menu":  [
                      "국밥",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-16",
@@ -22519,7 +24305,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-15",
@@ -22531,7 +24318,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오차즈케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-01-15",
@@ -22543,19 +24331,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-13",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-14",
@@ -22567,7 +24357,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "등갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-14",
@@ -22579,7 +24370,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-12",
@@ -22591,7 +24383,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-11",
@@ -22603,7 +24396,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-10",
@@ -22617,19 +24411,21 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-10",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-09",
@@ -22641,7 +24437,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카이센동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-08",
@@ -22653,7 +24450,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "족발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-06",
@@ -22665,7 +24463,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-05",
@@ -22677,7 +24476,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-04",
@@ -22689,7 +24489,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-04",
@@ -22701,19 +24502,21 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-04",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-03",
@@ -22725,19 +24528,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-03",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-02",
@@ -22749,7 +24554,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "메밀소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-01",
@@ -22761,7 +24567,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-01",
@@ -22773,7 +24580,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-10",
@@ -22787,7 +24595,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-09",
@@ -22800,7 +24609,8 @@ const diaryData = [
         "menu":  [
                      "닭곰탕",
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-09",
@@ -22812,7 +24622,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-08",
@@ -22824,7 +24635,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-08",
@@ -22836,7 +24648,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-07",
@@ -22848,7 +24661,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-06",
@@ -22860,19 +24674,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "감자탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-05",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-04",
@@ -22884,7 +24700,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-13",
@@ -22896,7 +24713,8 @@ const diaryData = [
         "location_large":  "서울 노원구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-13",
@@ -22908,19 +24726,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-18",
         "name":  "TOL",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-17",
@@ -22932,7 +24752,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-18",
@@ -22944,7 +24765,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-17",
@@ -22956,7 +24778,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-16",
@@ -22968,7 +24791,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-15",
@@ -22980,7 +24804,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-15",
@@ -22992,7 +24817,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-14",
@@ -23004,7 +24830,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-14",
@@ -23016,19 +24843,21 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "탄탄면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-12",
         "name":  "킹콩부대찌개 마포대흥오남매행복점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1744462722",
         "location_large":  "서울 마포구",
         "menu":  [
                      "부대찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-11",
@@ -23040,32 +24869,35 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-03",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-03",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-02",
@@ -23077,7 +24909,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-02",
@@ -23089,7 +24922,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-01",
@@ -23101,7 +24935,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-28",
@@ -23113,19 +24948,21 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-27",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-27",
@@ -23137,7 +24974,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-20",
@@ -23150,7 +24988,8 @@ const diaryData = [
         "menu":  [
                      "불고기",
                      "쭈꾸미불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-19",
@@ -23162,7 +25001,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-18",
@@ -23174,7 +25014,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-02-18",
@@ -23186,7 +25027,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-05",
@@ -23198,7 +25040,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-01",
@@ -23210,7 +25053,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-30",
@@ -23222,7 +25066,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-29",
@@ -23234,7 +25079,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-29",
@@ -23246,7 +25092,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-29",
@@ -23259,7 +25106,8 @@ const diaryData = [
         "menu":  [
                      "술집",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-27",
@@ -23271,7 +25119,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-27",
@@ -23283,7 +25132,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-26",
@@ -23295,7 +25145,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-26",
@@ -23307,7 +25158,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-25",
@@ -23319,7 +25171,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-24",
@@ -23332,19 +25185,21 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-23",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-22",
@@ -23356,7 +25211,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-22",
@@ -23365,10 +25221,11 @@ const diaryData = [
         "location_small":  "종각",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/944030617",
-        "location_large":  "서울 중구",
+        "location_large":  "서울 종로구",
         "menu":  [
                      "막창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-20",
@@ -23380,7 +25237,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-24",
@@ -23392,7 +25250,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-20",
@@ -23404,7 +25263,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-20",
@@ -23416,7 +25276,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-19",
@@ -23429,19 +25290,21 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-03-19",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-17",
@@ -23453,7 +25316,8 @@ const diaryData = [
         "location_large":  "제주 서귀포",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-17",
@@ -23465,7 +25329,8 @@ const diaryData = [
         "location_large":  "제주 제주",
         "menu":  [
                      "떡"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-16",
@@ -23477,7 +25342,8 @@ const diaryData = [
         "location_large":  "제주 서귀포",
         "menu":  [
                      "순두부"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-16",
@@ -23489,19 +25355,21 @@ const diaryData = [
         "location_large":  "제주 서귀포",
         "menu":  [
                      "갈치조림"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-16",
         "name":  "마농치킨 본점",
         "category":  "🍗치킨",
-        "location_small":  "서귀포",
+        "location_small":  "서귀동",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/11291724",
         "location_large":  "제주 서귀포",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-15",
@@ -23510,10 +25378,11 @@ const diaryData = [
         "location_small":  "제주공항",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1588732308",
-        "location_large":  "제주 서귀포",
+        "location_large":  "제주 제주",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-15",
@@ -23525,7 +25394,8 @@ const diaryData = [
         "location_large":  "제주 제주",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-15",
@@ -23537,7 +25407,8 @@ const diaryData = [
         "location_large":  "제주 서귀포",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-15",
@@ -23549,7 +25420,8 @@ const diaryData = [
         "location_large":  "제주 서귀포",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-14",
@@ -23561,19 +25433,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-13",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-11",
@@ -23585,7 +25459,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "파스타"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-13",
@@ -23597,7 +25472,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샐러드"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-11",
@@ -23609,7 +25485,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-10",
@@ -23621,7 +25498,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-10",
@@ -23633,7 +25511,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-10",
@@ -23645,13 +25524,14 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-09",
         "name":  "홍원",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/13083730",
         "location_large":  "서울 마포구",
@@ -23659,7 +25539,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-09",
@@ -23671,7 +25552,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-08",
@@ -23680,10 +25562,11 @@ const diaryData = [
         "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/17735995",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-07",
@@ -23695,19 +25578,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-06",
         "name":  "TOL",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-05",
@@ -23719,7 +25604,8 @@ const diaryData = [
         "location_large":  "서울 성북구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-05",
@@ -23731,7 +25617,8 @@ const diaryData = [
         "location_large":  "서울 성북구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-16",
@@ -23743,7 +25630,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-15",
@@ -23755,7 +25643,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-15",
@@ -23767,19 +25656,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "핫도그"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-13",
         "name":  "TOL",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-14",
@@ -23791,19 +25682,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-12",
         "name":  "마포쌈밥식당",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1919542306",
         "location_large":  "서울 마포구",
         "menu":  [
                      "쌈밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-12",
@@ -23815,7 +25708,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-11",
@@ -23829,7 +25723,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-11",
@@ -23841,7 +25736,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-10",
@@ -23853,7 +25749,8 @@ const diaryData = [
         "location_large":  "서울 서초구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-10",
@@ -23866,7 +25763,8 @@ const diaryData = [
         "menu":  [
                      "몬자야끼",
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-09",
@@ -23878,19 +25776,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "케이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-09",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-08",
@@ -23902,7 +25802,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-08",
@@ -23914,7 +25815,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2026-05-07",
@@ -23926,7 +25828,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "닭강정"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-06",
@@ -23939,7 +25842,8 @@ const diaryData = [
         "menu":  [
                      "파스타",
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-06",
@@ -23948,10 +25852,11 @@ const diaryData = [
         "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/131735695",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 중랑구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-06",
@@ -23963,7 +25868,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-05",
@@ -23975,7 +25881,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-05",
@@ -23987,7 +25894,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-02",
@@ -23999,7 +25907,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "타코"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-01",
@@ -24011,7 +25920,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-01",
@@ -24023,7 +25933,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-04",
@@ -24035,7 +25946,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-09",
@@ -24047,7 +25959,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-30",
@@ -24059,7 +25972,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-30",
@@ -24071,7 +25985,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-06",
@@ -24083,7 +25998,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-30",
@@ -24095,19 +26011,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-29",
         "name":  "개성손만두 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/167873776",
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-28",
@@ -24120,7 +26038,8 @@ const diaryData = [
         "menu":  [
                      "김치찌개",
                      "불고기"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-27",
@@ -24132,7 +26051,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-27",
@@ -24144,7 +26064,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-26",
@@ -24156,7 +26077,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-26",
@@ -24168,7 +26090,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "이자카야"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-25",
@@ -24180,7 +26103,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-24",
@@ -24193,7 +26117,8 @@ const diaryData = [
         "menu":  [
                      "국밥",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-24",
@@ -24205,7 +26130,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-23",
@@ -24217,19 +26143,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-22",
         "name":  "프랭크버거 서강대점",
         "category":  "🍔패스트푸드",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/834184731",
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-22",
@@ -24242,7 +26170,8 @@ const diaryData = [
         "menu":  [
                      "덮밥",
                      "도시락"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-21",
@@ -24254,7 +26183,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "막국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-21",
@@ -24266,7 +26196,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-20",
@@ -24278,7 +26209,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-03",
@@ -24290,7 +26222,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-02",
@@ -24303,7 +26236,8 @@ const diaryData = [
         "menu":  [
                      "삼겹살",
                      "찌개"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-02",
@@ -24315,7 +26249,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-04",
@@ -24327,7 +26262,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-18",
@@ -24339,7 +26275,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-19",
@@ -24351,7 +26288,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-19",
@@ -24363,7 +26301,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-17",
@@ -24372,10 +26311,11 @@ const diaryData = [
         "location_small":  "동문",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1773834978",
-        "location_large":  "제주 제주",
+        "location_large":  "충북 청주",
         "menu":  [
                      "주먹밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-04-28",
@@ -24387,7 +26327,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-30",
@@ -24399,7 +26340,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "육회비빔밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-30",
@@ -24411,7 +26353,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-29",
@@ -24423,7 +26366,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "만둣국"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-28",
@@ -24435,7 +26379,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-28",
@@ -24448,7 +26393,8 @@ const diaryData = [
         "menu":  [
                      "짜장면",
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-27",
@@ -24460,7 +26406,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-27",
@@ -24472,20 +26419,22 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돼지김치구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-26",
         "name":  "미가",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/16443006",
         "location_large":  "서울 마포구",
         "menu":  [
                      "제육볶음",
                      "파전"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-26",
@@ -24497,7 +26446,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-24",
@@ -24509,19 +26459,21 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-24",
         "name":  "초원닭갈비막국수",
         "category":  "🍚한식",
-        "location_small":  "가평",
+        "location_small":  "가평읍 달전리",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/17082781",
         "location_large":  "경기 가평",
         "menu":  [
                      "닭갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-24",
@@ -24530,22 +26482,24 @@ const diaryData = [
         "location_small":  "가평",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1708311659",
-        "location_large":  "경기 가평",
+        "location_large":  "강원 춘천",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-23",
         "name":  "르봉뺑",
         "category":  "☕카페",
-        "location_small":  "가평",
+        "location_small":  "가평읍 읍내리",
         "rate":  "🥄🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/1695937616",
         "location_large":  "경기 가평",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-22",
@@ -24558,7 +26512,8 @@ const diaryData = [
         "menu":  [
                      "고등어구이",
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-22",
@@ -24570,7 +26525,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-21",
@@ -24582,7 +26538,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-20",
@@ -24594,7 +26551,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-19",
@@ -24606,7 +26564,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-19",
@@ -24618,7 +26577,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-18",
@@ -24630,7 +26590,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "국밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-18",
@@ -24642,7 +26603,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-17",
@@ -24655,7 +26617,8 @@ const diaryData = [
         "menu":  [
                      "술집",
                      "회"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-25",
@@ -24667,7 +26630,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-25",
@@ -24679,7 +26643,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-24",
@@ -24691,19 +26656,21 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-24",
         "name":  "봉구스밥버거 서강대점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/169029905",
         "location_large":  "서울 마포구",
         "menu":  [
                      "밥버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-23",
@@ -24715,7 +26682,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-23",
@@ -24727,7 +26695,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돼지김치구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-22",
@@ -24741,7 +26710,8 @@ const diaryData = [
                      "짜장면",
                      "짬뽕",
                      "탕수육"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-22",
@@ -24753,7 +26723,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "스테이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-21",
@@ -24765,7 +26736,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-21",
@@ -24777,7 +26749,8 @@ const diaryData = [
         "location_large":  "서울 성동구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-20",
@@ -24789,7 +26762,8 @@ const diaryData = [
         "location_large":  "인천 부평구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-19",
@@ -24801,7 +26775,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "회전초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-18",
@@ -24813,7 +26788,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "솥밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-18",
@@ -24825,19 +26801,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "샌드위치"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-17",
         "name":  "TOL",
         "category":  "🍚한식, 🍣일식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "대흥",
         "rate":  "🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/18515034",
         "location_large":  "서울 마포구",
         "menu":  [
                      "마제소바"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-17",
@@ -24849,7 +26827,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "덮밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-15",
@@ -24861,19 +26840,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-16",
         "name":  "대한카츠 마포점",
         "category":  "🍚한식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄",
         "map_url":  "https://place.map.kakao.com/1042643162",
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-15",
@@ -24885,7 +26866,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-14",
@@ -24897,7 +26879,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "오꼬노미야끼"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-14",
@@ -24910,7 +26893,8 @@ const diaryData = [
         "menu":  [
                      "불고기",
                      "평양냉면"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-13",
@@ -24922,7 +26906,8 @@ const diaryData = [
         "location_large":  "경기 김포",
         "menu":  [
                      "장어구이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-11",
@@ -24934,7 +26919,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "돈까스"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-08",
@@ -24946,7 +26932,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-12",
@@ -24958,7 +26945,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-11",
@@ -24971,7 +26959,8 @@ const diaryData = [
         "menu":  [
                      "비빔밥",
                      "죽"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-09",
@@ -24983,7 +26972,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-10",
@@ -24995,7 +26985,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-08",
@@ -25007,7 +26998,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "포케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-07",
@@ -25019,7 +27011,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-04",
@@ -25031,7 +27024,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-05",
@@ -25043,7 +27037,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "브리또"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-04",
@@ -25055,7 +27050,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "초밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-05",
@@ -25067,7 +27063,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-03",
@@ -25079,19 +27076,21 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-02",
         "name":  "수저가",
         "category":  "🍜중식",
-        "location_small":  "신촌/대흥",
+        "location_small":  "신촌",
         "rate":  "🥄🥄🥄🥄",
         "map_url":  "https://place.map.kakao.com/651155763",
         "location_large":  "서울 마포구",
         "menu":  [
                      "짬뽕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-02",
@@ -25100,10 +27099,11 @@ const diaryData = [
         "location_small":  "가좌",
         "rate":  "🥄",
         "map_url":  "https://place.map.kakao.com/1869215772",
-        "location_large":  "서울 마포구",
+        "location_large":  "서울 서대문구",
         "menu":  [
                      "짜글이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-01",
@@ -25116,7 +27116,8 @@ const diaryData = [
         "menu":  [
                      "삼겹살",
                      "제육볶음"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-01",
@@ -25128,7 +27129,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-31",
@@ -25140,7 +27142,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "등갈비"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-05-31",
@@ -25152,7 +27155,8 @@ const diaryData = [
         "location_large":  "서울 영등포구",
         "menu":  [
                      "뷔페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-12",
@@ -25164,7 +27168,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-10",
@@ -25176,7 +27181,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "삼겹살"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-09",
@@ -25188,7 +27194,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "텐동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-09",
@@ -25200,7 +27207,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-12",
@@ -25212,7 +27220,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-05",
@@ -25224,7 +27233,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "빵"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-05",
@@ -25236,7 +27246,8 @@ const diaryData = [
         "location_large":  "서울 동작구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-04",
@@ -25248,7 +27259,8 @@ const diaryData = [
         "location_large":  "경기 남양주",
         "menu":  [
                      "함박스테이크"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-03",
@@ -25260,7 +27272,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-02",
@@ -25272,7 +27285,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "카레"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-30",
@@ -25284,7 +27298,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "고기국수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-29",
@@ -25296,7 +27311,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-29",
@@ -25308,7 +27324,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "찜닭"
-                 ]
+                 ],
+        "closed":  true
     },
     {
         "date":  "2026-06-26",
@@ -25320,7 +27337,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "오차즈케"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-26",
@@ -25332,7 +27350,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "술집"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-26",
@@ -25344,7 +27363,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-27",
@@ -25356,7 +27376,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-27",
@@ -25368,7 +27389,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-27",
@@ -25380,7 +27402,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "요거트"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-28",
@@ -25392,7 +27415,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-06-28",
@@ -25404,7 +27428,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-30",
@@ -25416,7 +27441,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "곱창"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-28",
@@ -25428,7 +27454,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "추어탕"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-27",
@@ -25440,7 +27467,8 @@ const diaryData = [
         "location_large":  "서울 마포구",
         "menu":  [
                      "떡볶이"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-31",
@@ -25452,7 +27480,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "치킨"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-25",
@@ -25465,7 +27494,8 @@ const diaryData = [
         "menu":  [
                      "샤브샤브",
                      "쭈꾸미"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-25",
@@ -25477,7 +27507,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "김밥"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-24",
@@ -25489,7 +27520,8 @@ const diaryData = [
         "location_large":  "서울 중랑구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-24",
@@ -25501,7 +27533,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-23",
@@ -25513,7 +27546,8 @@ const diaryData = [
         "location_large":  "서울 중구",
         "menu":  [
                      "닭발"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-23",
@@ -25525,7 +27559,8 @@ const diaryData = [
         "location_large":  "서울 종로구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-20",
@@ -25537,7 +27572,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-20",
@@ -25549,7 +27585,8 @@ const diaryData = [
         "location_large":  "서울 용산구",
         "menu":  [
                      "피자"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-18",
@@ -25561,7 +27598,8 @@ const diaryData = [
         "location_large":  "서울 강서구",
         "menu":  [
                      "햄버거"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-10",
@@ -25573,7 +27611,8 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "빙수"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-14",
@@ -25585,7 +27624,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-14",
@@ -25597,7 +27637,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "카페"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-14",
@@ -25609,7 +27650,8 @@ const diaryData = [
         "location_large":  "서울 강남구",
         "menu":  [
                      "보쌈"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-16",
@@ -25621,7 +27663,8 @@ const diaryData = [
         "location_large":  "서울 송파구",
         "menu":  [
                      "우동"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-19",
@@ -25634,7 +27677,8 @@ const diaryData = [
         "menu":  [
                      "삼계탕",
                      "오리"
-                 ]
+                 ],
+        "closed":  false
     },
     {
         "date":  "2026-07-06",
@@ -25646,6 +27690,7 @@ const diaryData = [
         "location_large":  "서울 서대문구",
         "menu":  [
                      "라멘"
-                 ]
+                 ],
+        "closed":  false
     }
 ];

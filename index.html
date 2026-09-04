@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609050043">
+    <link rel="stylesheet" href="style.css?v=202609050124">
 </head>
 
 <body class="light-theme">
@@ -131,22 +131,33 @@
                     </div>
                 </section>
 
-                <section class="filter-section">
-                    <h3>지역 (대분류)</h3>
-                    <div class="filter-group" id="location-large-filters">
+                <section class="filter-section" id="location-filter-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                        <h3 style="margin-bottom: 0;">지역 필터</h3>
+                        <button id="btn-reset-location-filter" class="date-reset-btn" style="display:none; padding: 2px 8px; font-size: 0.72rem;">초기화</button>
+                    </div>
+
+                    <div class="loc-search-box-wrap">
+                        <span class="loc-search-icon">🔍</span>
+                        <input type="text" id="location-filter-input" placeholder="지역 검색 (강릉, 신촌, 서현, 제주...)" autocomplete="off">
+                        <button id="btn-clear-loc-filter" class="loc-clear-btn" style="display:none;" title="검색어 지우기">&times;</button>
+                    </div>
+
+                    <!-- Active Filter Badges -->
+                    <div id="location-active-badges" class="location-active-badges" style="display:none;"></div>
+
+                    <!-- Matched / Recommended Location Tags -->
+                    <div class="filter-group" id="location-matched-filters">
                         <button class="filter-btn active" data-filter="location_large" data-value="all">전체</button>
                     </div>
-                    <div id="location-more-container" class="more-container">
-                        <button id="btn-more-location" class="more-btn">더보기 <i class="icon-chevron-down"></i></button>
-                        <button id="btn-collapse-location" class="more-btn" style="display:none;">접기 <i
-                                class="icon-chevron-up"></i></button>
-                    </div>
-                </section>
 
-                <section class="filter-section" id="small-location-section" style="display:none;">
-                    <h3>지역 (소분류)</h3>
-                    <div class="filter-group" id="location-small-filters">
-                        <button class="filter-btn active" data-filter="location_small" data-value="all">전체</button>
+                    <!-- Hidden legacy containers so existing selectors do not break -->
+                    <div id="location-large-filters" style="display:none;"></div>
+                    <div id="location-small-filters" style="display:none;"></div>
+                    <div id="small-location-section" style="display:none;"></div>
+                    <div id="location-more-container" style="display:none;">
+                        <button id="btn-more-location" style="display:none;"></button>
+                        <button id="btn-collapse-location" style="display:none;"></button>
                     </div>
                 </section>
 
@@ -1039,8 +1050,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202609050043"></script>
-    <script src="app.js?v=202609050043"></script>
+    <script src="data.js?v=202609050124"></script>
+    <script src="app.js?v=202609050124"></script>
 </body>
 
 </html>
