@@ -538,10 +538,153 @@ function saveUserWishlist(list) {
     }
 }
 
-function isPlaceInWishlist(name) {
+// ─── Kakao Place ID & Restaurant Precise Matching Utilities ───
+function extractKakaoPlaceId(url) {
+    if (!url || typeof url !== 'string') return null;
+    const str = url.trim();
+
+    // 1. place.map.kakao.com/(m/)?12345678
+    const m1 = str.match(/place\.map\.kakao\.com\/(?:m\/)?(\d+)/i);
+    if (m1) return m1[1];
+
+    // 2. map.kakao.com/link/(?:map|to)/[name,]12345678
+    const m2 = str.match(/\/link\/(?:map|to)\/(?:.*,)?(\d+)/i);
+    if (m2) return m2[1];
+
+    // 3. Query param itemId / confirmid / id
+    const m3 = str.match(/[?&](?:itemId|id|confirmid)=(\d+)/i);
+    if (m3) return m3[1];
+
+    // 4. kakaomap://place?id=12345678 app scheme
+    const m4 = str.match(/kakaomap:\/\/place\?.*id=(\d+)/i);
+    if (m4) return m4[1];
+
+    // 5. Standalone 6-12 digit place ID or path segment
+    const m5 = str.match(/(?:^|\/)(\d{6,12})(?:[/?#]|$)/);
+    if (m5) return m5[1];
+
+    return null;
+}
+window.extractKakaoPlaceId = extractKakaoPlaceId;
+
+function isSavedRestaurantMatch(r, place) {
+    if (!r || !place) return false;
+
+    // ── Tier 1: Kakao Place ID Verification ──
+    const rPlaceId = extractKakaoPlaceId(r.map_url);
+    const pPlaceId = place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url);
+
+    if (rPlaceId && pPlaceId) {
+        // If both have Kakao Place IDs, they MATCH only if the IDs are identical!
+        // If IDs are different, it is 100% NOT the same restaurant (even if names match).
+        return rPlaceId === pPlaceId;
+    }
+
+    // ── Tier 2: Name Verification ──
+    const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
+    const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
+    if (!rn || !pn) return false;
+
+    const isExactName = (rn === pn);
+    const isNameIncluded = (pn.includes(rn) || rn.includes(pn));
+    if (!isExactName && !isNameIncluded) return false;
+
+    // ── Tier 3: Location / Address Compatibility ──
+    const placeAddr = (place.address_name || '').trim();
+    const placeRoadAddr = (place.road_address_name || '').trim();
+    const fullPlaceAddr = `${placeAddr} ${placeRoadAddr}`.replace(/\s+/g, ' ').toLowerCase();
+
+    const locLarge = (r.location_large || '').trim().toLowerCase();
+    const locSmall = (r.location_small || '').trim().toLowerCase();
+
+    // If no location info exists at all on the saved restaurant, fallback to exact name
+    if (!locLarge && !locSmall) {
+        return isExactName;
+    }
+
+    // Check district (구/군/시) conflict:
+    // If saved restaurant specifies a district (e.g. "용산구", "양천구", "강남구")
+    const rDistricts = locLarge.match(/([가-힣]+(?:구|군|시))/g) || [];
+    const pDistricts = fullPlaceAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
+
+    const rGu = rDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
+    if (rGu) {
+        const pGus = pDistricts.filter(d => d.endsWith('구') || d.endsWith('군'));
+        if (pGus.length > 0) {
+            const guMatch = pGus.some(pg => pg === rGu || rGu.includes(pg) || pg.includes(rGu));
+            if (!guMatch) {
+                // District mismatch (e.g. saved in "용산구", but place is in "양천구" / "강남구" / "종로구")
+                return false;
+            }
+        }
+    }
+
+    // Check province (서울, 경기, 인천, 부산, 제주, etc.)
+    const rSidoMatch = locLarge.match(/^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주)/);
+    if (rSidoMatch) {
+        const sido = rSidoMatch[1];
+        if (fullPlaceAddr.length > 0 && !fullPlaceAddr.includes(sido)) {
+            return false;
+        }
+    }
+
+    // Clean text comparison
+    const cleanPa = fullPlaceAddr.replace(/\s/g, '');
+    const cleanRa = (locLarge + ' ' + locSmall).replace(/\s/g, '');
+    if (cleanPa.includes(cleanRa) || cleanRa.includes(cleanPa)) return true;
+
+    const cleanLarge = locLarge.replace(/\s/g, '');
+    if (cleanLarge && cleanPa.includes(cleanLarge)) return true;
+
+    if (rGu && cleanPa.includes(rGu)) {
+        if (!locSmall) return true;
+        const cleanSmall = locSmall.replace(/\s/g, '');
+        if (cleanPa.includes(cleanSmall) || cleanSmall.includes(cleanPa)) return true;
+        if (isExactName) return true;
+    }
+
+    if (locSmall) {
+        const cleanSmall = locSmall.replace(/\s/g, '');
+        if (cleanSmall && (cleanPa.includes(cleanSmall) || cleanSmall.includes(cleanPa))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+window.isSavedRestaurantMatch = isSavedRestaurantMatch;
+
+function isPlaceInWishlist(name, place = null) {
     if (!name) return false;
     const list = getUserWishlist();
-    return list.some(item => item.name === name);
+    if (!list || list.length === 0) return false;
+
+    if (!place) {
+        return list.some(item => item.name === name);
+    }
+
+    const pPlaceId = place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url || place.map_url);
+    const placeAddr = ((place.address_name || '') + ' ' + (place.road_address_name || '')).replace(/\s/g, '').toLowerCase();
+
+    return list.some(wItem => {
+        const wPlaceId = extractKakaoPlaceId(wItem.map_url);
+        if (wPlaceId && pPlaceId) {
+            return wPlaceId === pPlaceId;
+        }
+
+        const wn = (wItem.name || '').replace(/\s/g, '').toLowerCase();
+        const pn = (name || '').replace(/\s/g, '').toLowerCase();
+        if (wn !== pn && !pn.includes(wn) && !wn.includes(pn)) {
+            return false;
+        }
+
+        if (wItem.location && placeAddr) {
+            const wLoc = wItem.location.replace(/\s/g, '').toLowerCase();
+            return placeAddr.includes(wLoc) || wLoc.includes(placeAddr);
+        }
+
+        return wn === pn;
+    });
 }
 
 window.handleToggleWishlist = function(name, category, location, mapUrl, x = '', y = '') {
@@ -1349,7 +1492,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 ps.keywordSearch(searchKeyword, (data, status) => {
                     if (status === kakao.maps.services.Status.OK && data.length > 0) {
-                        const target = data[0];
+                        const target = data.find(d => isSavedRestaurantMatch(item, d)) || data[0];
                         handleCoordsFound(parseFloat(target.y), parseFloat(target.x), target.place_name, target.address_name, target.place_url);
                     } else {
                         const addrToSearch = item.location_small || item.location_large || item.name;
@@ -1687,18 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchBounds = new kakao.maps.LatLngBounds();
 
             uniquePlaces.forEach(place => {
-                const savedMatch = masterData.find(r => {
-                    const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
-                    const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
-                    if (rn === pn) return true;
-                    const nameMatch = pn.includes(rn) || rn.includes(pn);
-                    if (nameMatch) {
-                        const ra = ((r.location_large || '') + ' ' + (r.location_small || '')).replace(/\s/g, '').toLowerCase();
-                        const pa = (place.road_address_name || place.address_name || '').replace(/\s/g, '').toLowerCase();
-                        return pa.includes(ra) || ra.includes(pa) || (r.location_small && pa.includes(r.location_small.replace(/\s/g, '').toLowerCase()));
-                    }
-                    return false;
-                });
+                const savedMatch = masterData.find(r => isSavedRestaurantMatch(r, place));
 
                 const item = savedMatch || {
                     name: place.place_name,
@@ -1772,7 +1904,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pageItems.forEach(res => {
             const { item, place } = res;
             const isSaved = isOwnerUser() ? res.isSaved : false;
-            const isWishlist = res.isWishlist || isPlaceInWishlist(item.name || place.place_name);
+            const isWishlist = res.isWishlist || isPlaceInWishlist(item.name || place.place_name, place);
             const coords = new kakao.maps.LatLng(place.y, place.x);
             const visits = isSaved ? (item.visit_count || 1) : 0;
             let tagBadge = '';
@@ -1858,7 +1990,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false) {
         const isSaved = isOwnerUser() ? isSavedParam : false;
-        const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name);
+        const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name, place);
         const coords = new kakao.maps.LatLng(place.y, place.x);
 
         let markerImg = null;
@@ -2097,7 +2229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const quickFilters = document.querySelector('.map-quick-filters');
         if (quickFilters) quickFilters.style.display = 'none';
 
-        const isWishlisted = isPlaceInWishlist(item.name);
+        const isWishlisted = isPlaceInWishlist(item.name, placeData);
         const safeName = (item.name || '').replace(/'/g, "\\'");
         const safeCategory = (displayCategory || '').replace(/'/g, "\\'");
         const safeAddress = (displayAddress || '').replace(/'/g, "\\'");
@@ -2143,7 +2275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Trigger Photo Display: Prefer User Uploaded Photos, fallback to Kakao/Daum Search!
         const photoGalleryEl = document.getElementById('detail-photo-gallery');
-        const userPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(item.name) : [];
+        const userPhotos = (isSaved && typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(item.name) : [];
         if (userPhotos && userPhotos.length > 0) {
             renderUserPhotosInMapGallery(item.name, userPhotos, photoGalleryEl);
         } else {
@@ -2312,9 +2444,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Case 2: Keyword search with kakao places
                 if (ps) {
-                    ps.keywordSearch(wItem.name, (data, status) => {
+                    const searchKw = wItem.location ? `${wItem.name} ${wItem.location}` : wItem.name;
+                    ps.keywordSearch(searchKw, (data, status) => {
                         if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                            const place = data[0];
+                            const place = data.find(d => isSavedRestaurantMatch({ name: wItem.name, map_url: wItem.map_url, location_large: wItem.location }, d)) || data[0];
                             const item = {
                                 name: wItem.name,
                                 category: wItem.category || place.category_name || '음식점',
@@ -2820,9 +2953,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const query = `${item.name} ${item.location_large}`.trim();
             ps.keywordSearch(query, (data, status) => {
                 processed++;
-                if (status === kakao.maps.services.Status.OK) {
-                    // Global search for visited: no currentMapBounds restriction
-                    renderSearchResult(item, data[0], true, bounds, true);
+                if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                    // Global search for visited: find matching place via Place ID or Address
+                    const targetPlace = data.find(d => isSavedRestaurantMatch(item, d)) || data[0];
+                    renderSingleMarker(item, targetPlace, true, bounds, true);
                 }
                 // Center map to show ALL matched visited places across the country
                 if (processed === matched.length && markers.length > 0) {
