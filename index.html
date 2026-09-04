@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609040142">
+    <link rel="stylesheet" href="style.css?v=202609042008">
 </head>
 
 <body class="light-theme">
@@ -503,6 +503,20 @@
                                 <label class="drawer-label" for="diary-input-memo">&#x1F4DD; 방문 메모 / 후기</label>
                                 <textarea id="diary-input-memo" class="drawer-input drawer-textarea" placeholder="맛, 분위기, 누구와 갔는지 등의 메모를 적어보세요..." rows="3"></textarea>
                             </div>
+
+                            <!-- 식당/음식 사진 업로드 영역 (클릭, 드래그앤드롭, 복사붙여넣기) -->
+                            <div class="drawer-field" id="diary-photo-field">
+                                <div class="photo-field-header">
+                                    <label class="drawer-label">📷 식당 & 음식 사진</label>
+                                    <span class="photo-upload-hint">📁 클릭 / 🖱️ 드래그 / 📋 Ctrl+V</span>
+                                </div>
+                                <div class="photo-dropzone" id="diary-photo-dropzone">
+                                    <div class="photo-preview-grid" id="diary-photo-preview-grid">
+                                        <!-- Rendered dynamically via app.js -->
+                                    </div>
+                                    <input type="file" id="diary-photo-file-input" accept="image/*" multiple style="display:none;">
+                                </div>
+                            </div>
                             <input type="hidden" id="diary-editing-id">
                             <div class="drawer-actions">
                                 <button type="button" id="drawer-delete-btn" class="drawer-delete-btn" style="display:none;" onclick="deleteCurrentDiaryEntry()">삭제</button>
@@ -684,6 +698,20 @@
                 </div>
 
                 <div class="list-detail-body">
+                    <!-- 식당 사진 갤러리 섹션 -->
+                    <div class="list-detail-photo-section" id="list-detail-photo-section">
+                        <div class="list-photo-header">
+                            <span class="detail-label">📷 나의 방문 사진 <span id="list-photo-count" class="photo-count-badge">0장</span></span>
+                            <span class="photo-upload-hint">📁 클릭 / 🖱️ 드래그 / 📋 Ctrl+V</span>
+                        </div>
+                        <div class="photo-dropzone list-photo-dropzone" id="list-photo-dropzone">
+                            <div class="photo-preview-grid" id="list-photo-preview-grid">
+                                <!-- Injected dynamically via app.js -->
+                            </div>
+                            <input type="file" id="list-photo-file-input" accept="image/*" multiple style="display:none;">
+                        </div>
+                    </div>
+
                     <!-- Notion-style Tag Information -->
                     <div class="list-detail-info-group">
                         <div class="list-detail-row">
@@ -992,6 +1020,15 @@
         </div>
     </div>
 
+    <!-- ─── Photo Lightbox Modal (사진 크게 보기 팝업) ─── -->
+    <div id="photo-lightbox-modal" class="photo-lightbox-modal" onclick="closePhotoLightbox(event)">
+        <button class="lightbox-close-btn" onclick="closePhotoLightbox(event)">&times;</button>
+        <div class="lightbox-content-wrap" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" alt="확대 사진">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+    </div>
+
     <!-- Firebase SDK (Cloud Firestore Sync) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -1002,8 +1039,8 @@
     <!-- Kakao Maps API -->
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
-    <script src="data.js?v=202609040142"></script>
-    <script src="app.js?v=202609040142"></script>
+    <script src="data.js?v=202609042008"></script>
+    <script src="app.js?v=202609042008"></script>
 </body>
 
 </html>

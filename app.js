@@ -704,6 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
+        if (typeof initPhotoStorage === 'function') initPhotoStorage();
         if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
         render();
     }
@@ -2135,9 +2136,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Trigger Daum Image Search API to fetch representative food photos!
+        // Trigger Photo Display: Prefer User Uploaded Photos, fallback to Kakao/Daum Search!
         const photoGalleryEl = document.getElementById('detail-photo-gallery');
-        fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl);
+        const userPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(item.name) : [];
+        if (userPhotos && userPhotos.length > 0) {
+            renderUserPhotosInMapGallery(item.name, userPhotos, photoGalleryEl);
+        } else {
+            fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl);
+        }
 
         // If unvisited, fetch real blog review summary snippet via Daum Blog API!
         if (!isSaved) {
@@ -3438,6 +3444,11 @@ function openRestaurantDetailModal(item) {
 
     // Always start in View Mode
     switchDetailModalMode('view');
+
+    // Load and render photos for this restaurant
+    if (typeof refreshListModalPhotoGrid === 'function') {
+        refreshListModalPhotoGrid(item.name);
+    }
 
     // 1. Title & Visit Badge
     if (nameEl) nameEl.textContent = item.name;
@@ -6076,6 +6087,7 @@ function setupDiaryNameSearch() {
                 input.value = selectedName;
                 hideSuggestions();
                 autoFillRestaurantData(selectedName);
+                if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(selectedName);
             });
         });
     });
@@ -6084,6 +6096,7 @@ function setupDiaryNameSearch() {
         setTimeout(hideSuggestions, 200);
         if (input.value.trim()) {
             autoFillRestaurantData(input.value.trim());
+            if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(input.value.trim());
         }
     });
 
@@ -6124,6 +6137,10 @@ function autoFillRestaurantData(restaurantName) {
                 });
             }
         }
+    }
+
+    if (typeof refreshDiaryPhotoGrid === 'function') {
+        refreshDiaryPhotoGrid(restaurantName);
     }
 
     // Update Visit Count Badge in Drawer
@@ -6382,10 +6399,14 @@ function renderDiaryCalendar() {
                     ? `<span class="card-visit-tag">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>` 
                     : '';
 
+                const restPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(entry.name) : [];
+                const photoTagHtml = restPhotos.length > 0 ? `<span class="card-photo-tag">📷 ${restPhotos.length}</span>` : '';
+
                 card.innerHTML = `
                     <div class="card-name" title="${entry.name}">${entry.name}</div>
                     <div class="card-sub-row">
                         ${visitBadgeHtml}
+                        ${photoTagHtml}
                         ${tagsHtml}
                     </div>
                     ${spoonCount > 0 ? `<div class="card-spoon-row"><span class="card-spoon">${'🥄'.repeat(spoonCount)}</span></div>` : ''}
@@ -6516,6 +6537,10 @@ function openDiaryDrawer(dateStr, prefillData = null) {
 
     if (dateInput) dateInput.value = dateStr || '';
 
+    if (typeof refreshDiaryPhotoGrid === 'function') {
+        refreshDiaryPhotoGrid(prefillData?.name || '');
+    }
+
     if (overlay) {
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
@@ -6558,6 +6583,11 @@ function openEditDiaryDrawer(entry) {
     if (dateInput) dateInput.value = entry.date || '';
     if (mapInput) mapInput.value = entry.map_url || '';
     if (memoInput) memoInput.value = entry.memo || '';
+
+    // Load and render photos for this restaurant
+    if (typeof refreshDiaryPhotoGrid === 'function') {
+        refreshDiaryPhotoGrid(entry.name || '');
+    }
 
     // Set Notion Tag Selectors
     if (entry.category) notionSelectors.category.setValues(entry.category);
@@ -7606,4 +7636,426 @@ window.closeInsightModal = function() {
     const modal = document.getElementById('insight-modal');
     if (modal) modal.classList.remove('open');
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// 14. 식당 및 음식 사진 관리 시스템 (Restaurant Photo System)
+// ═══════════════════════════════════════════════════════════════════
+
+const PHOTO_DB_NAME = 'SpoonmapPhotosDB';
+const PHOTO_STORE_NAME = 'restaurant_photos';
+let photoDbPromise = null;
+window.restaurantPhotoCache = new Map();
+
+function normalizeRestaurantKey(name) {
+    if (!name) return '';
+    return String(name).trim().toLowerCase().replace(/\s+/g, '');
+}
+window.normalizeRestaurantKey = normalizeRestaurantKey;
+
+function getPhotoDb() {
+    if (!photoDbPromise) {
+        photoDbPromise = new Promise((resolve) => {
+            if (!window.indexedDB) {
+                console.warn('IndexedDB not supported in this browser');
+                resolve(null);
+                return;
+            }
+            const req = indexedDB.open(PHOTO_DB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(PHOTO_STORE_NAME)) {
+                    db.createObjectStore(PHOTO_STORE_NAME, { keyPath: 'restaurantKey' });
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => {
+                console.warn('Failed to open SpoonmapPhotosDB:', req.error);
+                resolve(null);
+            };
+        });
+    }
+    return photoDbPromise;
+}
+
+async function initPhotoStorage() {
+    try {
+        const idb = await getPhotoDb();
+        if (!idb) return;
+        const tx = idb.transaction(PHOTO_STORE_NAME, 'readonly');
+        const store = tx.objectStore(PHOTO_STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => {
+            const allRecords = req.result || [];
+            allRecords.forEach(r => {
+                if (r && r.restaurantKey) {
+                    window.restaurantPhotoCache.set(r.restaurantKey, r.photos || []);
+                }
+            });
+            console.log(`[Spoonmap] Loaded photos for ${window.restaurantPhotoCache.size} restaurants from IndexedDB 📷`);
+            if (typeof renderDiaryCalendar === 'function') {
+                renderDiaryCalendar();
+            }
+        };
+    } catch (e) {
+        console.warn('initPhotoStorage error:', e);
+    }
+}
+window.initPhotoStorage = initPhotoStorage;
+
+// Client-side Image Compression (HTML5 Canvas)
+function compressImage(fileOrBlob, maxDimension = 1000, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                    if (width > maxDimension) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    }
+                } else {
+                    if (height > maxDimension) {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedDataUrl);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(fileOrBlob);
+    });
+}
+window.compressImage = compressImage;
+
+function getRestaurantPhotos(name) {
+    const key = normalizeRestaurantKey(name);
+    if (!key) return [];
+    return window.restaurantPhotoCache.get(key) || [];
+}
+window.getRestaurantPhotos = getRestaurantPhotos;
+
+async function saveRestaurantPhotosToStore(name, photosArray) {
+    const key = normalizeRestaurantKey(name);
+    if (!key) return;
+    window.restaurantPhotoCache.set(key, photosArray);
+
+    // 1. Save to IndexedDB
+    try {
+        const idb = await getPhotoDb();
+        if (idb) {
+            const tx = idb.transaction(PHOTO_STORE_NAME, 'readwrite');
+            const store = tx.objectStore(PHOTO_STORE_NAME);
+            store.put({
+                restaurantKey: key,
+                restaurantName: name,
+                photos: photosArray,
+                updatedAt: new Date().toISOString()
+            });
+        }
+    } catch (e) {
+        console.warn('save to IndexedDB error:', e);
+    }
+
+    // 2. Cloud Backup to Firestore
+    if (isFirebaseReady && db) {
+        try {
+            const u = getCurrentUser();
+            const userId = u ? String(u.id) : 'guest';
+            const docId = `${userId}_${key}`;
+            await db.collection('spoonmap_restaurant_photos').doc(docId).set({
+                userId,
+                restaurantKey: key,
+                restaurantName: name,
+                photos: photosArray,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        } catch (e) {
+            console.warn('save to Firestore photos error:', e);
+        }
+    }
+}
+
+async function addRestaurantPhotos(name, dataUrls) {
+    if (!name || !dataUrls || dataUrls.length === 0) return [];
+    const current = [...getRestaurantPhotos(name)];
+    dataUrls.forEach(url => {
+        current.push({
+            id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            url,
+            createdAt: new Date().toISOString()
+        });
+    });
+    await saveRestaurantPhotosToStore(name, current);
+    return current;
+}
+window.addRestaurantPhotos = addRestaurantPhotos;
+
+async function deleteRestaurantPhoto(name, photoId) {
+    if (!name || !photoId) return [];
+    const current = getRestaurantPhotos(name).filter(p => String(p.id) !== String(photoId));
+    await saveRestaurantPhotosToStore(name, current);
+    return current;
+}
+window.deleteRestaurantPhoto = deleteRestaurantPhoto;
+
+// Render Photo Grid into Dropzone
+function renderPhotoPreviewGrid(containerEl, restaurantName, photos, sourceContext) {
+    if (!containerEl) return;
+    const isDiary = sourceContext === 'diary';
+    const inputId = isDiary ? 'diary-photo-file-input' : 'list-photo-file-input';
+
+    const itemsHtml = photos.map(p => {
+        const safeUrl = p.url.replace(/'/g, "\\'");
+        const safeName = (restaurantName || '').replace(/'/g, "\\'");
+        const safeId = String(p.id).replace(/'/g, "\\'");
+        return `
+            <div class="photo-thumb-wrap" onclick="openPhotoLightbox('${safeUrl}', '${safeName}')" title="클릭하면 사진을 크게 봅니다">
+                <img src="${p.url}" alt="${restaurantName} 사진" class="photo-thumb-img">
+                <button type="button" class="photo-delete-btn" onclick="event.stopPropagation(); handleDeletePhotoClick('${safeName}', '${safeId}', '${sourceContext}')" title="사진 삭제">&times;</button>
+            </div>
+        `;
+    }).join('');
+
+    const addBoxHtml = `
+        <div class="photo-add-box" onclick="document.getElementById('${inputId}').click()" title="사진 추가 (클릭 / 드래그 / Ctrl+V)">
+            <span class="photo-add-icon">➕</span>
+            <span>사진 추가</span>
+        </div>
+    `;
+
+    containerEl.innerHTML = itemsHtml + addBoxHtml;
+}
+
+window.handleDeletePhotoClick = async function(restaurantName, photoId, sourceContext) {
+    if (!confirm('이 사진을 정말 삭제하시겠습니까?')) return;
+    await deleteRestaurantPhoto(restaurantName, photoId);
+    showDiaryToast('🗑️ 사진이 삭제되었습니다.');
+
+    if (sourceContext === 'diary') {
+        refreshDiaryPhotoGrid(restaurantName);
+    } else if (sourceContext === 'list') {
+        refreshListModalPhotoGrid(restaurantName);
+    }
+    if (typeof renderDiaryCalendar === 'function') {
+        renderDiaryCalendar();
+    }
+};
+
+function refreshDiaryPhotoGrid(restaurantName) {
+    const gridEl = document.getElementById('diary-photo-preview-grid');
+    if (!gridEl) return;
+    const name = restaurantName || document.getElementById('diary-input-name')?.value.trim() || '';
+    const photos = getRestaurantPhotos(name);
+    renderPhotoPreviewGrid(gridEl, name, photos, 'diary');
+}
+window.refreshDiaryPhotoGrid = refreshDiaryPhotoGrid;
+
+function refreshListModalPhotoGrid(restaurantName) {
+    const gridEl = document.getElementById('list-photo-preview-grid');
+    const countEl = document.getElementById('list-photo-count');
+    if (!gridEl) return;
+    const name = restaurantName || currentDetailModalItem?.name || '';
+    const photos = getRestaurantPhotos(name);
+    if (countEl) countEl.textContent = `${photos.length}장`;
+    renderPhotoPreviewGrid(gridEl, name, photos, 'list');
+}
+window.refreshListModalPhotoGrid = refreshListModalPhotoGrid;
+
+// Process Image Files (Folder Select, Drag & Drop, Paste)
+async function handleProcessPhotoFiles(restaurantName, fileList, sourceContext) {
+    if (!restaurantName) {
+        alert('먼저 식당명을 입력하거나 선택해주세요!');
+        return;
+    }
+    const imageFiles = Array.from(fileList).filter(f => f.type && f.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+        alert('이미지 파일(JPG, PNG, WebP 등)만 업로드할 수 있습니다.');
+        return;
+    }
+
+    showDiaryToast(`⏳ 사진 ${imageFiles.length}장 압축 및 등록 중...`);
+
+    try {
+        const compressedUrls = await Promise.all(imageFiles.map(f => compressImage(f)));
+        await addRestaurantPhotos(restaurantName, compressedUrls);
+        showDiaryToast(`📸 사진 ${compressedUrls.length}장이 성공적으로 등록되었습니다!`);
+
+        if (sourceContext === 'diary') {
+            refreshDiaryPhotoGrid(restaurantName);
+        } else if (sourceContext === 'list') {
+            refreshListModalPhotoGrid(restaurantName);
+        }
+        if (typeof renderDiaryCalendar === 'function') {
+            renderDiaryCalendar();
+        }
+    } catch (err) {
+        console.error('Photo upload error:', err);
+        alert('사진을 처리하는 중 오류가 발생했습니다.');
+    }
+}
+window.handleProcessPhotoFiles = handleProcessPhotoFiles;
+
+// Setup Drag & Drop + Click File Input
+function setupPhotoDropzone(dropzoneEl, fileInputEl, sourceContext, getRestaurantNameFn) {
+    if (!dropzoneEl || !fileInputEl) return;
+
+    dropzoneEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzoneEl.classList.add('drag-active');
+    });
+
+    dropzoneEl.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzoneEl.classList.remove('drag-active');
+    });
+
+    dropzoneEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzoneEl.classList.remove('drag-active');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const name = getRestaurantNameFn();
+            handleProcessPhotoFiles(name, e.dataTransfer.files, sourceContext);
+        }
+    });
+
+    fileInputEl.addEventListener('change', () => {
+        if (fileInputEl.files && fileInputEl.files.length > 0) {
+            const name = getRestaurantNameFn();
+            handleProcessPhotoFiles(name, fileInputEl.files, sourceContext);
+            fileInputEl.value = '';
+        }
+    });
+}
+
+// Lightbox Viewer
+window.openPhotoLightbox = function(url, caption = '') {
+    const modal = document.getElementById('photo-lightbox-modal');
+    const img = document.getElementById('lightbox-img');
+    const cap = document.getElementById('lightbox-caption');
+    if (!modal || !img) return;
+    img.src = url;
+    if (cap) cap.textContent = caption || '';
+    modal.classList.add('open');
+};
+
+window.closePhotoLightbox = function(e) {
+    if (e) e.stopPropagation();
+    const modal = document.getElementById('photo-lightbox-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+// Render User Photos in MAP Tab Place Detail
+function renderUserPhotosInMapGallery(placeName, userPhotos, containerEl) {
+    if (!containerEl) return;
+    containerEl.style.display = 'block';
+    const firstImg = userPhotos[0];
+
+    let thumbsHtml = '';
+    if (userPhotos.length > 1) {
+        thumbsHtml = `
+            <div class="photo-thumb-list">
+                ${userPhotos.map((p, idx) => `
+                    <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
+                         src="${p.url}" 
+                         alt="${placeName} 사진 ${idx + 1}"
+                         onclick="window.switchUserGalleryPhoto('${p.url}', this)">
+                `).join('')}
+            </div>
+        `;
+    }
+
+    const safeName = (placeName || '').replace(/'/g, "\\'");
+    containerEl.innerHTML = `
+        <div style="margin-bottom: 6px;">
+            <span class="my-photo-badge">📸 내가 직접 찍은 사진 (${userPhotos.length}장)</span>
+        </div>
+        <div class="main-photo-hero" onclick="openPhotoLightbox(document.getElementById('gallery-main-img').src, '${safeName}')" style="cursor: pointer;" title="클릭하면 사진을 크게 봅니다">
+            <img id="gallery-main-img" src="${firstImg.url}" alt="${placeName} 내 등록 사진">
+        </div>
+        ${thumbsHtml}
+    `;
+}
+window.renderUserPhotosInMapGallery = renderUserPhotosInMapGallery;
+
+window.switchUserGalleryPhoto = function(url, thumbEl) {
+    const mainImg = document.getElementById('gallery-main-img');
+    if (mainImg) mainImg.src = url;
+    document.querySelectorAll('.detail-photo-gallery .thumb-img').forEach(t => t.classList.remove('active'));
+    if (thumbEl) thumbEl.classList.add('active');
+};
+
+// Global Clipboard Paste Listener (Ctrl + V)
+window.addEventListener('paste', async (e) => {
+    // Check if Diary drawer is open
+    const diaryOverlay = document.getElementById('diary-drawer-overlay');
+    const isDiaryOpen = diaryOverlay && diaryOverlay.classList.contains('open');
+
+    // Check if List detail modal is open
+    const listOverlay = document.getElementById('list-detail-modal-overlay');
+    const isListOpen = listOverlay && (listOverlay.style.display !== 'none' && !listOverlay.classList.contains('hidden'));
+
+    if (!isDiaryOpen && !isListOpen) return;
+
+    const items = (e.clipboardData || window.clipboardData)?.items;
+    if (!items) return;
+
+    const imageFiles = [];
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            if (file) imageFiles.push(file);
+        }
+    }
+
+    if (imageFiles.length === 0) return;
+
+    if (isDiaryOpen) {
+        const name = document.getElementById('diary-input-name')?.value.trim();
+        if (!name) {
+            alert('사진을 붙여넣기 전에 먼저 식당명을 입력해주세요!');
+            return;
+        }
+        handleProcessPhotoFiles(name, imageFiles, 'diary');
+    } else if (isListOpen) {
+        const name = currentDetailModalItem?.name;
+        if (name) {
+            handleProcessPhotoFiles(name, imageFiles, 'list');
+        }
+    }
+});
+
+// Initialize Photo Dropzones when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initPhotoStorage();
+
+    // Diary Dropzone
+    const diaryDropzone = document.getElementById('diary-photo-dropzone');
+    const diaryFileInput = document.getElementById('diary-photo-file-input');
+    setupPhotoDropzone(diaryDropzone, diaryFileInput, 'diary', () => {
+        return document.getElementById('diary-input-name')?.value.trim() || '';
+    });
+
+    // List Detail Dropzone
+    const listDropzone = document.getElementById('list-photo-dropzone');
+    const listFileInput = document.getElementById('list-photo-file-input');
+    setupPhotoDropzone(listDropzone, listFileInput, 'list', () => {
+        return currentDetailModalItem?.name || '';
+    });
+});
+
 

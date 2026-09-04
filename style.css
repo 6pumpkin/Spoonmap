@@ -5663,4 +5663,249 @@ input[type="date"].drawer-input {
     margin-top: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   13. 식당 및 음식 사진 업로드 & 갤러리 스타일 (Photo System)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.photo-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.photo-upload-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted, #9CA3AF);
+    font-weight: 500;
+}
+
+.photo-count-badge {
+    display: inline-block;
+    background: #EEF2FF;
+    color: #4F46E5;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 4px;
+}
+
+.photo-dropzone {
+    background: #FAF9F6;
+    border: 2px dashed #D1D5DB;
+    border-radius: 14px;
+    padding: 12px;
+    min-height: 96px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.photo-dropzone.drag-active {
+    border-color: #4F46E5;
+    background: #EEF2FF;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 10px;
+    align-items: center;
+}
+
+.photo-thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #E5E7EB;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.photo-thumb-wrap:hover {
+    transform: scale(1.03);
+}
+
+.photo-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: all 0.15s ease;
+    z-index: 2;
+}
+
+.photo-delete-btn:hover {
+    background: #EF4444;
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.photo-add-box {
+    aspect-ratio: 1;
+    border: 1.5px dashed #9CA3AF;
+    border-radius: 10px;
+    background: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    color: #4B5563;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    min-height: 78px;
+}
+
+.photo-add-box:hover {
+    border-color: #4F46E5;
+    color: #4F46E5;
+    background: #F5F3FF;
+}
+
+.photo-add-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+/* ─── List Detail Photo Section ─── */
+.list-detail-photo-section {
+    background: #FAF9F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 1.2rem;
+}
+
+.list-photo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.list-photo-dropzone {
+    border-color: #E5E7EB;
+    background: #FFFFFF;
+    padding: 10px;
+}
+
+/* ─── Lightbox Modal ─── */
+.photo-lightbox-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    backdrop-filter: blur(4px);
+}
+
+.photo-lightbox-modal.open {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+}
+
+.lightbox-content-wrap {
+    max-width: 90vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.lightbox-content-wrap img {
+    max-width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-caption {
+    margin-top: 10px;
+    color: #F3F4F6;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.lightbox-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 2.4rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+    z-index: 100001;
+}
+
+.lightbox-close-btn:hover {
+    opacity: 1;
+}
+
+/* ─── Map Custom Photo Badge ─── */
+.my-photo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFFFFF;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+/* ─── Diary Card Photo Tag ─── */
+.card-photo-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #4F46E5;
+    background: #EEF2FF;
+    border-radius: 6px;
+    padding: 1px 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
 
