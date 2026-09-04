@@ -1222,6 +1222,10 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.innerHTML = '<div class="error">데이터를 불러올 수 없습니다.</div>';
             return;
         }
+        if (typeof mergeDynamicLocationsIntoKoreaRegions === 'function') {
+            mergeDynamicLocationsIntoKoreaRegions(restaurantData);
+            if (typeof diaryData !== 'undefined') mergeDynamicLocationsIntoKoreaRegions(diaryData);
+        }
         setupFilters();
         setupDynamicLocationFilter();
         setupSearch();
@@ -6196,6 +6200,13 @@ class NotionTagSelector {
             if (typeof diaryData !== 'undefined') collect(diaryData, this.baseKey);
         }
 
+        // Preload nationwide regions for location_large
+        if (this.baseKey === 'location_large') {
+            if (typeof getAllKoreaLargeLocations === 'function') {
+                getAllKoreaLargeLocations().forEach(loc => this.availableOptions.add(loc));
+            }
+        }
+
         // Load from user's diary
         const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
         const localDiary = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -6367,12 +6378,29 @@ class NotionTagSelector {
         }
         this.renderSelectedTags();
         this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
+
+        if (this.baseKey === 'location_large') {
+            const smallKey = this.fieldType.startsWith('modal_') ? 'modal_location_small' : 'location_small';
+            if (typeof notionSelectors !== 'undefined' && notionSelectors[smallKey]) {
+                notionSelectors[smallKey].onParentLocationLargeChanged(val);
+                setTimeout(() => {
+                    notionSelectors[smallKey].openPopover();
+                }, 80);
+            }
+        }
     }
 
     deselectTag(val) {
         this.selectedValues = this.selectedValues.filter(v => v !== val);
         this.renderSelectedTags();
         this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
+
+        if (this.baseKey === 'location_large') {
+            const smallKey = this.fieldType.startsWith('modal_') ? 'modal_location_small' : 'location_small';
+            if (typeof notionSelectors !== 'undefined' && notionSelectors[smallKey]) {
+                notionSelectors[smallKey].onParentLocationLargeChanged('');
+            }
+        }
     }
 
     setValues(valArrayOrString) {
@@ -6380,7 +6408,12 @@ class NotionTagSelector {
         if (Array.isArray(valArrayOrString)) {
             vals = valArrayOrString;
         } else if (typeof valArrayOrString === 'string') {
-            vals = valArrayOrString.split(',').map(v => v.trim()).filter(Boolean);
+            if (this.isMultiSelect) {
+                vals = valArrayOrString.split(',').map(v => v.trim()).filter(Boolean);
+            } else {
+                const trimmed = valArrayOrString.trim();
+                vals = trimmed ? [trimmed] : [];
+            }
         }
         vals.forEach(v => {
             this.availableOptions.add(v);
@@ -6391,6 +6424,26 @@ class NotionTagSelector {
         });
         this.selectedValues = vals;
         this.renderSelectedTags();
+
+        if (this.baseKey === 'location_large') {
+            const smallKey = this.fieldType.startsWith('modal_') ? 'modal_location_small' : 'location_small';
+            if (typeof notionSelectors !== 'undefined' && notionSelectors[smallKey]) {
+                notionSelectors[smallKey].onParentLocationLargeChanged(vals[0] || '');
+            }
+        }
+    }
+
+    onParentLocationLargeChanged(parentLarge) {
+        if (parentLarge && typeof getKoreaSmallLocations === 'function') {
+            const validSmalls = getKoreaSmallLocations(parentLarge);
+            if (this.selectedValues.length > 0) {
+                const stillValid = this.selectedValues.filter(val => validSmalls.includes(val) || this.availableOptions.has(val));
+                if (stillValid.length === 0) {
+                    this.clear();
+                }
+            }
+        }
+        this.renderOptions(this.searchEl ? this.searchEl.value.trim() : '');
     }
 
     getValues() {
@@ -6404,6 +6457,13 @@ class NotionTagSelector {
     clear() {
         this.selectedValues = [];
         this.renderSelectedTags();
+
+        if (this.baseKey === 'location_large') {
+            const smallKey = this.fieldType.startsWith('modal_') ? 'modal_location_small' : 'location_small';
+            if (typeof notionSelectors !== 'undefined' && notionSelectors[smallKey]) {
+                notionSelectors[smallKey].onParentLocationLargeChanged('');
+            }
+        }
     }
 
     renderSelectedTags() {
@@ -6444,6 +6504,176 @@ class NotionTagSelector {
         if (!this.optionsEl) return;
         this.optionsEl.innerHTML = '';
 
+        // ── Case 1: location_small (Dependent on location_large) ──
+        if (this.baseKey === 'location_small') {
+            const parentKey = this.fieldType.startsWith('modal_') ? 'modal_location_large' : 'location_large';
+            const parentLarge = (typeof notionSelectors !== 'undefined' && notionSelectors[parentKey]) 
+                ? notionSelectors[parentKey].getValueString() 
+                : '';
+
+            if (parentLarge) {
+                // Sub-locations for selected parentLarge
+                let smallOpts = (typeof getKoreaSmallLocations === 'function') ? getKoreaSmallLocations(parentLarge) : [];
+                this.availableOptions.forEach(opt => {
+                    if (!smallOpts.includes(opt)) smallOpts.push(opt);
+                });
+
+                const filtered = query 
+                    ? smallOpts.filter(opt => opt.toLowerCase().includes(query.toLowerCase()))
+                    : smallOpts;
+
+                if (filtered.length === 0) {
+                    const emptyNotice = document.createElement('div');
+                    emptyNotice.className = 'notion-option-item';
+                    emptyNotice.style.pointerEvents = 'none';
+                    emptyNotice.style.fontSize = '0.82rem';
+                    emptyNotice.style.color = 'var(--text-secondary)';
+                    emptyNotice.style.padding = '8px 12px';
+                    emptyNotice.textContent = `"${parentLarge}" 하위에 일치하는 장소가 없습니다.`;
+                    this.optionsEl.appendChild(emptyNotice);
+                } else {
+                    filtered.forEach(opt => {
+                        const color = getNotionTagColor(opt);
+                        const displayLabel = getFormattedTagDisplay(opt);
+                        const isSelected = this.selectedValues.includes(opt);
+
+                        const optEl = document.createElement('div');
+                        optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
+                        optEl.innerHTML = `
+                            <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                                📍 ${displayLabel}
+                            </div>
+                            ${isSelected ? '<span class="option-check">✓</span>' : ''}
+                        `;
+                        optEl.addEventListener('click', () => {
+                            if (isSelected) {
+                                this.deselectTag(opt);
+                            } else {
+                                this.selectTag(opt);
+                            }
+                        });
+                        this.optionsEl.appendChild(optEl);
+                    });
+                }
+
+                if (this.createBtnEl) {
+                    const exactMatch = smallOpts.some(opt => opt.toLowerCase() === query.toLowerCase());
+                    if (query && !exactMatch) {
+                        this.createBtnEl.style.display = 'flex';
+                        this.createBtnEl.innerHTML = `<span>+ "${query}" 생성</span>`;
+                    } else {
+                        this.createBtnEl.style.display = 'none';
+                    }
+                }
+                return;
+            } else {
+                // parentLarge is NOT selected yet
+                if (!query) {
+                    const hintEl = document.createElement('div');
+                    hintEl.className = 'notion-option-item';
+                    hintEl.style.pointerEvents = 'none';
+                    hintEl.style.fontSize = '0.82rem';
+                    hintEl.style.color = 'var(--text-secondary)';
+                    hintEl.style.padding = '8px 12px';
+                    hintEl.textContent = '💡 대분류를 먼저 선택하면 해당 지역의 세부 장소가 나타납니다.';
+                    this.optionsEl.appendChild(hintEl);
+                } else {
+                    const matches = (typeof searchKoreaSmallLocations === 'function') ? searchKoreaSmallLocations(query).slice(0, 30) : [];
+                    if (matches.length === 0) {
+                        const noMatch = document.createElement('div');
+                        noMatch.className = 'notion-option-item';
+                        noMatch.style.pointerEvents = 'none';
+                        noMatch.style.fontSize = '0.82rem';
+                        noMatch.style.color = 'var(--text-secondary)';
+                        noMatch.style.padding = '8px 12px';
+                        noMatch.textContent = `"${query}" 검색 결과가 없습니다.`;
+                        this.optionsEl.appendChild(noMatch);
+                    } else {
+                        matches.forEach(({ large, small }) => {
+                            const color = getNotionTagColor(small);
+                            const optEl = document.createElement('div');
+                            optEl.className = 'notion-option-item';
+                            optEl.innerHTML = `
+                                <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                                    📍 ${small} <span style="font-size:0.75rem; opacity:0.75; font-weight:normal;">(${large})</span>
+                                </div>
+                            `;
+                            optEl.addEventListener('click', () => {
+                                if (typeof notionSelectors !== 'undefined' && notionSelectors[parentKey]) {
+                                    notionSelectors[parentKey].selectTag(large);
+                                }
+                                this.selectTag(small);
+                            });
+                            this.optionsEl.appendChild(optEl);
+                        });
+                    }
+                }
+
+                if (this.createBtnEl) {
+                    if (query) {
+                        this.createBtnEl.style.display = 'flex';
+                        this.createBtnEl.innerHTML = `<span>+ "${query}" 생성</span>`;
+                    } else {
+                        this.createBtnEl.style.display = 'none';
+                    }
+                }
+                return;
+            }
+        }
+
+        // ── Case 2: location_large (Show all nationwide divisions) ──
+        if (this.baseKey === 'location_large') {
+            let allOpts = (typeof getAllKoreaLargeLocations === 'function') ? getAllKoreaLargeLocations() : Array.from(this.availableOptions);
+            const PROV_ORDER = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
+            allOpts.sort((a, b) => {
+                const provA = a.split(' ')[0];
+                const provB = b.split(' ')[0];
+                const idxA = PROV_ORDER.indexOf(provA);
+                const idxB = PROV_ORDER.indexOf(provB);
+                if (idxA !== -1 && idxB !== -1 && idxA !== idxB) return idxA - idxB;
+                return a.localeCompare(b, 'ko');
+            });
+
+            const filtered = query 
+                ? allOpts.filter(opt => opt.toLowerCase().includes(query.toLowerCase()))
+                : allOpts;
+
+            filtered.forEach(opt => {
+                const color = getNotionTagColor(opt);
+                const displayLabel = getFormattedTagDisplay(opt);
+                const isSelected = this.selectedValues.includes(opt);
+
+                const optEl = document.createElement('div');
+                optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
+                optEl.innerHTML = `
+                    <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                        🏛️ ${displayLabel}
+                    </div>
+                    ${isSelected ? '<span class="option-check">✓</span>' : ''}
+                `;
+                optEl.addEventListener('click', () => {
+                    if (isSelected) {
+                        this.deselectTag(opt);
+                    } else {
+                        this.selectTag(opt);
+                    }
+                });
+                this.optionsEl.appendChild(optEl);
+            });
+
+            if (this.createBtnEl) {
+                const exactMatch = allOpts.some(opt => opt.toLowerCase() === query.toLowerCase());
+                if (query && !exactMatch) {
+                    this.createBtnEl.style.display = 'flex';
+                    this.createBtnEl.innerHTML = `<span>+ "${query}" 생성</span>`;
+                } else {
+                    this.createBtnEl.style.display = 'none';
+                }
+            }
+            return;
+        }
+
+        // ── Case 3: category & menu ──
         let allOpts = Array.from(this.availableOptions);
         if (this.baseKey === 'category') {
             allOpts.sort((a, b) => {
@@ -6484,7 +6714,6 @@ class NotionTagSelector {
                 }
             });
 
-            // Right-click contextmenu for deletion
             optEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -6494,7 +6723,6 @@ class NotionTagSelector {
             this.optionsEl.appendChild(optEl);
         });
 
-        // Show/hide Create Button
         if (this.createBtnEl) {
             const exactMatch = allOpts.some(opt => opt.toLowerCase() === query.toLowerCase());
             if (query && !exactMatch) {
@@ -6651,7 +6879,7 @@ function initAllNotionSelectors() {
         notionSelectors.category = new NotionTagSelector('category', true);
         notionSelectors.menu = new NotionTagSelector('menu', true);
         notionSelectors.location_large = new NotionTagSelector('location_large', false);
-        notionSelectors.location_small = new NotionTagSelector('location_small', true);
+        notionSelectors.location_small = new NotionTagSelector('location_small', false);
     }
 
     // Modal inline edit selectors
@@ -6659,7 +6887,7 @@ function initAllNotionSelectors() {
         notionSelectors.modal_category = new NotionTagSelector('modal_category', true);
         notionSelectors.modal_menu = new NotionTagSelector('modal_menu', true);
         notionSelectors.modal_location_large = new NotionTagSelector('modal_location_large', false);
-        notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', true);
+        notionSelectors.modal_location_small = new NotionTagSelector('modal_location_small', false);
     }
 
     window._notionSelectorsInitialized = true;
