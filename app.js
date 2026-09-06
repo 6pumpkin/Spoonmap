@@ -3787,6 +3787,80 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getUnifiedDiaryEntries() {
+        const isOwner = isOwnerUser();
+        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
+        const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
+        const deletedKey = 'spoonmap_deleted_diary';
+        const deletedIds = new Set(JSON.parse(localStorage.getItem(deletedKey) || '[]'));
+
+        if (!isOwner || typeof diaryData === 'undefined' || !Array.isArray(diaryData)) {
+            return localEntries
+                .filter(e => e && e.id && !deletedIds.has(String(e.id)))
+                .map(e => ({ ...e, source: 'local' }));
+        }
+
+        const localById = new Map();
+        const localByKey = new Map();
+        localEntries.forEach(entry => {
+            if (!entry) return;
+            if (entry.id) localById.set(String(entry.id), entry);
+            if (entry.originalCsvId) localById.set(String(entry.originalCsvId), entry);
+            if (entry.name && entry.date) {
+                const normName = entry.name.trim().toLowerCase();
+                localByKey.set(`${normName}|${entry.date}`, entry);
+                if (entry.originalDate) {
+                    localByKey.set(`${normName}|${entry.originalDate}`, entry);
+                }
+            }
+        });
+
+        const unified = [];
+
+        // Pass A: CSV visits (suppress if deleted or overridden by local edit)
+        diaryData.forEach((csvEntry, idx) => {
+            if (!csvEntry || !csvEntry.name || !csvEntry.date) return;
+            const entryId = csvEntry.id || `csv-${idx}-${csvEntry.date}`;
+            const shortId = `csv-${idx}`;
+            const normName = csvEntry.name.trim().toLowerCase();
+            const compKey = `${normName}|${csvEntry.date}`;
+
+            if (deletedIds.has(entryId) || deletedIds.has(shortId) || deletedIds.has(compKey) || (csvEntry.id && deletedIds.has(String(csvEntry.id)))) {
+                return;
+            }
+
+            const hasOverride = localById.has(entryId) || 
+                                localById.has(shortId) || 
+                                (csvEntry.id && localById.has(String(csvEntry.id))) || 
+                                localByKey.has(compKey);
+            if (hasOverride) return;
+
+            unified.push({ ...csvEntry, id: entryId, source: 'csv' });
+        });
+
+        // Pass B: Local visits (deduplicate identical restaurant + date, keeping newest)
+        const seenLocalKeys = new Set();
+        const reversedLocal = [...localEntries].reverse();
+        const uniqueLocal = [];
+        reversedLocal.forEach(entry => {
+            if (!entry || !entry.name || !entry.date) return;
+            const key = `${entry.name.trim().toLowerCase()}|${entry.date}`;
+            if (seenLocalKeys.has(key)) return;
+            seenLocalKeys.add(key);
+            uniqueLocal.unshift(entry);
+        });
+
+        uniqueLocal.forEach(entry => {
+            if (entry.id && deletedIds.has(String(entry.id))) return;
+            const key = `${entry.name.trim().toLowerCase()}|${entry.date}`;
+            if (deletedIds.has(key)) return;
+            unified.push({ ...entry, source: 'local' });
+        });
+
+        return unified;
+    }
+    window.getUnifiedDiaryEntries = getUnifiedDiaryEntries;
+
     function getUnifiedRestaurantData() {
         const isOwner = isOwnerUser();
         const mapByName = new Map();
@@ -3804,25 +3878,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Pass 2: Process base master diaryData (CSV visits) ONLY if Owner!
-        if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
-            diaryData.forEach(item => {
-                if (!item.name) return;
-                const key = item.name.trim().toLowerCase();
-                visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
-                if (item.date) {
-                    const prevDate = datesByName.get(key) || '';
-                    if (!prevDate || item.date > prevDate) {
-                        datesByName.set(key, item.date);
-                    }
-                }
-            });
-        }
-
-        // Pass 3: Process user-specific localStorage diary entries
-        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
-        const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-        localEntries.forEach(item => {
+        // Pass 2 & 3: Process unified diary entries (CSV + Local, no duplicates)
+        const unifiedEntries = getUnifiedDiaryEntries();
+        unifiedEntries.forEach(item => {
             if (!item.name) return;
             const key = item.name.trim().toLowerCase();
             visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
@@ -3846,16 +3904,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const locSmall = stdLoc.small || item.location_small;
 
             if (existing) {
-                if (item.category) existing.category = item.category;
-                if (item.rate) existing.rate = item.rate;
-                if (menuArray.length > 0) existing.menu = menuArray;
-                if (locLarge) existing.location_large = locLarge;
-                const validForExisting = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[existing.location_large]) 
-                    ? KOREA_REGIONS[existing.location_large] : [];
-                if (validForExisting.includes(locSmall) || !existing.location_small) {
-                    existing.location_small = locSmall;
+                if (item.source === 'local') {
+                    if (item.category) existing.category = item.category;
+                    if (item.rate) existing.rate = item.rate;
+                    if (menuArray.length > 0) existing.menu = menuArray;
+                    if (locLarge) existing.location_large = locLarge;
+                    const validForExisting = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[existing.location_large]) 
+                        ? KOREA_REGIONS[existing.location_large] : [];
+                    if (validForExisting.includes(locSmall) || !existing.location_small) {
+                        existing.location_small = locSmall;
+                    }
+                    if (item.map_url) existing.map_url = item.map_url;
                 }
-                if (item.map_url) existing.map_url = item.map_url;
             } else {
                 mapByName.set(key, {
                     name: item.name,
@@ -7514,42 +7574,22 @@ function autoFillRestaurantData(restaurantName) {
 // Calculate total visits and specific visit order for a restaurant
 function getAllVisitsForRestaurant(restaurantName) {
     if (!restaurantName) return [];
-    const all = [];
-    const isOwner = isOwnerUser();
-
-    // From CSV diaryData ONLY for Owner
-    if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
-        diaryData.forEach((item, idx) => {
-            if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
-                all.push({
-                    id: item.id || `csv-${idx}-${item.date}-${item.name}`,
-                    name: item.name,
-                    date: item.date,
-                    source: 'csv',
-                    data: item
-                });
-            }
-        });
-    }
-
-    // From LocalStorage for this user
-    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
-    const local = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-    local.forEach(item => {
-        if (item.name && item.name.toLowerCase() === restaurantName.toLowerCase()) {
-            all.push({
+    const norm = restaurantName.trim().toLowerCase();
+    const unified = (typeof getUnifiedDiaryEntries === 'function') ? getUnifiedDiaryEntries() : [];
+    const visits = [];
+    unified.forEach(item => {
+        if (item.name && item.name.trim().toLowerCase() === norm) {
+            visits.push({
                 id: item.id,
                 name: item.name,
                 date: item.date,
-                source: 'local',
+                source: item.source || 'local',
                 data: item
             });
         }
     });
-
-    // Sort chronologically by date
-    all.sort((a, b) => new Date(a.date) - new Date(b.date));
-    return all;
+    visits.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return visits;
 }
 
 function updateDrawerVisitBadge(restaurantName, targetDate = null, targetId = null) {
@@ -7637,33 +7677,15 @@ function updateYearMonthPickers() {
 
 function getDiaryEntriesForMonth(year, month) {
     const byDate = {};
-    const isOwner = isOwnerUser();
-
-    // From diaryData (CSV-synced, all visits) ONLY for Owner
-    if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
-        diaryData.forEach((entry, idx) => {
-            if (!entry.date) return;
-            const d = new Date(entry.date + 'T00:00:00');
-            if (d.getFullYear() === year && d.getMonth() === month) {
-                if (!byDate[entry.date]) byDate[entry.date] = [];
-                const entryId = entry.id || `csv-${idx}-${entry.date}`;
-                byDate[entry.date].push({ ...entry, id: entryId, source: 'csv' });
-            }
-        });
-    }
-
-    // From localStorage (user-added or edited)
-    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
-    const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-    localEntries.forEach(entry => {
+    const unified = (typeof getUnifiedDiaryEntries === 'function') ? getUnifiedDiaryEntries() : [];
+    unified.forEach(entry => {
         if (!entry.date) return;
         const d = new Date(entry.date + 'T00:00:00');
         if (d.getFullYear() === year && d.getMonth() === month) {
             if (!byDate[entry.date]) byDate[entry.date] = [];
-            byDate[entry.date].push({ ...entry, source: 'local' });
+            byDate[entry.date].push(entry);
         }
     });
-
     return byDate;
 }
 
@@ -7831,12 +7853,17 @@ function moveDiaryEntryToDate(entry, newDate) {
     let foundIdx = localEntries.findIndex(e => String(e.id) === String(entry.id));
 
     if (foundIdx !== -1) {
+        if (!localEntries[foundIdx].originalDate && entry.date) {
+            localEntries[foundIdx].originalDate = entry.date;
+        }
         localEntries[foundIdx].date = newDate;
     } else {
-        // Promote CSV entry to Local storage with new date
+        // Promote CSV entry to Local storage with new date and preserve link to original CSV entry
         const newLocal = {
             ...entry,
-            id: Date.now(),
+            id: entry.id || Date.now(),
+            originalCsvId: entry.id,
+            originalDate: entry.date,
             date: newDate,
             created_at: new Date().toISOString()
         };
@@ -8000,16 +8027,34 @@ function openEditDiaryDrawer(entry) {
 function deleteCurrentDiaryEntry() {
     const editId = document.getElementById('diary-editing-id')?.value;
     const name = document.getElementById('diary-input-name')?.value || '해당';
+    const date = document.getElementById('diary-input-date')?.value || '';
 
-    if (!editId) return;
+    if (!editId && !name) return;
     if (!confirm(`"${name}" 방문 기록을 정말 삭제하시겠습니까?`)) return;
 
     const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
     const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-    const updated = localEntries.filter(e => String(e.id) !== String(editId));
+    const updated = localEntries.filter(e => String(e.id) !== String(editId) && !(e.name === name && e.date === date));
     localStorage.setItem(diaryStorageKey, JSON.stringify(updated));
+
+    // Record in deleted list for CSV suppression
+    const deletedKey = 'spoonmap_deleted_diary';
+    const deletedList = JSON.parse(localStorage.getItem(deletedKey) || '[]');
+    if (editId) deletedList.push(String(editId));
+    if (name && date) deletedList.push(`${name.trim().toLowerCase()}|${date}`);
+    if (editId && String(editId).startsWith('csv-')) {
+        const parts = String(editId).split('-');
+        if (parts.length >= 3) {
+            const origDate = parts.slice(2).join('-');
+            deletedList.push(`${name.trim().toLowerCase()}|${origDate}`);
+        }
+    }
+    const uniqueDeleted = [...new Set(deletedList)];
+    localStorage.setItem(deletedKey, JSON.stringify(uniqueDeleted));
+
     if (typeof saveToCloud === 'function') {
         saveToCloud('diary', updated);
+        saveToCloud('deleted_diary', uniqueDeleted);
     }
 
     closeDiaryDrawer();
@@ -8121,9 +8166,17 @@ function saveDiaryEntry() {
 
     if (editId) {
         // Update mode
-        const idx = existing.findIndex(e => String(e.id) === String(editId));
+        const isCsvId = String(editId).startsWith('csv-');
+        const originalCsvDate = isCsvId ? String(editId).split('-').slice(2).join('-') : undefined;
+        const idx = existing.findIndex(e => 
+            String(e.id) === String(editId) || 
+            (e.originalCsvId && String(e.originalCsvId) === String(editId)) ||
+            (e.name && e.date && e.name.trim().toLowerCase() === key && (e.date === date || (originalCsvDate && e.date === originalCsvDate)))
+        );
         const updatedEntry = {
             id: isNaN(Number(editId)) ? editId : Number(editId),
+            originalCsvId: isCsvId ? editId : (idx !== -1 ? existing[idx].originalCsvId : undefined),
+            originalDate: originalCsvDate || (idx !== -1 ? existing[idx].originalDate : undefined),
             name,
             date,
             category,
@@ -8145,8 +8198,9 @@ function saveDiaryEntry() {
         showDiaryToast(`✏️ "${name}" 기록이 수정되었습니다!`);
     } else {
         // Create mode
+        const existingIdx = existing.findIndex(e => e.name && e.date && e.name.trim().toLowerCase() === key && e.date === date);
         const newEntry = {
-            id: Date.now(),
+            id: existingIdx !== -1 ? existing[existingIdx].id : Date.now(),
             name,
             date,
             category,
@@ -8156,9 +8210,14 @@ function saveDiaryEntry() {
             location_small,
             map_url,
             memo,
-            created_at: new Date().toISOString()
+            created_at: existingIdx !== -1 ? (existing[existingIdx].created_at || new Date().toISOString()) : new Date().toISOString(),
+            updated_at: new Date().toISOString()
         };
-        existing.push(newEntry);
+        if (existingIdx !== -1) {
+            existing[existingIdx] = newEntry;
+        } else {
+            existing.push(newEntry);
+        }
         localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
         showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
     }
@@ -8504,13 +8563,10 @@ function renderProfileView() {
         totalRestaurants = getUserWishlist().length;
     }
 
-    // Exactly 1,336 (CSV) + newly added entries for master!
+    // Accurately count visits via unified entries (no duplicates)
     let totalVisits = 0;
     if (isOwner) {
-        const csvCount = (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) ? diaryData.length : 1336;
-        const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
-        const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-        totalVisits = csvCount + localEntries.length;
+        totalVisits = (typeof getUnifiedDiaryEntries === 'function') ? getUnifiedDiaryEntries().length : 0;
     } else {
         const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_user_diary';
         const userEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -8668,22 +8724,9 @@ function getMasterRestaurantList() {
         });
     }
 
-    // 2. Historical diary visits (from data.js)
-    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
-        diaryData.forEach(item => {
-            if (!item.name) return;
-            const key = item.name.trim().toLowerCase();
-            visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
-            if (item.date) {
-                const prevDate = datesByName.get(key) || '';
-                if (!prevDate || item.date > prevDate) datesByName.set(key, item.date);
-            }
-        });
-    }
-
-    // 3. User local added diary entries for master if on master machine
-    const masterLocalDiary = JSON.parse(localStorage.getItem('spoonmap_diary') || '[]');
-    masterLocalDiary.forEach(item => {
+    // 2 & 3. Unified diary visits (CSV + local, deduplicated)
+    const unifiedDiary = (typeof getUnifiedDiaryEntries === 'function') ? getUnifiedDiaryEntries() : [];
+    unifiedDiary.forEach(item => {
         if (!item.name) return;
         const key = item.name.trim().toLowerCase();
         visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
@@ -8696,12 +8739,14 @@ function getMasterRestaurantList() {
             ? item.menu 
             : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
         if (existing) {
-            if (item.category) existing.category = item.category;
-            if (item.rate) existing.rate = item.rate;
-            if (menuArray.length > 0) existing.menu = menuArray;
-            if (item.location_large) existing.location_large = item.location_large;
-            if (item.location_small) existing.location_small = item.location_small;
-            if (item.map_url) existing.map_url = item.map_url;
+            if (item.source === 'local') {
+                if (item.category) existing.category = item.category;
+                if (item.rate) existing.rate = item.rate;
+                if (menuArray.length > 0) existing.menu = menuArray;
+                if (item.location_large) existing.location_large = item.location_large;
+                if (item.location_small) existing.location_small = item.location_small;
+                if (item.map_url) existing.map_url = item.map_url;
+            }
         } else {
             mapByName.set(key, {
                 name: item.name,

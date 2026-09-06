@@ -3706,8 +3706,8 @@ input[type="date"].drawer-input {
 }
 
 .diary-entry-card.is-local {
-    border-color: rgba(76,130,255,0.3);
-    background: #F4F7FF;
+    border-color: var(--border-subtle);
+    background: var(--bg-canvas);
 }
 
 .diary-entry-card:hover {
