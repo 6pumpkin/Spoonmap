@@ -1290,6 +1290,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchTabUI(targetTab) {
         if (!VALID_TABS.includes(targetTab)) targetTab = isUserLoggedIn() ? 'diary' : 'map';
+        if (currentActiveTab === targetTab) return;
 
         const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -1922,7 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initMap() {
         if (map) {
-            updateMapMarkers();
+            setTimeout(() => { if (map && typeof map.relayout === 'function') map.relayout(); }, 50);
             return;
         }
 
@@ -2639,7 +2640,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mapDetailHash = `#map/place?name=${encodeURIComponent(item.name)}`;
         if (window.location.hash !== mapDetailHash) {
-            window.location.hash = mapDetailHash;
+            history.replaceState(null, '', mapDetailHash);
         }
 
         // Prefer specifically passed placeUrl, then item.map_url, then fallback to search
@@ -2780,7 +2781,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.handleBackFromPlaceDetail = function() {
         if (window.location.hash.includes('/place')) {
-            window.location.hash = '#map';
+            history.replaceState(null, '', '#map');
         }
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');
