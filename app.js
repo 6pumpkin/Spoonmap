@@ -3429,11 +3429,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 matchedGroup.appendChild(btn);
             });
-
-            const hint = document.createElement('div');
-            hint.className = 'loc-match-hint';
-            hint.textContent = '💡 지역명을 검색하면 연관된 모든 대/소분류가 나타납니다.';
-            matchedGroup.appendChild(hint);
         } else {
             const q = locationSearchQuery;
             const matchedLarge = Object.entries(largeCounts)
@@ -6698,7 +6693,7 @@ class NotionTagSelector {
                         divider.style.fontWeight = '600';
                         divider.style.borderTop = '1px dashed var(--border-color, #eee)';
                         divider.style.marginTop = '4px';
-                        divider.textContent = '🌐 다른 지역 검색 결과 (선택 시 대분류 자동 변경)';
+                        divider.textContent = '🌐 다른 지역 검색 결과';
                         this.optionsEl.appendChild(divider);
 
                         nationwide.forEach(({ large, small }) => {
@@ -6758,7 +6753,7 @@ class NotionTagSelector {
                     hintEl.style.color = 'var(--text-secondary)';
                     hintEl.style.padding = '6px 12px 4px 12px';
                     hintEl.style.fontWeight = '600';
-                    hintEl.textContent = '💡 인기 지역 소분류 (선택 시 대분류 자동 입력, 검색 가능)';
+                    hintEl.textContent = '💡 인기 지역 소분류';
                     this.optionsEl.appendChild(hintEl);
 
                     const popular = (typeof getPopularKoreaSmallLocations === 'function') 
@@ -9173,7 +9168,7 @@ function renderPhotoPreviewGrid(containerEl, restaurantName, photos, sourceConte
     }).join('');
 
     const addBoxHtml = `
-        <div class="photo-add-box" onclick="document.getElementById('${inputId}').click()" title="사진 추가 (클릭 / 드래그 / Ctrl+V)">
+        <div class="photo-add-box" onclick="document.getElementById('${inputId}').click()" title="사진 추가">
             <span class="photo-add-icon">➕</span>
             <span>사진 추가</span>
         </div>
