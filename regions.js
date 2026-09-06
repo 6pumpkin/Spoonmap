@@ -306,6 +306,9 @@ function standardizeLocation(large, small, name = '') {
     else if (curLarge.endsWith('시') && !curLarge.endsWith('특별자치시') && !curLarge.endsWith('광역시')) {
         const trimmed = curLarge.slice(0, -1);
         if (KOREA_REGIONS[trimmed]) curLarge = trimmed;
+    } else if (curLarge.endsWith('군')) {
+        const trimmed = curLarge.slice(0, -1);
+        if (KOREA_REGIONS[trimmed]) curLarge = trimmed;
     }
 
     const validSmalls = KOREA_REGIONS[curLarge] || [];
@@ -428,6 +431,7 @@ function standardizeLocation(large, small, name = '') {
     };
 
     if (!validSmalls.includes(curSmall)) {
+        const noNum = curSmall.replace(/(?:[0-9]+|[일이삼사오육칠팔구])(동|가)$/, '$1');
         if (aliases[curSmall]) {
             curSmall = aliases[curSmall];
         } else if (validSmalls.includes(curSmall + '동')) {
@@ -436,6 +440,8 @@ function standardizeLocation(large, small, name = '') {
             curSmall = curSmall + '읍';
         } else if (validSmalls.includes(curSmall + '면')) {
             curSmall = curSmall + '면';
+        } else if (validSmalls.includes(noNum)) {
+            curSmall = noNum;
         }
     }
 

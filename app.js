@@ -163,7 +163,7 @@ function parseStandardLocation(addressName = '', roadAddressName = '') {
         const c = p1.replace(/시$/, '');
         large = `제주 ${c}`;
     } else {
-        const c = p1.replace(/시$/, '');
+        const c = p1.replace(/(시|군)$/, '');
         large = `${regionPrefix} ${c}`;
     }
 
@@ -171,12 +171,24 @@ function parseStandardLocation(addressName = '', roadAddressName = '') {
     for (let i = 2; i < parts.length; i++) {
         const part = parts[i];
         if (part.endsWith('동') || part.endsWith('읍') || part.endsWith('면') || part.endsWith('리') || part.endsWith('가')) {
-            small = part.replace(/(동|읍|면|리|가)$/, '');
+            small = part;
             break;
+        }
+    }
+    if (!small) {
+        const parenMatch = raw.match(/\(([^)]+?)(?:동|읍|면|가)\)/);
+        if (parenMatch && parenMatch[0]) {
+            small = parenMatch[0].replace(/[()]/g, '').trim();
         }
     }
     if (!small && parts.length >= 3) {
         small = parts[2].replace(/[0-9]+.*$/, '');
+    }
+
+    if (typeof standardizeLocation === 'function') {
+        const std = standardizeLocation(large, small, '');
+        large = std.large || large;
+        small = std.small || small;
     }
 
     return { large, small };
@@ -1112,7 +1124,7 @@ window.handleToggleWishlist = function(name, category, location, mapUrl, x = '',
     }
 };
 
-window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
+window.handleAddPlaceToDiary = function(name, category, location, mapUrl, locLarge = '', locSmall = '') {
     if (!isUserLoggedIn()) {
         alert('카카오 로그인 후 이용하실 수 있습니다.');
         return;
@@ -1131,7 +1143,27 @@ window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
         window.location.hash = '#diary';
     }
 
-    // 3. Open '새 방문 기록 추가' Drawer with Today's Date & Pre-fill Restaurant Name Only
+    // 3. Resolve standard category & location
+    let finalCat = category || '';
+    if (finalCat && typeof mapKakaoCategoryToStandard === 'function' && typeof DEFAULT_CATEGORIES !== 'undefined' && !DEFAULT_CATEGORIES.includes(finalCat)) {
+        finalCat = mapKakaoCategoryToStandard(finalCat, name);
+    }
+
+    let finalLarge = locLarge || '';
+    let finalSmall = locSmall || '';
+    if (!finalLarge && !finalSmall && location) {
+        const parsed = (typeof parseStandardLocation === 'function') ? parseStandardLocation(location, '') : { large: '', small: '' };
+        finalLarge = parsed.large || '';
+        finalSmall = parsed.small || '';
+    }
+
+    if (typeof standardizeLocation === 'function' && (finalLarge || finalSmall)) {
+        const std = standardizeLocation(finalLarge, finalSmall, name);
+        finalLarge = std.large || finalLarge;
+        finalSmall = std.small || finalSmall;
+    }
+
+    // 4. Open '새 방문 기록 추가' Drawer with Today's Date & Pre-fill Restaurant Info
     setTimeout(() => {
         const today = new Date();
         const year = today.getFullYear();
@@ -1139,8 +1171,16 @@ window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
         const day = String(today.getDate()).padStart(2, '0');
         const todayStr = `${year}-${month}-${day}`;
 
+        const prefill = {
+            name: name || '',
+            category: finalCat || '',
+            location_large: finalLarge || '',
+            location_small: finalSmall || '',
+            mapUrl: mapUrl || ''
+        };
+
         if (typeof openDiaryDrawer === 'function') {
-            openDiaryDrawer(todayStr); // Open in 'Add New' mode with today's date
+            openDiaryDrawer(todayStr, prefill);
         }
 
         const nameInput = document.getElementById('diary-input-name');
@@ -1152,6 +1192,18 @@ window.handleAddPlaceToDiary = function(name, category, location, mapUrl) {
         const mapInput = document.getElementById('diary-input-map');
         if (mapInput && mapUrl) {
             mapInput.value = mapUrl;
+        }
+
+        if (typeof notionSelectors !== 'undefined') {
+            if (finalCat && notionSelectors.category) {
+                notionSelectors.category.setSelected([finalCat]);
+            }
+            if (finalLarge && finalSmall && notionSelectors.location_small && typeof notionSelectors.location_small.selectSmallWithLarge === 'function') {
+                notionSelectors.location_small.selectSmallWithLarge(finalLarge, finalSmall);
+            } else {
+                if (finalLarge && notionSelectors.location_large) notionSelectors.location_large.setSelected([finalLarge]);
+                if (finalSmall && notionSelectors.location_small) notionSelectors.location_small.setSelected([finalSmall]);
+            }
         }
 
         // Focus on name or rate
@@ -2664,15 +2716,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const quickFilters = document.querySelector('.map-quick-filters');
         if (quickFilters) quickFilters.style.display = 'none';
 
+        const rawAddr = placeData?.address_name || placeData?.road_address_name || preciseAddress || item.location_large || '';
+        const roadAddr = placeData?.road_address_name || '';
+        const parsedLoc = (typeof parseStandardLocation === 'function') 
+            ? parseStandardLocation(rawAddr, roadAddr) 
+            : { large: '', small: '' };
+        
+        let determinedLarge = item.location_large || parsedLoc.large || '';
+        let determinedSmall = item.location_small || parsedLoc.small || '';
+
+        if (typeof standardizeLocation === 'function') {
+            const std = standardizeLocation(determinedLarge, determinedSmall, item.name);
+            determinedLarge = std.large || determinedLarge;
+            determinedSmall = std.small || determinedSmall;
+        }
+
+        let standardCategory = item.category || '';
+        if (!standardCategory && placeData?.category_name && typeof mapKakaoCategoryToStandard === 'function') {
+            standardCategory = mapKakaoCategoryToStandard(placeData.category_name, item.name);
+        }
+        if (!standardCategory) standardCategory = displayCategory;
+
         const isWishlisted = isPlaceInWishlist(item.name, placeData);
         const safeName = (item.name || '').replace(/'/g, "\\'");
-        const safeCategory = (displayCategory || '').replace(/'/g, "\\'");
+        const safeCategory = (standardCategory || '').replace(/'/g, "\\'");
         const safeAddress = (displayAddress || '').replace(/'/g, "\\'");
         const safeUrl = (finalUrl || '').replace(/'/g, "\\'");
+        const safeLarge = (determinedLarge || '').replace(/'/g, "\\'");
+        const safeSmall = (determinedSmall || '').replace(/'/g, "\\'");
 
         const actionsHtml = `
             <div class="place-detail-actions">
-                <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}')">내 맛집에 추가</button>
+                <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${safeLarge}', '${safeSmall}')">내 맛집에 추가</button>
                 <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
             </div>
         `;
@@ -4723,18 +4798,21 @@ function addDiaryForRestaurant(itemOrName) {
 
         if (item) {
             if (item.category && notionSelectors.category) {
-                const cats = item.category.split(',').map(c => c.trim()).filter(Boolean);
-                cats.forEach(c => notionSelectors.category.addValue(c));
+                notionSelectors.category.setValues(item.category);
             }
-            if (item.location_large && notionSelectors.location_large) {
-                notionSelectors.location_large.addValue(item.location_large);
-            }
-            if (item.location_small && notionSelectors.location_small) {
-                notionSelectors.location_small.addValue(item.location_small);
+            if (item.location_large && item.location_small && notionSelectors.location_small && typeof notionSelectors.location_small.selectSmallWithLarge === 'function') {
+                notionSelectors.location_small.selectSmallWithLarge(item.location_large, item.location_small);
+            } else {
+                if (item.location_large && notionSelectors.location_large) {
+                    notionSelectors.location_large.setSelected([item.location_large]);
+                }
+                if (item.location_small && notionSelectors.location_small) {
+                    notionSelectors.location_small.setSelected([item.location_small]);
+                }
             }
             if (item.menu && notionSelectors.menu) {
                 const menus = Array.isArray(item.menu) ? item.menu : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
-                if (menus.length > 0) notionSelectors.menu.addValue(menus[0]);
+                if (menus.length > 0) notionSelectors.menu.setValues(menus[0]);
             }
             if (item.rate) {
                 const rateInput = document.getElementById('diary-input-rate');
@@ -7808,16 +7886,28 @@ function openDiaryDrawer(dateStr, prefillData = null) {
     if (mapInput) mapInput.value = prefillData?.mapUrl || '';
     if (memoInput) memoInput.value = '';
 
-    Object.values(notionSelectors).forEach(sel => sel.clear());
+    if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
+    if (typeof notionSelectors !== 'undefined') {
+        Object.values(notionSelectors).forEach(sel => sel.clear());
+    }
     document.querySelectorAll('.rate-spoon').forEach(b => b.classList.remove('active'));
 
     // If prefillData has category or location, select in notionSelectors
-    if (prefillData) {
+    if (prefillData && typeof notionSelectors !== 'undefined') {
         if (prefillData.category && notionSelectors.category) {
             notionSelectors.category.setSelected([prefillData.category]);
         }
-        if (prefillData.location && notionSelectors.location_large) {
-            notionSelectors.location_large.setSelected([prefillData.location]);
+        const pLarge = prefillData.location_large || prefillData.location || '';
+        const pSmall = prefillData.location_small || '';
+        if (pLarge && pSmall && notionSelectors.location_small && typeof notionSelectors.location_small.selectSmallWithLarge === 'function') {
+            notionSelectors.location_small.selectSmallWithLarge(pLarge, pSmall);
+        } else {
+            if (pLarge && notionSelectors.location_large) {
+                notionSelectors.location_large.setSelected([pLarge]);
+            }
+            if (pSmall && notionSelectors.location_small) {
+                notionSelectors.location_small.setSelected([pSmall]);
+            }
         }
     }
 
