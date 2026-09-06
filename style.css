@@ -1852,6 +1852,11 @@ main {
 
     .list-header-controls {
         margin-top: 0 !important;
+        padding-left: 0.2rem !important;
+    }
+
+    .sidebar-toggle-btn {
+        display: none !important;
     }
 
     #list-protected-content {
@@ -4281,6 +4286,11 @@ input[type="date"].drawer-input {
     border-bottom: 1px solid var(--border-subtle);
     margin-top: -54px;
     margin-bottom: 1rem;
+    transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.content.expanded .list-header-controls {
+    padding-left: 50px;
 }
 
 .result-count-info {
