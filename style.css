@@ -3640,12 +3640,21 @@ input[type="date"].drawer-input {
     transition: background 0.1s;
 }
 
-.notion-option-item:hover {
+.notion-option-item:hover,
+.notion-option-item.keyboard-focused {
     background: var(--bg-canvas);
+    outline: 2px solid var(--coral-main);
+    outline-offset: -2px;
 }
 
 .notion-option-item.selected {
     background: var(--coral-light);
+}
+
+.notion-option-item.selected.keyboard-focused {
+    background: var(--coral-light);
+    outline: 2px solid var(--coral-main);
+    outline-offset: -2px;
 }
 
 .option-tag-badge {

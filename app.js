@@ -6291,12 +6291,39 @@ class NotionTagSelector {
             };
         }
 
-        // Search input filtering & Tab Navigation
+        // Search input filtering & Keyboard Navigation (상하 화살표 + 엔터 지원)
         if (this.searchEl) {
             this.searchEl.oninput = () => {
+                this.focusedOptionIndex = 0;
                 this.renderOptions(this.searchEl.value.trim());
             };
             this.searchEl.onkeydown = (e) => {
+                const getClickableItems = () => {
+                    return Array.from(this.optionsEl?.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])') || []);
+                };
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const items = getClickableItems();
+                    if (items.length > 0) {
+                        this.focusedOptionIndex = (typeof this.focusedOptionIndex === 'number')
+                            ? Math.min(items.length - 1, this.focusedOptionIndex + 1)
+                            : 0;
+                        this.updateKeyboardFocus(items);
+                    }
+                    return;
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const items = getClickableItems();
+                    if (items.length > 0) {
+                        this.focusedOptionIndex = (typeof this.focusedOptionIndex === 'number')
+                            ? Math.max(0, this.focusedOptionIndex - 1)
+                            : 0;
+                        this.updateKeyboardFocus(items);
+                    }
+                    return;
+                }
                 if (e.key === 'Tab') {
                     e.preventDefault();
                     this.closePopover();
@@ -6310,11 +6337,22 @@ class NotionTagSelector {
                 }
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const query = this.searchEl.value.trim();
-                    if (query) {
-                        this.addOptionAndSelect(query);
-                        this.searchEl.value = '';
-                        this.renderOptions('');
+                    const items = getClickableItems();
+                    if (items.length > 0 && typeof this.focusedOptionIndex === 'number' && items[this.focusedOptionIndex]) {
+                        items[this.focusedOptionIndex].click();
+                        if (this.isMultiSelect) {
+                            if (this.searchEl) this.searchEl.value = '';
+                            this.focusedOptionIndex = 0;
+                            this.renderOptions('');
+                        }
+                    } else {
+                        const query = this.searchEl.value.trim();
+                        if (query) {
+                            this.addOptionAndSelect(query);
+                            if (this.searchEl) this.searchEl.value = '';
+                            this.focusedOptionIndex = 0;
+                            this.renderOptions('');
+                        }
                     }
                 }
             };
@@ -6327,6 +6365,7 @@ class NotionTagSelector {
                 if (query) {
                     this.addOptionAndSelect(query);
                     if (this.searchEl) this.searchEl.value = '';
+                    this.focusedOptionIndex = 0;
                     this.renderOptions('');
                 }
             };
@@ -6338,6 +6377,26 @@ class NotionTagSelector {
                 if (this.fieldEl && !this.fieldEl.contains(e.target)) {
                     this.closePopover();
                 }
+            }
+        });
+    }
+
+    updateKeyboardFocus(items) {
+        if (!items) {
+            items = Array.from(this.optionsEl?.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])') || []);
+        }
+        if (items.length === 0) return;
+        if (typeof this.focusedOptionIndex !== 'number' || this.focusedOptionIndex < 0) {
+            this.focusedOptionIndex = 0;
+        } else if (this.focusedOptionIndex >= items.length) {
+            this.focusedOptionIndex = items.length - 1;
+        }
+        items.forEach((item, idx) => {
+            if (idx === this.focusedOptionIndex) {
+                item.classList.add('keyboard-focused');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('keyboard-focused');
             }
         });
     }
@@ -6361,6 +6420,7 @@ class NotionTagSelector {
     openPopover() {
         if (!this.popoverEl) return;
         this.popoverEl.classList.add('open');
+        this.focusedOptionIndex = 0;
         if (this.searchEl) {
             this.searchEl.value = '';
             this.searchEl.focus();
@@ -6412,6 +6472,18 @@ class NotionTagSelector {
         this.selectTag(optName);
     }
 
+    selectSmallWithLarge(large, small) {
+        const parentKey = this.fieldType.startsWith('modal_') ? 'modal_location_large' : 'location_large';
+        this._lockedSmall = small;
+        if (typeof notionSelectors !== 'undefined' && notionSelectors[parentKey]) {
+            notionSelectors[parentKey]._skipSmallOpen = true;
+            notionSelectors[parentKey].selectTag(large);
+            notionSelectors[parentKey]._skipSmallOpen = false;
+        }
+        this.selectTag(small);
+        this._lockedSmall = null;
+    }
+
     selectTag(val) {
         if (this.isMultiSelect) {
             if (!this.selectedValues.includes(val)) {
@@ -6428,9 +6500,11 @@ class NotionTagSelector {
             const smallKey = this.fieldType.startsWith('modal_') ? 'modal_location_small' : 'location_small';
             if (typeof notionSelectors !== 'undefined' && notionSelectors[smallKey]) {
                 notionSelectors[smallKey].onParentLocationLargeChanged(val);
-                setTimeout(() => {
-                    notionSelectors[smallKey].openPopover();
-                }, 80);
+                if (notionSelectors[smallKey].selectedValues.length === 0 && !this._skipSmallOpen) {
+                    setTimeout(() => {
+                        notionSelectors[smallKey].openPopover();
+                    }, 80);
+                }
             }
         }
     }
@@ -6479,6 +6553,11 @@ class NotionTagSelector {
     }
 
     onParentLocationLargeChanged(parentLarge) {
+        if (this._lockedSmall) {
+            this.selectedValues = [this._lockedSmall];
+            this.renderSelectedTags();
+            return;
+        }
         if (parentLarge && typeof getKoreaSmallLocations === 'function') {
             const validSmalls = getKoreaSmallLocations(parentLarge);
             if (this.selectedValues.length > 0) {
@@ -6572,7 +6651,82 @@ class NotionTagSelector {
                     ? smallOpts.filter(opt => opt.toLowerCase().includes(query.toLowerCase()))
                     : smallOpts;
 
-                if (filtered.length === 0) {
+                filtered.forEach(opt => {
+                    const color = getNotionTagColor(opt);
+                    const displayLabel = getFormattedTagDisplay(opt);
+                    const isSelected = this.selectedValues.includes(opt);
+
+                    const optEl = document.createElement('div');
+                    optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
+                    optEl.innerHTML = `
+                        <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                            📍 ${displayLabel}
+                        </div>
+                        ${isSelected ? '<span class="option-check">✓</span>' : ''}
+                    `;
+                    optEl.addEventListener('mouseenter', () => {
+                        const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                        const idx = items.indexOf(optEl);
+                        if (idx !== -1) {
+                            this.focusedOptionIndex = idx;
+                            this.updateKeyboardFocus(items);
+                        }
+                    });
+                    optEl.addEventListener('click', () => {
+                        if (isSelected) {
+                            this.deselectTag(opt);
+                        } else {
+                            this.selectTag(opt);
+                        }
+                    });
+                    this.optionsEl.appendChild(optEl);
+                });
+
+                // If searching, also display matching places from other regions
+                if (query) {
+                    const nationwide = (typeof searchKoreaSmallLocations === 'function')
+                        ? searchKoreaSmallLocations(query).filter(item => item.large !== parentLarge).slice(0, 20)
+                        : [];
+
+                    if (nationwide.length > 0) {
+                        const divider = document.createElement('div');
+                        divider.className = 'notion-option-item';
+                        divider.style.pointerEvents = 'none';
+                        divider.style.fontSize = '0.75rem';
+                        divider.style.color = 'var(--text-secondary)';
+                        divider.style.padding = '8px 12px 4px 12px';
+                        divider.style.fontWeight = '600';
+                        divider.style.borderTop = '1px dashed var(--border-color, #eee)';
+                        divider.style.marginTop = '4px';
+                        divider.textContent = '🌐 다른 지역 검색 결과 (선택 시 대분류 자동 변경)';
+                        this.optionsEl.appendChild(divider);
+
+                        nationwide.forEach(({ large, small }) => {
+                            const color = getNotionTagColor(small);
+                            const optEl = document.createElement('div');
+                            optEl.className = 'notion-option-item';
+                            optEl.innerHTML = `
+                                <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                                    📍 ${small} <span style="font-size:0.75rem; opacity:0.75; font-weight:normal;">(${large})</span>
+                                </div>
+                            `;
+                            optEl.addEventListener('mouseenter', () => {
+                                const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                                const idx = items.indexOf(optEl);
+                                if (idx !== -1) {
+                                    this.focusedOptionIndex = idx;
+                                    this.updateKeyboardFocus(items);
+                                }
+                            });
+                            optEl.addEventListener('click', () => {
+                                this.selectSmallWithLarge(large, small);
+                            });
+                            this.optionsEl.appendChild(optEl);
+                        });
+                    }
+                }
+
+                if (filtered.length === 0 && (!query || this.optionsEl.children.length === 0)) {
                     const emptyNotice = document.createElement('div');
                     emptyNotice.className = 'notion-option-item';
                     emptyNotice.style.pointerEvents = 'none';
@@ -6581,29 +6735,6 @@ class NotionTagSelector {
                     emptyNotice.style.padding = '8px 12px';
                     emptyNotice.textContent = `"${parentLarge}" 하위에 일치하는 장소가 없습니다.`;
                     this.optionsEl.appendChild(emptyNotice);
-                } else {
-                    filtered.forEach(opt => {
-                        const color = getNotionTagColor(opt);
-                        const displayLabel = getFormattedTagDisplay(opt);
-                        const isSelected = this.selectedValues.includes(opt);
-
-                        const optEl = document.createElement('div');
-                        optEl.className = `notion-option-item${isSelected ? ' selected' : ''}`;
-                        optEl.innerHTML = `
-                            <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
-                                📍 ${displayLabel}
-                            </div>
-                            ${isSelected ? '<span class="option-check">✓</span>' : ''}
-                        `;
-                        optEl.addEventListener('click', () => {
-                            if (isSelected) {
-                                this.deselectTag(opt);
-                            } else {
-                                this.selectTag(opt);
-                            }
-                        });
-                        this.optionsEl.appendChild(optEl);
-                    });
                 }
 
                 if (this.createBtnEl) {
@@ -6615,18 +6746,47 @@ class NotionTagSelector {
                         this.createBtnEl.style.display = 'none';
                     }
                 }
+                this.updateKeyboardFocus();
                 return;
             } else {
-                // parentLarge is NOT selected yet
+                // parentLarge is NOT selected yet: direct small location search / pick
                 if (!query) {
                     const hintEl = document.createElement('div');
                     hintEl.className = 'notion-option-item';
                     hintEl.style.pointerEvents = 'none';
-                    hintEl.style.fontSize = '0.82rem';
+                    hintEl.style.fontSize = '0.78rem';
                     hintEl.style.color = 'var(--text-secondary)';
-                    hintEl.style.padding = '8px 12px';
-                    hintEl.textContent = '💡 대분류를 먼저 선택하면 해당 지역의 세부 장소가 나타납니다.';
+                    hintEl.style.padding = '6px 12px 4px 12px';
+                    hintEl.style.fontWeight = '600';
+                    hintEl.textContent = '💡 인기 지역 소분류 (선택 시 대분류 자동 입력, 검색 가능)';
                     this.optionsEl.appendChild(hintEl);
+
+                    const popular = (typeof getPopularKoreaSmallLocations === 'function') 
+                        ? getPopularKoreaSmallLocations() 
+                        : [];
+
+                    popular.forEach(({ large, small }) => {
+                        const color = getNotionTagColor(small);
+                        const optEl = document.createElement('div');
+                        optEl.className = 'notion-option-item';
+                        optEl.innerHTML = `
+                            <div class="option-tag-badge" style="background-color:${color.bg}; color:${color.color}">
+                                📍 ${small} <span style="font-size:0.75rem; opacity:0.75; font-weight:normal;">(${large})</span>
+                            </div>
+                        `;
+                        optEl.addEventListener('mouseenter', () => {
+                            const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                            const idx = items.indexOf(optEl);
+                            if (idx !== -1) {
+                                this.focusedOptionIndex = idx;
+                                this.updateKeyboardFocus(items);
+                            }
+                        });
+                        optEl.addEventListener('click', () => {
+                            this.selectSmallWithLarge(large, small);
+                        });
+                        this.optionsEl.appendChild(optEl);
+                    });
                 } else {
                     const matches = (typeof searchKoreaSmallLocations === 'function') ? searchKoreaSmallLocations(query).slice(0, 30) : [];
                     if (matches.length === 0) {
@@ -6648,11 +6808,16 @@ class NotionTagSelector {
                                     📍 ${small} <span style="font-size:0.75rem; opacity:0.75; font-weight:normal;">(${large})</span>
                                 </div>
                             `;
-                            optEl.addEventListener('click', () => {
-                                if (typeof notionSelectors !== 'undefined' && notionSelectors[parentKey]) {
-                                    notionSelectors[parentKey].selectTag(large);
+                            optEl.addEventListener('mouseenter', () => {
+                                const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                                const idx = items.indexOf(optEl);
+                                if (idx !== -1) {
+                                    this.focusedOptionIndex = idx;
+                                    this.updateKeyboardFocus(items);
                                 }
-                                this.selectTag(small);
+                            });
+                            optEl.addEventListener('click', () => {
+                                this.selectSmallWithLarge(large, small);
                             });
                             this.optionsEl.appendChild(optEl);
                         });
@@ -6667,6 +6832,7 @@ class NotionTagSelector {
                         this.createBtnEl.style.display = 'none';
                     }
                 }
+                this.updateKeyboardFocus();
                 return;
             }
         }
@@ -6701,6 +6867,14 @@ class NotionTagSelector {
                     </div>
                     ${isSelected ? '<span class="option-check">✓</span>' : ''}
                 `;
+                optEl.addEventListener('mouseenter', () => {
+                    const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                    const idx = items.indexOf(optEl);
+                    if (idx !== -1) {
+                        this.focusedOptionIndex = idx;
+                        this.updateKeyboardFocus(items);
+                    }
+                });
                 optEl.addEventListener('click', () => {
                     if (isSelected) {
                         this.deselectTag(opt);
@@ -6720,6 +6894,7 @@ class NotionTagSelector {
                     this.createBtnEl.style.display = 'none';
                 }
             }
+            this.updateKeyboardFocus();
             return;
         }
 
@@ -6756,6 +6931,15 @@ class NotionTagSelector {
                 ${isSelected ? '<span class="option-check">✓</span>' : ''}
             `;
 
+            optEl.addEventListener('mouseenter', () => {
+                const items = Array.from(this.optionsEl.querySelectorAll('.notion-option-item:not([style*="pointer-events: none"])'));
+                const idx = items.indexOf(optEl);
+                if (idx !== -1) {
+                    this.focusedOptionIndex = idx;
+                    this.updateKeyboardFocus(items);
+                }
+            });
+
             optEl.addEventListener('click', () => {
                 if (isSelected) {
                     this.deselectTag(opt);
@@ -6782,6 +6966,7 @@ class NotionTagSelector {
                 this.createBtnEl.style.display = 'none';
             }
         }
+        this.updateKeyboardFocus();
     }
 }
 

@@ -262,6 +262,31 @@ function searchKoreaSmallLocations(query) {
     return results;
 }
 
+// 주요/인기 소분류 목록 반환 (소분류 단독 검색 시 초기 추천용)
+function getPopularKoreaSmallLocations() {
+    return [
+        { large: "서울 강남구", small: "역삼동" },
+        { large: "서울 강남구", small: "신사동" },
+        { large: "서울 마포구", small: "서교동" },
+        { large: "서울 마포구", small: "연남동" },
+        { large: "서울 성동구", small: "성수동" },
+        { large: "서울 송파구", small: "잠실동" },
+        { large: "서울 송파구", small: "송파동" },
+        { large: "서울 영등포구", small: "여의도동" },
+        { large: "서울 용산구", small: "이태원동" },
+        { large: "서울 용산구", small: "한강로동" },
+        { large: "서울 종로구", small: "익선동" },
+        { large: "서울 중구", small: "명동" },
+        { large: "경기 수원", small: "행궁동" },
+        { large: "경기 성남", small: "판교동" },
+        { large: "경기 구리", small: "수택동" },
+        { large: "부산 해운대구", small: "우동" },
+        { large: "부산 부산진구", small: "부전동" },
+        { large: "제주 제주", small: "연동" },
+        { large: "강원 강릉", small: "교동" }
+    ];
+}
+
 // 기존 데이터셋의 커스텀 위치 병합
 function mergeDynamicLocationsIntoKoreaRegions(items) {
     // No-op: KOREA_REGIONS remains strict and clean from administrative DB
@@ -428,5 +453,6 @@ window.KOREA_REGIONS = KOREA_REGIONS;
 window.getAllKoreaLargeLocations = getAllKoreaLargeLocations;
 window.getKoreaSmallLocations = getKoreaSmallLocations;
 window.searchKoreaSmallLocations = searchKoreaSmallLocations;
+window.getPopularKoreaSmallLocations = getPopularKoreaSmallLocations;
 window.mergeDynamicLocationsIntoKoreaRegions = mergeDynamicLocationsIntoKoreaRegions;
 window.standardizeLocation = standardizeLocation;
