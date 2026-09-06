@@ -224,7 +224,7 @@ async function loadSharedMenusFromCloud() {
 
 function migrateLocalStorageData() {
     try {
-        const migratedKey = 'spoonmap_taxonomy_v2_migrated';
+        const migratedKey = 'spoonmap_standard_dong_v4_migrated';
         if (localStorage.getItem(migratedKey)) return;
 
         const migrateItem = (item) => {
@@ -245,19 +245,10 @@ function migrateLocalStorageData() {
                 const newCat = Array.from(new Set(norm)).join(', ');
                 if (newCat !== item.category) { item.category = newCat; changed = true; }
             }
-            if (item.location_large) {
-                let lL = item.location_large;
-                if (lL === '경기 고양시') lL = '경기 고양';
-                else if (lL === '전북 군산시') lL = '전북 군산';
-                else if (lL === '제주 동문') lL = '제주 제주';
-                if (lL !== item.location_large) { item.location_large = lL; changed = true; }
-            }
-            if (item.location_small) {
-                let lS = item.location_small;
-                if (lS === '종막') lS = '종각';
-                else if (lS === '타코') lS = '신촌';
-                else if (lS === '희현') lS = '회현';
-                if (lS !== item.location_small) { item.location_small = lS; changed = true; }
+            if (typeof standardizeLocation === 'function') {
+                const std = standardizeLocation(item.location_large, item.location_small, item.name || '');
+                if (std.large && std.large !== item.location_large) { item.location_large = std.large; changed = true; }
+                if (std.small && std.small !== item.location_small) { item.location_small = std.small; changed = true; }
             }
             return changed;
         };
@@ -266,14 +257,20 @@ function migrateLocalStorageData() {
             const data = JSON.parse(localStorage.getItem(k) || '{}');
             let anyChg = false;
             Object.values(data).forEach(obj => { if (migrateItem(obj)) anyChg = true; });
-            if (anyChg) localStorage.setItem(k, JSON.stringify(data));
+            if (anyChg) {
+                localStorage.setItem(k, JSON.stringify(data));
+                if (typeof saveToCloud === 'function') saveToCloud('overrides', data);
+            }
         });
 
         ['spoonmap_diary', 'spoonmap_user_diary'].forEach(k => {
             const arr = JSON.parse(localStorage.getItem(k) || '[]');
             let anyChg = false;
             arr.forEach(obj => { if (migrateItem(obj)) anyChg = true; });
-            if (anyChg) localStorage.setItem(k, JSON.stringify(arr));
+            if (anyChg) {
+                localStorage.setItem(k, JSON.stringify(arr));
+                if (typeof saveToCloud === 'function') saveToCloud('diary', arr);
+            }
         });
 
         localStorage.setItem(migratedKey, 'true');
@@ -329,6 +326,13 @@ async function syncFromCloud() {
                     }
                 });
                 const mergedDiary = Array.from(cloudDiaryMap.values());
+                if (typeof standardizeLocation === 'function') {
+                    mergedDiary.forEach(e => {
+                        const std = standardizeLocation(e.location_large, e.location_small, e.name || '');
+                        if (std.large) e.location_large = std.large;
+                        if (std.small) e.location_small = std.small;
+                    });
+                }
                 localStorage.setItem(diaryKey, JSON.stringify(mergedDiary));
                 hasChanges = true;
             } else if (localDiary.length > 0) {
@@ -351,6 +355,15 @@ async function syncFromCloud() {
             // Sync Overrides
             if (cloudData.overrides && typeof cloudData.overrides === 'object') {
                 const mergedOverrides = { ...cloudData.overrides, ...localOverrides };
+                if (typeof standardizeLocation === 'function') {
+                    Object.entries(mergedOverrides).forEach(([k, ov]) => {
+                        if (ov) {
+                            const std = standardizeLocation(ov.location_large, ov.location_small, ov.name || k);
+                            if (std.large) ov.location_large = std.large;
+                            if (std.small) ov.location_small = std.small;
+                        }
+                    });
+                }
                 localStorage.setItem(overridesKey, JSON.stringify(mergedOverrides));
                 hasChanges = true;
             } else if (Object.keys(localOverrides).length > 0) {
@@ -3755,12 +3768,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? item.menu 
                 : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
 
+            const stdLoc = (typeof standardizeLocation === 'function')
+                ? standardizeLocation(item.location_large, item.location_small, item.name)
+                : { large: item.location_large, small: item.location_small };
+            const locLarge = stdLoc.large || item.location_large;
+            const locSmall = stdLoc.small || item.location_small;
+
             if (existing) {
                 if (item.category) existing.category = item.category;
                 if (item.rate) existing.rate = item.rate;
                 if (menuArray.length > 0) existing.menu = menuArray;
-                if (item.location_large) existing.location_large = item.location_large;
-                if (item.location_small) existing.location_small = item.location_small;
+                if (locLarge) existing.location_large = locLarge;
+                const validForExisting = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[existing.location_large]) 
+                    ? KOREA_REGIONS[existing.location_large] : [];
+                if (validForExisting.includes(locSmall) || !existing.location_small) {
+                    existing.location_small = locSmall;
+                }
                 if (item.map_url) existing.map_url = item.map_url;
             } else {
                 mapByName.set(key, {
@@ -3768,8 +3791,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     category: item.category || '기타',
                     rate: item.rate || '🥄',
                     menu: menuArray,
-                    location_large: item.location_large || '기타',
-                    location_small: item.location_small || '',
+                    location_large: locLarge || '기타',
+                    location_small: locSmall || '',
                     map_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
                     visit_count: 1
                 });
@@ -3809,12 +3832,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const menuArray = Array.isArray(ov.menu) 
                 ? ov.menu 
                 : (typeof ov.menu === 'string' ? ov.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+            
+            const stdLoc = (typeof standardizeLocation === 'function')
+                ? standardizeLocation(ov.location_large, ov.location_small, ov.name || rawKey)
+                : { large: ov.location_large, small: ov.location_small };
+            const locLarge = stdLoc.large || ov.location_large;
+            const locSmall = stdLoc.small || ov.location_small;
+
             if (existing) {
                 if (ov.category) existing.category = ov.category;
                 if (ov.rate) existing.rate = ov.rate;
                 if (menuArray.length > 0) existing.menu = menuArray;
-                if (ov.location_large) existing.location_large = ov.location_large;
-                if (ov.location_small) existing.location_small = ov.location_small;
+                if (locLarge) existing.location_large = locLarge;
+                const validForExisting = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[existing.location_large]) 
+                    ? KOREA_REGIONS[existing.location_large] : [];
+                if (validForExisting.includes(locSmall) || !existing.location_small) {
+                    existing.location_small = locSmall;
+                }
                 if (ov.map_url) existing.map_url = ov.map_url;
             }
         });
@@ -3824,8 +3858,13 @@ document.addEventListener('DOMContentLoaded', () => {
         mapByName.forEach((item, key) => {
             const count = visitsByName.get(key) || item.visit_count || (item.isWishlist ? 0 : 1);
             const latestDate = datesByName.get(key) || item.date || '';
+            const std = (typeof standardizeLocation === 'function') 
+                ? standardizeLocation(item.location_large, item.location_small, item.name)
+                : { large: item.location_large, small: item.location_small };
             unified.push({
                 ...item,
+                location_large: std.large || item.location_large,
+                location_small: std.small || item.location_small,
                 visit_count: count,
                 date: latestDate
             });
@@ -7734,8 +7773,13 @@ function saveDiaryEntry() {
     if (!rate) { alert('수저 평점을 선택해주세요.'); return; }
 
     const menu = notionSelectors.menu ? notionSelectors.menu.getValues() : [];
-    const location_large = notionSelectors.location_large ? notionSelectors.location_large.getValueString() : '';
-    const location_small = notionSelectors.location_small ? notionSelectors.location_small.getValueString() : '';
+    let location_large = notionSelectors.location_large ? notionSelectors.location_large.getValueString() : '';
+    let location_small = notionSelectors.location_small ? notionSelectors.location_small.getValueString() : '';
+    if (typeof standardizeLocation === 'function') {
+        const std = standardizeLocation(location_large, location_small, name);
+        if (std.large) location_large = std.large;
+        if (std.small) location_small = std.small;
+    }
     const map_url = document.getElementById('diary-input-map')?.value.trim() || '';
     const memo = document.getElementById('diary-input-memo')?.value.trim() || '';
 

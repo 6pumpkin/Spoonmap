@@ -145,7 +145,7 @@ const KOREA_REGIONS = {
     "서울 송파구": ["가락동", "가락시장", "거여동", "마천동", "문정동", "문정법조단지", "방이동", "방이먹자골목", "삼전동", "석촌동", "석촌호수", "송리단길", "송파동", "신천동", "오금동", "오륜동", "올림픽공원", "잠실동", "잠실새내", "장지동", "풍납동"],
     "서울 양천구": ["목동", "목동역", "신월동", "신정네거리", "신정동", "오목교"],
     "서울 영등포구": ["국회의사당", "당산", "당산동", "대림동", "도림동", "문래", "문래동", "샛강", "신길", "신길동", "양평동", "양화동", "여의도", "여의도동", "영등포동", "영등포역", "타임스퀘어"],
-    "서울 용산구": ["갈월동", "경리단길", "남영동", "녹사평", "도원동", "동빙고동", "동자동", "문배동", "보광동", "산천동", "삼각지", "서계동", "서빙고동", "숙대입구", "신계동", "신용산", "신창동", "용문동", "용산동", "용산역", "원효로", "이촌동", "이태원", "이태원동", "주교동", "청암동", "청파동", "한강로", "한남", "한남동", "해방촌", "효창공원", "효창동", "후암동"],
+    "서울 용산구": ["갈월동", "경리단길", "남영동", "녹사평", "도원동", "동빙고동", "동자동", "문배동", "보광동", "산천동", "삼각지", "서계동", "서빙고동", "숙대입구", "신계동", "신용산", "신창동", "용문동", "용산동", "용산역", "원효로", "이촌동", "이태원", "이태원동", "주교동", "청암동", "청파동", "한강로", "한강로동", "한남", "한남동", "해방촌", "효창공원", "효창동", "후암동"],
     "서울 은평구": ["갈현동", "구산동", "구파발", "녹번동", "대조동", "불광", "불광동", "수색동", "신사동", "역촌동", "연신내", "응암", "응암동", "증산동", "진관동"],
     "서울 종로구": ["가회동", "견지동", "경운동", "계동", "공평동", "관수동", "관철동", "관훈동", "광화문", "교남동", "교북동", "구기동", "궁정동", "권농동", "낙원동", "내수동", "내자동", "누상동", "누하동", "당주동", "대학로", "도렴동", "돈의동", "동숭동", "명륜동", "묘동", "무악동", "봉익동", "부암동", "북촌", "사간동", "사직동", "삼청동", "서린동", "서촌", "세종로", "소격동", "송월동", "송현동", "수송동", "숭인동", "신교동", "신문로", "신영동", "안국", "안국동", "연건동", "연지동", "예지동", "옥인동", "와룡동", "운니동", "원남동", "원서동", "이화동", "익선동", "인사동", "인의동", "장사동", "재동", "적선동", "종각", "종로1~6가", "종로3가", "중학동", "창성동", "창신동", "청운동", "청진동", "체부동", "충신동", "통의동", "통인동", "팔판동", "평동", "평창동", "필운동", "행촌동", "혜화", "혜화동", "홍지동", "홍파동", "화동", "효자동", "효제동", "훈정동"],
     "서울 중구": ["광희동", "남대문로", "남대문시장", "남산동", "남창동", "다동", "동대문", "만리동", "명동", "무교동", "무학동", "묵정동", "방산동", "봉래동", "북창동", "산림동", "삼각동", "서소문동", "서울역", "소공동", "수표동", "수하동", "순화동", "시청", "신당동", "쌍림동", "약수", "예관동", "예장동", "오장동", "을지로", "의주로", "인현동", "입정동", "장교동", "장충동", "저동", "정동", "주교동", "주자동", "중림동", "초동", "충무로", "태평로", "필동", "황학동", "회현", "회현동", "흥인동"],
@@ -267,9 +267,166 @@ function mergeDynamicLocationsIntoKoreaRegions(items) {
     // No-op: KOREA_REGIONS remains strict and clean from administrative DB
 }
 
+// 과거 비표준 소분류/대분류를 행정구역 표준 동/읍/면으로 자동 정규화하는 중앙 변환기
+function standardizeLocation(large, small, name = '') {
+    if (!large && !small) return { large: '', small: '' };
+    let curLarge = (large || '').trim();
+    let curSmall = (small || '').trim();
+    const n = (name || '').trim();
+
+    // 대분류 접미사 '시' 정규화 (예: '경기 고양시' -> '경기 고양')
+    if (curLarge === '경기 고양시') curLarge = '경기 고양';
+    else if (curLarge === '전북 군산시') curLarge = '전북 군산';
+    else if (curLarge === '제주 동문') curLarge = '제주 제주';
+    else if (curLarge.endsWith('시') && !curLarge.endsWith('특별자치시') && !curLarge.endsWith('광역시')) {
+        const trimmed = curLarge.slice(0, -1);
+        if (KOREA_REGIONS[trimmed]) curLarge = trimmed;
+    }
+
+    const validSmalls = KOREA_REGIONS[curLarge] || [];
+
+    // 이미 유효한 표준 행정동이면 그대로 반환
+    if (curSmall && validSmalls.includes(curSmall)) {
+        return { large: curLarge, small: curSmall };
+    }
+
+    // 1. 특정 식당 정밀 매핑 (상호명 기반)
+    if (n.includes('KFC 잠실롯데월드') || n.includes('마루가메우동 잠실롯데월드')) {
+        curSmall = '잠실동';
+    } else if (n.includes('호레타')) {
+        curSmall = '수택동';
+    } else if (n.includes('진저베어')) {
+        curSmall = '송파동';
+    } else if (n.includes('수빈식당')) {
+        curSmall = '석촌동';
+    } else if (n.includes('버무리 강서등촌') || (n.includes('버무리') && n.includes('등촌'))) {
+        curSmall = '등촌동';
+    } else if (n.includes('망향비빔국수 강서') || n.includes('망향비빔국수')) {
+        curSmall = '염창동';
+    } else if (n.includes('명품원조한방왕족발') || n.includes('르프리크 용산') || n.includes('뚜스뚜스')) {
+        curSmall = '한강로동';
+    } else if (n.includes('용호야채곱창')) {
+        curSmall = '효창동';
+    } else if (n.includes('콘서트')) {
+        curSmall = '송파동';
+    } else if (n.includes('두찜') && n.includes('신수')) {
+        curSmall = '신수동';
+    } else if (n.includes('동네파스타') || n.includes('막창굽는연탄할매')) {
+        curSmall = '도화동';
+    } else if (n.includes('솔솥') && n.includes('경의선숲길')) {
+        curSmall = '염리동';
+    } else if (n.includes('뽕나무한그루')) {
+        curSmall = '월명동';
+    } else if (n.includes('클로리스티룸')) {
+        curSmall = '삼성동';
+    } else if (n.includes('생활맥주') && n.includes('동교')) {
+        curSmall = '동교동';
+    }
+
+    // 2. 슬래시(/) 복합 지역 처리 (예: "등촌/염창", "신촌/대흥")
+    if (!validSmalls.includes(curSmall) && curSmall.includes('/')) {
+        if (curSmall.includes('등촌') || curSmall.includes('염창')) {
+            if (curLarge === '서울 양천구') curSmall = '목동';
+            else if (n.includes('등촌')) curSmall = '등촌동';
+            else curSmall = '염창동';
+        } else if (curSmall.includes('대흥') || curSmall.includes('신촌')) {
+            if (curLarge === '서울 서대문구') curSmall = '창천동';
+            else if (n.includes('신수')) curSmall = '신수동';
+            else curSmall = '대흥동';
+        }
+    }
+
+    // 3. 구형 레거시 태그 -> 표준 행정동 사전
+    const aliases = {
+        '송파': '송파동',
+        '석촌': '석촌동',
+        '잠실': '잠실동',
+        '구리': '수택동',
+        '용산': '한강로동',
+        '효창공원': '효창동',
+        '대흥': (curLarge === '서울 마포구' && n.includes('신수')) ? '신수동' : '대흥동',
+        '신촌': (curLarge === '서울 서대문구') ? '창천동' : '노고산동',
+        '홍대': (n.includes('동교') || n.includes('경호네') || n.includes('투다리') || n.includes('생활맥주')) ? '동교동' : '서교동',
+        '연남': '연남동',
+        '상수': '상수동',
+        '합정': '합정동',
+        '망원': '망원동',
+        '공덕': '공덕동',
+        '마포': '도화동',
+        '마곡': '마곡동',
+        '발산': '가양동',
+        '우장산': '내발산동',
+        '방화': '방화동',
+        '화곡': '화곡동',
+        '이대': '대현동',
+        '영등포': '영등포동',
+        '흑석': '흑석동',
+        '삼성': '삼성동',
+        '삼성, 코엑스': '삼성동',
+        '신사': '신사동',
+        '논현': '논현동',
+        '청담': '청담동',
+        '강남': '역삼동',
+        '선릉': '역삼동',
+        '매봉': '도곡동',
+        '이수': '사당동',
+        '사당': '사당동',
+        '노량진': '노량진동',
+        '동묘앞': '창신동',
+        '인사': '인사동',
+        '부암': '부암동',
+        '북촌, 안국': '안국동',
+        '종로': '종각',
+        '망우': '망우동',
+        '상봉': '상봉동',
+        '공릉': '공릉동',
+        '군자': '군자동',
+        '자양': '자양동',
+        '구로, 신도림': '신도림동',
+        '아현': (curLarge === '서울 서대문구') ? '북아현동' : '아현동',
+        '파주': '탄현면',
+        '가평': '가평읍',
+        '양촌': '양촌읍',
+        '광명': '광명동',
+        '홍천': '홍천읍',
+        '태안': '태안읍 동문리',
+        '군산': '월명동',
+        '여수': '중앙동',
+        '경주': '황남동',
+        '중문': '중문동',
+        '서귀포': '서귀동',
+        '동문': '일도동',
+        '제주공항': '용담동',
+        '두류': '두류동',
+        '부평': '부평동',
+        '강화도': '강화읍'
+    };
+
+    if (!validSmalls.includes(curSmall)) {
+        if (aliases[curSmall]) {
+            curSmall = aliases[curSmall];
+        } else if (validSmalls.includes(curSmall + '동')) {
+            curSmall = curSmall + '동';
+        } else if (validSmalls.includes(curSmall + '읍')) {
+            curSmall = curSmall + '읍';
+        } else if (validSmalls.includes(curSmall + '면')) {
+            curSmall = curSmall + '면';
+        }
+    }
+
+    // 4. 최종 정밀 검증 및 폴백
+    if (!validSmalls.includes(curSmall) && validSmalls.length > 0) {
+        const found = validSmalls.find(v => v.includes(curSmall) || curSmall.includes(v));
+        if (found) curSmall = found;
+    }
+
+    return { large: curLarge, small: curSmall };
+}
+
 // window 전역 등록
 window.KOREA_REGIONS = KOREA_REGIONS;
 window.getAllKoreaLargeLocations = getAllKoreaLargeLocations;
 window.getKoreaSmallLocations = getKoreaSmallLocations;
 window.searchKoreaSmallLocations = searchKoreaSmallLocations;
 window.mergeDynamicLocationsIntoKoreaRegions = mergeDynamicLocationsIntoKoreaRegions;
+window.standardizeLocation = standardizeLocation;
