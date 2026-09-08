@@ -851,6 +851,27 @@ function extractKakaoPlaceId(url) {
 }
 window.extractKakaoPlaceId = extractKakaoPlaceId;
 
+// ─── Kakao Directions (길찾기) URL Helper ───
+function getKakaoDirectionsUrl(item, placeData) {
+    if (!item && !placeData) return 'https://map.kakao.com';
+    const name = item?.name || placeData?.place_name || '';
+    const mapUrl = item?.map_url || placeData?.place_url || '';
+    const placeId = (placeData && placeData.id) ? String(placeData.id).trim() : (typeof extractKakaoPlaceId === 'function' ? extractKakaoPlaceId(mapUrl) : null);
+
+    if (placeId) {
+        return `https://map.kakao.com/link/to/${placeId}`;
+    }
+
+    const lat = placeData?.y || item?.y || item?.lat;
+    const lng = placeData?.x || item?.x || item?.lng;
+    if (lat && lng) {
+        return `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
+    }
+
+    return `https://map.kakao.com/?target=car&rt2=${encodeURIComponent(name)}`;
+}
+window.getKakaoDirectionsUrl = getKakaoDirectionsUrl;
+
 function isSavedRestaurantMatch(r, place) {
     if (!r || !place) return false;
 
@@ -2752,6 +2773,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        const routeUrl = getKakaoDirectionsUrl(item, placeData);
+
         detailPanel.innerHTML = `
             <div class="detail-body">
                 <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">
@@ -2776,6 +2799,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </a>
                     <a href="${finalUrl}" target="_blank" class="detail-kakao-btn">
                         카카오맵
+                    </a>
+                    <a href="${routeUrl}" target="_blank" class="detail-route-btn">
+                        길찾기
                     </a>
                 </div>
 
@@ -4429,6 +4455,7 @@ function openRestaurantDetailModal(item) {
     const menuBox = document.getElementById('list-detail-menus');
     const naverBtn = document.getElementById('list-detail-naver-btn');
     const kakaoBtn = document.getElementById('list-detail-kakao-btn');
+    const routeBtn = document.getElementById('list-detail-route-btn');
     const historyCountEl = document.getElementById('list-detail-history-count');
     const historyListEl = document.getElementById('list-detail-history-list');
 
@@ -4520,6 +4547,7 @@ function openRestaurantDetailModal(item) {
     const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
     if (naverBtn) naverBtn.href = `https://map.naver.com/p/search/${naverQuery}`;
     if (kakaoBtn) kakaoBtn.href = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+    if (routeBtn) routeBtn.href = getKakaoDirectionsUrl(item);
 
     // 7. Visit History Timeline with rich memo & clickable date
     if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회 방문`;
