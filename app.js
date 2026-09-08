@@ -2434,18 +2434,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             resultItem.addEventListener('click', () => {
-                map.panTo(coords);
-                if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
-                const overlayClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
-                window.currentMapOverlay = new kakao.maps.CustomOverlay({
-                    position: coords,
-                    content: `<div class="marker-label ${overlayClass}">${place.place_name || item.name}</div>`,
-                    yAnchor: 2.1,
-                    zIndex: 99999
-                });
-                window.currentMapOverlay.setMap(map);
-                const detailsUrl = place.place_url || item.map_url;
-                showPlaceDetail(item, place.road_address_name || place.address_name, isSaved, detailsUrl, place);
+                openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords);
             });
 
             resultsList.appendChild(resultItem);
@@ -2489,33 +2478,204 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Custom Marker SVG Pin Icons (Identical design & size: 29x42, colors differ)
-    const BLUE_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%233B82F6" stroke="%231D4ED8" stroke-width="1.6" opacity="0.9" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%233B82F6"/></svg>`;
+    // =========================================================================
+    // Unified Modern Marker System (Compact 26x34px Teardrop Pin + Floating Capsule)
+    // =========================================================================
+    function getCategoryEmoji(catString, placeName = '') {
+        const raw = (catString || '').trim();
+        // 1. Extract emoji directly if already starting with one (e.g. '🍚한식', '🥩고기', '🍣일식')
+        const emojiMatch = raw.replace(/[가-힣a-zA-Z0-9\s>\-–—(),./]/g, '').trim();
+        if (emojiMatch) return emojiMatch;
 
-    const RED_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23EF4444" stroke="%23B91C1C" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23EF4444"/></svg>`;
+        // 2. Map through standard category mapper if available
+        if (typeof mapKakaoCategoryToStandard === 'function') {
+            const std = mapKakaoCategoryToStandard(raw, placeName);
+            const stdEmoji = std.replace(/[가-힣a-zA-Z0-9\s>\-–—(),./]/g, '').trim();
+            if (stdEmoji) return stdEmoji;
+        }
 
-    const YELLOW_MARKER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="29" height="42" viewBox="0 0 29 42"><path fill="%23F59E0B" stroke="%23D97706" stroke-width="1.6" d="M14.5 0C6.492 0 0 6.492 0 14.5c0 11.5 14.5 27.5 14.5 27.5s14.5-16 14.5-27.5C29 6.492 22.508 0 14.5 0z"/><circle cx="14.5" cy="14.5" r="5.5" fill="%23FFFFFF"/><circle cx="14.5" cy="14.5" r="3" fill="%23F59E0B"/></svg>`;
+        // 3. Fallback to existing getEmoji helper
+        if (typeof getEmoji === 'function') {
+            return getEmoji(raw);
+        }
+
+        return '🥄';
+    }
+
+    const markerSvgCache = new Map();
+
+    function getModernMarkerSvg(type, category = '', isFlame = false) {
+        const cacheKey = `${type}_${category}_${isFlame}`;
+        if (markerSvgCache.has(cacheKey)) {
+            return markerSvgCache.get(cacheKey);
+        }
+
+        let bgColor = '#FF5A5F';
+        let strokeColor = '#E03244';
+        let iconContent = '';
+
+        if (type === 'saved') {
+            bgColor = '#FF5A5F';
+            strokeColor = '#E03244';
+            const emoji = getCategoryEmoji(category);
+            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+        } else if (type === 'wishlist') {
+            bgColor = '#F59E0B';
+            strokeColor = '#D97706';
+            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
+        } else {
+            // General Kakao search place
+            bgColor = '#64748B';
+            strokeColor = '#475569';
+            iconContent = `<circle cx="13" cy="12" r="2.8" fill="#64748B"/>`;
+        }
+
+        const flameBadge = (isFlame && type === 'saved') ? `
+            <circle cx="19.5" cy="5" r="4.2" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
+            <text x="19.5" y="6.2" font-size="5.2" text-anchor="middle" dominant-baseline="central">🔥</text>
+        ` : '';
+
+        const gradId = `grad_${type}${isFlame ? '_f' : ''}`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
+            <defs>
+                <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="${bgColor}"/>
+                    <stop offset="100%" stop-color="${strokeColor}"/>
+                </linearGradient>
+            </defs>
+            <path d="M13 0.8 C6.3 0.8 0.8 6.3 0.8 13 C0.8 22.5 13 33.2 13 33.2 S25.2 22.5 25.2 13 C25.2 6.3 19.7 0.8 13 0.8 Z" 
+                  fill="url(#${gradId})" stroke="${strokeColor}" stroke-width="1.1"/>
+            <circle cx="13" cy="12" r="7" fill="#FFFFFF"/>
+            ${iconContent}
+            ${flameBadge}
+        </svg>`;
+
+        const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        markerSvgCache.set(cacheKey, dataUri);
+        return dataUri;
+    }
+
+    // Backward-compatible alias constants
+    const RED_MARKER_SVG = getModernMarkerSvg('saved', '한식', false);
+    const YELLOW_MARKER_SVG = getModernMarkerSvg('wishlist');
+    const BLUE_MARKER_SVG = getModernMarkerSvg('search');
+
+    function createMarkerCapsuleHtml(item, place, isSaved, isWishlist) {
+        const name = place?.place_name || item?.name || '';
+        const visits = isSaved ? (item?.visit_count || 1) : 0;
+
+        let icon = '🥢';
+        let iconCircleClass = '';
+        let metaHtml = '';
+
+        if (isSaved) {
+            icon = getCategoryEmoji(item?.category || place?.category_name, name);
+            iconCircleClass = 'saved';
+
+            let rateHtml = '';
+            if (item?.rate) {
+                const spoonCount = (item.rate.match(/🥄/g) || []).length;
+                if (spoonCount > 0) {
+                    rateHtml = `<span class="capsule-badge-rate">🥄 ${spoonCount}</span>`;
+                }
+            }
+
+            let visitHtml = '';
+            if (visits >= 2) {
+                visitHtml = `<span class="capsule-badge-repeat">🔥 또간집 (${visits}회)</span>`;
+            } else {
+                visitHtml = `<span class="capsule-badge-visit">📍 1회 방문</span>`;
+            }
+
+            metaHtml = `${rateHtml} ${visitHtml}`.trim();
+        } else if (isWishlist) {
+            icon = '⭐';
+            iconCircleClass = 'wishlist';
+            metaHtml = `<span class="capsule-badge-wish">⭐ 가고싶은 곳</span>`;
+        } else {
+            icon = getCategoryEmoji(place?.category_name, name);
+            if (icon === '🥄') icon = '📍';
+            iconCircleClass = 'search';
+            const catName = place?.category_name ? place.category_name.split(' > ').pop() : (item?.category || '음식점');
+            metaHtml = `<span class="capsule-badge-cat">${catName}</span>`;
+        }
+
+        const cardClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
+
+        return `
+            <div class="marker-capsule-wrap" onclick="window.reopenCurrentPlaceDetail && window.reopenCurrentPlaceDetail();">
+                <div class="marker-capsule-card ${cardClass}">
+                    <div class="capsule-icon-circle ${iconCircleClass}">${icon}</div>
+                    <div class="capsule-content">
+                        <div class="capsule-title-row">
+                            <span class="capsule-name">${name}</span>
+                        </div>
+                        ${metaHtml ? `<div class="capsule-meta-row">${metaHtml}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.reopenCurrentPlaceDetail = function() {
+        if (window.currentSelectedPlaceData) {
+            const d = window.currentSelectedPlaceData;
+            showPlaceDetail(d.item, d.address, d.isSaved, d.detailsUrl, d.place);
+        }
+    };
+
+    function openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords) {
+        map.panTo(coords);
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+
+        const detailsUrl = place?.place_url || item?.map_url || '';
+        window.currentSelectedPlaceData = {
+            item,
+            address: place?.road_address_name || place?.address_name || item?.location_large || '',
+            isSaved,
+            detailsUrl,
+            place
+        };
+
+        const overlayContent = createMarkerCapsuleHtml(item, place, isSaved, isWishlist);
+        window.currentMapOverlay = new kakao.maps.CustomOverlay({
+            position: coords,
+            content: overlayContent,
+            yAnchor: 1.0,
+            zIndex: 99999
+        });
+        window.currentMapOverlay.setMap(map);
+
+        showPlaceDetail(item, place?.road_address_name || place?.address_name, isSaved, detailsUrl, place);
+    }
 
     function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false) {
         const isSaved = isOwnerUser() ? isSavedParam : false;
         const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name, place);
         const coords = new kakao.maps.LatLng(place.y, place.x);
+        const visits = isSaved ? (item?.visit_count || 1) : 0;
+        const isFlame = isSaved && visits >= 2;
 
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
+            let svgUri = '';
             if (isSaved) {
-                markerImg = new kakao.maps.MarkerImage(RED_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
+                svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame);
             } else if (isWishlist) {
-                markerImg = new kakao.maps.MarkerImage(YELLOW_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
+                svgUri = getModernMarkerSvg('wishlist');
             } else {
-                markerImg = new kakao.maps.MarkerImage(BLUE_MARKER_SVG, new kakao.maps.Size(29, 42), { offset: new kakao.maps.Point(14.5, 42) });
+                svgUri = getModernMarkerSvg('search');
             }
+            markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(26, 34), { offset: new kakao.maps.Point(13, 34) });
         }
 
         const markerOptions = {
             map: map,
             position: coords,
-            zIndex: isSaved ? 100 : (isWishlist ? 90 : 1)
+            zIndex: isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1))
         };
         if (markerImg) {
             markerOptions.image = markerImg;
@@ -2531,18 +2691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         kakao.maps.event.addListener(marker, 'click', () => {
-            map.panTo(coords);
-            if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
-            const overlayClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
-            window.currentMapOverlay = new kakao.maps.CustomOverlay({
-                position: coords,
-                content: `<div class="marker-label ${overlayClass}">${place.place_name || item.name}</div>`,
-                yAnchor: 2.1,
-                zIndex: 99999
-            });
-            window.currentMapOverlay.setMap(map);
-            const detailsUrl = place.place_url || item.map_url;
-            showPlaceDetail(item, place.road_address_name || place.address_name, isSaved, detailsUrl, place);
+            openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords);
         });
     }
 
