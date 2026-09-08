@@ -3793,10 +3793,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
         const deletedKey = 'spoonmap_deleted_diary';
         const deletedIds = new Set(JSON.parse(localStorage.getItem(deletedKey) || '[]'));
+        const deletedRestKey = 'spoonmap_deleted_restaurants';
+        const deletedRestaurants = new Set(JSON.parse(localStorage.getItem(deletedRestKey) || '[]'));
 
         if (!isOwner || typeof diaryData === 'undefined' || !Array.isArray(diaryData)) {
             return localEntries
-                .filter(e => e && e.id && !deletedIds.has(String(e.id)))
+                .filter(e => e && e.id && !deletedIds.has(String(e.id)) && (!e.name || !deletedRestaurants.has(e.name.trim().toLowerCase())))
                 .map(e => ({ ...e, source: 'local' }));
         }
 
@@ -3825,6 +3827,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const normName = csvEntry.name.trim().toLowerCase();
             const compKey = `${normName}|${csvEntry.date}`;
 
+            if (deletedRestaurants.has(normName)) return;
+
             if (deletedIds.has(entryId) || deletedIds.has(shortId) || deletedIds.has(compKey) || (csvEntry.id && deletedIds.has(String(csvEntry.id)))) {
                 return;
             }
@@ -3852,7 +3856,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uniqueLocal.forEach(entry => {
             if (entry.id && deletedIds.has(String(entry.id))) return;
-            const key = entry.date ? `${entry.name.trim().toLowerCase()}|${entry.date}` : `${entry.name.trim().toLowerCase()}|nodate`;
+            const normName = entry.name ? entry.name.trim().toLowerCase() : '';
+            if (deletedRestaurants.has(normName)) return;
+            const key = entry.date ? `${normName}|${entry.date}` : `${normName}|nodate`;
             if (deletedIds.has(key)) return;
             unified.push({ ...entry, source: 'local' });
         });
@@ -3866,11 +3872,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapByName = new Map();
         const visitsByName = new Map();
         const datesByName = new Map();
+        const deletedRestKey = 'spoonmap_deleted_restaurants';
+        const deletedRestaurants = new Set(JSON.parse(localStorage.getItem(deletedRestKey) || '[]'));
 
         // Pass 1: Add base master restaurantData ONLY if Owner!
         if (isOwner && typeof restaurantData !== 'undefined' && Array.isArray(restaurantData)) {
             restaurantData.forEach(r => {
                 const key = r.name.trim().toLowerCase();
+                if (deletedRestaurants.has(key)) return;
                 mapByName.set(key, { ...r, menu: [...(r.menu || [])] });
                 if (r.date) {
                     datesByName.set(key, r.date);
@@ -3883,6 +3892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         unifiedEntries.forEach(item => {
             if (!item.name) return;
             const key = item.name.trim().toLowerCase();
+            if (deletedRestaurants.has(key)) return;
             visitsByName.set(key, (visitsByName.get(key) || 0) + 1);
             if (item.date) {
                 const prevDate = datesByName.get(key) || '';
@@ -3957,6 +3967,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const restaurantOverrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
         Object.keys(restaurantOverrides).forEach(rawKey => {
             const key = rawKey.trim().toLowerCase();
+            if (deletedRestaurants.has(key)) return;
             const ov = restaurantOverrides[rawKey];
             if (!ov) return;
             const existing = mapByName.get(key);
@@ -3999,6 +4010,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pass 4: Finalize merged list with accurate visit_count and latest date
         const unified = [];
         mapByName.forEach((item, key) => {
+            if (deletedRestaurants.has(key)) return;
             const count = visitsByName.get(key) || item.visit_count || (item.isWishlist ? 0 : 1);
             const latestDate = datesByName.get(key) || item.date || '';
             const std = (typeof standardizeLocation === 'function') 
@@ -4732,6 +4744,81 @@ function saveRestaurantMasterFromModal() {
 
     showDiaryToast(`✅ "${name}" 정보가 저장되었습니다!`);
 }
+
+function deleteRestaurantMasterFromModal() {
+    if (!currentDetailModalItem || !currentDetailModalItem.name) return;
+    const name = currentDetailModalItem.name;
+    const key = name.trim().toLowerCase();
+
+    if (!confirm(`"${name}" 식당을 정말 삭제하시겠습니까?\n등록된 방문 기록과 사진도 함께 삭제됩니다.`)) return;
+
+    const isOwner = isOwnerUser();
+    const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
+    const overridesKey = isOwner ? 'spoonmap_restaurant_overrides' : (typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides');
+
+    // 1. Remove from diary
+    const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
+    const updatedDiary = existing.filter(e => !e.name || e.name.trim().toLowerCase() !== key);
+    localStorage.setItem(diaryStorageKey, JSON.stringify(updatedDiary));
+
+    // 2. Remove from overrides
+    const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
+    delete overrides[key];
+    Object.keys(overrides).forEach(k => {
+        if (k.trim().toLowerCase() === key) delete overrides[k];
+    });
+    localStorage.setItem(overridesKey, JSON.stringify(overrides));
+
+    // 3. Mark in deleted restaurants
+    const deletedRestKey = 'spoonmap_deleted_restaurants';
+    const deletedRestaurants = JSON.parse(localStorage.getItem(deletedRestKey) || '[]');
+    deletedRestaurants.push(key);
+    const uniqueDeletedRest = [...new Set(deletedRestaurants)];
+    localStorage.setItem(deletedRestKey, JSON.stringify(uniqueDeletedRest));
+
+    // 4. Mark all visits in deleted diary (for CSV suppression)
+    const deletedDiaryKey = 'spoonmap_deleted_diary';
+    const deletedDiary = JSON.parse(localStorage.getItem(deletedDiaryKey) || '[]');
+    deletedDiary.push(`${key}|*`);
+    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+        diaryData.forEach((entry, idx) => {
+            if (entry.name && entry.name.trim().toLowerCase() === key) {
+                deletedDiary.push(entry.id || `csv-${idx}-${entry.date}`);
+                deletedDiary.push(`csv-${idx}`);
+                if (entry.date) deletedDiary.push(`${key}|${entry.date}`);
+            }
+        });
+    }
+    const uniqueDeletedDiary = [...new Set(deletedDiary)];
+    localStorage.setItem(deletedDiaryKey, JSON.stringify(uniqueDeletedDiary));
+
+    // 5. Remove from wishlist
+    if (typeof removeUserWishlist === 'function') {
+        removeUserWishlist(name);
+    }
+
+    // 6. Delete photos
+    if (typeof saveRestaurantPhotosToStore === 'function') {
+        saveRestaurantPhotosToStore(name, []);
+    }
+
+    // 7. Cloud sync
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('diary', updatedDiary);
+        saveToCloud('overrides', overrides);
+        saveToCloud('deleted_restaurants', uniqueDeletedRest);
+        saveToCloud('deleted_diary', uniqueDeletedDiary);
+    }
+
+    // 8. Close modal & re-render
+    closeRestaurantDetailModal();
+    if (window.renderApp) window.renderApp();
+    if (window.populateRecommendCategories) window.populateRecommendCategories();
+    if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
+    if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
+    showDiaryToast(`🗑️ "${name}" 식당이 삭제되었습니다.`);
+}
+window.deleteRestaurantMasterFromModal = deleteRestaurantMasterFromModal;
 
 // ─── Navigate to DIARY Tab at Specific Date ────
 function navigateToDiaryDate(dateStr) {
@@ -8265,6 +8352,26 @@ function saveDiaryEntry() {
         }
     });
     localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
+
+    // Un-delete if this restaurant was previously marked deleted
+    const deletedRestKey = 'spoonmap_deleted_restaurants';
+    const deletedRestaurants = JSON.parse(localStorage.getItem(deletedRestKey) || '[]');
+    if (deletedRestaurants.includes(key)) {
+        const filtered = deletedRestaurants.filter(k => k !== key);
+        localStorage.setItem(deletedRestKey, JSON.stringify(filtered));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('deleted_restaurants', filtered);
+        }
+    }
+    const deletedDiaryKey = 'spoonmap_deleted_diary';
+    const deletedDiary = JSON.parse(localStorage.getItem(deletedDiaryKey) || '[]');
+    if (deletedDiary.includes(`${key}|*`)) {
+        const filteredDiary = deletedDiary.filter(d => d !== `${key}|*`);
+        localStorage.setItem(deletedDiaryKey, JSON.stringify(filteredDiary));
+        if (typeof saveToCloud === 'function') {
+            saveToCloud('deleted_diary', filteredDiary);
+        }
+    }
 
     // Save to Cloud Firestore
     if (typeof saveToCloud === 'function') {
