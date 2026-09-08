@@ -1447,6 +1447,11 @@ main {
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
 .map-quick-filter-btn:hover {
@@ -1874,8 +1879,13 @@ main {
     display: flex;
     gap: 6px;
     overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.map-friends-chips::-webkit-scrollbar {
+    display: none;
 }
 
 .friend-chip {

@@ -3549,11 +3549,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!modal) return;
         renderFriendModalList();
         modal.style.display = 'flex';
+        void modal.offsetHeight; // trigger reflow
+        modal.classList.add('open');
     };
 
     window.closeFriendManageModal = function() {
         const modal = document.getElementById('friend-manage-modal');
-        if (modal) modal.style.display = 'none';
+        if (!modal) return;
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 250);
     };
 
     function renderFriendModalList() {
@@ -3694,6 +3702,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
+        });
+    }
+
+    const btnOpenFriendManager = document.getElementById('btn-open-friend-manager');
+    if (btnOpenFriendManager) {
+        btnOpenFriendManager.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.openFriendManageModal();
         });
     }
 
