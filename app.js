@@ -2985,6 +2985,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="margin-left:auto; font-size:12px; font-weight:700; color:#FF5A5F;">${item.friendInfo.rate || '🥄 5'}</span>
                 </div>
                 ${item.friendInfo.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${item.friendInfo.comment}"</p>` : ''}
+                ${item.friendInfo.youtubeUrl ? `
+                    <div style="margin-top:8px;">
+                        <a href="${item.friendInfo.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#EF4444; text-decoration:none; background:#FEF2F2; padding:4px 10px; border-radius:6px; border:1px solid #FCA5A5;">
+                            <span>▶</span> 또간집 영상 보러가기 ${item.friendInfo.youtubeTitle ? `<span style="font-size:10px; font-weight:normal; color:#6B7280; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">- ${item.friendInfo.youtubeTitle}</span>` : ''}
+                        </a>
+                    </div>
+                ` : ''}
+                ${item.friendInfo.menu && item.friendInfo.menu.length > 0 ? `
+                    <div style="margin-top:8px; font-size:11px; color:#4B5563; line-height:1.4;">
+                        <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${item.friendInfo.menu.slice(0, 4).join(', ')}
+                    </div>
+                ` : ''}
                 ${!isSaved ? `
                     <div style="margin-top:10px; display:flex; justify-content:flex-end;">
                         <button type="button" class="btn-wishlist-toggle" style="padding:5px 12px; font-size:11px; background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; border-radius:6px; font-weight:700; cursor:pointer;" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">⭐ 내 찜 식당에 추가</button>
@@ -3392,9 +3404,106 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('spoonmap_custom_friends', JSON.stringify(list));
     }
 
+    // Cache for followed users' restaurants
+    window.followingRestaurantsCache = window.followingRestaurantsCache || new Map();
+
+    async function fetchFollowingUserRestaurants(userId) {
+        if (window.followingRestaurantsCache.has(String(userId))) {
+            return window.followingRestaurantsCache.get(String(userId));
+        }
+        let list = [];
+        try {
+            if (typeof db !== 'undefined' && db) {
+                let userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
+                if (!userDoc.exists) {
+                    userDoc = await db.collection('spoonmap_users').doc(String(userId)).get();
+                }
+                if (userDoc.exists) {
+                    const uData = userDoc.data();
+                    const seenNames = new Set();
+                    if (uData.wishlist && Array.isArray(uData.wishlist)) {
+                        uData.wishlist.forEach(w => {
+                            if (!w || !w.name || seenNames.has(w.name)) return;
+                            seenNames.add(w.name);
+                            list.push({
+                                name: w.name,
+                                category: w.category || '기타',
+                                location_large: w.location || '기타',
+                                road_address: w.location || '',
+                                rate: '🥄🥄🥄',
+                                comment: '친구가 찜한 맛집',
+                                map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
+                                x: w.x || '126.9780',
+                                y: w.y || '37.5665'
+                            });
+                        });
+                    }
+                    if (uData.diary && Array.isArray(uData.diary)) {
+                        uData.diary.forEach(d => {
+                            if (!d || !d.name || seenNames.has(d.name)) return;
+                            seenNames.add(d.name);
+                            list.push({
+                                name: d.name,
+                                category: d.category || '기타',
+                                location_large: d.location_large || '기타',
+                                road_address: d.location_large || '',
+                                rate: d.rate || '🥄🥄🥄',
+                                comment: d.review || d.comment || '친구의 방문 기록 맛집',
+                                map_url: d.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(d.name)}`,
+                                x: d.x || '126.9780',
+                                y: d.y || '37.5665'
+                            });
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error fetching following user restaurants:', e);
+        }
+        window.followingRestaurantsCache.set(String(userId), list);
+        return list;
+    }
+
+    function getFollowingFriendsAsOverlay() {
+        const followingIds = (typeof getUserFollowingList === 'function') ? getUserFollowingList() : [];
+        if (!followingIds || followingIds.length === 0) return [];
+
+        const cachedUsers = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
+            ? cachedDiscoveredUsers
+            : JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
+
+        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
+
+        return followingIds.map((fid, idx) => {
+            let u = cachedUsers.find(cu => String(cu.id) === String(fid));
+            const name = u ? u.name : `미식가 #${String(fid).slice(-4)}`;
+            const color = colors[idx % colors.length];
+            const cachedRests = window.followingRestaurantsCache.get(String(fid)) || [];
+
+            return {
+                id: `following_${fid}`,
+                realUserId: fid,
+                isFollowingUser: true,
+                name: name,
+                nickname: `${name} (팔로잉)`,
+                avatarText: name.slice(0, 1),
+                avatarEmoji: '🥄',
+                color: color,
+                comment: u?.bio || 'Spoonmap 팔로잉 미식가',
+                restaurants: cachedRests
+            };
+        });
+    }
+
     function getFriendsList() {
         const custom = getCustomFriends();
-        return [...DEFAULT_DEMO_FRIENDS, ...custom];
+        const base = [];
+        if (typeof window !== 'undefined' && window.DDOGANZIP_FRIEND_DATA) {
+            base.push(window.DDOGANZIP_FRIEND_DATA);
+        }
+        base.push(...DEFAULT_DEMO_FRIENDS);
+        const following = getFollowingFriendsAsOverlay();
+        return [...base, ...custom, ...following];
     }
 
     function getActiveFriendIds() {
@@ -3429,7 +3538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    window.toggleFriendOverlay = function(friendId) {
+    window.toggleFriendOverlay = async function(friendId) {
         let activeIds = getActiveFriendIds();
         const idx = activeIds.indexOf(friendId);
         const friends = getFriendsList();
@@ -3443,6 +3552,13 @@ document.addEventListener('DOMContentLoaded', () => {
             clearFriendMarkers(friendId);
             showDiaryToast(`👥 [${friend.nickname || friend.name}] 맛집 마커 숨김`);
         } else {
+            // If this is a following user and restaurants not loaded yet, fetch from Firestore!
+            if (friend.isFollowingUser && (!friend.restaurants || friend.restaurants.length === 0)) {
+                showDiaryToast(`⏳ [${friend.name}] 님의 맛집 정보를 불러오는 중...`);
+                const fetched = await fetchFollowingUserRestaurants(friend.realUserId);
+                friend.restaurants = fetched;
+            }
+
             // Activate
             activeIds.push(friendId);
             saveActiveFriendIds(activeIds);
@@ -3477,8 +3593,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const place = {
                 place_name: r.name,
                 category_name: r.category || '음식점',
-                address_name: r.location_large || '',
-                road_address_name: r.location_large || '',
+                address_name: r.road_address || r.location_large || '',
+                road_address_name: r.road_address || r.location_large || '',
                 x: r.x || '126.9780',
                 y: r.y || '37.5665',
                 place_url: r.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(r.name)}`
@@ -3499,7 +3615,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     comment: r.comment || '',
                     rate: r.rate || '🥄🥄🥄🥄',
                     isCommon: isCommon,
-                    myRate: commonSaved ? commonSaved.rate : null
+                    myRate: commonSaved ? commonSaved.rate : null,
+                    youtubeUrl: r.youtube_url || null,
+                    youtubeTitle: r.youtube_title || null,
+                    menu: r.menu || null,
+                    roadAddress: r.road_address || null
                 }
             };
 
@@ -3573,14 +3693,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countEl) countEl.textContent = `${friends.length}명`;
 
         listEl.innerHTML = friends.map(f => {
-            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id);
+            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip';
+            const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
+            const badgeTag = f.id === 'friend_ddoganzip'
+                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(인기 유튜브 📺)</span>'
+                : (isDemo 
+                    ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' 
+                    : (isFollowing 
+                        ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
+                        : ''));
             return `
                 <div class="friend-modal-item">
                     <div class="friend-item-left">
                         <span class="friend-chip-avatar" style="background:${f.color}; width:28px; height:28px; font-size:13px;">${f.avatarText}</span>
                         <div class="friend-item-info">
-                            <strong>${f.nickname || f.name} ${isDemo ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' : ''}</strong>
+                            <strong>${f.nickname || f.name} ${badgeTag}</strong>
                             <span>${f.comment || '추천 맛집'} • ${f.restaurants.length}곳</span>
                         </div>
                     </div>
@@ -3588,7 +3716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button type="button" class="btn-wishlist-toggle" style="font-size:11px; padding:3px 8px; border-radius:6px; cursor:pointer; background:${isActive ? '#EDE9FE' : '#F3F4F6'}; color:${isActive ? '#6D28D9' : '#4B5563'}; border:1px solid ${isActive ? '#DDD6FE' : '#D1D5DB'}; font-weight:700;" onclick="window.toggleFriendOverlay('${f.id}'); renderFriendModalList();">
                             ${isActive ? '지도 켜짐 🟢' : '지도 꺼짐 ⚪'}
                         </button>
-                        ${!isDemo ? `
+                        ${(!isDemo && !isFollowing) ? `
                             <button type="button" class="btn-del-friend" onclick="handleDeleteFriend('${f.id}')" title="친구 삭제">삭제</button>
                         ` : ''}
                     </div>
