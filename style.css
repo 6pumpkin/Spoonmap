@@ -1958,6 +1958,19 @@ main {
     max-width: 520px !important;
 }
 
+.friend-modal-card .modal-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.friend-modal-card .modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
 .friend-modal-body {
     padding: 16px 20px;
     max-height: 70vh;
@@ -1979,7 +1992,14 @@ main {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.section-title-row h3 {
+    margin: 0 !important;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 .friend-badge-count {
@@ -1989,6 +2009,9 @@ main {
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 12px;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: center;
 }
 
 .friend-modal-list {
@@ -2055,7 +2078,8 @@ main {
 .form-row-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
+    align-items: start;
 }
 
 .add-friend-form .form-group {
@@ -2068,6 +2092,8 @@ main {
     font-weight: 600;
     color: #4B5563;
     margin-bottom: 4px;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
 .add-friend-form input, .add-friend-form textarea {
