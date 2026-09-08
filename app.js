@@ -3843,8 +3843,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const reversedLocal = [...localEntries].reverse();
         const uniqueLocal = [];
         reversedLocal.forEach(entry => {
-            if (!entry || !entry.name || !entry.date) return;
-            const key = `${entry.name.trim().toLowerCase()}|${entry.date}`;
+            if (!entry || !entry.name) return;
+            const key = entry.date ? `${entry.name.trim().toLowerCase()}|${entry.date}` : `${entry.name.trim().toLowerCase()}|nodate`;
             if (seenLocalKeys.has(key)) return;
             seenLocalKeys.add(key);
             uniqueLocal.unshift(entry);
@@ -3852,7 +3852,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uniqueLocal.forEach(entry => {
             if (entry.id && deletedIds.has(String(entry.id))) return;
-            const key = `${entry.name.trim().toLowerCase()}|${entry.date}`;
+            const key = entry.date ? `${entry.name.trim().toLowerCase()}|${entry.date}` : `${entry.name.trim().toLowerCase()}|nodate`;
             if (deletedIds.has(key)) return;
             unified.push({ ...entry, source: 'local' });
         });
@@ -3981,6 +3981,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     existing.location_small = locSmall;
                 }
                 if (ov.map_url) existing.map_url = ov.map_url;
+            } else {
+                mapByName.set(key, {
+                    name: ov.name || rawKey,
+                    category: ov.category || '기타',
+                    rate: ov.rate || '🥄',
+                    menu: menuArray,
+                    location_large: locLarge || '기타',
+                    location_small: locSmall || '',
+                    map_url: ov.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(ov.name || rawKey)}`,
+                    visit_count: visitsByName.get(key) || 1,
+                    date: datesByName.get(key) || ''
+                });
             }
         });
 
@@ -4502,18 +4514,22 @@ function openRestaurantDetailModal(item) {
     if (historyListEl) {
         historyListEl.innerHTML = '';
         if (visits.length > 0) {
-            const sortedVisits = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedVisits = [...visits].sort((a, b) => {
+                const dA = a.date || '0000-00-00';
+                const dB = b.date || '0000-00-00';
+                return dB.localeCompare(dA);
+            });
             sortedVisits.forEach((v, idx) => {
                 const orderNum = sortedVisits.length - idx;
                 const memoText = (v.data && (v.data.memo || v.data.review)) || v.memo || '';
                 const div = document.createElement('div');
                 div.className = 'history-item-card';
-                div.title = `클릭하면 ${v.date} 다이어리로 이동합니다`;
+                div.title = v.date ? `클릭하면 ${v.date} 다이어리로 이동합니다` : '클릭하여 방문 날짜를 입력할 수 있습니다';
                 div.innerHTML = `
                     <div class="history-item-top">
                         <span class="history-date-link">
-                            📅 ${v.date}
-                            <span class="jump-hint">다이어리 보기 ➔</span>
+                            📅 ${v.date || '방문일자 미지정'}
+                            <span class="jump-hint">${v.date ? '다이어리 보기 ➔' : '날짜 입력 ➔'}</span>
                         </span>
                         <span class="history-order-chip">${orderNum >= 2 ? '🔥' : '📍'} ${orderNum}회차 방문</span>
                     </div>
@@ -4526,7 +4542,12 @@ function openRestaurantDetailModal(item) {
                 `;
                 div.onclick = (e) => {
                     e.stopPropagation();
-                    navigateToDiaryDate(v.date);
+                    if (v.date) {
+                        navigateToDiaryDate(v.date);
+                    } else {
+                        closeRestaurantDetailModal();
+                        openEditDiaryDrawer(v.data || v);
+                    }
                 };
                 historyListEl.appendChild(div);
             });
@@ -8160,8 +8181,6 @@ function saveDiaryEntry() {
     }
 
     // ─── Mode B: Normal Diary Entry Add / Edit ───
-    if (!date) { alert('방문 날짜를 선택해주세요.'); return; }
-
     const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
 
     if (editId) {
@@ -8171,14 +8190,14 @@ function saveDiaryEntry() {
         const idx = existing.findIndex(e => 
             String(e.id) === String(editId) || 
             (e.originalCsvId && String(e.originalCsvId) === String(editId)) ||
-            (e.name && e.date && e.name.trim().toLowerCase() === key && (e.date === date || (originalCsvDate && e.date === originalCsvDate)))
+            (e.name && e.name.trim().toLowerCase() === key && (date ? e.date === date : (!e.date || (originalCsvDate && e.date === originalCsvDate))))
         );
         const updatedEntry = {
             id: isNaN(Number(editId)) ? editId : Number(editId),
             originalCsvId: isCsvId ? editId : (idx !== -1 ? existing[idx].originalCsvId : undefined),
             originalDate: originalCsvDate || (idx !== -1 ? existing[idx].originalDate : undefined),
             name,
-            date,
+            date: date || '',
             category,
             rate,
             menu,
@@ -8198,11 +8217,11 @@ function saveDiaryEntry() {
         showDiaryToast(`✏️ "${name}" 기록이 수정되었습니다!`);
     } else {
         // Create mode
-        const existingIdx = existing.findIndex(e => e.name && e.date && e.name.trim().toLowerCase() === key && e.date === date);
+        const existingIdx = existing.findIndex(e => e.name && e.name.trim().toLowerCase() === key && (date ? e.date === date : !e.date));
         const newEntry = {
             id: existingIdx !== -1 ? existing[existingIdx].id : Date.now(),
             name,
-            date,
+            date: date || '',
             category,
             rate,
             menu,
@@ -8219,7 +8238,7 @@ function saveDiaryEntry() {
             existing.push(newEntry);
         }
         localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
-        showDiaryToast(`✅ "${name}" 기록이 저장됐습니다!`);
+        showDiaryToast(date ? `✅ "${name}" 기록이 저장됐습니다!` : `✅ "${name}" 식당이 등록되었습니다!`);
     }
 
     // ─── Global Sync: Always sync overrides & all visits so LIST and DIARY share identical info! ───
@@ -8774,6 +8793,18 @@ function getMasterRestaurantList() {
             if (ov.location_large) existing.location_large = ov.location_large;
             if (ov.location_small) existing.location_small = ov.location_small;
             if (ov.map_url) existing.map_url = ov.map_url;
+        } else {
+            mapByName.set(key, {
+                name: ov.name || rawKey,
+                category: ov.category || '기타',
+                rate: ov.rate || '🥄',
+                menu: Array.isArray(ov.menu) ? ov.menu : [],
+                location_large: ov.location_large || '기타',
+                location_small: ov.location_small || '',
+                map_url: ov.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(ov.name || rawKey)}`,
+                visit_count: visitsByName.get(key) || 1,
+                date: datesByName.get(key) || ''
+            });
         }
     });
 
