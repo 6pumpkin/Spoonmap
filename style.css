@@ -1780,6 +1780,332 @@ main {
     100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
+/* ==========================================================================
+   FRIEND & COMMON MARKER CAPSULE STYLES
+   ========================================================================== */
+.marker-capsule-card.is-friend {
+    border-color: rgba(139, 92, 246, 0.45);
+}
+
+.marker-capsule-card.is-common {
+    border-color: rgba(255, 90, 95, 0.45);
+    background: linear-gradient(135deg, #FFFFFF 70%, #FFF1F2 100%);
+}
+
+.capsule-badge-friend {
+    background: #F5F3FF;
+    color: #7C3AED;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 10px;
+    border: 0.5px solid #DDD6FE;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.capsule-badge-common {
+    background: #FEF2F2;
+    color: #DC2626;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    border: 0.5px solid #FECACA;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ==========================================================================
+   MAP FRIEND OVERLAY BAR & CHIPS
+   ========================================================================== */
+.friend-toggle-btn {
+    background: #F5F3FF !important;
+    color: #7C3AED !important;
+    border-color: #DDD6FE !important;
+}
+
+.friend-toggle-btn.active {
+    background: #7C3AED !important;
+    color: #ffffff !important;
+    border-color: #6D28D9 !important;
+}
+
+.map-friends-bar {
+    background: #FAFAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.friends-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.friends-bar-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4B5563;
+}
+
+.friend-manager-link-btn {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: #6366F1;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.friend-manager-link-btn:hover {
+    background: #EEF2FF;
+}
+
+.map-friends-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+
+.friend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFFFFF;
+    border: 1.5px solid #E5E7EB;
+    padding: 4px 10px 4px 5px;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #4B5563;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+
+.friend-chip:hover {
+    border-color: #CBD5E1;
+    transform: translateY(-1px);
+}
+
+.friend-chip.active {
+    background: #FFFFFF;
+    color: #1E293B;
+    border-color: var(--friend-color, #6366F1);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+    font-weight: 700;
+}
+
+.friend-chip-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.friend-chip-count {
+    background: #F3F4F6;
+    color: #6B7280;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 10px;
+    margin-left: 2px;
+}
+
+.friend-chip.active .friend-chip-count {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+/* Friend Recommendation Card in Place Detail */
+.friend-recommend-card {
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Friend Management Modal */
+.friend-modal-card {
+    max-width: 520px !important;
+}
+
+.friend-modal-body {
+    padding: 16px 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.friend-modal-section {
+    margin-bottom: 24px;
+}
+
+.friend-modal-section h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1E293B;
+    margin: 0 0 10px 0;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.friend-badge-count {
+    background: #EEF2FF;
+    color: #4F46E5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.friend-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.friend-modal-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.friend-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.friend-item-info strong {
+    font-size: 0.88rem;
+    color: #1F2937;
+    display: block;
+}
+
+.friend-item-info span {
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+.friend-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-del-friend {
+    background: none;
+    border: 1px solid #E5E7EB;
+    color: #EF4444;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-del-friend:hover {
+    background: #FEE2E2;
+    border-color: #FECACA;
+}
+
+.add-friend-form {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.form-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.add-friend-form .form-group {
+    margin-bottom: 12px;
+}
+
+.add-friend-form label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #4B5563;
+    margin-bottom: 4px;
+}
+
+.add-friend-form input, .add-friend-form textarea {
+    width: 100%;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    box-sizing: border-box;
+}
+
+.color-picker-row {
+    display: flex;
+    gap: 8px;
+}
+
+.color-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    outline: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.color-dot.active {
+    outline-color: #1E293B;
+    transform: scale(1.15);
+}
+
+.btn-submit-friend {
+    width: 100%;
+    background: #6366F1;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-submit-friend:hover {
+    background: #4F46E5;
+}
+
 /* Category menu overlay over Kakao map */
 #category-menu {
     position: absolute;

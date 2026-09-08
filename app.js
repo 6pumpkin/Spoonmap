@@ -2075,6 +2075,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 // NOTE: zoom_changed intentionally not wired - causes setBounds loop.
 
+                // Initialize friend chips and active overlays if any
+                if (typeof renderFriendChips === 'function') {
+                    renderFriendChips();
+                    const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+                    activeIds.forEach(fid => {
+                        const f = friends.find(item => item.id === fid);
+                        if (f && (!window.activeFriendMarkersMap || !window.activeFriendMarkersMap.has(fid))) {
+                            if (typeof renderFriendMarkers === 'function') renderFriendMarkers(f);
+                        }
+                    });
+                }
+
                 console.log("Map visualization ready.");
             } catch (e) {
                 console.error("Critical error creating map:", e);
@@ -2504,8 +2517,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const markerSvgCache = new Map();
 
-    function getModernMarkerSvg(type, category = '', isFlame = false) {
-        const cacheKey = `${type}_${category}_${isFlame}`;
+    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null) {
+        const friendKey = friendBadge ? `${friendBadge.text}_${friendBadge.color}` : '';
+        const cacheKey = `${type}_${category}_${isFlame}_${friendKey}`;
         if (markerSvgCache.has(cacheKey)) {
             return markerSvgCache.get(cacheKey);
         }
@@ -2514,9 +2528,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let strokeColor = '#E03244';
         let iconContent = '';
 
-        if (type === 'saved') {
+        if (type === 'saved' || type === 'common') {
             bgColor = '#FF5A5F';
             strokeColor = '#E03244';
+            const emoji = getCategoryEmoji(category);
+            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+        } else if (type === 'friend') {
+            bgColor = '#8B5CF6';
+            strokeColor = '#7C3AED';
             const emoji = getCategoryEmoji(category);
             iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'wishlist') {
@@ -2530,12 +2549,22 @@ document.addEventListener('DOMContentLoaded', () => {
             iconContent = `<circle cx="13" cy="12" r="2.8" fill="#64748B"/>`;
         }
 
-        const flameBadge = (isFlame && type === 'saved') ? `
-            <circle cx="19.5" cy="5" r="4.2" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
-            <text x="19.5" y="6.2" font-size="5.2" text-anchor="middle" dominant-baseline="central">🔥</text>
-        ` : '';
+        let topBadge = '';
+        if (friendBadge) {
+            // Avatar badge on upper right shoulder (User's specific request)
+            topBadge = `
+                <circle cx="19.5" cy="5" r="4.6" fill="#FFFFFF" stroke="${friendBadge.color || '#6366F1'}" stroke-width="0.9"/>
+                <circle cx="19.5" cy="5" r="3.7" fill="${friendBadge.color || '#6366F1'}"/>
+                <text x="19.5" y="5.9" font-size="4.5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${friendBadge.text || '👤'}</text>
+            `;
+        } else if (isFlame && (type === 'saved' || type === 'common')) {
+            topBadge = `
+                <circle cx="19.5" cy="5" r="4.2" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
+                <text x="19.5" y="6.2" font-size="5.2" text-anchor="middle" dominant-baseline="central">🔥</text>
+            `;
+        }
 
-        const gradId = `grad_${type}${isFlame ? '_f' : ''}`;
+        const gradId = `grad_${type}${isFlame ? '_f' : ''}${friendBadge ? ('_' + friendBadge.text) : ''}`;
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
             <defs>
                 <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -2547,7 +2576,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   fill="url(#${gradId})" stroke="${strokeColor}" stroke-width="1.1"/>
             <circle cx="13" cy="12" r="7" fill="#FFFFFF"/>
             ${iconContent}
-            ${flameBadge}
+            ${topBadge}
         </svg>`;
 
         const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
@@ -2566,11 +2595,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let icon = '🥢';
         let iconCircleClass = '';
+        let iconCircleStyle = '';
         let metaHtml = '';
+        let cardClass = '';
 
-        if (isSaved) {
+        if (item?.friendInfo) {
+            const fi = item.friendInfo;
+            if (fi.isCommon) {
+                icon = '🌟';
+                iconCircleClass = 'common';
+                cardClass = 'is-common';
+                metaHtml = `<span class="capsule-badge-common">👥 나 & ${fi.friendName} 공통 맛집</span>`;
+            } else {
+                icon = fi.avatarText || '👤';
+                iconCircleClass = 'friend';
+                iconCircleStyle = `background:${fi.color}; color:#ffffff;`;
+                cardClass = 'is-friend';
+                metaHtml = `<span class="capsule-badge-friend" style="color:${fi.color}; border-color:${fi.color}44;">👤 ${fi.friendName} 추천</span> <span class="capsule-badge-rate">${fi.rate || '🥄 5'}</span>`;
+            }
+        } else if (isSaved) {
             icon = getCategoryEmoji(item?.category || place?.category_name, name);
             iconCircleClass = 'saved';
+            cardClass = 'is-saved';
 
             let rateHtml = '';
             if (item?.rate) {
@@ -2591,6 +2637,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (isWishlist) {
             icon = '⭐';
             iconCircleClass = 'wishlist';
+            cardClass = 'is-wishlist';
             metaHtml = `<span class="capsule-badge-wish">⭐ 가고싶은 곳</span>`;
         } else {
             icon = getCategoryEmoji(place?.category_name, name);
@@ -2600,12 +2647,10 @@ document.addEventListener('DOMContentLoaded', () => {
             metaHtml = `<span class="capsule-badge-cat">${catName}</span>`;
         }
 
-        const cardClass = isSaved ? 'is-saved' : (isWishlist ? 'is-wishlist' : '');
-
         return `
             <div class="marker-capsule-wrap" onclick="window.reopenCurrentPlaceDetail && window.reopenCurrentPlaceDetail();">
                 <div class="marker-capsule-card ${cardClass}">
-                    <div class="capsule-icon-circle ${iconCircleClass}">${icon}</div>
+                    <div class="capsule-icon-circle ${iconCircleClass}" ${iconCircleStyle ? `style="${iconCircleStyle}"` : ''}>${icon}</div>
                     <div class="capsule-content">
                         <div class="capsule-title-row">
                             <span class="capsule-name">${name}</span>
@@ -2652,17 +2697,25 @@ document.addEventListener('DOMContentLoaded', () => {
         showPlaceDetail(item, place?.road_address_name || place?.address_name, isSaved, detailsUrl, place);
     }
 
-    function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false) {
+    function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false, friendInfo = null) {
         const isSaved = isOwnerUser() ? isSavedParam : false;
         const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name, place);
         const coords = new kakao.maps.LatLng(place.y, place.x);
         const visits = isSaved ? (item?.visit_count || 1) : 0;
         const isFlame = isSaved && visits >= 2;
 
+        if (friendInfo) {
+            item.friendInfo = friendInfo;
+        }
+
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             let svgUri = '';
-            if (isSaved) {
+            if (friendInfo) {
+                const markerType = friendInfo.isCommon ? 'common' : 'friend';
+                const friendBadge = { text: friendInfo.avatarText || '👤', color: friendInfo.color || '#6366F1' };
+                svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadge);
+            } else if (isSaved) {
                 svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame);
             } else if (isWishlist) {
                 svgUri = getModernMarkerSvg('wishlist');
@@ -2675,12 +2728,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const markerOptions = {
             map: map,
             position: coords,
-            zIndex: isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1))
+            zIndex: friendInfo ? (friendInfo.isCommon ? 120 : 95) : (isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1)))
         };
         if (markerImg) {
             markerOptions.image = markerImg;
         } else {
-            markerOptions.opacity = (isSaved || isWishlist) ? 1 : 0.6;
+            markerOptions.opacity = (isSaved || isWishlist || friendInfo) ? 1 : 0.6;
         }
 
         const marker = new kakao.maps.Marker(markerOptions);
@@ -2924,12 +2977,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const routeUrl = getKakaoDirectionsUrl(item, placeData);
 
+        const friendRecommendHtml = item.friendInfo ? `
+            <div class="friend-recommend-card" style="background:${item.friendInfo.isCommon ? '#FFF1F2' : '#F5F3FF'}; border: 1.5px solid ${item.friendInfo.isCommon ? '#FECDD3' : '#DDD6FE'};">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <span style="width:24px; height:24px; border-radius:50%; background:${item.friendInfo.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${item.friendInfo.avatarText}</span>
+                    <strong style="font-size:13px; color:#1E293B;">${item.friendInfo.friendName} 님의 ${item.friendInfo.isCommon ? '🌟 공통 추천 맛집!' : '추천 맛집'}</strong>
+                    <span style="margin-left:auto; font-size:12px; font-weight:700; color:#FF5A5F;">${item.friendInfo.rate || '🥄 5'}</span>
+                </div>
+                ${item.friendInfo.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${item.friendInfo.comment}"</p>` : ''}
+                ${!isSaved ? `
+                    <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                        <button type="button" class="btn-wishlist-toggle" style="padding:5px 12px; font-size:11px; background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; border-radius:6px; font-weight:700; cursor:pointer;" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">⭐ 내 찜 식당에 추가</button>
+                    </div>
+                ` : ''}
+            </div>
+        ` : '';
+
         detailPanel.innerHTML = `
             <div class="detail-body">
                 <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">
                     ← 목록으로 돌아가기
                 </button>
                 <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
+                ${friendRecommendHtml}
                 <h3 class="detail-title ${item.closed ? 'is-closed' : ''}">${item.closed ? '<s>' + item.name + '</s> <span class="badge-closed">폐점</span>' : item.name}</h3>
                 <div class="detail-tags">
                     <span class="detail-tag tag-category">${displayCategory}</span>
@@ -3254,6 +3324,377 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnShowWishlist = document.getElementById('btn-show-wishlist');
     if (btnShowWishlist) {
         btnShowWishlist.addEventListener('click', showWishlistPlacesOnMap);
+    }
+
+    // =========================================================================
+    // Friend Restaurant & Social Map Overlay System
+    // =========================================================================
+    const DEFAULT_DEMO_FRIENDS = [
+        {
+            id: 'friend_minsoo',
+            name: '민수',
+            nickname: '미식가 민수',
+            avatarText: '민',
+            avatarEmoji: '🧑‍🍳',
+            color: '#6366F1',
+            comment: '노포와 진한 국물, 한식 찐맛집만 엄선',
+            restaurants: [
+                { name: '카라멘야', category: '🍣일식', location_large: '서울 서대문구', rate: '🥄🥄🥄🥄🥄', comment: '신촌 매운 라멘 원탑. 불맛 예술!', x: '126.9366', y: '37.5583' },
+                { name: '대성집', category: '🍚한식', location_large: '서울 종로구', rate: '🥄🥄🥄🥄🥄', comment: '도가니탕 끝판왕. 국물이 진짜 깊음!', x: '126.9608', y: '37.5723' },
+                { name: '우래옥', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄🥄', comment: '평양냉면과 불고기 조합 최고', x: '126.9987', y: '37.5682' },
+                { name: '하동관 본점', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄', comment: '맑은 곰탕의 정석', x: '126.9848', y: '37.5654' },
+                { name: '은주정', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄', comment: '쌈싸먹는 푸짐한 김치찌개', x: '126.9997', y: '37.5694' }
+            ]
+        },
+        {
+            id: 'friend_jieun',
+            name: '지은',
+            nickname: '성수러버 지은',
+            avatarText: '지',
+            avatarEmoji: '🌸',
+            color: '#EC4899',
+            comment: '성수·강남 힙한 카페와 브런치 핫플',
+            restaurants: [
+                { name: '엉클피자', category: '🍕피자', location_large: '서울 용산구', rate: '🥄🥄🥄🥄🥄', comment: '도우가 쫄깃하고 치즈 폭포 대박!', x: '126.9688', y: '37.5283' },
+                { name: '어니언 성수', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄🥄', comment: '팡도르와 빈티지 인더스트리얼 감성', x: '127.0577', y: '37.5447' },
+                { name: '카멜커피 7호점', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '시그니처 카멜커피 크림이 예술', x: '127.0423', y: '37.5458' },
+                { name: '대림창고', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '갤러리 감성과 맛있는 베이커리', x: '127.0560', y: '37.5414' },
+                { name: '오우드 성수', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '소금빵과 채광 좋은 테라스', x: '127.0607', y: '37.5419' }
+            ]
+        },
+        {
+            id: 'friend_junhyeok',
+            name: '준혁',
+            nickname: '고기대장 준혁',
+            avatarText: '준',
+            avatarEmoji: '🥩',
+            color: '#10B981',
+            comment: '육즙 가득한 숯불구이와 고기 맛집',
+            restaurants: [
+                { name: '금돼지식당', category: '🥩고기', location_large: '서울 중구', rate: '🥄🥄🥄🥄🥄', comment: '본삼겹과 눈꽃목살, 미쉐린 빕구르망', x: '127.0116', y: '37.5568' },
+                { name: '몽탄', category: '🥩고기', location_large: '서울 용산구', rate: '🥄🥄🥄🥄🥄', comment: '짚불 훈연 우대갈비와 양파볶음밥', x: '126.9730', y: '37.5348' },
+                { name: '남영돈', category: '🥩고기', location_large: '서울 용산구', rate: '🥄🥄🥄🥄', comment: '가브리살과 항정살 식감이 최고', x: '126.9723', y: '37.5427' },
+                { name: '조박집', category: '🥩고기', location_large: '서울 마포구', rate: '🥄🥄🥄🥄', comment: '수요미식회 나온 마포 돼지갈비', x: '126.9458', y: '37.5411' },
+                { name: '길목', category: '🥩고기', location_large: '서울 강남구', rate: '🥄🥄🥄🥄', comment: '두툼한 목살과 껍살, 꽈리고추 구이', x: '127.0573', y: '37.5218' }
+            ]
+        }
+    ];
+
+    function getCustomFriends() {
+        try {
+            return JSON.parse(localStorage.getItem('spoonmap_custom_friends') || '[]');
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function saveCustomFriends(list) {
+        localStorage.setItem('spoonmap_custom_friends', JSON.stringify(list));
+    }
+
+    function getFriendsList() {
+        const custom = getCustomFriends();
+        return [...DEFAULT_DEMO_FRIENDS, ...custom];
+    }
+
+    function getActiveFriendIds() {
+        try {
+            return JSON.parse(localStorage.getItem('spoonmap_active_friend_ids') || '[]');
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function saveActiveFriendIds(ids) {
+        localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify(ids));
+    }
+
+    window.activeFriendMarkersMap = new Map();
+
+    function renderFriendChips() {
+        const container = document.getElementById('map-friends-chips');
+        if (!container) return;
+        const friends = getFriendsList();
+        const activeIds = getActiveFriendIds();
+
+        container.innerHTML = friends.map(f => {
+            const isActive = activeIds.includes(f.id);
+            return `
+                <div class="friend-chip ${isActive ? 'active' : ''}" style="--friend-color:${f.color};" onclick="window.toggleFriendOverlay('${f.id}')">
+                    <span class="friend-chip-avatar" style="background:${f.color};">${f.avatarText}</span>
+                    <span class="friend-chip-name">${f.nickname || f.name}</span>
+                    <span class="friend-chip-count">${f.restaurants.length}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.toggleFriendOverlay = function(friendId) {
+        let activeIds = getActiveFriendIds();
+        const idx = activeIds.indexOf(friendId);
+        const friends = getFriendsList();
+        const friend = friends.find(f => f.id === friendId);
+        if (!friend) return;
+
+        if (idx > -1) {
+            // Deactivate
+            activeIds.splice(idx, 1);
+            saveActiveFriendIds(activeIds);
+            clearFriendMarkers(friendId);
+            showDiaryToast(`👥 [${friend.nickname || friend.name}] 맛집 마커 숨김`);
+        } else {
+            // Activate
+            activeIds.push(friendId);
+            saveActiveFriendIds(activeIds);
+            const bounds = new kakao.maps.LatLngBounds();
+            renderFriendMarkers(friend, bounds, true);
+            if (!bounds.isEmpty()) {
+                map.setBounds(bounds);
+            }
+            showDiaryToast(`⭐ [${friend.nickname || friend.name}] 맛집 마커 겹쳐보기 ON!`);
+        }
+
+        renderFriendChips();
+    };
+
+    function renderFriendMarkers(friend, bounds = null, shouldExtend = false) {
+        if (!friend || !friend.restaurants || !map) return;
+        clearFriendMarkers(friend.id);
+
+        const friendMarkersList = [];
+        const masterRestaurants = (typeof getMasterRestaurantList === 'function') 
+            ? getMasterRestaurantList() 
+            : ((typeof restaurantData !== 'undefined') ? restaurantData : []);
+
+        friend.restaurants.forEach(r => {
+            // Check if I also have this restaurant in my saved list (isCommon)
+            const commonSaved = masterRestaurants.find(m => 
+                m.name.trim().toLowerCase() === r.name.trim().toLowerCase() ||
+                (m.name.length >= 3 && r.name.length >= 3 && (m.name.includes(r.name) || r.name.includes(m.name)))
+            );
+            const isCommon = !!commonSaved;
+
+            const place = {
+                place_name: r.name,
+                category_name: r.category || '음식점',
+                address_name: r.location_large || '',
+                road_address_name: r.location_large || '',
+                x: r.x || '126.9780',
+                y: r.y || '37.5665',
+                place_url: r.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(r.name)}`
+            };
+
+            const item = {
+                name: r.name,
+                category: r.category || '음식점',
+                location_large: r.location_large || '',
+                rate: r.rate || '🥄🥄🥄🥄',
+                visit_count: commonSaved ? (commonSaved.visit_count || 1) : 1,
+                map_url: place.place_url,
+                friendInfo: {
+                    friendId: friend.id,
+                    friendName: friend.nickname || friend.name,
+                    avatarText: friend.avatarText || '👤',
+                    color: friend.color || '#6366F1',
+                    comment: r.comment || '',
+                    rate: r.rate || '🥄🥄🥄🥄',
+                    isCommon: isCommon,
+                    myRate: commonSaved ? commonSaved.rate : null
+                }
+            };
+
+            const coords = new kakao.maps.LatLng(place.y, place.x);
+            const friendBadge = { text: friend.avatarText || '👤', color: friend.color || '#6366F1' };
+            const markerType = isCommon ? 'common' : 'friend';
+            const svgUri = getModernMarkerSvg(markerType, item.category, false, friendBadge);
+
+            let markerImg = null;
+            if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
+                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(26, 34), { offset: new kakao.maps.Point(13, 34) });
+            }
+
+            const markerOptions = {
+                map: map,
+                position: coords,
+                zIndex: isCommon ? 120 : 95
+            };
+            if (markerImg) markerOptions.image = markerImg;
+
+            const marker = new kakao.maps.Marker(markerOptions);
+            friendMarkersList.push(marker);
+
+            if (bounds && shouldExtend) {
+                bounds.extend(coords);
+            }
+
+            kakao.maps.event.addListener(marker, 'click', () => {
+                openPlaceOverlayAndDetail(item, place, isCommon, false, coords);
+            });
+        });
+
+        window.activeFriendMarkersMap.set(friend.id, friendMarkersList);
+    }
+
+    function clearFriendMarkers(friendId) {
+        if (window.activeFriendMarkersMap && window.activeFriendMarkersMap.has(friendId)) {
+            const list = window.activeFriendMarkersMap.get(friendId);
+            list.forEach(m => m.setMap(null));
+            window.activeFriendMarkersMap.delete(friendId);
+        }
+    }
+
+    // Modal logic for Friend Management
+    window.openFriendManageModal = function() {
+        const modal = document.getElementById('friend-manage-modal');
+        if (!modal) return;
+        renderFriendModalList();
+        modal.style.display = 'flex';
+    };
+
+    window.closeFriendManageModal = function() {
+        const modal = document.getElementById('friend-manage-modal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    function renderFriendModalList() {
+        const listEl = document.getElementById('friend-modal-list');
+        const countEl = document.getElementById('friend-modal-count');
+        if (!listEl) return;
+        const friends = getFriendsList();
+        const activeIds = getActiveFriendIds();
+        if (countEl) countEl.textContent = `${friends.length}명`;
+
+        listEl.innerHTML = friends.map(f => {
+            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id);
+            const isActive = activeIds.includes(f.id);
+            return `
+                <div class="friend-modal-item">
+                    <div class="friend-item-left">
+                        <span class="friend-chip-avatar" style="background:${f.color}; width:28px; height:28px; font-size:13px;">${f.avatarText}</span>
+                        <div class="friend-item-info">
+                            <strong>${f.nickname || f.name} ${isDemo ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' : ''}</strong>
+                            <span>${f.comment || '추천 맛집'} • ${f.restaurants.length}곳</span>
+                        </div>
+                    </div>
+                    <div class="friend-item-actions">
+                        <button type="button" class="btn-wishlist-toggle" style="font-size:11px; padding:3px 8px; border-radius:6px; cursor:pointer; background:${isActive ? '#EDE9FE' : '#F3F4F6'}; color:${isActive ? '#6D28D9' : '#4B5563'}; border:1px solid ${isActive ? '#DDD6FE' : '#D1D5DB'}; font-weight:700;" onclick="window.toggleFriendOverlay('${f.id}'); renderFriendModalList();">
+                            ${isActive ? '지도 켜짐 🟢' : '지도 꺼짐 ⚪'}
+                        </button>
+                        ${!isDemo ? `
+                            <button type="button" class="btn-del-friend" onclick="handleDeleteFriend('${f.id}')" title="친구 삭제">삭제</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.handleDeleteFriend = function(friendId) {
+        if (!confirm('이 친구를 삭제하시겠습니까?')) return;
+        clearFriendMarkers(friendId);
+        let custom = getCustomFriends();
+        custom = custom.filter(f => f.id !== friendId);
+        saveCustomFriends(custom);
+
+        let activeIds = getActiveFriendIds();
+        activeIds = activeIds.filter(id => id !== friendId);
+        saveActiveFriendIds(activeIds);
+
+        renderFriendModalList();
+        renderFriendChips();
+        showDiaryToast('🗑️ 친구가 삭제되었습니다.');
+    };
+
+    window.handleAddNewFriend = function() {
+        const nameInput = document.getElementById('new-friend-name');
+        const avatarInput = document.getElementById('new-friend-avatar');
+        const commentInput = document.getElementById('new-friend-comment');
+        const restInput = document.getElementById('new-friend-restaurants');
+
+        const name = (nameInput?.value || '').trim();
+        if (!name) {
+            alert('친구 이름을 입력해주세요.');
+            return;
+        }
+
+        const avatarText = (avatarInput?.value || '').trim() || name.slice(0, 1);
+        const comment = (commentInput?.value || '').trim() || '내가 애정하는 추천 맛집';
+
+        // Get selected color from dots
+        const activeDot = document.querySelector('#new-friend-color-picker .color-dot.active');
+        const color = activeDot?.getAttribute('data-color') || '#6366F1';
+
+        // Parse restaurants from textarea
+        const rawLines = (restInput?.value || '').split('\n').map(l => l.trim()).filter(Boolean);
+        const restaurants = rawLines.map(line => {
+            const parts = line.split(/\s+/);
+            const rName = parts[0];
+            const rCat = parts[1] || '음식점';
+            return {
+                name: rName,
+                category: rCat,
+                location_large: '서울',
+                rate: '🥄🥄🥄🥄',
+                comment: '친구가 강력 추천한 곳',
+                x: '126.9780',
+                y: '37.5665'
+            };
+        });
+
+        const newFriend = {
+            id: 'friend_custom_' + Date.now(),
+            name: name,
+            nickname: name,
+            avatarText: avatarText,
+            color: color,
+            comment: comment,
+            restaurants: restaurants
+        };
+
+        const custom = getCustomFriends();
+        custom.push(newFriend);
+        saveCustomFriends(custom);
+
+        // Reset form
+        if (nameInput) nameInput.value = '';
+        if (avatarInput) avatarInput.value = '';
+        if (commentInput) commentInput.value = '';
+        if (restInput) restInput.value = '';
+
+        renderFriendModalList();
+        renderFriendChips();
+        showDiaryToast(`🎉 [${name}] 친구가 추가되었습니다! 지도에서 켜보세요.`);
+    };
+
+    // Setup color dot picker clicks
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('color-dot')) {
+            document.querySelectorAll('#new-friend-color-picker .color-dot').forEach(d => d.classList.remove('active'));
+            e.target.classList.add('active');
+        }
+    });
+
+    const btnToggleFriendsPanel = document.getElementById('btn-toggle-friends-panel');
+    if (btnToggleFriendsPanel) {
+        btnToggleFriendsPanel.addEventListener('click', () => {
+            const bar = document.getElementById('map-friends-bar');
+            if (!bar) return;
+            const isShowing = bar.style.display !== 'none';
+            bar.style.display = isShowing ? 'none' : 'block';
+            btnToggleFriendsPanel.classList.toggle('active', !isShowing);
+            if (!isShowing) {
+                renderFriendChips();
+                // Render any previously active friends
+                const activeIds = getActiveFriendIds();
+                const friends = getFriendsList();
+                activeIds.forEach(fid => {
+                    const f = friends.find(item => item.id === fid);
+                    if (f && (!window.activeFriendMarkersMap || !window.activeFriendMarkersMap.has(fid))) {
+                        renderFriendMarkers(f);
+                    }
+                });
+            }
+        });
     }
 
     // Helper to get filtered data for map
