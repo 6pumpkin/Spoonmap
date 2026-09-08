@@ -2519,62 +2519,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null) {
         const friendKey = friendBadge ? `${friendBadge.text}_${friendBadge.color}` : '';
-        const cacheKey = `${type}_${category}_${isFlame}_${friendKey}`;
+        const cacheKey = `circle_${type}_${category}_${isFlame}_${friendKey}`;
         if (markerSvgCache.has(cacheKey)) {
             return markerSvgCache.get(cacheKey);
         }
 
-        let bgColor = '#FF5A5F';
-        let strokeColor = '#E03244';
+        let innerBg = '#FFFFFF';
+        let borderColor = '#FF5A5F';
         let iconContent = '';
 
-        if (type === 'saved' || type === 'common') {
-            bgColor = '#FF5A5F';
-            strokeColor = '#E03244';
+        if (type === 'saved') {
+            innerBg = '#FFFFFF';
+            borderColor = '#FF4757';
             const emoji = getCategoryEmoji(category);
-            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+        } else if (type === 'common') {
+            innerBg = '#FFFBEB';
+            borderColor = '#F59E0B';
+            const emoji = getCategoryEmoji(category);
+            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'friend') {
-            bgColor = '#8B5CF6';
-            strokeColor = '#7C3AED';
+            innerBg = '#FFFFFF';
+            borderColor = friendBadge?.color || '#8B5CF6';
             const emoji = getCategoryEmoji(category);
-            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'wishlist') {
-            bgColor = '#F59E0B';
-            strokeColor = '#D97706';
-            iconContent = `<text x="13" y="13.2" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
+            innerBg = '#FFFFFF';
+            borderColor = '#F59E0B';
+            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
         } else {
             // General Kakao search place
-            bgColor = '#64748B';
-            strokeColor = '#475569';
-            iconContent = `<circle cx="13" cy="12" r="2.8" fill="#64748B"/>`;
+            innerBg = '#FFFFFF';
+            borderColor = '#64748B';
+            const emoji = getCategoryEmoji(category);
+            if (emoji && emoji !== '🥄') {
+                iconContent = `<text x="16" y="16.5" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            } else {
+                iconContent = `<circle cx="16" cy="16" r="3.5" fill="#64748B"/>`;
+            }
         }
 
         let topBadge = '';
         if (friendBadge) {
-            // Avatar badge on upper right shoulder (User's specific request)
+            // Avatar badge on upper right shoulder (circle pinpoint)
             topBadge = `
-                <circle cx="19.5" cy="5" r="4.6" fill="#FFFFFF" stroke="${friendBadge.color || '#6366F1'}" stroke-width="0.9"/>
-                <circle cx="19.5" cy="5" r="3.7" fill="${friendBadge.color || '#6366F1'}"/>
-                <text x="19.5" y="5.9" font-size="4.5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${friendBadge.text || '👤'}</text>
+                <circle cx="23.5" cy="8.5" r="5.2" fill="#FFFFFF" stroke="${friendBadge.color || '#6366F1'}" stroke-width="0.8"/>
+                <circle cx="23.5" cy="8.5" r="4.2" fill="${friendBadge.color || '#6366F1'}"/>
+                <text x="23.5" y="9.2" font-size="5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${friendBadge.text || '👤'}</text>
             `;
         } else if (isFlame && (type === 'saved' || type === 'common')) {
             topBadge = `
-                <circle cx="19.5" cy="5" r="4.2" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
-                <text x="19.5" y="6.2" font-size="5.2" text-anchor="middle" dominant-baseline="central">🔥</text>
+                <circle cx="23.5" cy="8.5" r="5" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
+                <text x="23.5" y="9.2" font-size="6" text-anchor="middle" dominant-baseline="central">🔥</text>
             `;
         }
 
-        const gradId = `grad_${type}${isFlame ? '_f' : ''}${friendBadge ? ('_' + friendBadge.text) : ''}`;
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
+        const shadowId = `sh_${type}${isFlame ? '_f' : ''}${friendBadge ? ('_' + friendBadge.text) : ''}`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
             <defs>
-                <linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="${bgColor}"/>
-                    <stop offset="100%" stop-color="${strokeColor}"/>
-                </linearGradient>
+                <filter id="${shadowId}" x="-25%" y="-25%" width="150%" height="150%">
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.25"/>
+                </filter>
             </defs>
-            <path d="M13 0.8 C6.3 0.8 0.8 6.3 0.8 13 C0.8 22.5 13 33.2 13 33.2 S25.2 22.5 25.2 13 C25.2 6.3 19.7 0.8 13 0.8 Z" 
-                  fill="url(#${gradId})" stroke="${strokeColor}" stroke-width="1.1"/>
-            <circle cx="13" cy="12" r="7" fill="#FFFFFF"/>
+            <circle cx="16" cy="16" r="12" fill="${innerBg}" stroke="${borderColor}" stroke-width="2.8" filter="url(#${shadowId})"/>
             ${iconContent}
             ${topBadge}
         </svg>`;
@@ -2611,7 +2618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconCircleClass = 'friend';
                 iconCircleStyle = `background:${fi.color}; color:#ffffff;`;
                 cardClass = 'is-friend';
-                metaHtml = `<span class="capsule-badge-friend" style="color:${fi.color}; border-color:${fi.color}44;">👤 ${fi.friendName} 추천</span> <span class="capsule-badge-rate">${fi.rate || '🥄 5'}</span>`;
+                metaHtml = `<span class="capsule-badge-friend" style="color:${fi.color}; border-color:${fi.color}44;">👤 ${fi.friendName} 추천</span>`;
             }
         } else if (isSaved) {
             icon = getCategoryEmoji(item?.category || place?.category_name, name);
@@ -2722,7 +2729,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 svgUri = getModernMarkerSvg('search');
             }
-            markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(26, 34), { offset: new kakao.maps.Point(13, 34) });
+            markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(32, 32), { offset: new kakao.maps.Point(16, 16) });
         }
 
         const markerOptions = {
@@ -2978,28 +2985,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const routeUrl = getKakaoDirectionsUrl(item, placeData);
 
         const friendRecommendHtml = item.friendInfo ? `
-            <div class="friend-recommend-card" style="background:${item.friendInfo.isCommon ? '#FFF1F2' : '#F5F3FF'}; border: 1.5px solid ${item.friendInfo.isCommon ? '#FECDD3' : '#DDD6FE'};">
+            <div class="friend-recommend-card" style="background:${item.friendInfo.isCommon ? '#FFF1F2' : '#F5F3FF'}; border: 1.5px solid ${item.friendInfo.isCommon ? '#FECDD3' : '#DDD6FE'}; margin-top:12px;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                     <span style="width:24px; height:24px; border-radius:50%; background:${item.friendInfo.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${item.friendInfo.avatarText}</span>
                     <strong style="font-size:13px; color:#1E293B;">${item.friendInfo.friendName} 님의 ${item.friendInfo.isCommon ? '🌟 공통 추천 맛집!' : '추천 맛집'}</strong>
-                    <span style="margin-left:auto; font-size:12px; font-weight:700; color:#FF5A5F;">${item.friendInfo.rate || '🥄 5'}</span>
                 </div>
                 ${item.friendInfo.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${item.friendInfo.comment}"</p>` : ''}
                 ${item.friendInfo.youtubeUrl ? `
                     <div style="margin-top:8px;">
-                        <a href="${item.friendInfo.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#EF4444; text-decoration:none; background:#FEF2F2; padding:4px 10px; border-radius:6px; border:1px solid #FCA5A5;">
-                            <span>▶</span> 또간집 영상 보러가기 ${item.friendInfo.youtubeTitle ? `<span style="font-size:10px; font-weight:normal; color:#6B7280; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">- ${item.friendInfo.youtubeTitle}</span>` : ''}
+                        <a href="${item.friendInfo.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:6px 12px; border-radius:8px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#EF4444; color:#fff; font-size:11px; flex-shrink:0;">▶</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:12px; color:#1F2937;">${item.friendInfo.youtubeTitle || '방영 영상 시청'}</span>
                         </a>
                     </div>
                 ` : ''}
                 ${item.friendInfo.menu && item.friendInfo.menu.length > 0 ? `
                     <div style="margin-top:8px; font-size:11px; color:#4B5563; line-height:1.4;">
                         <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${item.friendInfo.menu.slice(0, 4).join(', ')}
-                    </div>
-                ` : ''}
-                ${!isSaved ? `
-                    <div style="margin-top:10px; display:flex; justify-content:flex-end;">
-                        <button type="button" class="btn-wishlist-toggle" style="padding:5px 12px; font-size:11px; background:#FFFBEB; color:#D97706; border:1px solid #FDE68A; border-radius:6px; font-weight:700; cursor:pointer;" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">⭐ 내 찜 식당에 추가</button>
                     </div>
                 ` : ''}
             </div>
@@ -3011,12 +3013,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ← 목록으로 돌아가기
                 </button>
                 <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
-                ${friendRecommendHtml}
                 <h3 class="detail-title ${item.closed ? 'is-closed' : ''}">${item.closed ? '<s>' + item.name + '</s> <span class="badge-closed">폐점</span>' : item.name}</h3>
                 <div class="detail-tags">
                     <span class="detail-tag tag-category">${displayCategory}</span>
                     ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
                 </div>
+
+                ${friendRecommendHtml}
                 
                 <div class="detail-info-list">
                     <div class="info-item">
@@ -3630,7 +3633,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let markerImg = null;
             if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
-                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(26, 34), { offset: new kakao.maps.Point(13, 34) });
+                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(32, 32), { offset: new kakao.maps.Point(16, 16) });
             }
 
             const markerOptions = {

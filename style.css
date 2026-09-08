@@ -1635,7 +1635,7 @@ main {
    MODERN MAP MARKER CAPSULE POPUP (Compact Floating Pill)
    ========================================================================== */
 .marker-capsule-wrap {
-    transform: translateY(-40px);
+    transform: translateY(-24px);
     display: flex;
     justify-content: center;
     pointer-events: auto;
