@@ -2623,12 +2623,23 @@ document.addEventListener('DOMContentLoaded', () => {
             shadowOpacity = 0.38;
             const c1 = allBadges[0]?.color || '#EF4444';
             const c2 = allBadges[1]?.color || '#2563EB';
-            strokeGradient = `
-                <linearGradient id="multiGrad_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="${c1}"/>
-                    <stop offset="100%" stop-color="${c2}"/>
-                </linearGradient>
-            `;
+            const c3 = allBadges[2]?.color || '#059669';
+            if (allBadges.length >= 3) {
+                strokeGradient = `
+                    <linearGradient id="multiGrad_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${c1}"/>
+                        <stop offset="50%" stop-color="${c2}"/>
+                        <stop offset="100%" stop-color="${c3}"/>
+                    </linearGradient>
+                `;
+            } else {
+                strokeGradient = `
+                    <linearGradient id="multiGrad_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${c1}"/>
+                        <stop offset="100%" stop-color="${c2}"/>
+                    </linearGradient>
+                `;
+            }
             const emoji = getCategoryEmoji(category);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'common') {
@@ -2676,7 +2687,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Right shoulder: Friend avatar badges
-        if (allBadges.length >= 2) {
+        if (allBadges.length >= 3) {
+            const b1 = allBadges[0];
+            const b2 = allBadges[1];
+            const b3 = allBadges[2];
+            shoulderBadges += `
+                <circle cx="16" cy="6.8" r="4.8" fill="#FFFFFF" stroke="${b1.color || '#EF4444'}" stroke-width="1"/>
+                <circle cx="16" cy="6.8" r="3.8" fill="${b1.color || '#EF4444'}"/>
+                <text x="16" y="7.4" font-size="4.5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b1.text || '또'}</text>
+
+                <circle cx="23.5" cy="7.6" r="4.8" fill="#FFFFFF" stroke="${b2.color || '#2563EB'}" stroke-width="1"/>
+                <circle cx="23.5" cy="7.6" r="3.8" fill="${b2.color || '#2563EB'}"/>
+                <text x="23.5" y="8.2" font-size="4.5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b2.text || '먹'}</text>
+
+                <circle cx="31" cy="9.4" r="4.8" fill="#FFFFFF" stroke="${b3.color || '#059669'}" stroke-width="1"/>
+                <circle cx="31" cy="9.4" r="3.8" fill="${b3.color || '#059669'}"/>
+                <text x="31" y="10.0" font-size="4.5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b3.text || '정'}</text>
+            `;
+        } else if (allBadges.length === 2) {
             const b1 = allBadges[0];
             const b2 = allBadges[1];
             shoulderBadges += `
@@ -3212,14 +3240,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isMulti) {
                 const friendsTitle = fi.allMatches.map(m => `<span style="color:${m.color}; font-weight:800;">${m.friendName}</span>`).join(' & ');
-                const matchCards = fi.allMatches.map(m => `
-                    <div class="multi-friend-subcard" style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; padding:10px; margin-top:8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                const totalMatches = fi.allMatches.length;
+
+                const matchCards = fi.allMatches.map((m, idx) => `
+                    <div class="multi-friend-subcard">
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <span style="width:22px; height:22px; border-radius:50%; background:${m.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;">${m.avatarText}</span>
+                                <span style="width:22px; height:22px; border-radius:50%; background:${m.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0;">${m.avatarText}</span>
                                 <strong style="font-size:12px; color:#1E293B;">${m.friendName}</strong>
                             </div>
-                            <span style="font-size:11px; color:#6B7280;">${m.rate || '🥄🥄🥄🥄'}</span>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <span style="font-size:10.5px; color:#6B7280; font-weight:700; background:#F1F5F9; padding:1px 6px; border-radius:10px;">${idx + 1} / ${totalMatches}</span>
+                            </div>
                         </div>
                         ${m.comment ? `<p style="font-size:11.5px; color:#4B5563; margin:0 0 6px 0; line-height:1.4;">💬 "${m.comment}"</p>` : ''}
                         ${m.youtubeUrl ? `
@@ -3239,15 +3271,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
 
                 friendRecommendHtml = `
-                    <div class="friend-recommend-card multi" style="background: linear-gradient(135deg, #FFF7ED 0%, #EFF6FF 100%); border: 1.5px solid #CBD5E1; margin-top:12px; border-radius:12px; padding:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                            <span style="font-size:16px;">🔥</span>
-                            <strong style="font-size:13px; color:#1E293B;">
-                                ${fi.isCommon ? '🌟 [내 찐맛집] & ' : ''}${friendsTitle} 동시 추천 맛집!
-                            </strong>
+                    <div class="friend-recommend-card multi">
+                        <div class="multi-recommend-header">
+                            <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+                                <span style="font-size:15px; flex-shrink:0;">🔥</span>
+                                <strong style="font-size:12.5px; color:#1E293B; word-break:keep-all;">
+                                    ${fi.isCommon ? '🌟 [내 찐맛집] & ' : ''}${friendsTitle} 동시 추천!
+                                </strong>
+                            </div>
+                            <span class="multi-swipe-hint">스와이프 ↔</span>
                         </div>
-                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin-bottom:6px;">✨ 내가 저장한 맛집과도 일치하는 검증된 맛집입니다!</div>` : ''}
-                        ${matchCards}
+                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin:0 0 6px 0;">✨ 내가 저장한 맛집과도 일치하는 검증된 맛집입니다!</div>` : ''}
+                        
+                        <div class="multi-friend-carousel-track" onwheel="if(Math.abs(event.deltaY)>Math.abs(event.deltaX)){event.currentTarget.scrollLeft += event.deltaY; event.preventDefault();}">
+                            ${matchCards}
+                        </div>
+                        
+                        <div class="multi-friend-dots">
+                            ${fi.allMatches.map((_, i) => `<span class="multi-dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                        </div>
                     </div>
                 `;
             } else {
@@ -3320,6 +3362,27 @@ document.addEventListener('DOMContentLoaded', () => {
             renderUserPhotosInMapGallery(item.name, userPhotos, photoGalleryEl);
         } else {
             fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl, item);
+        }
+
+        // Setup multi-friend carousel scroll listener & dot navigation
+        const multiTrack = detailPanel.querySelector('.multi-friend-carousel-track');
+        const multiDots = detailPanel.querySelectorAll('.multi-dot');
+        if (multiTrack && multiDots.length > 0) {
+            multiTrack.addEventListener('scroll', () => {
+                const card = multiTrack.querySelector('.multi-friend-subcard');
+                const cardWidth = card ? card.offsetWidth + 10 : 1;
+                const activeIdx = Math.min(multiDots.length - 1, Math.max(0, Math.round(multiTrack.scrollLeft / cardWidth)));
+                multiDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+            }, { passive: true });
+
+            multiDots.forEach((dot, idx) => {
+                dot.addEventListener('click', () => {
+                    const cards = multiTrack.querySelectorAll('.multi-friend-subcard');
+                    if (cards[idx]) {
+                        cards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }
+                });
+            });
         }
 
         // If unvisited, fetch real blog review summary snippet via Daum Blog API!
@@ -3727,6 +3790,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (typeof window !== 'undefined' && window.MEOGEULTENDE_FRIEND_DATA) {
             base.push(window.MEOGEULTENDE_FRIEND_DATA);
+        }
+        if (typeof window !== 'undefined' && window.JUNGYUGWANG_FRIEND_DATA) {
+            base.push(window.JUNGYUGWANG_FRIEND_DATA);
         }
         base.push(...DEFAULT_DEMO_FRIENDS);
         const following = getFollowingFriendsAsOverlay();
@@ -4159,18 +4225,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countEl) countEl.textContent = `${friends.length}명`;
 
         listEl.innerHTML = friends.map(f => {
-            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende';
+            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang';
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
             const badgeTag = f.id === 'friend_ddoganzip'
-                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(인기 유튜브 📺)</span>'
+                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(풍자 또간집 📺)</span>'
                 : (f.id === 'friend_meogeultende'
                     ? '<span style="font-size:10px; color:#2563EB; font-weight:700; background:#EFF6FF; padding:1px 5px; border-radius:4px; border:1px solid #BFDBFE;">(성시경 추천 🍲)</span>'
-                    : (isDemo 
-                        ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' 
-                        : (isFollowing 
-                            ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
-                            : '')));
+                    : (f.id === 'friend_jungyugwang'
+                        ? '<span style="font-size:10px; color:#059669; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(정육왕 추천 🥩)</span>'
+                        : (isDemo 
+                            ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 채널)</span>' 
+                            : (isFollowing 
+                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
+                                : ''))));
             return `
                 <div class="friend-modal-item">
                     <div class="friend-item-left">
