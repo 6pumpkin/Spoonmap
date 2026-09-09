@@ -3279,7 +3279,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ${fi.isCommon ? '🌟 [내 찐맛집] & ' : ''}${friendsTitle} 동시 추천!
                                 </strong>
                             </div>
-                            <span class="multi-swipe-hint">스와이프 ↔</span>
                         </div>
                         ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin:0 0 6px 0;">✨ 내가 저장한 맛집과도 일치하는 검증된 맛집입니다!</div>` : ''}
                         
@@ -3364,25 +3363,73 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl, item);
         }
 
-        // Setup multi-friend carousel scroll listener & dot navigation
+        // Setup multi-friend carousel scroll listener & dot navigation & mouse drag-to-scroll
         const multiTrack = detailPanel.querySelector('.multi-friend-carousel-track');
         const multiDots = detailPanel.querySelectorAll('.multi-dot');
-        if (multiTrack && multiDots.length > 0) {
-            multiTrack.addEventListener('scroll', () => {
-                const card = multiTrack.querySelector('.multi-friend-subcard');
-                const cardWidth = card ? card.offsetWidth + 10 : 1;
-                const activeIdx = Math.min(multiDots.length - 1, Math.max(0, Math.round(multiTrack.scrollLeft / cardWidth)));
-                multiDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
-            }, { passive: true });
+        if (multiTrack) {
+            if (multiDots.length > 0) {
+                multiTrack.addEventListener('scroll', () => {
+                    const card = multiTrack.querySelector('.multi-friend-subcard');
+                    const cardWidth = card ? card.offsetWidth + 10 : 1;
+                    const activeIdx = Math.min(multiDots.length - 1, Math.max(0, Math.round(multiTrack.scrollLeft / cardWidth)));
+                    multiDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+                }, { passive: true });
 
-            multiDots.forEach((dot, idx) => {
-                dot.addEventListener('click', () => {
-                    const cards = multiTrack.querySelectorAll('.multi-friend-subcard');
-                    if (cards[idx]) {
-                        cards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    }
+                multiDots.forEach((dot, idx) => {
+                    dot.addEventListener('click', () => {
+                        const cards = multiTrack.querySelectorAll('.multi-friend-subcard');
+                        if (cards[idx]) {
+                            cards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                        }
+                    });
                 });
+            }
+
+            // Mouse Drag-to-Scroll interaction
+            let isDown = false;
+            let startX = 0;
+            let startScrollLeft = 0;
+            let isDraggingCard = false;
+
+            multiTrack.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return; // 좌클릭만 허용
+                isDown = true;
+                isDraggingCard = false;
+                startX = e.pageX;
+                startScrollLeft = multiTrack.scrollLeft;
+                multiTrack.classList.add('is-dragging');
+                multiTrack.style.scrollSnapType = 'none';
             });
+
+            const endDrag = () => {
+                if (!isDown) return;
+                isDown = false;
+                multiTrack.classList.remove('is-dragging');
+                multiTrack.style.scrollSnapType = 'x mandatory';
+                setTimeout(() => {
+                    isDraggingCard = false;
+                }, 50);
+            };
+
+            multiTrack.addEventListener('mouseleave', endDrag);
+            multiTrack.addEventListener('mouseup', endDrag);
+
+            multiTrack.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                const dx = e.pageX - startX;
+                if (Math.abs(dx) > 5) {
+                    isDraggingCard = true;
+                }
+                multiTrack.scrollLeft = startScrollLeft - dx;
+            });
+
+            // Prevent link click when dragged
+            multiTrack.addEventListener('click', (e) => {
+                if (isDraggingCard) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
         }
 
         // If unvisited, fetch real blog review summary snippet via Daum Blog API!
