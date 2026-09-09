@@ -2123,13 +2123,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof renderFriendChips === 'function') {
                     renderFriendChips();
                     const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
-                    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
-                    activeIds.forEach(fid => {
-                        const f = friends.find(item => item.id === fid);
-                        if (f && (!window.activeFriendMarkersMap || !window.activeFriendMarkersMap.has(fid))) {
-                            if (typeof renderFriendMarkers === 'function') renderFriendMarkers(f);
-                        }
-                    });
+                    if (activeIds.length > 0 && typeof renderAllActiveFriendOverlays === 'function') {
+                        renderAllActiveFriendOverlays();
+                    }
                 }
 
                 console.log("Map visualization ready.");
@@ -2485,7 +2481,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let tagBadge = '';
             if (friendInfo) {
-                if (friendInfo.isCommon) {
+                if (friendInfo.isCommon && friendInfo.isMultiFriend) {
+                    tagBadge = `<span class="saved-place-chip gold">🌟 나 & 다중 친구(${friendInfo.matchesCount}명) 공통</span>`;
+                } else if (friendInfo.isMultiFriend) {
+                    tagBadge = `<span class="saved-place-chip" style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; font-weight:700;">🔥 다중 친구(${friendInfo.matchesCount}명) 추천</span>`;
+                } else if (friendInfo.isCommon) {
                     tagBadge = `<span class="saved-place-chip gold">🌟 나 & ${friendInfo.friendName} 공통</span>`;
                 } else {
                     tagBadge = `<span class="saved-place-chip red" style="background:${friendInfo.color}15; color:${friendInfo.color}; border:1px solid ${friendInfo.color}44;">📺 ${friendInfo.friendName} 추천</span>`;
@@ -2578,9 +2578,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const markerSvgCache = new Map();
 
-    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null) {
-        const friendKey = friendBadge ? `${friendBadge.text}_${friendBadge.color}` : '';
-        const cacheKey = `circle_${type}_${category}_${isFlame}_${friendKey}`;
+    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null, friendBadges = null) {
+        // Collect badges list
+        let allBadges = [];
+        if (Array.isArray(friendBadges) && friendBadges.length > 0) {
+            allBadges = friendBadges;
+        } else if (Array.isArray(friendBadge) && friendBadge.length > 0) {
+            allBadges = friendBadge;
+        } else if (friendBadge && typeof friendBadge === 'object') {
+            allBadges = [friendBadge];
+        }
+
+        const friendKey = allBadges.map(b => `${b.text || ''}_${b.color || ''}`).join(';');
+        const cacheKey = `c38_${type}_${category}_${isFlame}_${friendKey}`;
         if (markerSvgCache.has(cacheKey)) {
             return markerSvgCache.get(cacheKey);
         }
@@ -2588,63 +2598,120 @@ document.addEventListener('DOMContentLoaded', () => {
         let innerBg = '#FFFFFF';
         let borderColor = '#FF5A5F';
         let iconContent = '';
+        let strokeGradient = '';
+        let shadowColor = '#000000';
+        let shadowOpacity = 0.25;
+
+        const isCommonType = (type === 'common' || type === 'common_multi');
 
         if (type === 'saved') {
             innerBg = '#FFFFFF';
             borderColor = '#FF4757';
             const emoji = getCategoryEmoji(category);
-            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+        } else if (type === 'common_multi') {
+            innerBg = '#FFFBEB';
+            borderColor = '#F59E0B';
+            shadowColor = '#D97706';
+            shadowOpacity = 0.42;
+            const emoji = getCategoryEmoji(category);
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+        } else if (type === 'multi_friend') {
+            innerBg = '#FAF5FF';
+            borderColor = '#7C3AED';
+            shadowColor = '#7C3AED';
+            shadowOpacity = 0.38;
+            const c1 = allBadges[0]?.color || '#EF4444';
+            const c2 = allBadges[1]?.color || '#2563EB';
+            strokeGradient = `
+                <linearGradient id="multiGrad_${cacheKey.replace(/[^a-zA-Z0-9]/g, '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="${c1}"/>
+                    <stop offset="100%" stop-color="${c2}"/>
+                </linearGradient>
+            `;
+            const emoji = getCategoryEmoji(category);
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'common') {
             innerBg = '#FFFBEB';
             borderColor = '#F59E0B';
+            shadowColor = '#D97706';
+            shadowOpacity = 0.38;
             const emoji = getCategoryEmoji(category);
-            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'friend') {
             innerBg = '#FFFFFF';
-            borderColor = friendBadge?.color || '#8B5CF6';
+            borderColor = allBadges[0]?.color || '#8B5CF6';
             const emoji = getCategoryEmoji(category);
-            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'wishlist') {
             innerBg = '#FFFFFF';
             borderColor = '#F59E0B';
-            iconContent = `<text x="16" y="16.5" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
         } else {
             // General Kakao search place
             innerBg = '#FFFFFF';
             borderColor = '#64748B';
             const emoji = getCategoryEmoji(category);
             if (emoji && emoji !== '🥄') {
-                iconContent = `<text x="16" y="16.5" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
+                iconContent = `<text x="19" y="19.5" font-size="13" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
             } else {
-                iconContent = `<circle cx="16" cy="16" r="3.5" fill="#64748B"/>`;
+                iconContent = `<circle cx="19" cy="19" r="4.2" fill="#64748B"/>`;
             }
         }
 
-        let topBadge = '';
-        if (friendBadge) {
-            // Avatar badge on upper right shoulder (circle pinpoint)
-            topBadge = `
-                <circle cx="23.5" cy="8.5" r="5.2" fill="#FFFFFF" stroke="${friendBadge.color || '#6366F1'}" stroke-width="0.8"/>
-                <circle cx="23.5" cy="8.5" r="4.2" fill="${friendBadge.color || '#6366F1'}"/>
-                <text x="23.5" y="9.2" font-size="5" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${friendBadge.text || '👤'}</text>
+        // Top badges: Right shoulder (friend avatars) + Left shoulder (common star or flame)
+        let shoulderBadges = '';
+
+        // Left shoulder: Star badge for common intersection (My restaurant & Friend)
+        if (isCommonType) {
+            shoulderBadges += `
+                <circle cx="8.5" cy="8.5" r="5.6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1"/>
+                <text x="8.5" y="9.2" font-size="6.5" text-anchor="middle" dominant-baseline="central">⭐</text>
             `;
-        } else if (isFlame && (type === 'saved' || type === 'common')) {
-            topBadge = `
-                <circle cx="23.5" cy="8.5" r="5" fill="#FFFFFF" stroke="#EF4444" stroke-width="0.8"/>
-                <text x="23.5" y="9.2" font-size="6" text-anchor="middle" dominant-baseline="central">🔥</text>
+        } else if (isFlame && type === 'saved') {
+            shoulderBadges += `
+                <circle cx="8.5" cy="8.5" r="5.6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1"/>
+                <text x="8.5" y="9.2" font-size="6.5" text-anchor="middle" dominant-baseline="central">🔥</text>
             `;
         }
 
-        const shadowId = `sh_${type}${isFlame ? '_f' : ''}${friendBadge ? ('_' + friendBadge.text) : ''}`;
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+        // Right shoulder: Friend avatar badges
+        if (allBadges.length >= 2) {
+            const b1 = allBadges[0];
+            const b2 = allBadges[1];
+            shoulderBadges += `
+                <circle cx="23" cy="7.8" r="5.5" fill="#FFFFFF" stroke="${b1.color || '#EF4444'}" stroke-width="1"/>
+                <circle cx="23" cy="7.8" r="4.5" fill="${b1.color || '#EF4444'}"/>
+                <text x="23" y="8.5" font-size="5.2" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b1.text || '또'}</text>
+
+                <circle cx="30.5" cy="9.5" r="5.5" fill="#FFFFFF" stroke="${b2.color || '#2563EB'}" stroke-width="1"/>
+                <circle cx="30.5" cy="9.5" r="4.5" fill="${b2.color || '#2563EB'}"/>
+                <text x="30.5" y="10.2" font-size="5.2" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b2.text || '먹'}</text>
+            `;
+        } else if (allBadges.length === 1) {
+            const b = allBadges[0];
+            shoulderBadges += `
+                <circle cx="29" cy="9" r="6" fill="#FFFFFF" stroke="${b.color || '#6366F1'}" stroke-width="1"/>
+                <circle cx="29" cy="9" r="5" fill="${b.color || '#6366F1'}"/>
+                <text x="29" y="9.8" font-size="5.8" text-anchor="middle" dominant-baseline="central" font-weight="800" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${b.text || '👤'}</text>
+            `;
+        }
+
+        const safeKey = cacheKey.replace(/[^a-zA-Z0-9]/g, '');
+        const shadowId = `sh38_${type}${isFlame ? '_f' : ''}_${safeKey}`;
+        const strokeProp = strokeGradient ? `url(#multiGrad_${safeKey})` : borderColor;
+        const strokeW = strokeGradient ? '3.5' : (isCommonType ? '3.4' : '3.0');
+
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
             <defs>
+                ${strokeGradient}
                 <filter id="${shadowId}" x="-25%" y="-25%" width="150%" height="150%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-opacity="0.25"/>
+                    <feDropShadow dx="0" dy="1.8" stdDeviation="2.0" flood-color="${shadowColor}" flood-opacity="${shadowOpacity}"/>
                 </filter>
             </defs>
-            <circle cx="16" cy="16" r="12" fill="${innerBg}" stroke="${borderColor}" stroke-width="2.8" filter="url(#${shadowId})"/>
+            <circle cx="19" cy="19" r="14.5" fill="${innerBg}" stroke="${strokeProp}" stroke-width="${strokeW}" filter="url(#${shadowId})"/>
             ${iconContent}
-            ${topBadge}
+            ${shoulderBadges}
         </svg>`;
 
         const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
@@ -2669,7 +2736,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (item?.friendInfo) {
             const fi = item.friendInfo;
-            if (fi.isCommon) {
+            if (fi.isMultiFriend) {
+                icon = '🔥';
+                iconCircleClass = 'multi';
+                cardClass = fi.isCommon ? 'is-multi is-common' : 'is-multi';
+                const friendsTitle = (fi.allMatches && fi.allMatches.length > 0) 
+                    ? fi.allMatches.map(m => m.friendName).join(' & ')
+                    : '다중 친구';
+                if (fi.isCommon) {
+                    metaHtml = `<span class="capsule-badge-common">🌟 나 & ${friendsTitle} 공통</span>`;
+                } else {
+                    metaHtml = `<span class="capsule-badge-multi">🔥 ${friendsTitle} 동시 추천</span>`;
+                }
+            } else if (fi.isCommon) {
                 icon = '🌟';
                 iconCircleClass = 'common';
                 cardClass = 'is-common';
@@ -2793,9 +2872,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             let svgUri = '';
             if (finalFriendInfo) {
-                const markerType = finalFriendInfo.isCommon ? 'common' : 'friend';
-                const friendBadge = { text: finalFriendInfo.avatarText || '👤', color: finalFriendInfo.color || '#6366F1' };
-                svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadge);
+                let markerType = finalFriendInfo.isCommon ? 'common' : 'friend';
+                if (finalFriendInfo.isCommon && finalFriendInfo.isMultiFriend) {
+                    markerType = 'common_multi';
+                } else if (finalFriendInfo.isMultiFriend) {
+                    markerType = 'multi_friend';
+                }
+                const friendBadges = finalFriendInfo.friendBadges || [{ text: finalFriendInfo.avatarText || '👤', color: finalFriendInfo.color || '#6366F1' }];
+                svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadges[0], friendBadges);
             } else if (isSaved) {
                 svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame);
             } else if (isWishlist) {
@@ -2803,13 +2887,32 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 svgUri = getModernMarkerSvg('search');
             }
-            markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(32, 32), { offset: new kakao.maps.Point(16, 16) });
+            markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
+        }
+
+        let markerZIndex = 1;
+        if (finalFriendInfo) {
+            if (finalFriendInfo.isCommon && finalFriendInfo.isMultiFriend) {
+                markerZIndex = 140;
+            } else if (finalFriendInfo.isMultiFriend) {
+                markerZIndex = 130;
+            } else if (finalFriendInfo.isCommon) {
+                markerZIndex = 125;
+            } else {
+                markerZIndex = 95;
+            }
+        } else if (isFlame) {
+            markerZIndex = 110;
+        } else if (isSaved) {
+            markerZIndex = 100;
+        } else if (isWishlist) {
+            markerZIndex = 90;
         }
 
         const markerOptions = {
             map: map,
             position: coords,
-            zIndex: finalFriendInfo ? (finalFriendInfo.isCommon ? 120 : 95) : (isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1)))
+            zIndex: markerZIndex
         };
         if (markerImg) {
             markerOptions.image = markerImg;
@@ -3102,28 +3205,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const routeUrl = getKakaoDirectionsUrl(item, placeData);
 
-        const friendRecommendHtml = item.friendInfo ? `
-            <div class="friend-recommend-card" style="background:${item.friendInfo.isCommon ? '#FFF1F2' : '#F5F3FF'}; border: 1.5px solid ${item.friendInfo.isCommon ? '#FECDD3' : '#DDD6FE'}; margin-top:12px;">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    <span style="width:24px; height:24px; border-radius:50%; background:${item.friendInfo.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${item.friendInfo.avatarText}</span>
-                    <strong style="font-size:13px; color:#1E293B;">${item.friendInfo.friendName} 님의 ${item.friendInfo.isCommon ? '🌟 공통 추천 맛집!' : '추천 맛집'}</strong>
-                </div>
-                ${item.friendInfo.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${item.friendInfo.comment}"</p>` : ''}
-                ${item.friendInfo.youtubeUrl ? `
-                    <div style="margin-top:8px;">
-                        <a href="${item.friendInfo.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:6px 12px; border-radius:8px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
-                            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#EF4444; color:#fff; font-size:11px; flex-shrink:0;">▶</span>
-                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:12px; color:#1F2937;">${item.friendInfo.youtubeTitle || '방영 영상 시청'}</span>
-                        </a>
+        let friendRecommendHtml = '';
+        if (item.friendInfo) {
+            const fi = item.friendInfo;
+            const isMulti = fi.isMultiFriend && fi.allMatches && fi.allMatches.length > 1;
+
+            if (isMulti) {
+                const friendsTitle = fi.allMatches.map(m => `<span style="color:${m.color}; font-weight:800;">${m.friendName}</span>`).join(' & ');
+                const matchCards = fi.allMatches.map(m => `
+                    <div class="multi-friend-subcard" style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; padding:10px; margin-top:8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="width:22px; height:22px; border-radius:50%; background:${m.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;">${m.avatarText}</span>
+                                <strong style="font-size:12px; color:#1E293B;">${m.friendName}</strong>
+                            </div>
+                            <span style="font-size:11px; color:#6B7280;">${m.rate || '🥄🥄🥄🥄'}</span>
+                        </div>
+                        ${m.comment ? `<p style="font-size:11.5px; color:#4B5563; margin:0 0 6px 0; line-height:1.4;">💬 "${m.comment}"</p>` : ''}
+                        ${m.youtubeUrl ? `
+                            <div style="margin-top:6px;">
+                                <a href="${m.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:5px 10px; border-radius:7px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:#EF4444; color:#fff; font-size:10px; flex-shrink:0;">▶</span>
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:11.5px; color:#1F2937;">${m.youtubeTitle || `${m.friendName} 방영 영상 시청`}</span>
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${m.menu && m.menu.length > 0 ? `
+                            <div style="margin-top:6px; font-size:11px; color:#4B5563; line-height:1.4;">
+                                <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${m.menu.slice(0, 4).join(', ')}
+                            </div>
+                        ` : ''}
                     </div>
-                ` : ''}
-                ${item.friendInfo.menu && item.friendInfo.menu.length > 0 ? `
-                    <div style="margin-top:8px; font-size:11px; color:#4B5563; line-height:1.4;">
-                        <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${item.friendInfo.menu.slice(0, 4).join(', ')}
+                `).join('');
+
+                friendRecommendHtml = `
+                    <div class="friend-recommend-card multi" style="background: linear-gradient(135deg, #FFF7ED 0%, #EFF6FF 100%); border: 1.5px solid #CBD5E1; margin-top:12px; border-radius:12px; padding:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <span style="font-size:16px;">🔥</span>
+                            <strong style="font-size:13px; color:#1E293B;">
+                                ${fi.isCommon ? '🌟 [내 찐맛집] & ' : ''}${friendsTitle} 동시 추천 맛집!
+                            </strong>
+                        </div>
+                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin-bottom:6px;">✨ 내가 저장한 맛집과도 일치하는 검증된 맛집입니다!</div>` : ''}
+                        ${matchCards}
                     </div>
-                ` : ''}
-            </div>
-        ` : '';
+                `;
+            } else {
+                friendRecommendHtml = `
+                    <div class="friend-recommend-card" style="background:${fi.isCommon ? '#FFFBEB' : '#F5F3FF'}; border: 1.5px solid ${fi.isCommon ? '#FDE68A' : '#DDD6FE'}; margin-top:12px; border-radius:12px; padding:12px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <span style="width:24px; height:24px; border-radius:50%; background:${fi.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${fi.avatarText}</span>
+                            <strong style="font-size:13px; color:#1E293B;">${fi.friendName} 님의 ${fi.isCommon ? '🌟 공통 추천 맛집!' : '추천 맛집'}</strong>
+                        </div>
+                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin-bottom:6px;">✨ 나의 저장 목록에도 있는 찐맛집!</div>` : ''}
+                        ${fi.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${fi.comment}"</p>` : ''}
+                        ${fi.youtubeUrl ? `
+                            <div style="margin-top:8px;">
+                                <a href="${fi.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:6px 12px; border-radius:8px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#EF4444; color:#fff; font-size:11px; flex-shrink:0;">▶</span>
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:12px; color:#1F2937;">${fi.youtubeTitle || '방영 영상 시청'}</span>
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${fi.menu && fi.menu.length > 0 ? `
+                            <div style="margin-top:8px; font-size:11px; color:#4B5563; line-height:1.4;">
+                                <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${fi.menu.slice(0, 4).join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }
 
         detailPanel.innerHTML = `
             <div class="detail-body">
@@ -3462,56 +3614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // Friend Restaurant & Social Map Overlay System
     // =========================================================================
-    const DEFAULT_DEMO_FRIENDS = [
-        {
-            id: 'friend_minsoo',
-            name: '민수',
-            nickname: '미식가 민수',
-            avatarText: '민',
-            avatarEmoji: '🧑‍🍳',
-            color: '#6366F1',
-            comment: '노포와 진한 국물, 한식 찐맛집만 엄선',
-            restaurants: [
-                { name: '카라멘야', category: '🍣일식', location_large: '서울 서대문구', rate: '🥄🥄🥄🥄🥄', comment: '신촌 매운 라멘 원탑. 불맛 예술!', x: '126.9366', y: '37.5583' },
-                { name: '대성집', category: '🍚한식', location_large: '서울 종로구', rate: '🥄🥄🥄🥄🥄', comment: '도가니탕 끝판왕. 국물이 진짜 깊음!', x: '126.9608', y: '37.5723' },
-                { name: '우래옥', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄🥄', comment: '평양냉면과 불고기 조합 최고', x: '126.9987', y: '37.5682' },
-                { name: '하동관 본점', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄', comment: '맑은 곰탕의 정석', x: '126.9848', y: '37.5654' },
-                { name: '은주정', category: '🍚한식', location_large: '서울 중구', rate: '🥄🥄🥄🥄', comment: '쌈싸먹는 푸짐한 김치찌개', x: '126.9997', y: '37.5694' }
-            ]
-        },
-        {
-            id: 'friend_jieun',
-            name: '지은',
-            nickname: '성수러버 지은',
-            avatarText: '지',
-            avatarEmoji: '🌸',
-            color: '#EC4899',
-            comment: '성수·강남 힙한 카페와 브런치 핫플',
-            restaurants: [
-                { name: '엉클피자', category: '🍕피자', location_large: '서울 용산구', rate: '🥄🥄🥄🥄🥄', comment: '도우가 쫄깃하고 치즈 폭포 대박!', x: '126.9688', y: '37.5283' },
-                { name: '어니언 성수', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄🥄', comment: '팡도르와 빈티지 인더스트리얼 감성', x: '127.0577', y: '37.5447' },
-                { name: '카멜커피 7호점', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '시그니처 카멜커피 크림이 예술', x: '127.0423', y: '37.5458' },
-                { name: '대림창고', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '갤러리 감성과 맛있는 베이커리', x: '127.0560', y: '37.5414' },
-                { name: '오우드 성수', category: '☕카페', location_large: '서울 성동구', rate: '🥄🥄🥄🥄', comment: '소금빵과 채광 좋은 테라스', x: '127.0607', y: '37.5419' }
-            ]
-        },
-        {
-            id: 'friend_junhyeok',
-            name: '준혁',
-            nickname: '고기대장 준혁',
-            avatarText: '준',
-            avatarEmoji: '🥩',
-            color: '#10B981',
-            comment: '육즙 가득한 숯불구이와 고기 맛집',
-            restaurants: [
-                { name: '금돼지식당', category: '🥩고기', location_large: '서울 중구', rate: '🥄🥄🥄🥄🥄', comment: '본삼겹과 눈꽃목살, 미쉐린 빕구르망', x: '127.0116', y: '37.5568' },
-                { name: '몽탄', category: '🥩고기', location_large: '서울 용산구', rate: '🥄🥄🥄🥄🥄', comment: '짚불 훈연 우대갈비와 양파볶음밥', x: '126.9730', y: '37.5348' },
-                { name: '남영돈', category: '🥩고기', location_large: '서울 용산구', rate: '🥄🥄🥄🥄', comment: '가브리살과 항정살 식감이 최고', x: '126.9723', y: '37.5427' },
-                { name: '조박집', category: '🥩고기', location_large: '서울 마포구', rate: '🥄🥄🥄🥄', comment: '수요미식회 나온 마포 돼지갈비', x: '126.9458', y: '37.5411' },
-                { name: '길목', category: '🥩고기', location_large: '서울 강남구', rate: '🥄🥄🥄🥄', comment: '두툼한 목살과 껍살, 꽈리고추 구이', x: '127.0573', y: '37.5218' }
-            ]
-        }
-    ];
+    const DEFAULT_DEMO_FRIENDS = [];
 
     function getCustomFriends() {
         try {
@@ -3688,6 +3791,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return 0;
         });
 
+        const matches = [];
+
         for (const friend of sortedFriends) {
             if (!friend.restaurants || !Array.isArray(friend.restaurants)) continue;
 
@@ -3724,7 +3829,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                return {
+                matches.push({
                     friendId: friend.id,
                     friendName: friend.nickname || friend.name,
                     avatarText: friend.avatarText || '👤',
@@ -3737,12 +3842,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     youtubeTitle: r.youtube_title || null,
                     menu: r.menu || null,
                     roadAddress: r.road_address || null,
-                    naver_url: r.naver_url || null
-                };
+                    naver_url: r.naver_url || null,
+                    kakao_url: r.kakao_url || r.map_url || null
+                });
+                break; // One match per friend
             }
         }
 
-        return null;
+        if (matches.length === 0) return null;
+
+        const primary = matches[0];
+        return {
+            ...primary,
+            isMultiFriend: matches.length > 1,
+            matchesCount: matches.length,
+            friendBadges: matches.map(m => ({ text: m.avatarText, color: m.color, name: m.friendName })),
+            allMatches: matches
+        };
     }
 
     window.getFriendsList = getFriendsList;
@@ -3765,6 +3881,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderFriendChips() {
         const container = document.getElementById('map-friends-chips');
         if (!container) return;
+
+        // Horizontal mouse wheel scrolling support
+        if (!container.__wheelAttached) {
+            container.__wheelAttached = true;
+            container.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    container.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
+
         const friends = getFriendsList();
         const activeIds = getActiveFriendIds();
 
@@ -3787,11 +3915,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const friend = friends.find(f => f.id === friendId);
         if (!friend) return;
 
+        let shouldZoomFriend = null;
         if (idx > -1) {
             // Deactivate
             activeIds.splice(idx, 1);
             saveActiveFriendIds(activeIds);
-            clearFriendMarkers(friendId);
             showDiaryToast(`👥 [${friend.nickname || friend.name}] 맛집 마커 숨김`);
         } else {
             // If this is a following user and restaurants not loaded yet, fetch from Firestore!
@@ -3804,90 +3932,180 @@ document.addEventListener('DOMContentLoaded', () => {
             // Activate
             activeIds.push(friendId);
             saveActiveFriendIds(activeIds);
-            const bounds = new kakao.maps.LatLngBounds();
-            renderFriendMarkers(friend, bounds, true);
-            if (!bounds.isEmpty()) {
-                map.setBounds(bounds);
-            }
+            shouldZoomFriend = friendId;
             showDiaryToast(`⭐ [${friend.nickname || friend.name}] 맛집 마커 겹쳐보기 ON!`);
         }
 
+        renderAllActiveFriendOverlays(shouldZoomFriend);
         renderFriendChips();
+        if (typeof renderFriendModalList === 'function') {
+            renderFriendModalList();
+        }
     };
 
-    function renderFriendMarkers(friend, bounds = null, shouldExtend = false) {
-        if (!friend || !friend.restaurants || !map) return;
-        clearFriendMarkers(friend.id);
+    window.renderAllActiveFriendOverlays = function(zoomFriendId = null) {
+        if (!map) return;
 
-        const friendMarkersList = [];
+        // 1. Clear all existing friend markers
+        if (window.activeFriendMarkersMap) {
+            for (const [id, markerList] of window.activeFriendMarkersMap.entries()) {
+                if (Array.isArray(markerList)) {
+                    markerList.forEach(m => m.setMap(null));
+                }
+            }
+            window.activeFriendMarkersMap.clear();
+        }
+
+        const activeIds = getActiveFriendIds();
+        if (!activeIds || activeIds.length === 0) return;
+
+        const friends = getFriendsList();
+        const activeFriends = friends.filter(f => activeIds.includes(f.id));
+        if (activeFriends.length === 0) return;
+
         const masterRestaurants = (typeof getMasterRestaurantList === 'function') 
             ? getMasterRestaurantList() 
             : ((typeof restaurantData !== 'undefined') ? restaurantData : []);
 
-        friend.restaurants.forEach(r => {
-            // Check if I also have this restaurant in my saved list (isCommon)
-            const commonSaved = masterRestaurants.find(m => 
-                m.name.trim().toLowerCase() === r.name.trim().toLowerCase() ||
-                (m.name.length >= 3 && r.name.length >= 3 && (m.name.includes(r.name) || r.name.includes(m.name)))
-            );
-            const isCommon = !!commonSaved;
+        // Group restaurants across active friends to detect intersections
+        const groupedMap = new Map();
 
-            const place = {
-                place_name: r.name,
-                category_name: r.category || '음식점',
-                address_name: r.road_address || r.location_large || '',
-                road_address_name: r.road_address || r.location_large || '',
-                x: r.x || '126.9780',
-                y: r.y || '37.5665',
-                place_url: r.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(r.name)}`
-            };
+        activeFriends.forEach(friend => {
+            if (!friend.restaurants || !Array.isArray(friend.restaurants)) return;
+            friend.restaurants.forEach(r => {
+                const normName = normalizePlaceName(r.name);
+                if (!normName) return;
+
+                const addr = (r.road_address || r.location_large || '').trim().toLowerCase();
+                const district = (addr.match(/([가-힣]+(?:구|군|시))/g) || [])[0] || '';
+                const rX = parseFloat(r.x || 0);
+                const rY = parseFloat(r.y || 0);
+                const coordKey = (rX > 0 && rY > 0) ? `${rX.toFixed(2)}_${rY.toFixed(2)}` : district;
+                const groupKey = `${normName}_${coordKey}`;
+
+                if (!groupedMap.has(groupKey)) {
+                    let commonSaved = null;
+                    if (Array.isArray(masterRestaurants)) {
+                        commonSaved = masterRestaurants.find(m => {
+                            const normM = normalizePlaceName(m.name);
+                            return (normM === normName) || (normM.length >= 3 && normName.length >= 3 && (normM.includes(normName) || normName.includes(normM)));
+                        });
+                    }
+
+                    groupedMap.set(groupKey, {
+                        name: r.name,
+                        category: r.category || '음식점',
+                        road_address: r.road_address || r.location_large || '',
+                        location_large: r.location_large || '',
+                        x: r.x || '126.9780',
+                        y: r.y || '37.5665',
+                        map_url: r.map_url || '',
+                        kakao_url: r.kakao_url || r.map_url || '',
+                        naver_url: r.naver_url || '',
+                        isCommon: !!commonSaved,
+                        commonSaved: commonSaved || null,
+                        matchedFriends: [{ friend, restaurant: r }]
+                    });
+                } else {
+                    const entry = groupedMap.get(groupKey);
+                    if (!entry.matchedFriends.some(mf => mf.friend.id === friend.id)) {
+                        entry.matchedFriends.push({ friend, restaurant: r });
+                    }
+                }
+            });
+        });
+
+        const bounds = new kakao.maps.LatLngBounds();
+        const allCreatedMarkers = [];
+
+        groupedMap.forEach(entry => {
+            const isMulti = entry.matchedFriends.length > 1;
+            const isCommon = entry.isCommon;
+            const firstMatch = entry.matchedFriends[0];
+
+            // Build allMatches array for detail rendering
+            const allMatches = entry.matchedFriends.map(mf => ({
+                friendId: mf.friend.id,
+                friendName: mf.friend.nickname || mf.friend.name,
+                avatarText: mf.friend.avatarText || '👤',
+                color: mf.friend.color || '#6366F1',
+                comment: mf.restaurant.comment || '',
+                rate: mf.restaurant.rate || '🥄🥄🥄🥄',
+                isCommon: isCommon,
+                myRate: entry.commonSaved ? entry.commonSaved.rate : null,
+                youtubeUrl: mf.restaurant.youtube_url || null,
+                youtubeTitle: mf.restaurant.youtube_title || null,
+                menu: mf.restaurant.menu || null,
+                roadAddress: mf.restaurant.road_address || null,
+                naver_url: mf.restaurant.naver_url || null,
+                kakao_url: mf.restaurant.kakao_url || mf.restaurant.map_url || null
+            }));
+
+            const friendBadges = allMatches.map(m => ({ text: m.avatarText, color: m.color, name: m.friendName }));
 
             const item = {
-                name: r.name,
-                category: r.category || '음식점',
-                location_large: r.location_large || '',
-                rate: r.rate || '🥄🥄🥄🥄',
-                visit_count: commonSaved ? (commonSaved.visit_count || 1) : 1,
-                map_url: place.place_url,
+                name: entry.name,
+                category: entry.category,
+                location_large: entry.location_large,
+                rate: isCommon && entry.commonSaved ? entry.commonSaved.rate : firstMatch.restaurant.rate,
+                visit_count: isCommon && entry.commonSaved ? (entry.commonSaved.visit_count || 1) : 1,
+                map_url: entry.map_url || entry.kakao_url,
                 friendInfo: {
-                    friendId: friend.id,
-                    friendName: friend.nickname || friend.name,
-                    avatarText: friend.avatarText || '👤',
-                    color: friend.color || '#6366F1',
-                    comment: r.comment || '',
-                    rate: r.rate || '🥄🥄🥄🥄',
-                    isCommon: isCommon,
-                    myRate: commonSaved ? commonSaved.rate : null,
-                    youtubeUrl: r.youtube_url || null,
-                    youtubeTitle: r.youtube_title || null,
-                    menu: r.menu || null,
-                    roadAddress: r.road_address || null,
-                    naver_url: r.naver_url || null
+                    ...allMatches[0],
+                    isMultiFriend: isMulti,
+                    matchesCount: allMatches.length,
+                    friendBadges: friendBadges,
+                    allMatches: allMatches
                 }
             };
 
+            const place = {
+                place_name: entry.name,
+                category_name: entry.category,
+                address_name: entry.road_address,
+                road_address_name: entry.road_address,
+                x: entry.x,
+                y: entry.y,
+                place_url: entry.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
+            };
+
             const coords = new kakao.maps.LatLng(place.y, place.x);
-            const friendBadge = { text: friend.avatarText || '👤', color: friend.color || '#6366F1' };
-            const markerType = isCommon ? 'common' : 'friend';
-            const svgUri = getModernMarkerSvg(markerType, item.category, false, friendBadge);
+
+            // Determine markerType & zIndex
+            let markerType = 'friend';
+            let zIndex = 95;
+            if (isCommon && isMulti) {
+                markerType = 'common_multi';
+                zIndex = 140;
+            } else if (isMulti) {
+                markerType = 'multi_friend';
+                zIndex = 130;
+            } else if (isCommon) {
+                markerType = 'common';
+                zIndex = 125;
+            }
+
+            const svgUri = getModernMarkerSvg(markerType, item.category, false, friendBadges[0], friendBadges);
 
             let markerImg = null;
             if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
-                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(32, 32), { offset: new kakao.maps.Point(16, 16) });
+                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
             }
 
             const markerOptions = {
                 map: map,
                 position: coords,
-                zIndex: isCommon ? 120 : 95
+                zIndex: zIndex
             };
             if (markerImg) markerOptions.image = markerImg;
 
             const marker = new kakao.maps.Marker(markerOptions);
-            friendMarkersList.push(marker);
+            allCreatedMarkers.push(marker);
 
-            if (bounds && shouldExtend) {
-                bounds.extend(coords);
+            if (zoomFriendId) {
+                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId)) {
+                    bounds.extend(coords);
+                }
             }
 
             kakao.maps.event.addListener(marker, 'click', () => {
@@ -3895,15 +4113,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        window.activeFriendMarkersMap.set(friend.id, friendMarkersList);
+        window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
+
+        if (zoomFriendId && !bounds.isEmpty()) {
+            map.setBounds(bounds);
+        }
+    };
+
+    // Backward-compatible alias
+    function renderFriendMarkers(friend, bounds = null, shouldExtend = false) {
+        renderAllActiveFriendOverlays(shouldExtend ? friend.id : null);
     }
 
     function clearFriendMarkers(friendId) {
-        if (window.activeFriendMarkersMap && window.activeFriendMarkersMap.has(friendId)) {
-            const list = window.activeFriendMarkersMap.get(friendId);
-            list.forEach(m => m.setMap(null));
-            window.activeFriendMarkersMap.delete(friendId);
-        }
+        renderAllActiveFriendOverlays();
     }
 
     // Modal logic for Friend Management
@@ -3942,7 +4165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const badgeTag = f.id === 'friend_ddoganzip'
                 ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(인기 유튜브 📺)</span>'
                 : (f.id === 'friend_meogeultende'
-                    ? '<span style="font-size:10px; color:#D97706; font-weight:700; background:#FFFBEB; padding:1px 5px; border-radius:4px; border:1px solid #FDE68A;">(성시경 추천 🍲)</span>'
+                    ? '<span style="font-size:10px; color:#2563EB; font-weight:700; background:#EFF6FF; padding:1px 5px; border-radius:4px; border:1px solid #BFDBFE;">(성시경 추천 🍲)</span>'
                     : (isDemo 
                         ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' 
                         : (isFollowing 
@@ -3958,7 +4181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="friend-item-actions">
-                        <button type="button" class="btn-wishlist-toggle" style="font-size:11px; padding:3px 8px; border-radius:6px; cursor:pointer; background:${isActive ? '#EDE9FE' : '#F3F4F6'}; color:${isActive ? '#6D28D9' : '#4B5563'}; border:1px solid ${isActive ? '#DDD6FE' : '#D1D5DB'}; font-weight:700;" onclick="window.toggleFriendOverlay('${f.id}'); renderFriendModalList();">
+                        <button type="button" class="btn-wishlist-toggle" style="font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; background:${isActive ? '#EDE9FE' : '#F3F4F6'}; color:${isActive ? '#6D28D9' : '#4B5563'}; border:1px solid ${isActive ? '#DDD6FE' : '#D1D5DB'}; font-weight:700; white-space:nowrap; flex-shrink:0; min-width:84px; text-align:center;" onclick="window.toggleFriendOverlay('${f.id}'); renderFriendModalList();">
                             ${isActive ? '지도 켜짐 🟢' : '지도 꺼짐 ⚪'}
                         </button>
                         ${(!isDemo && !isFollowing) ? `

@@ -1823,6 +1823,31 @@ main {
     gap: 3px;
 }
 
+.marker-capsule-card.is-multi {
+    border-color: rgba(124, 58, 237, 0.55);
+    background: linear-gradient(135deg, #FFFFFF 65%, #F5F3FF 100%);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.18);
+}
+
+.marker-capsule-card.is-multi.is-common {
+    border-color: rgba(245, 158, 11, 0.65);
+    background: linear-gradient(135deg, #FFFBEB 30%, #F5F3FF 100%);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+}
+
+.capsule-badge-multi {
+    background: #EDE9FE;
+    color: #6D28D9;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    border: 0.5px solid #DDD6FE;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
 /* ==========================================================================
    MAP FRIEND OVERLAY BAR & CHIPS
    ========================================================================== */
@@ -1882,6 +1907,8 @@ main {
     padding-bottom: 2px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .map-friends-chips::-webkit-scrollbar {
@@ -2028,29 +2055,50 @@ main {
     border: 1px solid #E5E7EB;
     border-radius: 10px;
     padding: 10px 12px;
+    gap: 12px;
 }
 
 .friend-item-left {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.friend-item-info {
+    min-width: 0;
+    flex: 1;
 }
 
 .friend-item-info strong {
     font-size: 0.88rem;
     color: #1F2937;
     display: block;
+    word-break: keep-all;
 }
 
 .friend-item-info span {
     font-size: 0.75rem;
     color: #6B7280;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .friend-item-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+}
+
+.friend-item-actions .btn-wishlist-toggle {
+    white-space: nowrap !important;
+    min-width: 84px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .btn-del-friend {
