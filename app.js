@@ -3271,7 +3271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
 
                 friendRecommendHtml = `
-                    <div class="friend-recommend-card multi">
+                    <div class="friend-recommend-card multi" style="flex-shrink:0 !important; width:100%; box-sizing:border-box; display:block;">
                         <div class="multi-recommend-header">
                             <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
                                 <span style="font-size:15px; flex-shrink:0;">🔥</span>

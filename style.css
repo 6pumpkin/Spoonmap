@@ -1238,7 +1238,10 @@ main {
 .detail-body {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+}
+
+.detail-body > * {
+    flex-shrink: 0;
 }
 
 .back-to-list-btn {
@@ -1855,10 +1858,14 @@ main {
     background: linear-gradient(135deg, #FFF7ED 0%, #EFF6FF 50%, #F5F3FF 100%);
     border: 1.5px solid #CBD5E1;
     margin-top: 12px;
+    margin-bottom: 12px;
     border-radius: 12px;
-    padding: 12px 12px 8px 12px;
+    padding: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    flex-shrink: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
 }
 
 .multi-recommend-header {
@@ -1867,6 +1874,7 @@ main {
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 8px;
+    flex-shrink: 0;
 }
 
 .multi-swipe-hint {
@@ -1891,9 +1899,12 @@ main {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
+    padding: 4px 2px 8px 2px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .multi-friend-carousel-track::-webkit-scrollbar {
@@ -1902,24 +1913,27 @@ main {
 
 .multi-friend-carousel-track .multi-friend-subcard {
     flex: 0 0 calc(100% - 24px);
-    max-width: 100%;
+    width: calc(100% - 24px);
+    min-width: 250px;
     scroll-snap-align: center;
     box-sizing: border-box;
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 10px;
-    padding: 10px;
+    padding: 10px 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 
 .multi-friend-dots {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    margin-top: 4px;
+    gap: 6px;
+    margin-top: 6px;
+    flex-shrink: 0;
 }
 
 .multi-dot {
@@ -2067,6 +2081,7 @@ main {
     padding: 12px;
     margin-bottom: 14px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    flex-shrink: 0 !important;
 }
 
 /* Friend Management Modal */
