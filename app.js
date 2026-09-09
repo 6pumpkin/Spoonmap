@@ -872,6 +872,50 @@ function getKakaoDirectionsUrl(item, placeData) {
 }
 window.getKakaoDirectionsUrl = getKakaoDirectionsUrl;
 
+// ─── Kakao & Naver Map URLs Helper ───
+// Guarantees Kakao Map button NEVER points to Naver, and Naver Map button uses direct short URL if available
+function getPlaceMapUrls(item, placeData = null) {
+    const placeName = placeData?.place_name || item?.name || '';
+    let kakaoUrl = '';
+    let naverUrl = '';
+
+    // 1. Kakao Map URL resolution:
+    // Extract Kakao Place ID if present anywhere (placeData.id, place_url, kakao_url, map_url)
+    const kakaoPlaceId = (placeData && placeData.id) 
+        ? String(placeData.id).trim() 
+        : (extractKakaoPlaceId(placeData?.place_url) || 
+           extractKakaoPlaceId(item?.kakao_url) || 
+           (item?.map_url && !item.map_url.includes('naver.') ? extractKakaoPlaceId(item.map_url) : ''));
+
+    if (kakaoPlaceId) {
+        kakaoUrl = `https://place.map.kakao.com/${kakaoPlaceId}`;
+    } else if (placeData?.place_url && (placeData.place_url.includes('kakao.com') || placeData.place_url.includes('daum.net'))) {
+        kakaoUrl = placeData.place_url;
+    } else if (item?.kakao_url && (item.kakao_url.includes('kakao.com') || item.kakao_url.includes('daum.net'))) {
+        kakaoUrl = item.kakao_url;
+    } else if (item?.map_url && (item.map_url.includes('kakao.com') || item.map_url.includes('daum.net'))) {
+        kakaoUrl = item.map_url;
+    } else {
+        kakaoUrl = `https://map.kakao.com/link/search/${encodeURIComponent(placeName)}`;
+    }
+
+    // 2. Naver Map URL resolution:
+    if (item?.naver_url && (item.naver_url.includes('naver.me') || item.naver_url.includes('naver.com'))) {
+        naverUrl = item.naver_url;
+    } else if (item?.map_url && (item.map_url.includes('naver.me') || item.map_url.includes('naver.com'))) {
+        naverUrl = item.map_url;
+    } else if (item?.friendInfo?.naver_url) {
+        naverUrl = item.friendInfo.naver_url;
+    } else {
+        const loc = item?.location_small ? item.location_small.split('/').pop().trim() : (item?.location_large || '');
+        const naverQuery = encodeURIComponent(loc ? `${loc} ${placeName}`.trim() : placeName);
+        naverUrl = `https://map.naver.com/p/search/${naverQuery}`;
+    }
+
+    return { kakaoUrl, naverUrl };
+}
+window.getPlaceMapUrls = getPlaceMapUrls;
+
 function isSavedRestaurantMatch(r, place) {
     if (!r || !place) return false;
 
@@ -1957,7 +2001,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div style="font-size:0.75rem; color:#9CA3AF; margin-bottom:10px;">${address || ''}</div>
                             <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="${placeUrl || item.map_url || '#'}" target="_blank" rel="noopener noreferrer" style="background:#FEE2E2; color:#DC2626; text-decoration:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:800;">카카오맵 📍</a>
+                                <a href="${(typeof getPlaceMapUrls === 'function' ? getPlaceMapUrls(item, { place_url: placeUrl }).kakaoUrl : (placeUrl || item.map_url || '#'))}" target="_blank" rel="noopener noreferrer" style="background:#FEE2E2; color:#DC2626; text-decoration:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:800;">카카오맵 📍</a>
                                 <button type="button" onclick="this.closest('.map-winner-pulse-marker').remove()" style="background:#F3F4F6; color:#4B5563; border:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:700; cursor:pointer;">닫기</button>
                             </div>
                         </div>
@@ -2810,61 +2854,91 @@ document.addEventListener('DOMContentLoaded', () => {
             else t.classList.remove('active');
         });
 
+        heroImg.setAttribute('referrerpolicy', 'no-referrer');
         heroImg.onerror = function() {
             this.onerror = null;
-            this.src = photo.thumbnail_url;
+            this.src = photo.fallback_url || photo.thumbnail_url;
         };
 
         heroImg.src = photo.image_url || photo.thumbnail_url;
     };
 
-    function fetchPlaceFoodPhotos(placeName, categoryName, containerEl) {
+    function fetchPlaceFoodPhotos(placeName, categoryName, containerEl, itemData = null) {
         if (!containerEl) return;
         containerEl.style.display = 'block';
         containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 대표 음식 사진 찾는 중...</div>`;
 
-        const cleanName = placeName.replace(/본점|지점|점$/g, '').trim();
+        const cleanName = (placeName || '').replace(/본점|직영점|지점|점$/g, '').trim();
         let catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타|맛집/g, '');
         
-        // Strict food dish query (e.g. "을밀대 냉면" or "토속촌 삼계탕") -> eliminates storefront/parking/exterior blog post photos!
-        const query = catTag ? `${cleanName} ${catTag}`.trim() : `${cleanName} 음식`;
+        // 1. Build optimal search query prioritizing signature dishes
+        let dishQuery = '';
+        if (itemData) {
+            if (itemData.friendInfo && itemData.friendInfo.menu && itemData.friendInfo.menu.length > 0) {
+                const firstDish = String(itemData.friendInfo.menu[0]).replace(/\(.*?\)/g, '').replace(/[0-9,원]/g, '').trim();
+                if (firstDish && firstDish.length >= 2) dishQuery = firstDish;
+            } else if (itemData.menu) {
+                const mArr = Array.isArray(itemData.menu) ? itemData.menu : String(itemData.menu).split(',');
+                if (mArr.length > 0) {
+                    const firstDish = String(mArr[0]).replace(/\(.*?\)/g, '').replace(/[0-9,원]/g, '').trim();
+                    if (firstDish && firstDish.length >= 2) dishQuery = firstDish;
+                }
+            }
+        }
+
+        // e.g. "카쿠시타 명란크림우동" -> direct crisp food dish photos from blog reviews!
+        const query = dishQuery ? `${cleanName} ${dishQuery}` : (catTag ? `${cleanName} ${catTag} 음식` : `${cleanName} 맛집 음식`);
         const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
-        const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=15`;
+        const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=25`;
 
         fetch(imgUrl, { headers })
             .then(res => res.json())
             .then(data => {
                 let photos = [];
                 if (data && data.documents && data.documents.length > 0) {
-                    // Filter out non-food images (building exterior, entrance, menu board, receipt, map, interior)
+                    const banned = [
+                        'menu', '메뉴', '가격', '차림표', '영수증', 'receipt', 'bill',
+                        'map', '약도', '지도', '위치', '오시는', 'signboard', '간판',
+                        '외관', '입구', '출구', '건물', 'interior', '인테리어', '내부',
+                        '테이블', '좌석', '매장', '주차', '화장실', '포장', '배달',
+                        '포스터', '배너', '쿠폰', '이벤트', 'screenshot', '스크린샷', '캡처', 'capture'
+                    ];
+
                     const filtered = data.documents.filter(doc => {
                         const str = (doc.doc_url + ' ' + doc.image_url + ' ' + doc.display_sitename).toLowerCase();
-                        if (str.includes('menu') || str.includes('영수증') || str.includes('receipt') || 
-                            str.includes('map') || str.includes('signboard') || str.includes('간판') || 
-                            str.includes('외관') || str.includes('입구') || str.includes('가격표')) {
-                            return false;
+                        if (banned.some(b => str.includes(b))) return false;
+
+                        // Resolution & Aspect Ratio filter: Must be genuine camera food photo
+                        const w = parseInt(doc.width || 0, 10);
+                        const h = parseInt(doc.height || 0, 10);
+                        if (w > 0 && h > 0) {
+                            if (w < 400 || h < 300) return false;
+                            const ratio = w / h;
+                            if (ratio < 0.6 || ratio > 2.0) return false;
                         }
                         return true;
                     });
 
-                    const docsToUse = filtered.length > 0 ? filtered : data.documents;
+                    const docsToUse = filtered.length >= 2 ? filtered : data.documents;
 
                     docsToUse.forEach(doc => {
-                        const hdCdnUrl = doc.thumbnail_url ? doc.thumbnail_url.replace(/130x130_\d+_c/, '800x800_85_c') : '';
                         photos.push({
-                            image_url: doc.image_url || hdCdnUrl,
-                            fallback_url: hdCdnUrl || doc.thumbnail_url,
-                            thumbnail_url: doc.thumbnail_url
+                            image_url: doc.image_url,
+                            fallback_url: doc.thumbnail_url,
+                            thumbnail_url: doc.thumbnail_url,
+                            width: doc.width,
+                            height: doc.height
                         });
                     });
                 }
 
-                // Deduplicate and take top 5 photos
+                // Deduplicate by thumbnail_url and image_url
                 const uniquePhotos = [];
                 const seen = new Set();
                 for (const p of photos) {
-                    if (!seen.has(p.image_url)) {
-                        seen.add(p.image_url);
+                    const key = p.thumbnail_url || p.image_url;
+                    if (!seen.has(key)) {
+                        seen.add(key);
                         uniquePhotos.push(p);
                     }
                     if (uniquePhotos.length >= 5) break;
@@ -2882,6 +2956,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
                                          src="${doc.thumbnail_url}" 
                                          alt="음식 사진 ${idx + 1}"
+                                         referrerpolicy="no-referrer"
                                          onclick="window.switchGalleryPhoto(${idx})">
                                 `).join('')}
                             </div>
@@ -2890,7 +2965,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     containerEl.innerHTML = `
                         <div class="main-photo-hero">
-                            <img id="gallery-main-img" src="${firstImg.image_url}" alt="${placeName} 고화질 음식 사진" onerror="this.onerror=null; this.src='${firstImg.fallback_url}';">
+                            <img id="gallery-main-img" 
+                                 src="${firstImg.image_url}" 
+                                 alt="${placeName} 고화질 음식 사진" 
+                                 referrerpolicy="no-referrer"
+                                 onerror="this.onerror=null; this.src='${firstImg.fallback_url}';">
                         </div>
                         ${thumbsHtml}
                     `;
@@ -3003,10 +3082,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!standardCategory) standardCategory = displayCategory;
 
         const isWishlisted = isPlaceInWishlist(item.name, placeData);
+        const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls(item, placeData) : {
+            kakaoUrl: `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+            naverUrl: `https://map.naver.com/p/search/${encodeURIComponent(item.name)}`
+        };
         const safeName = (item.name || '').replace(/'/g, "\\'");
         const safeCategory = (standardCategory || '').replace(/'/g, "\\'");
         const safeAddress = (displayAddress || '').replace(/'/g, "\\'");
-        const safeUrl = (finalUrl || '').replace(/'/g, "\\'");
+        const safeUrl = (mapUrls.kakaoUrl || '').replace(/'/g, "\\'");
         const safeLarge = (determinedLarge || '').replace(/'/g, "\\'");
         const safeSmall = (determinedSmall || '').replace(/'/g, "\\'");
 
@@ -3063,13 +3146,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="map-link-container">
-                    <a href="https://map.naver.com/p/search/${encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name)}" target="_blank" class="detail-naver-btn">
+                    <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="detail-naver-btn">
                         네이버 지도
                     </a>
-                    <a href="${finalUrl}" target="_blank" class="detail-kakao-btn">
+                    <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="detail-kakao-btn">
                         카카오맵
                     </a>
-                    <a href="${routeUrl}" target="_blank" class="detail-route-btn">
+                    <a href="${routeUrl}" target="_blank" rel="noopener noreferrer" class="detail-route-btn">
                         길찾기
                     </a>
                 </div>
@@ -3084,7 +3167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userPhotos && userPhotos.length > 0) {
             renderUserPhotosInMapGallery(item.name, userPhotos, photoGalleryEl);
         } else {
-            fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl);
+            fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl, item);
         }
 
         // If unvisited, fetch real blog review summary snippet via Daum Blog API!
@@ -5226,8 +5309,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Count spoons or format rate
         const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
-        const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
-        const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+        const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls(item) : {
+            kakaoUrl: `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+            naverUrl: `https://map.naver.com/p/search/${encodeURIComponent(item.name)}`
+        };
 
         if (isCompact) {
             card.className = 'compact-card-row' + (item.closed ? ' is-closed' : '');
@@ -5266,8 +5351,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${'🥄'.repeat(spoonCount)}
                 </div>
                 <div class="compact-col-cell compact-map-cell">
-                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="compact-map-btn naver-map-btn" onclick="event.stopPropagation()">Naver 🗺️</a>
-                    <a href="${kakaoUrl}" target="_blank" class="compact-map-btn kakao-map-btn" onclick="event.stopPropagation()">Kakao 📍</a>
+                    <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="compact-map-btn naver-map-btn" onclick="event.stopPropagation()">Naver 🗺️</a>
+                    <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="compact-map-btn kakao-map-btn" onclick="event.stopPropagation()">Kakao 📍</a>
                 </div>
             `;
         } else {
@@ -5291,10 +5376,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${menuTagsHtml ? `<div class="card-menu-list">${menuTagsHtml}</div>` : ''}
                 </div>
                 <div class="card-footer">
-                    <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="map-link-btn naver-link" onclick="event.stopPropagation()">
+                    <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="map-link-btn naver-link" onclick="event.stopPropagation()">
                         <span>Naver</span> 🗺️
                     </a>
-                    <a href="${kakaoUrl}" target="_blank" class="map-link-btn kakao-link" onclick="event.stopPropagation()">
+                    <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="map-link-btn kakao-link" onclick="event.stopPropagation()">
                         <span>Kakao</span> 📍
                     </a>
                 </div>
@@ -5424,9 +5509,12 @@ function openRestaurantDetailModal(item) {
     }
 
     // 6. Map Action Buttons
-    const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
-    if (naverBtn) naverBtn.href = `https://map.naver.com/p/search/${naverQuery}`;
-    if (kakaoBtn) kakaoBtn.href = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+    const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls(item) : {
+        kakaoUrl: `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+        naverUrl: `https://map.naver.com/p/search/${encodeURIComponent(item.name)}`
+    };
+    if (naverBtn) naverBtn.href = mapUrls.naverUrl;
+    if (kakaoBtn) kakaoBtn.href = mapUrls.kakaoUrl;
     if (routeBtn) routeBtn.href = getKakaoDirectionsUrl(item);
 
     // 7. Visit History Timeline with rich memo & clickable date
@@ -6010,8 +6098,10 @@ function openMobileOverlay(item, updateHash = true) {
     const content = document.getElementById('mobile-card-detail-content');
     if (!overlay || !content) return;
 
-    const naverQuery = encodeURIComponent(item.location_small ? item.location_small.split('/').pop().trim() + ' ' + item.name : item.name);
-    const kakaoUrl = item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`;
+    const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls(item) : {
+        kakaoUrl: `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+        naverUrl: `https://map.naver.com/p/search/${encodeURIComponent(item.name)}`
+    };
     const menuTagsHtml = item.menu && item.menu.length > 0 
         ? item.menu.map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
         : '';
@@ -6027,8 +6117,8 @@ function openMobileOverlay(item, updateHash = true) {
         </p>
         ${menuTagsHtml ? `<div class="overlay-menu-list">${menuTagsHtml}</div>` : ''}
         <div class="overlay-links">
-            <a href="https://map.naver.com/p/search/${naverQuery}" target="_blank" class="overlay-naver">네이버 지도에서 보기</a>
-            <a href="${kakaoUrl}" target="_blank" class="overlay-kakao">카카오맵에서 보기</a>
+            <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="overlay-naver">네이버 지도에서 보기</a>
+            <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="overlay-kakao">카카오맵에서 보기</a>
         </div>
     `;
 
@@ -6426,8 +6516,10 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
     const cleanTitle = cleanMarkdownText(placeName);
     const cleanAddr = cleanMarkdownText(addr);
     const cleanDesc = cleanMarkdownText(desc);
-    const kakaoUrl = mapUrl || `https://map.kakao.com/link/search/${encodeURIComponent(cleanTitle)}`;
-    const naverUrl = `https://map.naver.com/p/search/${encodeURIComponent(cleanAddr ? cleanAddr + ' ' + cleanTitle : cleanTitle)}`;
+    const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls({ name: cleanTitle, map_url: mapUrl, location_large: cleanAddr }) : {
+        kakaoUrl: (mapUrl && !mapUrl.includes('naver.') ? mapUrl : `https://map.kakao.com/link/search/${encodeURIComponent(cleanTitle)}`),
+        naverUrl: (mapUrl && mapUrl.includes('naver.') ? mapUrl : `https://map.naver.com/p/search/${encodeURIComponent(cleanAddr ? cleanAddr + ' ' + cleanTitle : cleanTitle)}`)
+    };
 
     return `
         <div class="rec-card-standard">
@@ -6436,8 +6528,8 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
             <div class="rec-place-meta">📍 <b>위치:</b> ${cleanAddr}</div>
             <p class="rec-place-desc">${cleanDesc}</p>
             <div class="rec-map-btns">
-                <a href="${kakaoUrl}" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
-                <a href="${naverUrl}" target="_blank" class="rec-naver-pill-btn">🗺️ 네이버지도에서 보기</a>
+                <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
+                <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="rec-naver-pill-btn">🗺️ 네이버지도에서 보기</a>
             </div>
         </div>
     `;
