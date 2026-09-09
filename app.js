@@ -2360,6 +2360,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     rate: '카카오맵 데이터'
                 };
 
+                if (typeof findFriendInfoForPlace === 'function') {
+                    const fi = findFriendInfoForPlace(item, place, !!savedMatch);
+                    if (fi) item.friendInfo = fi;
+                }
+
                 processedResults.push({ item, place, isSaved: !!savedMatch });
             });
 
@@ -2428,8 +2433,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const isWishlist = res.isWishlist || isPlaceInWishlist(item.name || place.place_name, place);
             const coords = new kakao.maps.LatLng(place.y, place.x);
             const visits = isSaved ? (item.visit_count || 1) : 0;
+            let friendInfo = item.friendInfo;
+            if (!friendInfo && typeof findFriendInfoForPlace === 'function') {
+                friendInfo = findFriendInfoForPlace(item, place, isSaved);
+                if (friendInfo) item.friendInfo = friendInfo;
+            }
+
             let tagBadge = '';
-            if (isSaved) {
+            if (friendInfo) {
+                if (friendInfo.isCommon) {
+                    tagBadge = `<span class="saved-place-chip gold">🌟 나 & ${friendInfo.friendName} 공통</span>`;
+                } else {
+                    tagBadge = `<span class="saved-place-chip red" style="background:${friendInfo.color}15; color:${friendInfo.color}; border:1px solid ${friendInfo.color}44;">📺 ${friendInfo.friendName} 추천</span>`;
+                }
+            } else if (isSaved) {
                 tagBadge = visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`;
             } else if (isWishlist) {
                 tagBadge = `<span class="saved-place-chip yellow">⭐ 찜 식당</span>`;
@@ -2683,16 +2700,23 @@ document.addEventListener('DOMContentLoaded', () => {
             window.currentMapOverlay = null;
         }
 
+        if (!item.friendInfo && typeof findFriendInfoForPlace === 'function') {
+            const fi = findFriendInfoForPlace(item, place, isSaved);
+            if (fi) item.friendInfo = fi;
+        }
+
+        const effectiveSaved = isSaved || !!item.friendInfo?.isCommon;
+
         const detailsUrl = place?.place_url || item?.map_url || '';
         window.currentSelectedPlaceData = {
             item,
             address: place?.road_address_name || place?.address_name || item?.location_large || '',
-            isSaved,
+            isSaved: effectiveSaved,
             detailsUrl,
             place
         };
 
-        const overlayContent = createMarkerCapsuleHtml(item, place, isSaved, isWishlist);
+        const overlayContent = createMarkerCapsuleHtml(item, place, effectiveSaved, isWishlist);
         window.currentMapOverlay = new kakao.maps.CustomOverlay({
             position: coords,
             content: overlayContent,
@@ -2701,7 +2725,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         window.currentMapOverlay.setMap(map);
 
-        showPlaceDetail(item, place?.road_address_name || place?.address_name, isSaved, detailsUrl, place);
+        showPlaceDetail(item, place?.road_address_name || place?.address_name, effectiveSaved, detailsUrl, place);
     }
 
     function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false, friendInfo = null) {
@@ -2711,16 +2735,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const visits = isSaved ? (item?.visit_count || 1) : 0;
         const isFlame = isSaved && visits >= 2;
 
-        if (friendInfo) {
-            item.friendInfo = friendInfo;
+        let finalFriendInfo = friendInfo || item.friendInfo;
+        if (!finalFriendInfo && typeof findFriendInfoForPlace === 'function') {
+            finalFriendInfo = findFriendInfoForPlace(item, place, isSaved);
+            if (finalFriendInfo) item.friendInfo = finalFriendInfo;
+        }
+
+        if (finalFriendInfo) {
+            item.friendInfo = finalFriendInfo;
         }
 
         let markerImg = null;
         if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
             let svgUri = '';
-            if (friendInfo) {
-                const markerType = friendInfo.isCommon ? 'common' : 'friend';
-                const friendBadge = { text: friendInfo.avatarText || '👤', color: friendInfo.color || '#6366F1' };
+            if (finalFriendInfo) {
+                const markerType = finalFriendInfo.isCommon ? 'common' : 'friend';
+                const friendBadge = { text: finalFriendInfo.avatarText || '👤', color: finalFriendInfo.color || '#6366F1' };
                 svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadge);
             } else if (isSaved) {
                 svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame);
@@ -2735,12 +2765,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const markerOptions = {
             map: map,
             position: coords,
-            zIndex: friendInfo ? (friendInfo.isCommon ? 120 : 95) : (isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1)))
+            zIndex: finalFriendInfo ? (finalFriendInfo.isCommon ? 120 : 95) : (isFlame ? 110 : (isSaved ? 100 : (isWishlist ? 90 : 1)))
         };
         if (markerImg) {
             markerOptions.image = markerImg;
         } else {
-            markerOptions.opacity = (isSaved || isWishlist || friendInfo) ? 1 : 0.6;
+            markerOptions.opacity = (isSaved || isWishlist || finalFriendInfo) ? 1 : 0.6;
         }
 
         const marker = new kakao.maps.Marker(markerOptions);
@@ -2911,7 +2941,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showPlaceDetail(item, preciseAddress, isSavedParam, placeUrl, placeData) {
-        const isSaved = isOwnerUser() ? isSavedParam : false;
+        if (!item.friendInfo && typeof findFriendInfoForPlace === 'function') {
+            const fi = findFriendInfoForPlace(item, placeData, isSavedParam);
+            if (fi) item.friendInfo = fi;
+        }
+
+        const isSaved = isOwnerUser() ? (isSavedParam || !!item.friendInfo?.isCommon) : false;
         const detailPanel = document.getElementById('map-place-detail');
         const resultsList = document.getElementById('map-results-list');
         
@@ -3508,6 +3543,114 @@ document.addEventListener('DOMContentLoaded', () => {
         const following = getFollowingFriendsAsOverlay();
         return [...base, ...custom, ...following];
     }
+
+    function normalizePlaceName(name) {
+        if (!name) return '';
+        return String(name)
+            .replace(/\s+/g, '')
+            .replace(/\(.*?\)/g, '')
+            .replace(/\[.*?\]/g, '')
+            .replace(/본점|직영점|지점|점$/g, '')
+            .toLowerCase();
+    }
+
+    function findFriendInfoForPlace(item, placeData, isSavedParam = false) {
+        if (!item && !placeData) return null;
+        const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+        if (!friends || friends.length === 0) return null;
+
+        const rawTargetName = (placeData?.place_name || item?.name || '').trim();
+        if (!rawTargetName) return null;
+
+        const normTarget = normalizePlaceName(rawTargetName);
+        const targetAddr = (placeData?.road_address_name || placeData?.address_name || item?.location_large || item?.road_address || '').trim().toLowerCase();
+        const targetX = parseFloat(placeData?.x || item?.x || 0);
+        const targetY = parseFloat(placeData?.y || item?.y || 0);
+        const targetDistricts = targetAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
+
+        const masterRestaurants = (typeof getMasterRestaurantList === 'function') 
+            ? getMasterRestaurantList() 
+            : ((typeof restaurantData !== 'undefined') ? restaurantData : []);
+
+        let savedMatchRef = null;
+        const isSaved = isSavedParam || (Array.isArray(masterRestaurants) && masterRestaurants.some(m => {
+            if (typeof isSavedRestaurantMatch === 'function' && placeData) {
+                if (isSavedRestaurantMatch(m, placeData)) {
+                    savedMatchRef = m;
+                    return true;
+                }
+            }
+            const normM = normalizePlaceName(m.name);
+            const isMatch = (normM === normTarget) || (normM.length >= 2 && normTarget.length >= 2 && (normM.includes(normTarget) || normTarget.includes(normM)));
+            if (isMatch) savedMatchRef = m;
+            return isMatch;
+        }));
+
+        if (savedMatchRef && item) {
+            if (!item.rate || item.rate === '카카오맵 데이터') item.rate = savedMatchRef.rate;
+            if (!item.visit_count) item.visit_count = savedMatchRef.visit_count || 1;
+            if (item.closed === undefined) item.closed = savedMatchRef.closed;
+            if (!item.category || item.category === '음식점') item.category = savedMatchRef.category;
+        }
+
+        for (const friend of friends) {
+            if (!friend.restaurants || !Array.isArray(friend.restaurants)) continue;
+
+            for (const r of friend.restaurants) {
+                const rawRName = (r.name || '').trim();
+                if (!rawRName) continue;
+
+                const normR = normalizePlaceName(rawRName);
+                const isExact = (normTarget === normR);
+                const isSub = (normTarget.length >= 2 && normR.length >= 2 && 
+                              (normTarget.includes(normR) || normR.includes(normTarget)));
+
+                if (!isExact && !isSub) continue;
+
+                // District compatibility check if both addresses are present
+                const rAddr = (r.road_address || r.location_large || '').trim().toLowerCase();
+                if (rAddr && targetAddr) {
+                    const rDistricts = rAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
+                    const rGu = rDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
+                    const targetGu = targetDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
+                    if (rGu && targetGu && rGu !== targetGu && !rGu.includes(targetGu) && !targetGu.includes(rGu)) {
+                        continue;
+                    }
+                }
+
+                // Coordinate proximity check (if both have GPS coords)
+                const rX = parseFloat(r.x || 0);
+                const rY = parseFloat(r.y || 0);
+                if (targetX > 0 && targetY > 0 && rX > 0 && rY > 0) {
+                    const dx = Math.abs(targetX - rX);
+                    const dy = Math.abs(targetY - rY);
+                    if (dx > 0.1 || dy > 0.1) {
+                        if (!isExact) continue;
+                    }
+                }
+
+                return {
+                    friendId: friend.id,
+                    friendName: friend.nickname || friend.name,
+                    avatarText: friend.avatarText || '👤',
+                    color: friend.color || '#6366F1',
+                    comment: r.comment || '',
+                    rate: r.rate || '🥄🥄🥄🥄',
+                    isCommon: isSaved,
+                    myRate: (item && item.rate && item.rate !== '카카오맵 데이터') ? item.rate : (savedMatchRef ? savedMatchRef.rate : null),
+                    youtubeUrl: r.youtube_url || null,
+                    youtubeTitle: r.youtube_title || null,
+                    menu: r.menu || null,
+                    roadAddress: r.road_address || null
+                };
+            }
+        }
+
+        return null;
+    }
+
+    window.getFriendsList = getFriendsList;
+    window.findFriendInfoForPlace = findFriendInfoForPlace;
 
     function getActiveFriendIds() {
         try {
