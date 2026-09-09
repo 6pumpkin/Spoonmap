@@ -3622,6 +3622,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof window !== 'undefined' && window.DDOGANZIP_FRIEND_DATA) {
             base.push(window.DDOGANZIP_FRIEND_DATA);
         }
+        if (typeof window !== 'undefined' && window.MEOGEULTENDE_FRIEND_DATA) {
+            base.push(window.MEOGEULTENDE_FRIEND_DATA);
+        }
         base.push(...DEFAULT_DEMO_FRIENDS);
         const following = getFollowingFriendsAsOverlay();
         return [...base, ...custom, ...following];
@@ -3676,7 +3679,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!item.category || item.category === '음식점') item.category = savedMatchRef.category;
         }
 
-        for (const friend of friends) {
+        const activeFriendIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+        const sortedFriends = [...friends].sort((a, b) => {
+            const aAct = activeFriendIds.includes(a.id);
+            const bAct = activeFriendIds.includes(b.id);
+            if (aAct && !bAct) return -1;
+            if (!aAct && bAct) return 1;
+            return 0;
+        });
+
+        for (const friend of sortedFriends) {
             if (!friend.restaurants || !Array.isArray(friend.restaurants)) continue;
 
             for (const r of friend.restaurants) {
@@ -3724,7 +3736,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     youtubeUrl: r.youtube_url || null,
                     youtubeTitle: r.youtube_title || null,
                     menu: r.menu || null,
-                    roadAddress: r.road_address || null
+                    roadAddress: r.road_address || null,
+                    naver_url: r.naver_url || null
                 };
             }
         }
@@ -3848,7 +3861,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     youtubeUrl: r.youtube_url || null,
                     youtubeTitle: r.youtube_title || null,
                     menu: r.menu || null,
-                    roadAddress: r.road_address || null
+                    roadAddress: r.road_address || null,
+                    naver_url: r.naver_url || null
                 }
             };
 
@@ -3922,16 +3936,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countEl) countEl.textContent = `${friends.length}명`;
 
         listEl.innerHTML = friends.map(f => {
-            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip';
+            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende';
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
             const badgeTag = f.id === 'friend_ddoganzip'
                 ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(인기 유튜브 📺)</span>'
-                : (isDemo 
-                    ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' 
-                    : (isFollowing 
-                        ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
-                        : ''));
+                : (f.id === 'friend_meogeultende'
+                    ? '<span style="font-size:10px; color:#D97706; font-weight:700; background:#FFFBEB; padding:1px 5px; border-radius:4px; border:1px solid #FDE68A;">(성시경 추천 🍲)</span>'
+                    : (isDemo 
+                        ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 프리셋)</span>' 
+                        : (isFollowing 
+                            ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
+                            : '')));
             return `
                 <div class="friend-modal-item">
                     <div class="friend-item-left">
