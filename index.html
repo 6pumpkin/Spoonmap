@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609212345">
+    <link rel="stylesheet" href="style.css?v=202609220014">
 </head>
 
 <body class="light-theme">
@@ -57,6 +57,15 @@
             <button class="tab-btn" data-tab="profile">PROFILE</button>
         </div>
     </nav>
+
+    <!-- Shared Map Visitor Welcome Banner -->
+    <div id="shared-map-banner" class="shared-map-banner" style="display:none;">
+        <div class="shared-banner-info">
+            <span class="shared-banner-icon">👑</span>
+            <span id="shared-banner-text" class="shared-banner-text">맛집 지도</span>
+        </div>
+        <button type="button" id="btn-exit-shared-mode" class="shared-banner-exit-btn" onclick="exitSharedMapMode()">내 지도로 돌아가기 ✕</button>
+    </div>
 
     <main>
         <!-- Mobile Control Bar (Unified Tabs + Filter Toggle) -->
@@ -775,6 +784,9 @@
                         <button id="btn-edit-restaurant-info" class="detail-edit-restaurant-btn" title="식당 카테고리, 위치, 메뉴 등 일괄 수정">
                             ✏️ 수정하기
                         </button>
+                        <button id="btn-scrape-to-wishlist" class="detail-scrape-wishlist-btn" style="display:none;" onclick="scrapeCurrentRestaurantToWishlist()">
+                            ⭐ 내 위시리스트에 담기
+                        </button>
                     </div>
 
                     <!-- Visit History Timeline -->
@@ -937,6 +949,33 @@
             <div class="profile-modal-footer">
                 <button type="button" class="btn-modal-cancel" onclick="closeProfileEditModal()">취소</button>
                 <button type="button" class="btn-modal-save" onclick="saveProfileFromModal()">저장 완료 ✓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Shared Map Link Manager Modal ─── -->
+    <div id="share-link-modal" class="profile-edit-modal" onclick="if(event.target===this)closeShareLinkModal()" style="display:none;">
+        <div class="profile-modal-card share-modal-card">
+            <div class="profile-modal-header">
+                <h3>🔗 내 맛집 지도 공유</h3>
+                <button class="profile-modal-close" onclick="closeShareLinkModal()">&times;</button>
+            </div>
+            <div class="profile-modal-body">
+                <div class="modal-field">
+                    <label>프라이빗 공유 링크</label>
+                    <div class="share-link-copy-box">
+                        <input type="text" id="share-link-input" class="modal-input share-url-input" readonly>
+                        <button type="button" id="btn-copy-share-url" class="btn-copy-share" onclick="copyCurrentShareLink()">복사</button>
+                    </div>
+                </div>
+                <div class="modal-field share-status-row">
+                    <label for="share-active-toggle" class="share-toggle-label">링크 활성화</label>
+                    <input type="checkbox" id="share-active-toggle" class="share-toggle-checkbox" checked onchange="toggleShareLinkActive(this.checked)">
+                </div>
+            </div>
+            <div class="profile-modal-footer share-modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="regenerateShareLink()">새 링크 재발급 🔄</button>
+                <button type="button" class="btn-modal-save" onclick="closeShareLinkModal()">닫기</button>
             </div>
         </div>
     </div>
@@ -1132,12 +1171,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609212345"></script>
-    <script src="data.js?v=202609212345"></script>
-    <script src="ddoganzip_data.js?v=202609212345"></script>
-    <script src="meogeultende_data.js?v=202609212345"></script>
-    <script src="jungyugwang_data.js?v=202609212345"></script>
-    <script src="app.js?v=202609212345"></script>
+    <script src="regions.js?v=202609220014"></script>
+    <script src="data.js?v=202609220014"></script>
+    <script src="ddoganzip_data.js?v=202609220014"></script>
+    <script src="meogeultende_data.js?v=202609220014"></script>
+    <script src="jungyugwang_data.js?v=202609220014"></script>
+    <script src="app.js?v=202609220014"></script>
 </body>
 
 </html>

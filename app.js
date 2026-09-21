@@ -663,13 +663,14 @@ function updateAuthProtectedViews() {
     protectedSections.forEach(({ protectedId, lockedId }) => {
         const pEl = document.getElementById(protectedId);
         const lEl = document.getElementById(lockedId);
+        const isAccessible = (protectedId === 'list-protected-content' && window.isSharedMapMode) ? true : loggedIn;
 
         if (pEl) {
-            pEl.style.display = loggedIn ? '' : 'none';
+            pEl.style.display = isAccessible ? '' : 'none';
         }
         if (lEl) {
-            lEl.style.display = loggedIn ? 'none' : 'flex';
-            if (!loggedIn) {
+            lEl.style.display = isAccessible ? 'none' : 'flex';
+            if (!isAccessible) {
                 lEl.innerHTML = renderAuthLockedScreen(protectedId);
             }
         }
@@ -678,7 +679,7 @@ function updateAuthProtectedViews() {
     // Update Tab Button Labels (e.g. DIARY vs DIARY 🔒)
     const tabLabels = [
         { tab: 'diary', name: 'DIARY', locked: !loggedIn },
-        { tab: 'list', name: 'LIST', locked: !loggedIn },
+        { tab: 'list', name: 'LIST', locked: !loggedIn && !window.isSharedMapMode },
         { tab: 'map', name: 'MAP', locked: false },
         { tab: 'sommelier', name: 'AI', locked: false },
         { tab: 'recommend', name: 'ROULETTE', locked: false },
@@ -886,6 +887,9 @@ function getUserWishlistKey() {
 }
 
 function getUserWishlist() {
+    if (window.isSharedMapMode && window.sharedMapData && Array.isArray(window.sharedMapData.wishlist)) {
+        return window.sharedMapData.wishlist;
+    }
     try {
         const saved = localStorage.getItem(getUserWishlistKey());
         return saved ? JSON.parse(saved) : [];
@@ -1393,6 +1397,7 @@ function getSpoonBadgeHtml(item) {
 document.addEventListener('DOMContentLoaded', () => {
     migrateLocalStorageData();
     initKakaoAuth();
+    initSharedMapRoute();
     let currentFilters = {
         category: [],
         location_large: [],
@@ -1502,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (mobileFilterBtn) {
-            mobileFilterBtn.style.display = (targetTab === 'list' && isUserLoggedIn()) ? 'block' : 'none';
+            mobileFilterBtn.style.display = (targetTab === 'list' && (isUserLoggedIn() || window.isSharedMapMode)) ? 'block' : 'none';
         }
         
         if (mobileTabsMenu) {
@@ -1525,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initSommelierTab();
         } else if (targetTab === 'diary' && isUserLoggedIn()) {
             initDiaryTab();
-        } else if (targetTab === 'list' && isUserLoggedIn()) {
+        } else if (targetTab === 'list' && (isUserLoggedIn() || window.isSharedMapMode)) {
             if (typeof render === 'function') render();
         } else if (targetTab === 'profile' && isUserLoggedIn()) {
             if (typeof renderProfileView === 'function') renderProfileView();
@@ -2553,9 +2558,108 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // --- Mode: Initial State (Empty search) ---
         else {
-            resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
+            if (window.isSharedMapMode && window.sharedMapData) {
+                renderSharedMapOnMap();
+            } else {
+                resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
+            }
         }
     }
+    window.updateMapMarkers = updateMapMarkers;
+
+    function renderSharedMapOnMap() {
+        if (!map || !window.sharedMapData) return;
+
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (resultsList) resultsList.style.display = 'block';
+
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+        if (window.currentHoverOverlay) {
+            window.currentHoverOverlay.setMap(null);
+            window.currentHoverOverlay = null;
+        }
+
+        const items = window.sharedMapData.restaurants || [];
+        if (items.length === 0) {
+            if (resultsList) {
+                resultsList.innerHTML = `<div class="map-empty-state"><p>등록된 맛집이 없습니다.</p></div>`;
+            }
+            return;
+        }
+
+        const bounds = new kakao.maps.LatLngBounds();
+        let hasCoords = false;
+
+        let listHtml = `
+            <div class="map-results-header" style="padding:10px 14px; font-weight:700; font-size:0.88rem; color:#333; border-bottom:1px solid #E5E7EB;">
+                <span>🍽️ ${window.sharedMapData.userName || '미식가'}님의 맛집 (${items.length})</span>
+            </div>
+            <ul class="places-list" style="list-style:none; padding:0; margin:0;">
+        `;
+
+        items.forEach((item, idx) => {
+            const coordsX = item.x;
+            const coordsY = item.y;
+            if (coordsX && coordsY) {
+                const place = {
+                    id: item.kakao_id || ('shared_' + idx),
+                    place_name: item.name,
+                    category_name: item.category || '',
+                    road_address_name: item.road_address || '',
+                    address_name: [item.location_large, item.location_small].filter(Boolean).join(' '),
+                    x: coordsX,
+                    y: coordsY,
+                    place_url: item.map_url || ''
+                };
+                renderSingleMarker(item, place, true, bounds, true, !!item.isWishlist);
+                bounds.extend(new kakao.maps.LatLng(coordsY, coordsX));
+                hasCoords = true;
+            }
+
+            const spoonDisplay = item.rate || '🥄';
+            const locText = [item.location_large, item.location_small].filter(Boolean).join(' ') || item.road_address || '';
+            listHtml += `
+                <li class="place-item shared-place-item" data-idx="${idx}" style="padding:12px 14px; border-bottom:1px solid #F1F5F9; cursor:pointer;" onclick="focusSharedMapItem(${idx})">
+                    <div style="font-weight:700; font-size:0.92rem; color:#1E293B; display:flex; justify-content:space-between; align-items:center;">
+                        <span>${item.name}</span>
+                        <span style="font-size:0.8rem; color:#EA580C;">${spoonDisplay}</span>
+                    </div>
+                    <div style="font-size:0.78rem; color:#64748B; margin-top:3px;">
+                        ${item.category || ''}${locText ? ` · ${locText}` : ''}
+                    </div>
+                </li>
+            `;
+        });
+
+        listHtml += `</ul>`;
+        if (resultsList) resultsList.innerHTML = listHtml;
+
+        if (hasCoords && !bounds.isEmpty()) {
+            map.setBounds(bounds);
+        }
+    }
+    window.renderSharedMapOnMap = renderSharedMapOnMap;
+
+    window.focusSharedMapItem = function(idx) {
+        if (!window.sharedMapData || !window.sharedMapData.restaurants) return;
+        const item = window.sharedMapData.restaurants[idx];
+        if (!item) return;
+
+        if (item.x && item.y && map) {
+            const pos = new kakao.maps.LatLng(item.y, item.x);
+            map.panTo(pos);
+        }
+        if (typeof openRestaurantDetailModal === 'function') {
+            openRestaurantDetailModal(item);
+        }
+    };
 
     // Numbered Pagination & Clean Replacement Controller
     function renderPaginatedList(allResults, currentPage) {
@@ -3033,7 +3137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderSingleMarker(item, place, isSavedParam, bounds, shouldExtendBounds = false, isWishlistParam = false, friendInfo = null) {
-        const isSaved = isOwnerUser() ? isSavedParam : false;
+        const isSaved = (isOwnerUser() || window.isSharedMapMode) ? isSavedParam : false;
         const isWishlist = isWishlistParam || isPlaceInWishlist(item.name || place.place_name, place);
         const coords = new kakao.maps.LatLng(place.y, place.x);
         const visits = isSaved ? (item?.visit_count || 1) : 0;
@@ -5399,6 +5503,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.getUnifiedDiaryEntries = getUnifiedDiaryEntries;
 
     function getUnifiedRestaurantData() {
+        if (window.isSharedMapMode && window.sharedMapData && Array.isArray(window.sharedMapData.restaurants)) {
+            return window.sharedMapData.restaurants;
+        }
+
         const isOwner = isOwnerUser();
         const mapByName = new Map();
         const visitsByName = new Map();
@@ -6133,12 +6241,26 @@ function openRestaurantDetailModal(item) {
 
     // 8. Action Buttons Binding
     const addDiaryBtn = document.getElementById('btn-add-diary-for-this-restaurant');
-    if (addDiaryBtn) {
-        addDiaryBtn.onclick = () => addDiaryForRestaurant(item);
-    }
     const editRestaurantBtn = document.getElementById('btn-edit-restaurant-info');
-    if (editRestaurantBtn) {
-        editRestaurantBtn.onclick = () => switchDetailModalMode('edit');
+    const scrapeBtn = document.getElementById('btn-scrape-to-wishlist');
+
+    if (window.isSharedMapMode) {
+        if (addDiaryBtn) addDiaryBtn.style.display = 'none';
+        if (editRestaurantBtn) editRestaurantBtn.style.display = 'none';
+        if (scrapeBtn) {
+            scrapeBtn.style.display = 'flex';
+            scrapeBtn.onclick = () => scrapeCurrentRestaurantToWishlist(item);
+        }
+    } else {
+        if (addDiaryBtn) {
+            addDiaryBtn.style.display = '';
+            addDiaryBtn.onclick = () => addDiaryForRestaurant(item);
+        }
+        if (editRestaurantBtn) {
+            editRestaurantBtn.style.display = '';
+            editRestaurantBtn.onclick = () => switchDetailModalMode('edit');
+        }
+        if (scrapeBtn) scrapeBtn.style.display = 'none';
     }
 
     // Open Modal
@@ -11156,19 +11278,309 @@ window.selectPresetAvatar = function(url) {
     showDiaryToast('✨ 프로필 아바타가 변경되었습니다!');
 };
 
-window.handleShareMyMap = function() {
+// ─── Phase 3.3: Web Share Link & Visitor Scraping Module ───
+window.isSharedMapMode = false;
+window.sharedMapData = null;
+
+function generateShareToken() {
+    return Math.random().toString(36).substring(2, 10);
+}
+
+function getShareStorageKey() {
+    const u = getCurrentUser();
+    return u && u.id ? `spoonmap_user_${u.id}_share_token` : 'spoonmap_guest_share_token';
+}
+
+async function publishSharedMap(forceNew = false) {
+    const u = getCurrentUser();
+    if (!u || !u.id) {
+        alert('로그인 후 이용할 수 있습니다.');
+        return null;
+    }
+
+    let token = localStorage.getItem(getShareStorageKey());
+    if (!token || forceNew) {
+        token = generateShareToken();
+        localStorage.setItem(getShareStorageKey(), token);
+    }
+
     const profile = getUserProfile();
-    const shareUrl = `${window.location.origin}${window.location.pathname}#profile`;
+    const rawRestaurants = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    
+    // Privacy filter: Sanitize restaurants for public sharing (exclude private diary notes)
+    const sanitizedRestaurants = rawRestaurants.map(r => ({
+        name: r.name,
+        category: r.category || '기타',
+        location_large: r.location_large || '',
+        location_small: r.location_small || '',
+        menu: Array.isArray(r.menu) ? r.menu : (typeof r.menu === 'string' ? r.menu.split(',').map(m => m.trim()).filter(Boolean) : []),
+        rate: r.rate || '🥄',
+        visit_count: r.visit_count || 1,
+        map_url: r.map_url || (r.kakao_id ? `https://place.map.kakao.com/${r.kakao_id}` : `https://map.kakao.com/link/search/${encodeURIComponent(r.name)}`),
+        kakao_id: r.kakao_id || '',
+        road_address: r.road_address || '',
+        x: r.x || '',
+        y: r.y || '',
+        date: r.date || '',
+        isWishlist: !!r.isWishlist
+    }));
+
+    const rawWishlist = (typeof getUserWishlist === 'function') ? getUserWishlist() : [];
+    const sanitizedWishlist = rawWishlist.map(w => ({
+        name: w.name,
+        category: w.category || '기타',
+        location: w.location || '',
+        map_url: w.map_url || (w.kakao_id ? `https://place.map.kakao.com/${w.kakao_id}` : `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`),
+        kakao_id: w.kakao_id || '',
+        road_address: w.road_address || '',
+        x: w.x || '',
+        y: w.y || ''
+    }));
+
+    // Merge wishlisted items into restaurants if not already present
+    const existingNames = new Set(sanitizedRestaurants.map(r => (r.name || '').trim().toLowerCase()));
+    sanitizedWishlist.forEach(w => {
+        const k = (w.name || '').trim().toLowerCase();
+        if (k && !existingNames.has(k)) {
+            existingNames.add(k);
+            sanitizedRestaurants.push({
+                name: w.name,
+                category: w.category || '기타',
+                location_large: w.location || '기타',
+                location_small: '',
+                menu: [],
+                rate: '',
+                visit_count: 0,
+                map_url: w.map_url,
+                kakao_id: w.kakao_id || '',
+                road_address: w.road_address || '',
+                x: w.x || '',
+                y: w.y || '',
+                date: '',
+                isWishlist: true
+            });
+        }
+    });
+
+    const payload = {
+        token: token,
+        userId: String(u.id),
+        userName: profile.nickname || u.nickname || '미식가',
+        userAvatar: profile.profileImage || u.profileImage || '',
+        isMaster: isOwnerUser(),
+        restaurants: sanitizedRestaurants,
+        wishlist: sanitizedWishlist,
+        isActive: true,
+        updatedAt: new Date().toISOString()
+    };
+
+    if (isFirebaseReady && db) {
+        try {
+            await db.collection('spoonmap_shared_maps').doc(token).set(payload, { merge: true });
+        } catch (err) {
+            console.warn('Failed to publish shared map to Firestore:', err);
+        }
+    }
+
+    return token;
+}
+
+window.handleShareMyMap = async function() {
+    const token = await publishSharedMap(false);
+    if (!token) return;
+    openShareLinkModal(token);
+};
+
+window.openShareLinkModal = function(token) {
+    const activeToken = token || localStorage.getItem(getShareStorageKey()) || '';
+    const modal = document.getElementById('share-link-modal');
+    const input = document.getElementById('share-link-input');
+    const toggle = document.getElementById('share-active-toggle');
+
+    if (!modal || !input) return;
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${activeToken}`;
+    input.value = shareUrl;
+    if (toggle) toggle.checked = true;
+
+    modal.style.display = 'flex';
+};
+
+window.closeShareLinkModal = function() {
+    const modal = document.getElementById('share-link-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.copyCurrentShareLink = function() {
+    const input = document.getElementById('share-link-input');
+    if (!input || !input.value) return;
+
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            showDiaryToast(`🔗 ${profile.nickname}님의 미식 지도 링크가 복사되었습니다!`);
+        navigator.clipboard.writeText(input.value).then(() => {
+            showDiaryToast('공유 링크가 복사되었습니다');
         }).catch(() => {
-            prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
+            input.select();
+            document.execCommand('copy');
+            showDiaryToast('공유 링크가 복사되었습니다');
         });
     } else {
-        prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
+        input.select();
+        document.execCommand('copy');
+        showDiaryToast('공유 링크가 복사되었습니다');
     }
 };
+
+window.regenerateShareLink = async function() {
+    if (!confirm('새 공유 링크를 발급하시겠습니까? 기존 링크는 더 이상 작동하지 않습니다.')) return;
+    const newToken = await publishSharedMap(true);
+    if (newToken) {
+        const input = document.getElementById('share-link-input');
+        if (input) input.value = `${window.location.origin}${window.location.pathname}?share=${newToken}`;
+        showDiaryToast('새 링크가 발급되었습니다');
+    }
+};
+
+window.toggleShareLinkActive = async function(isActive) {
+    const token = localStorage.getItem(getShareStorageKey());
+    if (!token || !isFirebaseReady || !db) return;
+
+    try {
+        await db.collection('spoonmap_shared_maps').doc(token).update({
+            isActive: isActive,
+            updatedAt: new Date().toISOString()
+        });
+        showDiaryToast(isActive ? '공유가 활성화되었습니다' : '공유가 비활성화되었습니다');
+    } catch (err) {
+        console.warn('Failed to update share link status:', err);
+    }
+};
+
+// ─── Shared Map Mode Activation (For Visitors) ───
+function enableSharedMapMode(sharedData) {
+    window.isSharedMapMode = true;
+    window.sharedMapData = sharedData;
+
+    // Show top banner
+    const banner = document.getElementById('shared-map-banner');
+    const bannerText = document.getElementById('shared-banner-text');
+    if (banner && bannerText) {
+        const visitedCount = (sharedData.restaurants || []).filter(r => !r.isWishlist).length;
+        const wishCount = (sharedData.wishlist || []).length;
+        bannerText.textContent = `${sharedData.userName || '미식가'}님의 맛집 지도 · 맛집 ${visitedCount}곳 · 위시리스트 ${wishCount}곳`;
+        banner.style.display = 'flex';
+    }
+
+    // Hide drawer add button & private controls
+    const quickAddBtn = document.querySelector('.quick-add-btn');
+    if (quickAddBtn) quickAddBtn.style.display = 'none';
+
+    // Update tab view locks
+    if (typeof updateAuthProtectedViews === 'function') {
+        updateAuthProtectedViews();
+    }
+
+    // Switch to MAP tab if currently on private/locked tab
+    const route = typeof parseRoute === 'function' ? parseRoute() : { tab: 'map' };
+    if (route.tab === 'diary' || route.tab === 'profile' || route.tab === 'insights') {
+        const mapBtn = document.querySelector('.tab-btn[data-tab="map"]') || document.querySelector('.mobile-tab-btn[data-tab="map"]');
+        if (mapBtn) mapBtn.click();
+    }
+
+    // Re-render map and list
+    if (window.renderApp) window.renderApp();
+    if (typeof renderSharedMapOnMap === 'function') {
+        renderSharedMapOnMap();
+    } else if (window.updateMapMarkers) {
+        window.updateMapMarkers();
+    }
+}
+
+window.exitSharedMapMode = function() {
+    const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+    window.location.href = cleanUrl;
+};
+
+// Visitor Scraping Handler
+window.scrapeCurrentRestaurantToWishlist = function(item) {
+    const targetItem = item || currentDetailModalItem;
+    if (!targetItem) return;
+
+    const wishlistKey = getUserWishlistKey();
+    let wishlist = [];
+    try {
+        wishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
+    } catch (_) {
+        wishlist = [];
+    }
+
+    const normName = targetItem.name.trim().toLowerCase();
+    const isAlreadySaved = wishlist.some(w => w.name && w.name.trim().toLowerCase() === normName);
+
+    if (isAlreadySaved) {
+        showDiaryToast('이미 위시리스트에 담긴 식당입니다');
+        return;
+    }
+
+    const locText = [targetItem.location_large, targetItem.location_small].filter(Boolean).join(' ') || targetItem.road_address || '기타';
+    const newWishItem = {
+        id: Date.now(),
+        name: targetItem.name,
+        category: targetItem.category || '기타',
+        location: locText,
+        map_url: targetItem.map_url || (targetItem.kakao_id ? `https://place.map.kakao.com/${targetItem.kakao_id}` : `https://map.kakao.com/link/search/${encodeURIComponent(targetItem.name)}`),
+        kakao_id: targetItem.kakao_id || '',
+        road_address: targetItem.road_address || '',
+        x: targetItem.x || '',
+        y: targetItem.y || '',
+        created_at: new Date().toISOString()
+    };
+
+    wishlist.unshift(newWishItem);
+    localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
+
+    if (isUserLoggedIn() && typeof saveToCloud === 'function') {
+        saveToCloud('wishlist', wishlist);
+    }
+
+    showDiaryToast(`"${targetItem.name}" 위시리스트에 담았습니다`);
+};
+
+// Route check on load
+let shareRouteAttempts = 0;
+async function initSharedMapRoute() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareToken = urlParams.get('share');
+    if (!shareToken) return false;
+
+    if (!isFirebaseReady || !db) {
+        if (shareRouteAttempts++ < 25) {
+            setTimeout(initSharedMapRoute, 300);
+        }
+        return false;
+    }
+
+    try {
+        const docSnap = await db.collection('spoonmap_shared_maps').doc(shareToken).get();
+        if (!docSnap.exists) {
+            alert('존재하지 않는 공유 링크입니다.');
+            window.exitSharedMapMode();
+            return false;
+        }
+
+        const sharedData = docSnap.data();
+        if (!sharedData || sharedData.isActive === false) {
+            alert('공유가 비활성화된 링크입니다.');
+            window.exitSharedMapMode();
+            return false;
+        }
+
+        enableSharedMapMode(sharedData);
+        return true;
+    } catch (err) {
+        console.warn('initSharedMapRoute error:', err);
+        return false;
+    }
+}
 
 // ─── Food Insights Floating Modal Controls ───
 window.openInsightModal = function() {

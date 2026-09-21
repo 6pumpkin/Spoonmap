@@ -6847,5 +6847,132 @@ input[type="date"].drawer-input {
     width: 100%;
 }
 
+/* ─── Shared Map Visitor Banner ─── */
+.shared-map-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+    border-bottom: 1.5px solid #FDBA74;
+    padding: 0.6rem 1.2rem;
+    position: relative;
+    width: 100%;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.08);
+}
 
+.shared-banner-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #9A3412;
+}
 
+.shared-banner-icon {
+    font-size: 1.1rem;
+}
+
+.shared-banner-exit-btn {
+    background: #FFFFFF;
+    border: 1px solid #FDBA74;
+    color: #C2410C;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.shared-banner-exit-btn:hover {
+    background: #FFEDD5;
+}
+
+/* ─── Share Link Manager Modal ─── */
+.share-link-copy-box {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.share-url-input {
+    flex: 1;
+    font-size: 0.82rem;
+    background: #F8FAFC !important;
+    cursor: text;
+}
+
+.btn-copy-share {
+    background: var(--coral-main);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.btn-copy-share:hover {
+    background: #E03E4D;
+}
+
+.share-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    background: #F8FAFC;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.share-toggle-label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.share-toggle-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--coral-main);
+}
+
+.share-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.2rem;
+}
+
+/* ─── Visitor Scrape to Wishlist Button ─── */
+.detail-scrape-wishlist-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #FFFBEB;
+    border: 1.5px solid #FDE68A;
+    color: #B45309;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.detail-scrape-wishlist-btn:hover {
+    background: #FEF3C7;
+    border-color: #F59E0B;
+}
