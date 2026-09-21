@@ -5425,7 +5425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chipsBar = document.getElementById('mobile-cat-chips-bar');
         if (!chipsBar) return;
         const cats = currentFilters['category'] || [];
-        const chipBtns = chipsBar.querySelectorAll('.mobile-cat-chip-btn:not(.mobile-filter-trigger-btn)');
+        const chipBtns = chipsBar.querySelectorAll('.mobile-cat-chip');
         chipBtns.forEach(btn => {
             const val = btn.dataset.cat;
             if (cats.length === 0) {
@@ -5439,7 +5439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.syncMobileCatChips = syncMobileCatChips;
 
-    window.handleMobileCatClick = function(btn, cat) {
+    function handleMobileCatClick(btn, cat) {
         if (!currentFilters['category']) currentFilters['category'] = [];
 
         if (cat === 'all') {
@@ -5467,14 +5467,16 @@ document.addEventListener('DOMContentLoaded', () => {
         syncMobileCatChips();
         listDisplayCount = 50;
         render();
-    };
+    }
+    window.handleMobileCatClick = handleMobileCatClick;
 
-    window.toggleMobileSidebar = function() {
+    function toggleMobileSidebar() {
         const sidebar = document.getElementById('main-sidebar') || document.querySelector('.sidebar');
         if (!sidebar) return;
         const isOpen = sidebar.classList.toggle('mobile-open');
         document.body.style.overflow = isOpen ? 'hidden' : '';
-    };
+    }
+    window.toggleMobileSidebar = toggleMobileSidebar;
 
     function updateSmallLocationFilters(largeValuesArray) {
         if (locationSmallFilterGroup) {

@@ -678,7 +678,6 @@ main {
     box-shadow: 0 8px 20px var(--coral-glow);
     transform: translateY(-2px);
 }
-}
 
 .sidebar-date-input:focus {
     border-color: var(--coral-main);
@@ -3503,8 +3502,6 @@ main {
 .chat-send-btn:hover {
     transform: translateY(-1px);
 }
-    width: 24px;
-}
 
 .rank-name {
     font-size: 0.95rem;
@@ -3822,8 +3819,6 @@ main {
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-top: 3px;
-}
-
 }
 
 .diary-more-chip {
