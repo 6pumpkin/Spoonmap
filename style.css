@@ -1645,6 +1645,15 @@ main {
     z-index: 99999 !important;
 }
 
+.marker-capsule-wrap.is-hover {
+    pointer-events: none !important;
+    z-index: 99990 !important;
+}
+
+.marker-capsule-wrap.is-hover .marker-capsule-card {
+    animation: capsulePop 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .marker-capsule-card {
     background: #ffffff;
     border-radius: 20px;

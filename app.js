@@ -70,59 +70,138 @@ const DEFAULT_MENUS = [
 ];
 
 function mapKakaoCategoryToStandard(kakaoCat, placeName = '') {
-    if (!kakaoCat) return '🍚한식';
-    const raw = kakaoCat.toLowerCase();
+    if (!kakaoCat && !placeName) return '🍚한식';
+    const raw = (kakaoCat || '').toLowerCase();
     const name = (placeName || '').toLowerCase();
+    const text = `${raw} ${name}`;
 
-    if (raw.includes('카페') || raw.includes('커피') || raw.includes('디저트') || raw.includes('베이커리') || raw.includes('제과') || raw.includes('아이스크림') || raw.includes('빙수')) {
+    // 1. 카페 / 디저트 / 베이커리 / 빵
+    if (text.includes('카페') || text.includes('커피') || text.includes('디저트') || 
+        text.includes('베이커리') || text.includes('제과') || text.includes('아이스크림') || 
+        text.includes('빙수') || text.includes('찻집') || text.includes('도넛') || 
+        text.includes('베이글') || text.includes('와플') || text.includes('케이크') || text.includes('빵')) {
         return '☕카페';
     }
-    if (raw.includes('술집') || raw.includes('호프') || raw.includes('주점') || raw.includes('포장마차') || raw.includes('와인바') || raw.includes('펍') || raw.includes('칵테일') || raw.includes('바(bar)')) {
+
+    // 2. 술집 / 주점 / 펍 / 호프 / 이자카야
+    if (raw.includes('술집') || raw.includes('호프') || raw.includes('주점') || 
+        raw.includes('포장마차') || raw.includes('와인바') || raw.includes('펍') || 
+        raw.includes('칵테일') || raw.includes('바(bar)') || text.includes('이자카야') ||
+        text.includes('요리주점') || text.includes('생맥주') || text.includes('포차') || 
+        text.includes('막걸리') || text.includes('주막')) {
         return '🍺술집';
     }
-    if (raw.includes('뷔페')) {
-        return '🍽️뷔페';
-    }
-    if (raw.includes('육류') || raw.includes('고기') || raw.includes('삼겹살') || raw.includes('갈비') || raw.includes('곱창') || raw.includes('막창') || raw.includes('양꼬치') || raw.includes('스테이크')) {
-        return '🥩고기';
-    }
-    if (raw.includes('치킨') || raw.includes('닭강정') || raw.includes('통닭')) {
+
+    // 3. 치킨 / 통닭 / 닭강정
+    if (text.includes('치킨') || text.includes('닭강정') || text.includes('통닭') || text.includes('옛날통닭')) {
         return '🍗치킨';
     }
-    if (raw.includes('패스트푸드') || raw.includes('햄버거') || raw.includes('버거') || raw.includes('샌드위치') || raw.includes('토스트') || raw.includes('핫도그')) {
-        return '🍔패스트푸드';
-    }
-    if (raw.includes('피자')) {
+
+    // 4. 피자
+    if (text.includes('피자') || text.includes('화덕피자')) {
         return '🍕피자';
     }
-    if (raw.includes('샐러드') || raw.includes('포케') || raw.includes('다이어트')) {
-        return '🥗샐러드';
+
+    // 5. 패스트푸드 / 햄버거 / 샌드위치 / 토스트
+    if (text.includes('패스트푸드') || text.includes('햄버거') || text.includes('버거') || 
+        text.includes('샌드위치') || text.includes('토스트') || text.includes('핫도그')) {
+        return '🍔패스트푸드';
     }
-    if (raw.includes('해물') || raw.includes('생선') || raw.includes('회') || raw.includes('일식 > 참치') || raw.includes('게장') || raw.includes('장어') || raw.includes('조개')) {
-        return '🐟해산물';
-    }
-    if (raw.includes('일식') || raw.includes('초밥') || raw.includes('돈까스') || raw.includes('라멘') || raw.includes('우동') || raw.includes('소바') || raw.includes('이자카야')) {
+
+    // 6. 일식 / 초밥 / 스시 / 사시미 / 회 / 돈까스
+    if (text.includes('일식') || text.includes('초밥') || text.includes('스시') || 
+        text.includes('돈까스') || text.includes('돈가스') || text.includes('카츠') || 
+        text.includes('사시미') || text.includes('오마카세') || text.includes('텐동') || 
+        text.includes('후토마키') || text.includes('참치회') || text.includes('라멘') || text.includes('소바')) {
         return '🍣일식';
     }
-    if (raw.includes('중식') || raw.includes('중국집') || raw.includes('짜장') || raw.includes('짬뽕') || raw.includes('마라탕') || raw.includes('양꼬치') || raw.includes('딤섬')) {
-        return '🍜중식';
+
+    // 7. 중식 / 중국요리 / 마라탕 / 양꼬치
+    if (text.includes('중식') || text.includes('중국집') || text.includes('짜장') || 
+        text.includes('짬뽕') || text.includes('마라') || text.includes('딤섬') || 
+        text.includes('탕수육') || text.includes('양꼬치') || text.includes('꿔바로우') || 
+        text.includes('중화')) {
+        return '🥢중식';
     }
-    if (raw.includes('양식') || raw.includes('이탈리안') || raw.includes('파스타') || raw.includes('프렌치')) {
+
+    // 8. 양식 / 이탈리안 / 파스타 / 스테이크
+    if (text.includes('양식') || text.includes('이탈리안') || text.includes('파스타') || 
+        text.includes('프렌치') || text.includes('스테이크') || text.includes('리조또') || 
+        text.includes('비스트로') || text.includes('브런치') || text.includes('패밀리레스토랑')) {
         return '🍝양식';
     }
-    if (raw.includes('멕시코') || raw.includes('남미') || raw.includes('타코') || raw.includes('브라질') || raw.includes('터키') || raw.includes('중동') || raw.includes('세계')) {
+
+    // 9. 해산물 / 생선회 / 조개 / 게장 / 장어
+    if (text.includes('해물') || text.includes('생선') || text.includes('회집') || 
+        text.includes('횟집') || text.includes('수산') || text.includes('게장') || 
+        text.includes('장어') || text.includes('조개') || text.includes('굴요리') || 
+        text.includes('아구') || text.includes('해물탕') || text.includes('해물찜') || 
+        text.includes('낙지') || text.includes('문어') || text.includes('쭈꾸미') || 
+        text.includes('주꾸미') || text.includes('오징어') || text.includes('복어') || text.includes('물회')) {
+        return '🐟해산물';
+    }
+
+    // 10. 고기 / 구이 (삼겹살, 갈비, 곱창, 숯불구이, 족발, 보쌈, 감자탕 등)
+    if (text.includes('고기') || text.includes('육류') || text.includes('삼겹살') || 
+        text.includes('갈비') || text.includes('곱창') || text.includes('막창') || 
+        text.includes('대창') || text.includes('숯불') || text.includes('불고기') || 
+        text.includes('차돌') || text.includes('족발') || text.includes('보쌈') || 
+        text.includes('수육') || text.includes('감자탕') || text.includes('뼈숯불') || 
+        text.includes('뼈구이') || text.includes('뼈해장국') || text.includes('구이') || 
+        text.includes('정육') || text.includes('한우') || text.includes('소고기') || 
+        text.includes('돼지') || text.includes('오리') || text.includes('닭갈비') || 
+        text.includes('바비큐') || text.includes('바베큐') || text.includes('삼계탕') || 
+        text.includes('백숙') || text.includes('특수부위') || text.includes('갈매기살')) {
+        return '🥩고기';
+    }
+
+    // 11. 국수 / 냉면 / 면요리
+    if (text.includes('국수') || text.includes('냉면') || text.includes('칼국수') || 
+        text.includes('막국수') || text.includes('밀면') || text.includes('수제비') || 
+        text.includes('우동') || text.includes('면옥')) {
+        return '🍜면요리';
+    }
+
+    // 12. 국 / 탕 / 찌개 / 국밥
+    if (text.includes('국밥') || text.includes('찌개') || text.includes('전골') || 
+        text.includes('설렁탕') || text.includes('곰탕') || text.includes('순대국') || 
+        text.includes('해장국') || text.includes('추어탕') || text.includes('부대찌개') || 
+        text.includes('동태탕') || text.includes('매운탕') || text.includes('샤브샤브')) {
+        return '🍲국/찌개';
+    }
+
+    // 13. 분식 / 떡볶이 / 김밥 / 만두
+    if (text.includes('분식') || text.includes('떡볶이') || text.includes('김밥') || 
+        text.includes('순대') || text.includes('튀김') || text.includes('만두')) {
+        return '🍢분식';
+    }
+
+    // 14. 샐러드 / 다이어트 / 포케
+    if (text.includes('샐러드') || text.includes('포케')) {
+        return '🥗샐러드';
+    }
+
+    // 15. 뷔페
+    if (text.includes('뷔페')) {
+        return '🍽️뷔페';
+    }
+
+    // 16. 세계요리 / 아시아 / 멕시코 / 베트남 / 태국 / 인도
+    if (text.includes('아시아') || text.includes('베트남') || text.includes('태국') || 
+        text.includes('쌀국수') || text.includes('인도') || text.includes('커리') || 
+        text.includes('카레') || text.includes('타코') || text.includes('멕시코') || 
+        text.includes('터키') || text.includes('중동')) {
         return '🌮세계요리';
     }
-    if (raw.includes('아시아') || raw.includes('베트남') || raw.includes('태국') || raw.includes('쌀국수') || raw.includes('인도') || raw.includes('커리')) {
-        return '🥡아시안';
-    }
-    if (raw.includes('분식') || raw.includes('떡볶이') || raw.includes('김밥') || raw.includes('순대')) {
-        return '🍙분식';
-    }
-    if (raw.includes('한식') || raw.includes('찌개') || raw.includes('국밥') || raw.includes('백반') || raw.includes('설렁탕') || raw.includes('곰탕')) {
+
+    // 17. 한식 (밥, 정식, 백반 등)
+    if (text.includes('한식') || text.includes('백반') || text.includes('가정식') || 
+        text.includes('쌈밥') || text.includes('솥밥') || text.includes('비빔밥') || 
+        text.includes('정식') || text.includes('식당')) {
         return '🍚한식';
     }
-    return '🍚한식';
+
+    return '🍴음식점';
 }
 
 function parseStandardLocation(addressName = '', roadAddressName = '') {
@@ -2107,6 +2186,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
+                kakao.maps.event.addListener(map, 'dragstart', () => {
+                    if (window.currentHoverOverlay) {
+                        window.currentHoverOverlay.setMap(null);
+                        window.currentHoverOverlay = null;
+                    }
+                });
+
+                kakao.maps.event.addListener(map, 'click', () => {
+                    if (window.currentHoverOverlay) {
+                        window.currentHoverOverlay.setMap(null);
+                        window.currentHoverOverlay = null;
+                    }
+                });
+
                 // Map drag: show "현 위치에서 재검색" button instead of auto re-searching
                 kakao.maps.event.addListener(map, 'dragend', () => {
                     // Only show the button if the user has an active search or category
@@ -2137,29 +2230,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const categoryEmojis = {
         '음식점': '🍴',
-        '카페': '☕',
-        '한식': '🍚',
-        '중식': '🥢',
-        '일식': '🍣',
-        '양식': '🍝',
-        '분식': '🍢',
-        '패스트푸드': '🍔',
+        '고기': '🥩',
         '치킨': '🍗',
+        '일식': '🍣',
+        '중식': '🥢',
+        '면요리': '🍜',
+        '국/찌개': '🍲',
+        '국밥': '🍲',
+        '양식': '🍝',
         '피자': '🍕',
+        '패스트푸드': '🍔',
+        '해산물': '🐟',
+        '분식': '🍢',
+        '카페': '☕',
         '술집': '🍺',
+        '샐러드': '🥗',
         '뷔페': '🍽️',
-        '아시아음식': '🍜',
+        '세계요리': '🌮',
+        '아시아음식': '🌮',
+        '한식': '🍚',
         '패밀리레스토랑': '🍴',
         '간식': '🍪'
     };
 
-    const getEmoji = (categoryText) => {
-        if (!categoryText) return '🍴';
-        const subPriorities = ['한식', '중식', '일식', '양식', '분식', '패스트푸드', '치킨', '피자', '술집', '뷔페', '아시아음식', '패밀리레스토랑', '간식'];
-        for (const sub of subPriorities) {
-            if (categoryText.includes(sub)) return categoryEmojis[sub];
+    const getEmoji = (categoryText, placeName = '') => {
+        if (!categoryText && !placeName) return '🍴';
+        const str = `${categoryText || ''} ${placeName || ''}`;
+        if (typeof mapKakaoCategoryToStandard === 'function') {
+            const std = mapKakaoCategoryToStandard(categoryText, placeName);
+            const m = std.match(/[\p{Extended_Pictographic}\uD83C-\uDBFF\uDC00-\uDFFF]/u);
+            if (m) return m[0];
         }
-        if (categoryText.includes('카페') || categoryText.includes('찻집')) return '☕';
+        const subPriorities = ['고기', '치킨', '피자', '패스트푸드', '일식', '중식', '양식', '해산물', '국/찌개', '국밥', '면요리', '분식', '술집', '카페', '샐러드', '뷔페', '세계요리', '한식'];
+        for (const sub of subPriorities) {
+            if (str.includes(sub)) return categoryEmojis[sub] || '🍴';
+        }
         return '🍴';
     };
 
@@ -2173,6 +2278,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear existing markers and overlays
         markers.forEach(m => m.setMap(null));
         markers = [];
+        if (window.currentHoverOverlay) window.currentHoverOverlay.setMap(null);
+        window.currentHoverOverlay = null;
         if (window.currentMapOverlay) window.currentMapOverlay.setMap(null);
         window.currentMapOverlay = null;
 
@@ -2557,28 +2664,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     function getCategoryEmoji(catString, placeName = '') {
         const raw = (catString || '').trim();
-        // 1. Extract emoji directly if already starting with one (e.g. '🍚한식', '🥩고기', '🍣일식')
-        const emojiMatch = raw.replace(/[가-힣a-zA-Z0-9\s>\-–—(),./]/g, '').trim();
-        if (emojiMatch) return emojiMatch;
+        // 1. Extract emoji directly if already present in string (e.g. '🥩고기', '🍣일식', '🍲국/찌개')
+        const emojiMatch = raw.match(/[\p{Extended_Pictographic}\uD83C-\uDBFF\uDC00-\uDFFF]/u);
+        if (emojiMatch) return emojiMatch[0];
 
-        // 2. Map through standard category mapper if available
+        // 2. Map through standard category mapper using both category text and place name
         if (typeof mapKakaoCategoryToStandard === 'function') {
             const std = mapKakaoCategoryToStandard(raw, placeName);
-            const stdEmoji = std.replace(/[가-힣a-zA-Z0-9\s>\-–—(),./]/g, '').trim();
-            if (stdEmoji) return stdEmoji;
+            const stdEmoji = std.match(/[\p{Extended_Pictographic}\uD83C-\uDBFF\uDC00-\uDFFF]/u);
+            if (stdEmoji) return stdEmoji[0];
         }
 
         // 3. Fallback to existing getEmoji helper
         if (typeof getEmoji === 'function') {
-            return getEmoji(raw);
+            const fb = getEmoji(raw, placeName);
+            if (fb && fb !== '🍴') return fb;
         }
 
-        return '🥄';
+        return '🍴';
     }
 
     const markerSvgCache = new Map();
 
-    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null, friendBadges = null) {
+    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null, friendBadges = null, placeName = '') {
         // Collect badges list
         let allBadges = [];
         if (Array.isArray(friendBadges) && friendBadges.length > 0) {
@@ -2590,7 +2698,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const friendKey = allBadges.map(b => `${b.text || ''}_${b.color || ''}`).join(';');
-        const cacheKey = `c38_${type}_${category}_${isFlame}_${friendKey}`;
+        const safePlaceKey = (placeName || '').slice(0, 15);
+        const cacheKey = `c38_${type}_${category}_${safePlaceKey}_${isFlame}_${friendKey}`;
         if (markerSvgCache.has(cacheKey)) {
             return markerSvgCache.get(cacheKey);
         }
@@ -2607,14 +2716,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'saved') {
             innerBg = '#FFFFFF';
             borderColor = '#FF4757';
-            const emoji = getCategoryEmoji(category);
+            const emoji = getCategoryEmoji(category, placeName);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'common_multi') {
             innerBg = '#FFFBEB';
             borderColor = '#F59E0B';
             shadowColor = '#D97706';
             shadowOpacity = 0.42;
-            const emoji = getCategoryEmoji(category);
+            const emoji = getCategoryEmoji(category, placeName);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'multi_friend') {
             innerBg = '#FAF5FF';
@@ -2640,19 +2749,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     </linearGradient>
                 `;
             }
-            const emoji = getCategoryEmoji(category);
+            const emoji = getCategoryEmoji(category, placeName);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'common') {
             innerBg = '#FFFBEB';
             borderColor = '#F59E0B';
             shadowColor = '#D97706';
             shadowOpacity = 0.38;
-            const emoji = getCategoryEmoji(category);
+            const emoji = getCategoryEmoji(category, placeName);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'friend') {
             innerBg = '#FFFFFF';
             borderColor = allBadges[0]?.color || '#8B5CF6';
-            const emoji = getCategoryEmoji(category);
+            const emoji = getCategoryEmoji(category, placeName);
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'wishlist') {
             innerBg = '#FFFFFF';
@@ -2662,12 +2771,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // General Kakao search place
             innerBg = '#FFFFFF';
             borderColor = '#64748B';
-            const emoji = getCategoryEmoji(category);
-            if (emoji && emoji !== '🥄') {
-                iconContent = `<text x="19" y="19.5" font-size="13" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
-            } else {
-                iconContent = `<circle cx="19" cy="19" r="4.2" fill="#64748B"/>`;
-            }
+            const emoji = getCategoryEmoji(category, placeName);
+            iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji || '🍴'}</text>`;
         }
 
         // Top badges: Right shoulder (friend avatars) + Left shoulder (common star or flame)
@@ -2752,11 +2857,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const YELLOW_MARKER_SVG = getModernMarkerSvg('wishlist');
     const BLUE_MARKER_SVG = getModernMarkerSvg('search');
 
-    function createMarkerCapsuleHtml(item, place, isSaved, isWishlist) {
+    window.currentHoverOverlay = null;
+
+    function createMarkerCapsuleHtml(item, place, isSaved, isWishlist, isHover = false) {
         const name = place?.place_name || item?.name || '';
         const visits = isSaved ? (item?.visit_count || 1) : 0;
 
-        let icon = '🥢';
+        let icon = '🍴';
         let iconCircleClass = '';
         let iconCircleStyle = '';
         let metaHtml = '';
@@ -2815,15 +2922,16 @@ document.addEventListener('DOMContentLoaded', () => {
             cardClass = 'is-wishlist';
             metaHtml = `<span class="capsule-badge-wish">⭐ 가고싶은 곳</span>`;
         } else {
-            icon = getCategoryEmoji(place?.category_name, name);
-            if (icon === '🥄') icon = '📍';
+            icon = getCategoryEmoji(place?.category_name || item?.category, name);
             iconCircleClass = 'search';
             const catName = place?.category_name ? place.category_name.split(' > ').pop() : (item?.category || '음식점');
             metaHtml = `<span class="capsule-badge-cat">${catName}</span>`;
         }
 
+        const hoverClass = isHover ? 'is-hover' : '';
+
         return `
-            <div class="marker-capsule-wrap" onclick="window.reopenCurrentPlaceDetail && window.reopenCurrentPlaceDetail();">
+            <div class="marker-capsule-wrap ${hoverClass}" onclick="window.reopenCurrentPlaceDetail && window.reopenCurrentPlaceDetail();">
                 <div class="marker-capsule-card ${cardClass}">
                     <div class="capsule-icon-circle ${iconCircleClass}" ${iconCircleStyle ? `style="${iconCircleStyle}"` : ''}>${icon}</div>
                     <div class="capsule-content">
@@ -2837,6 +2945,47 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    function attachMarkerEvents(marker, item, place, isSaved, isWishlist, coords) {
+        kakao.maps.event.addListener(marker, 'mouseover', () => {
+            const selectedPlace = window.currentSelectedPlaceData?.place;
+            const selectedItem = window.currentSelectedPlaceData?.item;
+            const isAlreadySelected = (selectedPlace && place && (selectedPlace.id === place.id || selectedPlace.place_name === place.place_name)) ||
+                                      (selectedItem && item && selectedItem.name === item.name);
+            if (isAlreadySelected && window.currentMapOverlay) {
+                return;
+            }
+
+            if (window.currentHoverOverlay) {
+                window.currentHoverOverlay.setMap(null);
+                window.currentHoverOverlay = null;
+            }
+
+            const hoverContent = createMarkerCapsuleHtml(item, place, isSaved, isWishlist, true);
+            window.currentHoverOverlay = new kakao.maps.CustomOverlay({
+                position: coords,
+                content: hoverContent,
+                yAnchor: 1.0,
+                zIndex: 99990
+            });
+            window.currentHoverOverlay.setMap(map);
+        });
+
+        kakao.maps.event.addListener(marker, 'mouseout', () => {
+            if (window.currentHoverOverlay) {
+                window.currentHoverOverlay.setMap(null);
+                window.currentHoverOverlay = null;
+            }
+        });
+
+        kakao.maps.event.addListener(marker, 'click', () => {
+            if (window.currentHoverOverlay) {
+                window.currentHoverOverlay.setMap(null);
+                window.currentHoverOverlay = null;
+            }
+            openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords);
+        });
+    }
+
     window.reopenCurrentPlaceDetail = function() {
         if (window.currentSelectedPlaceData) {
             const d = window.currentSelectedPlaceData;
@@ -2846,6 +2995,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords) {
         map.panTo(coords);
+        if (window.currentHoverOverlay) {
+            window.currentHoverOverlay.setMap(null);
+            window.currentHoverOverlay = null;
+        }
         if (window.currentMapOverlay) {
             window.currentMapOverlay.setMap(null);
             window.currentMapOverlay = null;
@@ -2867,7 +3020,7 @@ document.addEventListener('DOMContentLoaded', () => {
             place
         };
 
-        const overlayContent = createMarkerCapsuleHtml(item, place, effectiveSaved, isWishlist);
+        const overlayContent = createMarkerCapsuleHtml(item, place, effectiveSaved, isWishlist, false);
         window.currentMapOverlay = new kakao.maps.CustomOverlay({
             position: coords,
             content: overlayContent,
@@ -2907,13 +3060,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     markerType = 'multi_friend';
                 }
                 const friendBadges = finalFriendInfo.friendBadges || [{ text: finalFriendInfo.avatarText || '👤', color: finalFriendInfo.color || '#6366F1' }];
-                svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadges[0], friendBadges);
+                svgUri = getModernMarkerSvg(markerType, item?.category || place.category_name, false, friendBadges[0], friendBadges, item?.name || place?.place_name);
             } else if (isSaved) {
-                svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame);
+                svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame, null, null, item?.name || place?.place_name);
             } else if (isWishlist) {
-                svgUri = getModernMarkerSvg('wishlist');
+                svgUri = getModernMarkerSvg('wishlist', '', false, null, null, item?.name || place?.place_name);
             } else {
-                svgUri = getModernMarkerSvg('search');
+                svgUri = getModernMarkerSvg('search', item?.category || place.category_name, false, null, null, item?.name || place?.place_name);
             }
             markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
         }
@@ -2955,9 +3108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bounds.extend(coords);
         }
 
-        kakao.maps.event.addListener(marker, 'click', () => {
-            openPlaceOverlayAndDetail(item, place, isSaved, isWishlist, coords);
-        });
+        attachMarkerEvents(marker, item, place, isSaved, isWishlist, coords);
     }
 
     function finalizeSearch(current, total, bounds, shouldSetBounds) {
@@ -4198,7 +4349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 zIndex = 125;
             }
 
-            const svgUri = getModernMarkerSvg(markerType, item.category, false, friendBadges[0], friendBadges);
+            const svgUri = getModernMarkerSvg(markerType, item.category, false, friendBadges[0], friendBadges, item.name);
 
             let markerImg = null;
             if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
@@ -4221,9 +4372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            kakao.maps.event.addListener(marker, 'click', () => {
-                openPlaceOverlayAndDetail(item, place, isCommon, false, coords);
-            });
+            attachMarkerEvents(marker, item, place, isCommon, false, coords);
         });
 
         window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
