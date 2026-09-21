@@ -1,6 +1,13 @@
 $gitExe = "C:\Users\user\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe"
 Set-Location "D:\PUMPKIN\Spoonmap"
 
+Write-Host "Validating JavaScript Syntax (app.js)..." -ForegroundColor Cyan
+& ".\check_js_syntax.ps1" -FilePath "app.js"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "`n[FATAL ERROR] Syntax validation failed! Deployment aborted to prevent site crash." -ForegroundColor Red
+    exit 1
+}
+
 Write-Host "Running sync_data.ps1..." -ForegroundColor Cyan
 & ".\sync_data.ps1"
 

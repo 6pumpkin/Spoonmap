@@ -3128,11 +3128,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const photo = window.currentGalleryPhotos[index];
         if (!photo) return;
         
-    window.currentGalleryPhotos = [];
-    window.switchGalleryPhoto = function(index) {
-        const photo = window.currentGalleryPhotos[index];
-        if (!photo) return;
-        
         const heroContainer = document.querySelector('.main-photo-hero');
         const heroImg = document.getElementById('gallery-main-img');
         if (!heroImg) return;
