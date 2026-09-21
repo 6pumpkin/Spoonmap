@@ -5124,7 +5124,7 @@ input[type="date"].drawer-input {
 
 .restaurant-grid.compact-view .compact-table-header {
     display: grid !important;
-    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.8fr !important;
+    grid-template-columns: 2fr 0.9fr 1.1fr 1fr 0.9fr 0.8fr 1fr 1.5fr !important;
     align-items: center !important;
     padding: 0.65rem 1rem !important;
     background: #FAF8F5 !important;
@@ -5133,12 +5133,12 @@ input[type="date"].drawer-input {
     font-weight: 800 !important;
     color: var(--text-secondary) !important;
     letter-spacing: 0.02em !important;
-    min-width: 900px !important;
+    min-width: 980px !important;
 }
 
 .restaurant-grid.compact-view .compact-card-row {
     display: grid !important;
-    grid-template-columns: 2.2fr 1.1fr 1.4fr 1.1fr 1.1fr 1fr 1.8fr !important;
+    grid-template-columns: 2fr 0.9fr 1.1fr 1fr 0.9fr 0.8fr 1fr 1.5fr !important;
     align-items: center !important;
     padding: 0.55rem 1rem !important;
     border-radius: 0 !important;
@@ -5147,7 +5147,7 @@ input[type="date"].drawer-input {
     box-shadow: none !important;
     background: #FFFFFF !important;
     transition: background 0.12s !important;
-    min-width: 900px !important;
+    min-width: 980px !important;
     gap: 8px !important;
     cursor: pointer !important;
     margin: 0 !important;
@@ -5193,10 +5193,35 @@ input[type="date"].drawer-input {
     white-space: nowrap;
 }
 
+.compact-visit-cell {
+    display: flex;
+    align-items: center;
+}
+
+.compact-visit-badge {
+    font-size: 0.74rem;
+    color: #64748B;
+    font-weight: 700;
+}
+
+.compact-visit-badge.is-frequent {
+    color: #C2410C;
+    background: #FFEDD5;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
 .compact-col-rate {
     font-size: 0.82rem;
     letter-spacing: 0.5px;
     white-space: nowrap;
+}
+
+.compact-map-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
 }
 
 .compact-map-btn {

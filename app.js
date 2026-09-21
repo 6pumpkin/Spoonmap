@@ -5721,8 +5721,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>주요 메뉴</span>
                     <span>지역 (대)</span>
                     <span>지역 (소)</span>
-                    <span>Rate</span>
-                    <span>Map</span>
+                    <span>방문</span>
+                    <span>평점</span>
+                    <span>지도</span>
                 `;
                 grid.appendChild(tableHeader);
             }
