@@ -1430,6 +1430,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function setupBottomSheetSwipeGestures() {
+        const sheets = [
+            { handleSel: '#diary-add-drawer .bottom-sheet-handle', closeFn: () => (typeof closeDiaryDrawer === 'function' && closeDiaryDrawer()) },
+            { handleSel: '#mobile-card-overlay .bottom-sheet-handle', closeFn: () => (typeof closeMobileOverlay === 'function' && closeMobileOverlay()) },
+            { handleSel: '#main-sidebar .bottom-sheet-handle', closeFn: () => (typeof window.toggleMobileSidebar === 'function' && window.toggleMobileSidebar()) }
+        ];
+
+        sheets.forEach(({ handleSel, closeFn }) => {
+            const handle = document.querySelector(handleSel);
+            if (!handle) return;
+            let startY = 0;
+            let currentY = 0;
+
+            handle.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches[0]) {
+                    startY = e.touches[0].clientY;
+                    currentY = startY;
+                }
+            }, { passive: true });
+
+            handle.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) {
+                    currentY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            handle.addEventListener('touchend', () => {
+                if (currentY - startY > 50) {
+                    closeFn();
+                }
+                startY = 0;
+                currentY = 0;
+            });
+        });
+    }
+
     // Initialization
     function init() {
         if (typeof restaurantData === 'undefined') {
@@ -1442,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         initRecommendTab();
         initFoodInsightsTab();
+        setupBottomSheetSwipeGestures();
         try {
             const cKey = typeof getUserCustomOptionsKey === 'function' ? getUserCustomOptionsKey() : 'spoonmap_custom_options';
             const cStore = JSON.parse(localStorage.getItem(cKey) || '{}');
@@ -1493,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!VALID_TABS.includes(targetTab)) targetTab = isUserLoggedIn() ? 'diary' : 'map';
         if (currentActiveTab === targetTab) return;
 
-        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn, .mobile-bnav-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         const mobileTabsMenu = document.getElementById('mobile-tabs-menu');
         const mobileFilterBtn = document.getElementById('mobile-filter-toggle-btn');
@@ -1596,7 +1633,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupTabs() {
-        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn, .mobile-tab-btn, .mobile-bnav-btn');
 
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -5376,10 +5413,68 @@ document.addEventListener('DOMContentLoaded', () => {
             currentFilters.location_small = [];
             updateSmallLocationFilters(currentFilters.location_large);
         }
+        if (type === 'category') {
+            syncMobileCatChips();
+        }
 
         listDisplayCount = 50;
         render();
     }
+
+    function syncMobileCatChips() {
+        const chipsBar = document.getElementById('mobile-cat-chips-bar');
+        if (!chipsBar) return;
+        const cats = currentFilters['category'] || [];
+        const chipBtns = chipsBar.querySelectorAll('.mobile-cat-chip-btn:not(.mobile-filter-trigger-btn)');
+        chipBtns.forEach(btn => {
+            const val = btn.dataset.cat;
+            if (cats.length === 0) {
+                btn.classList.toggle('active', val === 'all');
+            } else if (cats.length === 1) {
+                btn.classList.toggle('active', cats[0] === val);
+            } else {
+                btn.classList.toggle('active', cats.includes(val));
+            }
+        });
+    }
+    window.syncMobileCatChips = syncMobileCatChips;
+
+    window.handleMobileCatClick = function(btn, cat) {
+        if (!currentFilters['category']) currentFilters['category'] = [];
+
+        if (cat === 'all') {
+            currentFilters['category'] = [];
+        } else {
+            const idx = currentFilters['category'].indexOf(cat);
+            if (idx > -1) {
+                currentFilters['category'].splice(idx, 1);
+            } else {
+                currentFilters['category'] = [cat];
+            }
+        }
+
+        if (categoryFilterGroup) {
+            categoryFilterGroup.querySelectorAll('.filter-btn').forEach(b => {
+                const val = b.dataset.value;
+                if (currentFilters['category'].length === 0) {
+                    b.classList.toggle('active', val === 'all');
+                } else {
+                    b.classList.toggle('active', currentFilters['category'].includes(val));
+                }
+            });
+        }
+
+        syncMobileCatChips();
+        listDisplayCount = 50;
+        render();
+    };
+
+    window.toggleMobileSidebar = function() {
+        const sidebar = document.getElementById('main-sidebar') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+        const isOpen = sidebar.classList.toggle('mobile-open');
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    };
 
     function updateSmallLocationFilters(largeValuesArray) {
         if (locationSmallFilterGroup) {
@@ -5946,6 +6041,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 4. Update UI & re-render
         refreshSidebarFilters();
+        if (typeof syncMobileCatChips === 'function') syncMobileCatChips();
         updateFilterButtonsUI();
         listDisplayCount = 50;
         render();
@@ -9990,9 +10086,120 @@ function renderDiaryCalendar() {
         });
         cell.appendChild(addBtn);
 
+        // Click cell to select day and show in mobile feed
+        cell.addEventListener('click', (e) => {
+            if (e.target.closest('.diary-add-btn') || e.target.closest('.diary-entry-card')) return;
+            grid.querySelectorAll('.diary-day-cell').forEach(c => c.classList.remove('is-selected-day'));
+            cell.classList.add('is-selected-day');
+            renderDiaryMobileFeed(dateStr, entries);
+        });
+
         grid.appendChild(cell);
     }
+
+    // Auto-select initial date for mobile feed (today if in month, or first date with entries, or 1st)
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    let targetSelectDate = null;
+    let targetEntries = [];
+
+    if (year === today.getFullYear() && month === today.getMonth()) {
+        targetSelectDate = todayStr;
+        targetEntries = byDate[todayStr] || [];
+    } else {
+        const daysWithEntries = Object.keys(byDate).sort().reverse();
+        if (daysWithEntries.length > 0) {
+            targetSelectDate = daysWithEntries[0];
+            targetEntries = byDate[targetSelectDate] || [];
+        } else {
+            targetSelectDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+            targetEntries = [];
+        }
+    }
+
+    if (targetSelectDate) {
+        const targetCell = grid.querySelector(`.diary-day-cell[data-date="${targetSelectDate}"]`);
+        if (targetCell) targetCell.classList.add('is-selected-day');
+        renderDiaryMobileFeed(targetSelectDate, targetEntries);
+    }
 }
+
+function renderDiaryMobileFeed(dateStr, entries) {
+    const feedHeader = document.getElementById('diary-mobile-feed-title');
+    const feedList = document.getElementById('diary-mobile-feed-list');
+    if (!feedHeader || !feedList) return;
+
+    if (!entries) entries = [];
+
+    let formattedDate = dateStr;
+    try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            formattedDate = `${parts[0]}.${parts[1]}.${parts[2]} (${dayNames[d.getDay()]})`;
+        }
+    } catch(e) {}
+
+    feedHeader.textContent = `📅 ${formattedDate} (${entries.length}곳)`;
+    feedList.innerHTML = '';
+
+    if (entries.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'diary-feed-empty';
+        emptyDiv.innerHTML = `
+            <p style="margin-bottom:8px;">이 날짜에 등록된 방문 기록이 없습니다.</p>
+            <button type="button" class="btn-primary" style="font-size:0.78rem; padding:5px 12px; border-radius:8px;" onclick="openDiaryDrawer('${dateStr}')">+ 새 방문 기록 추가</button>
+        `;
+        feedList.appendChild(emptyDiv);
+        return;
+    }
+
+    entries.forEach(entry => {
+        const card = document.createElement('div');
+        card.className = 'diary-mobile-feed-card';
+        card.addEventListener('click', () => {
+            openEditDiaryDrawer(entry);
+        });
+
+        const visitInfo = getAllVisitsForRestaurant(entry.name);
+        const visitIdx = visitInfo.findIndex(v => String(v.id) === String(entry.id) || v.date === entry.date);
+        const orderNum = visitIdx !== -1 ? visitIdx + 1 : visitInfo.length;
+        const totalCount = visitInfo.length;
+
+        const spoonCount = entry.rate ? (entry.rate.match(/CLR|🥄/g) || entry.rate.match(/🥄/g) || []).length : 0;
+        const catArray = entry.category ? entry.category.split(',').map(c => c.trim()).filter(Boolean) : [];
+        const catHtml = catArray.map(c => {
+            const color = getNotionTagColor(c);
+            return `<span class="card-cat-badge" style="background:${color.bg}; color:${color.color}">${c}</span>`;
+        }).join('');
+
+        const visitBadge = (totalCount >= 2 && orderNum >= 2)
+            ? `<span class="card-visit-tag" style="font-size:0.72rem; padding:2px 6px;">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>`
+            : '';
+
+        const restPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(entry.name) : [];
+        const photoTagHtml = restPhotos.length > 0 ? `<span class="card-photo-tag" style="font-size:0.72rem; padding:2px 6px;">📷 ${restPhotos.length}</span>` : '';
+
+        card.innerHTML = `
+            <div class="feed-card-left">
+                <div class="feed-card-name">${escapeHtml(entry.name)}</div>
+                <div class="feed-card-meta">
+                    ${catHtml}
+                    ${spoonCount > 0 ? `<span class="card-spoons">${'🥄'.repeat(spoonCount)}</span>` : ''}
+                    ${entry.memo ? `<span class="feed-card-memo">📝 ${escapeHtml(entry.memo)}</span>` : ''}
+                </div>
+            </div>
+            <div class="feed-card-right">
+                ${visitBadge}
+                ${photoTagHtml}
+                <span class="feed-chevron">›</span>
+            </div>
+        `;
+
+        feedList.appendChild(card);
+    });
+}
+window.renderDiaryMobileFeed = renderDiaryMobileFeed;
 
 // Move Entry to New Date via Drag & Drop
 function moveDiaryEntryToDate(entry, newDate) {
