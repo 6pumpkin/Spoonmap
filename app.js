@@ -3128,6 +3128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const photo = window.currentGalleryPhotos[index];
         if (!photo) return;
         
+    window.currentGalleryPhotos = [];
+    window.switchGalleryPhoto = function(index) {
+        const photo = window.currentGalleryPhotos[index];
+        if (!photo) return;
+        
+        const heroContainer = document.querySelector('.main-photo-hero');
         const heroImg = document.getElementById('gallery-main-img');
         if (!heroImg) return;
         
@@ -3135,6 +3141,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (i === index) t.classList.add('active');
             else t.classList.remove('active');
         });
+
+        if (heroContainer) {
+            if (photo.isUserPhoto) {
+                heroContainer.classList.add('is-user-photo');
+            } else {
+                heroContainer.classList.remove('is-user-photo');
+            }
+        }
 
         heroImg.setAttribute('referrerpolicy', 'no-referrer');
         heroImg.onerror = function() {
@@ -3145,15 +3159,71 @@ document.addEventListener('DOMContentLoaded', () => {
         heroImg.src = photo.image_url || photo.thumbnail_url;
     };
 
-    function fetchPlaceFoodPhotos(placeName, categoryName, containerEl, itemData = null) {
+    function renderCombinedPhotoGallery(containerEl, photos, placeName) {
+        if (!containerEl || !photos || photos.length === 0) {
+            if (containerEl) containerEl.style.display = 'none';
+            return;
+        }
+        containerEl.style.display = 'block';
+        window.currentGalleryPhotos = photos;
+
+        const firstPhoto = photos[0];
+        const isFirstUserPhoto = !!firstPhoto.isUserPhoto;
+        const safeName = (placeName || '').replace(/'/g, "\\'");
+
+        let thumbsHtml = '';
+        if (photos.length > 1) {
+            thumbsHtml = `
+                <div class="photo-thumb-list">
+                    ${photos.map((p, idx) => `
+                        <img class="thumb-img ${idx === 0 ? 'active' : ''} ${p.isUserPhoto ? 'is-user-photo' : ''}" 
+                             src="${p.thumbnail_url || p.image_url}" 
+                             alt="${placeName} 사진 ${idx + 1}"
+                             title="${p.isUserPhoto ? '내가 직접 찍은 사진' : '식당 리뷰 사진'}"
+                             referrerpolicy="no-referrer"
+                             onclick="window.switchGalleryPhoto(${idx})">
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        containerEl.innerHTML = `
+            <div class="main-photo-hero ${isFirstUserPhoto ? 'is-user-photo' : ''}" 
+                 onclick="window.openPhotoLightbox && window.openPhotoLightbox(document.getElementById('gallery-main-img').src, '${safeName}')" 
+                 style="cursor: pointer;" title="클릭하면 사진을 크게 봅니다">
+                <img id="gallery-main-img" 
+                     src="${firstPhoto.image_url}" 
+                     alt="${placeName} 음식 사진" 
+                     referrerpolicy="no-referrer"
+                     onerror="this.onerror=null; this.src='${firstPhoto.fallback_url || firstPhoto.thumbnail_url}';">
+            </div>
+            ${thumbsHtml}
+        `;
+    }
+
+    function fetchPlaceFoodPhotos(placeName, categoryName, containerEl, itemData = null, userPhotos = []) {
         if (!containerEl) return;
         containerEl.style.display = 'block';
-        containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 대표 음식 사진 찾는 중...</div>`;
+
+        // 1. Convert userPhotos to unified gallery items
+        const userGalleryItems = (userPhotos || []).map((p, idx) => ({
+            image_url: p.url,
+            thumbnail_url: p.url,
+            fallback_url: p.url,
+            isUserPhoto: true
+        }));
+
+        // If user already uploaded photos, render them immediately so user sees them right away
+        if (userGalleryItems.length > 0) {
+            renderCombinedPhotoGallery(containerEl, userGalleryItems, placeName);
+        } else {
+            containerEl.innerHTML = `<div class="photo-loading-skeleton">📷 선명한 대표 음식 사진 찾는 중...</div>`;
+        }
 
         const cleanName = (placeName || '').replace(/본점|직영점|지점|점$/g, '').trim();
         let catTag = (categoryName || '').split('>').pop().trim().replace(/음식점|기타|맛집/g, '');
         
-        // 1. Build optimal search query prioritizing signature dishes
+        // Build optimal search query prioritizing signature dishes
         let dishQuery = '';
         if (itemData) {
             if (itemData.friendInfo && itemData.friendInfo.menu && itemData.friendInfo.menu.length > 0) {
@@ -3168,7 +3238,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // e.g. "카쿠시타 명란크림우동" -> direct crisp food dish photos from blog reviews!
         const query = dishQuery ? `${cleanName} ${dishQuery}` : (catTag ? `${cleanName} ${catTag} 음식` : `${cleanName} 맛집 음식`);
         const headers = { 'Authorization': 'KakaoAK 36e745d970cf6ee083e08a59ebf3c951' };
         const imgUrl = `https://dapi.kakao.com/v2/search/image?query=${encodeURIComponent(query)}&size=25`;
@@ -3176,7 +3245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(imgUrl, { headers })
             .then(res => res.json())
             .then(data => {
-                let photos = [];
+                let searchPhotos = [];
                 if (data && data.documents && data.documents.length > 0) {
                     const banned = [
                         'menu', '메뉴', '가격', '차림표', '영수증', 'receipt', 'bill',
@@ -3190,7 +3259,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const str = (doc.doc_url + ' ' + doc.image_url + ' ' + doc.display_sitename).toLowerCase();
                         if (banned.some(b => str.includes(b))) return false;
 
-                        // Resolution & Aspect Ratio filter: Must be genuine camera food photo
                         const w = parseInt(doc.width || 0, 10);
                         const h = parseInt(doc.height || 0, 10);
                         if (w > 0 && h > 0) {
@@ -3202,66 +3270,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     const docsToUse = filtered.length >= 2 ? filtered : data.documents;
-
                     docsToUse.forEach(doc => {
-                        photos.push({
+                        searchPhotos.push({
                             image_url: doc.image_url,
                             fallback_url: doc.thumbnail_url,
                             thumbnail_url: doc.thumbnail_url,
                             width: doc.width,
-                            height: doc.height
+                            height: doc.height,
+                            isUserPhoto: false
                         });
                     });
                 }
 
-                // Deduplicate by thumbnail_url and image_url
-                const uniquePhotos = [];
+                // Deduplicate search photos
+                const uniqueSearch = [];
                 const seen = new Set();
-                for (const p of photos) {
+                userGalleryItems.forEach(u => seen.add(u.image_url));
+
+                for (const p of searchPhotos) {
                     const key = p.thumbnail_url || p.image_url;
                     if (!seen.has(key)) {
                         seen.add(key);
-                        uniquePhotos.push(p);
+                        uniqueSearch.push(p);
                     }
-                    if (uniquePhotos.length >= 5) break;
+                    if (uniqueSearch.length >= 6) break;
                 }
 
-                if (uniquePhotos.length > 0) {
-                    window.currentGalleryPhotos = uniquePhotos;
-                    const firstImg = uniquePhotos[0];
+                // Combine: User Photos First + Search Photos Following!
+                const combinedPhotos = [...userGalleryItems, ...uniqueSearch];
 
-                    let thumbsHtml = '';
-                    if (uniquePhotos.length > 1) {
-                        thumbsHtml = `
-                            <div class="photo-thumb-list">
-                                ${uniquePhotos.map((doc, idx) => `
-                                    <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
-                                         src="${doc.thumbnail_url}" 
-                                         alt="음식 사진 ${idx + 1}"
-                                         referrerpolicy="no-referrer"
-                                         onclick="window.switchGalleryPhoto(${idx})">
-                                `).join('')}
-                            </div>
-                        `;
-                    }
-
-                    containerEl.innerHTML = `
-                        <div class="main-photo-hero">
-                            <img id="gallery-main-img" 
-                                 src="${firstImg.image_url}" 
-                                 alt="${placeName} 고화질 음식 사진" 
-                                 referrerpolicy="no-referrer"
-                                 onerror="this.onerror=null; this.src='${firstImg.fallback_url}';">
-                        </div>
-                        ${thumbsHtml}
-                    `;
-                } else {
+                if (combinedPhotos.length > 0) {
+                    renderCombinedPhotoGallery(containerEl, combinedPhotos, placeName);
+                } else if (userGalleryItems.length === 0) {
                     containerEl.style.display = 'none';
                 }
             })
             .catch(err => {
                 console.error('Error fetching food photos:', err);
-                containerEl.style.display = 'none';
+                if (userGalleryItems.length === 0) {
+                    containerEl.style.display = 'none';
+                }
             });
     }
 
@@ -3505,14 +3553,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Trigger Photo Display: Prefer User Uploaded Photos, fallback to Kakao/Daum Search!
+        // Trigger Photo Display: Combine User Photos with Kakao/Daum Search Photos!
         const photoGalleryEl = document.getElementById('detail-photo-gallery');
         const userPhotos = (isSaved && typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(item.name) : [];
-        if (userPhotos && userPhotos.length > 0) {
-            renderUserPhotosInMapGallery(item.name, userPhotos, photoGalleryEl);
-        } else {
-            fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl, item);
-        }
+        fetchPlaceFoodPhotos(item.name, displayCategory, photoGalleryEl, item, userPhotos);
 
         // Setup multi-friend carousel scroll listener & dot navigation & mouse drag-to-scroll
         const multiTrack = detailPanel.querySelector('.multi-friend-carousel-track');
@@ -11075,36 +11119,12 @@ window.closePhotoLightbox = function(e) {
     if (modal) modal.classList.remove('open');
 };
 
-// Render User Photos in MAP Tab Place Detail
+// Render User Photos in MAP Tab Place Detail (delegates to combined photo gallery)
 function renderUserPhotosInMapGallery(placeName, userPhotos, containerEl) {
     if (!containerEl) return;
-    containerEl.style.display = 'block';
-    const firstImg = userPhotos[0];
-
-    let thumbsHtml = '';
-    if (userPhotos.length > 1) {
-        thumbsHtml = `
-            <div class="photo-thumb-list">
-                ${userPhotos.map((p, idx) => `
-                    <img class="thumb-img ${idx === 0 ? 'active' : ''}" 
-                         src="${p.url}" 
-                         alt="${placeName} 사진 ${idx + 1}"
-                         onclick="window.switchUserGalleryPhoto('${p.url}', this)">
-                `).join('')}
-            </div>
-        `;
+    if (typeof fetchPlaceFoodPhotos === 'function') {
+        fetchPlaceFoodPhotos(placeName, '', containerEl, null, userPhotos);
     }
-
-    const safeName = (placeName || '').replace(/'/g, "\\'");
-    containerEl.innerHTML = `
-        <div style="margin-bottom: 6px;">
-            <span class="my-photo-badge">📸 내가 직접 찍은 사진 (${userPhotos.length}장)</span>
-        </div>
-        <div class="main-photo-hero" onclick="openPhotoLightbox(document.getElementById('gallery-main-img').src, '${safeName}')" style="cursor: pointer;" title="클릭하면 사진을 크게 봅니다">
-            <img id="gallery-main-img" src="${firstImg.url}" alt="${placeName} 내 등록 사진">
-        </div>
-        ${thumbsHtml}
-    `;
 }
 window.renderUserPhotosInMapGallery = renderUserPhotosInMapGallery;
 
