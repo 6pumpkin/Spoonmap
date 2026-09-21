@@ -5456,6 +5456,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         existing.location_small = locSmall;
                     }
                     if (item.map_url) existing.map_url = item.map_url;
+                    if (item.kakao_id) existing.kakao_id = item.kakao_id;
+                    if (item.road_address) existing.road_address = item.road_address;
+                    if (item.x) existing.x = item.x;
+                    if (item.y) existing.y = item.y;
                 }
             } else {
                 mapByName.set(key, {
@@ -5466,6 +5470,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     location_large: locLarge || '기타',
                     location_small: locSmall || '',
                     map_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
+                    kakao_id: item.kakao_id || '',
+                    road_address: item.road_address || '',
+                    x: item.x || '',
+                    y: item.y || '',
                     visit_count: 1
                 });
             }
@@ -5486,6 +5494,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         location_large: wItem.location || '기타',
                         location_small: wItem.location || '',
                         map_url: wItem.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(wItem.name)}`,
+                        kakao_id: wItem.kakao_id || '',
+                        road_address: wItem.road_address || '',
+                        x: wItem.x || '',
+                        y: wItem.y || '',
                         visit_count: 0,
                         isWishlist: true
                     });
@@ -5523,6 +5535,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     existing.location_small = locSmall;
                 }
                 if (ov.map_url) existing.map_url = ov.map_url;
+                if (ov.kakao_id) existing.kakao_id = ov.kakao_id;
+                if (ov.road_address) existing.road_address = ov.road_address;
+                if (ov.x) existing.x = ov.x;
+                if (ov.y) existing.y = ov.y;
             } else {
                 mapByName.set(key, {
                     name: ov.name || rawKey,
@@ -5532,6 +5548,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     location_large: locLarge || '기타',
                     location_small: locSmall || '',
                     map_url: ov.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(ov.name || rawKey)}`,
+                    kakao_id: ov.kakao_id || '',
+                    road_address: ov.road_address || '',
+                    x: ov.x || '',
+                    y: ov.y || '',
                     visit_count: visitsByName.get(key) || 1,
                     date: datesByName.get(key) || ''
                 });
@@ -9109,6 +9129,151 @@ function initDiaryTab() {
     renderDiaryCalendar();
 }
 
+// ─── Phase 3.1: Restaurant Master Entity & Kakao Places Integration ───
+
+function normalizeRestaurantName(name) {
+    if (!name) return '';
+    return name
+        .replace(/[\(\)\[\]\{\}\<\>·\-_,./\\~`!@#$%^&*+=?]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/\s*(본점|1호점|직영점|별관|신관|분점|원조)$/, '')
+        .trim()
+        .toLowerCase();
+}
+
+function extractRegionFromAddress(address, roadAddress) {
+    const raw = (address || roadAddress || '').trim();
+    if (!raw) return { large: '', small: '' };
+
+    const tokens = raw.split(/\s+/);
+    if (tokens.length >= 2) {
+        let candidateLarge = `${tokens[0]} ${tokens[1]}`;
+        candidateLarge = candidateLarge
+            .replace(/^서울특별시/, '서울')
+            .replace(/^부산광역시/, '부산')
+            .replace(/^대구광역시/, '대구')
+            .replace(/^인천광역시/, '인천')
+            .replace(/^광주광역시/, '광주')
+            .replace(/^대전광역시/, '대전')
+            .replace(/^울산광역시/, '울산')
+            .replace(/^세종특별자치시/, '세종')
+            .replace(/^경기도/, '경기')
+            .replace(/^강원특별자치도|^강원도/, '강원')
+            .replace(/^충청북도/, '충북')
+            .replace(/^충청남도/, '충남')
+            .replace(/^전라북도|^전북특별자치도/, '전북')
+            .replace(/^전라남도/, '전남')
+            .replace(/^경상북도/, '경북')
+            .replace(/^경상남도/, '경남')
+            .replace(/^제주특별자치도|^제주도/, '제주');
+
+        candidateLarge = candidateLarge.replace(/([가-힣]+)시$/, '$1');
+
+        let candidateSmall = '';
+        for (let i = 2; i < tokens.length; i++) {
+            const t = tokens[i];
+            if (/(동|읍|면|리|가)$/.test(t) && !/(시|군|구)$/.test(t)) {
+                candidateSmall = t.replace(/[0-9]+가?$/, '');
+                break;
+            }
+        }
+
+        if (typeof standardizeLocation === 'function') {
+            const std = standardizeLocation(candidateLarge, candidateSmall, '');
+            if (std.large) {
+                return { large: std.large, small: std.small || candidateSmall };
+            }
+        }
+        return { large: candidateLarge, small: candidateSmall };
+    }
+    return { large: '', small: '' };
+}
+
+function findExistingRestaurant(query) {
+    if (!query) return null;
+    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    if (!unified || unified.length === 0) return null;
+
+    const qKakaoId = query.kakaoId ? String(query.kakaoId).trim() : '';
+    const qName = (query.name || '').trim();
+    const qNormName = normalizeRestaurantName(qName);
+    const qUrlId = query.mapUrl ? (query.mapUrl.match(/\/(\d+)(?:\D|$)/) || [])[1] : '';
+    const qLarge = (query.locationLarge || '').trim();
+    const qSmall = (query.locationSmall || '').trim();
+    const qX = parseFloat(query.x);
+    const qY = parseFloat(query.y);
+
+    // 1순위: kakao_id 일치
+    if (qKakaoId) {
+        const found = unified.find(r => {
+            if (r.kakao_id && String(r.kakao_id).trim() === qKakaoId) return true;
+            if (r.map_url) {
+                const m = r.map_url.match(/\/(\d+)(?:\D|$)/);
+                if (m && m[1] === qKakaoId) return true;
+            }
+            return false;
+        });
+        if (found) return found;
+    }
+
+    // 2순위: map_url 내 카카오 ID 일치
+    if (qUrlId) {
+        const found = unified.find(r => {
+            if (r.kakao_id && String(r.kakao_id).trim() === qUrlId) return true;
+            if (r.map_url) {
+                const m = r.map_url.match(/\/(\d+)(?:\D|$)/);
+                if (m && m[1] === qUrlId) return true;
+            }
+            return false;
+        });
+        if (found) return found;
+    }
+
+    // 3순위: 정확한 식당명 일치
+    const exactMatch = unified.find(r => r.name && r.name.trim().toLowerCase() === qName.toLowerCase());
+    if (exactMatch) return exactMatch;
+
+    // 4순위: 정규화 명칭 + 지역 일치
+    if (qNormName) {
+        const normMatch = unified.find(r => {
+            if (!r.name) return false;
+            const rNorm = normalizeRestaurantName(r.name);
+            if (rNorm !== qNormName) return false;
+
+            if (qSmall && r.location_small && (qSmall.includes(r.location_small) || r.location_small.includes(qSmall))) {
+                return true;
+            }
+            if (qLarge && r.location_large && qLarge === r.location_large) {
+                return true;
+            }
+            if (!qSmall && !r.location_small) return true;
+            return false;
+        });
+        if (normMatch) return normMatch;
+    }
+
+    // 5순위: GPS 좌표 150m 이내 근접 + 정규화 명칭 부분 일치
+    if (!isNaN(qX) && !isNaN(qY) && qX > 0 && qY > 0 && qNormName) {
+        const geoMatch = unified.find(r => {
+            const rx = parseFloat(r.x || (r.coords && r.coords.getLng && r.coords.getLng()));
+            const ry = parseFloat(r.y || (r.coords && r.coords.getLat && r.coords.getLat()));
+            if (isNaN(rx) || isNaN(ry) || rx <= 0 || ry <= 0) return false;
+
+            const dx = (qX - rx) * 88000;
+            const dy = (qY - ry) * 111000;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= 150) {
+                const rNorm = normalizeRestaurantName(r.name);
+                if (rNorm.includes(qNormName) || qNormName.includes(rNorm)) return true;
+            }
+            return false;
+        });
+        if (geoMatch) return geoMatch;
+    }
+
+    return null;
+}
+
 function populateDiaryAutocomplete() {
     setupDiaryNameSearch();
 }
@@ -9118,60 +9283,122 @@ function setupDiaryNameSearch() {
     const container = document.getElementById('diary-name-suggestions');
     if (!input || !container) return;
 
-    const getNamesList = () => {
-        const namesSet = new Set();
-        const unified = typeof getUnifiedRestaurantData === 'function' ? getUnifiedRestaurantData() : [];
-        unified.forEach(r => {
-            if (r.name) namesSet.add(r.name);
-        });
-        return Array.from(namesSet).sort();
-    };
+    let debounceTimer = null;
+    let selectedSuggestionIndex = -1;
+    let currentSuggestions = [];
 
     const hideSuggestions = () => {
         container.style.display = 'none';
         container.innerHTML = '';
+        selectedSuggestionIndex = -1;
+        currentSuggestions = [];
+    };
+
+    const renderSuggestions = (items) => {
+        currentSuggestions = items;
+        selectedSuggestionIndex = -1;
+
+        if (!items || items.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        container.innerHTML = items.map((item, idx) => {
+            const isSaved = !!item.existingMatch;
+            const visitCount = item.existingMatch?.visit_count || (item.existingMatch ? getAllVisitsForRestaurant(item.existingMatch.name).length : 0);
+            const badgeHtml = isSaved 
+                ? `<span class="name-suggestion-badge">${visitCount > 1 ? visitCount + '회 방문' : '등록됨'}</span>`
+                : '';
+            const catHtml = item.displayCategory ? `<span class="name-suggestion-cat">${item.displayCategory}</span>` : '';
+            const addrHtml = item.displayAddress ? `<div class="name-suggestion-addr">${item.displayAddress}</div>` : '';
+
+            return `
+                <div class="name-suggestion-item" data-index="${idx}">
+                    <div class="name-suggestion-top">
+                        <span class="name-suggestion-name">${item.name}</span>
+                        <div class="name-suggestion-meta">
+                            ${catHtml}
+                            ${badgeHtml}
+                        </div>
+                    </div>
+                    ${addrHtml}
+                </div>
+            `;
+        }).join('');
+
+        container.style.display = 'block';
+
+        container.querySelectorAll('.name-suggestion-item').forEach(el => {
+            el.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const idx = parseInt(el.dataset.index, 10);
+                if (!isNaN(idx) && currentSuggestions[idx]) {
+                    selectSuggestion(currentSuggestions[idx]);
+                }
+            });
+        });
+    };
+
+    const highlightItem = (index) => {
+        const items = container.querySelectorAll('.name-suggestion-item');
+        items.forEach((el, i) => {
+            el.classList.toggle('is-selected', i === index);
+            if (i === index) el.scrollIntoView({ block: 'nearest' });
+        });
+    };
+
+    const selectSuggestion = (item) => {
+        input.value = item.name;
+        hideSuggestions();
+        autoFillRestaurantData(item.rawPlace || item.name, item.existingMatch);
+        if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(item.name);
     };
 
     input.addEventListener('input', () => {
-        const query = input.value.trim().toLowerCase();
+        const query = input.value.trim();
         if (!query) {
             hideSuggestions();
             return;
         }
 
-        const allNames = getNamesList();
-        const filtered = allNames.filter(name => name.toLowerCase().includes(query)).slice(0, 10);
-
-        if (filtered.length === 0) {
-            hideSuggestions();
-            return;
-        }
-
-        container.innerHTML = filtered.map(name => `
-            <div class="name-suggestion-item" data-name="${name}">
-                <span>🍽️ ${name}</span>
-            </div>
-        `).join('');
-
-        container.style.display = 'block';
-
-        container.querySelectorAll('.name-suggestion-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const selectedName = item.dataset.name;
-                input.value = selectedName;
-                hideSuggestions();
-                autoFillRestaurantData(selectedName);
-                if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(selectedName);
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            searchPlacesForDrawer(query, (results) => {
+                renderSuggestions(results);
             });
-        });
+        }, 220);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (container.style.display === 'none' || currentSuggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedSuggestionIndex = (selectedSuggestionIndex + 1) % currentSuggestions.length;
+            highlightItem(selectedSuggestionIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedSuggestionIndex = (selectedSuggestionIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+            highlightItem(selectedSuggestionIndex);
+        } else if (e.key === 'Enter') {
+            if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < currentSuggestions.length) {
+                e.preventDefault();
+                selectSuggestion(currentSuggestions[selectedSuggestionIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
     });
 
     input.addEventListener('blur', () => {
-        setTimeout(hideSuggestions, 200);
-        if (input.value.trim()) {
-            autoFillRestaurantData(input.value.trim());
-            if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(input.value.trim());
-        }
+        setTimeout(() => {
+            hideSuggestions();
+            if (input.value.trim()) {
+                const match = findExistingRestaurant({ name: input.value.trim() });
+                autoFillRestaurantData(input.value.trim(), match);
+                if (typeof refreshDiaryPhotoGrid === 'function') refreshDiaryPhotoGrid(input.value.trim());
+            }
+        }, 220);
     });
 
     document.addEventListener('click', (e) => {
@@ -9181,24 +9408,175 @@ function setupDiaryNameSearch() {
     });
 }
 
-function autoFillRestaurantData(restaurantName) {
+function searchPlacesForDrawer(query, callback) {
+    const results = [];
+    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    const queryLower = query.toLowerCase();
+
+    // 1. Local existing matches
+    const matchedLocal = unified.filter(r => r.name && r.name.toLowerCase().includes(queryLower)).slice(0, 5);
+    matchedLocal.forEach(r => {
+        results.push({
+            name: r.name,
+            displayCategory: r.category || '',
+            displayAddress: [r.location_large, r.location_small].filter(Boolean).join(' '),
+            existingMatch: r,
+            rawPlace: {
+                place_name: r.name,
+                place_url: r.map_url || '',
+                id: r.kakao_id || (r.map_url ? (r.map_url.match(/\/(\d+)(?:\D|$)/) || [])[1] : ''),
+                category_name: r.category || '',
+                address_name: '',
+                road_address_name: r.road_address || '',
+                x: r.x || '',
+                y: r.y || ''
+            }
+        });
+    });
+
+    // 2. Kakao Places keywordSearch
+    if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services && kakao.maps.services.Places) {
+        const ps = new kakao.maps.services.Places();
+        ps.keywordSearch(query, (data, status) => {
+            if (status === kakao.maps.services.Status.OK && Array.isArray(data)) {
+                data.slice(0, 7).forEach(p => {
+                    const existingMatch = findExistingRestaurant({
+                        kakaoId: p.id,
+                        name: p.place_name,
+                        mapUrl: p.place_url,
+                        roadAddress: p.road_address_name || p.address_name,
+                        x: p.x,
+                        y: p.y
+                    });
+
+                    // 중복 결과 방지 (이미 results에 동일 kakao_id나 동일 이름이 있으면 업데이트)
+                    const alreadyInResults = results.find(r => 
+                        (p.id && r.rawPlace?.id === p.id) || 
+                        (r.name.toLowerCase() === p.place_name.toLowerCase())
+                    );
+
+                    if (alreadyInResults) {
+                        if (!alreadyInResults.rawPlace?.id) {
+                            alreadyInResults.rawPlace = p;
+                            alreadyInResults.displayAddress = p.road_address_name || p.address_name;
+                        }
+                        if (existingMatch && !alreadyInResults.existingMatch) {
+                            alreadyInResults.existingMatch = existingMatch;
+                        }
+                    } else {
+                        const stdCat = (typeof mapKakaoCategoryToStandard === 'function')
+                            ? mapKakaoCategoryToStandard(p.category_name, p.place_name)
+                            : (p.category_name ? p.category_name.split('>').pop().trim() : '');
+
+                        results.push({
+                            name: p.place_name,
+                            displayCategory: stdCat,
+                            displayAddress: p.road_address_name || p.address_name || '',
+                            existingMatch: existingMatch,
+                            rawPlace: p
+                        });
+                    }
+                });
+            }
+            callback(results.slice(0, 10));
+        });
+    } else {
+        callback(results.slice(0, 10));
+    }
+}
+
+function autoFillRestaurantData(placeOrName, existingMatch = null) {
+    if (!placeOrName) return;
+
+    let place = null;
+    let restaurantName = '';
+
+    if (typeof placeOrName === 'object' && placeOrName !== null) {
+        place = placeOrName;
+        restaurantName = place.place_name || place.name || '';
+    } else {
+        restaurantName = String(placeOrName).trim();
+    }
+
     if (!restaurantName) return;
 
-    const unified = typeof getUnifiedRestaurantData === 'function' ? getUnifiedRestaurantData() : [];
-    let match = unified.find(r => r.name && r.name.toLowerCase() === restaurantName.toLowerCase());
+    // 기존 매칭 식당이 명시되지 않았다면 검색
+    if (!existingMatch) {
+        existingMatch = findExistingRestaurant({
+            kakaoId: place?.id,
+            name: restaurantName,
+            mapUrl: place?.place_url,
+            roadAddress: place?.road_address_name || place?.address_name,
+            x: place?.x,
+            y: place?.y
+        });
+    }
 
-    if (match) {
-        if (match.category) notionSelectors.category.setValues(match.category);
-        if (match.menu) notionSelectors.menu.setValues(match.menu);
-        if (match.location_large) notionSelectors.location_large.setValues(match.location_large);
-        if (match.location_small) notionSelectors.location_small.setValues(match.location_small);
+    // 1. 식당명 & 히든 메타데이터 입력
+    const nameInput = document.getElementById('diary-input-name');
+    if (nameInput) nameInput.value = restaurantName;
 
-        const mapInput = document.getElementById('diary-input-map');
-        if (mapInput && !mapInput.value && match.map_url) mapInput.value = match.map_url;
+    const kakaoIdInput = document.getElementById('diary-input-kakao-id');
+    const roadAddrInput = document.getElementById('diary-input-road-address');
+    const xInput = document.getElementById('diary-input-x');
+    const yInput = document.getElementById('diary-input-y');
 
-        // Auto-fill Spoon Rate (🥄 count)
-        if (match.rate) {
-            const spoonCount = (match.rate.match(/🥄/g) || []).length || 1;
+    const finalKakaoId = place?.id || existingMatch?.kakao_id || (existingMatch?.map_url ? (existingMatch.map_url.match(/\/(\d+)(?:\D|$)/) || [])[1] : '') || '';
+    const finalRoadAddr = place?.road_address_name || place?.address_name || existingMatch?.road_address || '';
+    const finalX = place?.x || existingMatch?.x || '';
+    const finalY = place?.y || existingMatch?.y || '';
+
+    if (kakaoIdInput) kakaoIdInput.value = finalKakaoId;
+    if (roadAddrInput) roadAddrInput.value = finalRoadAddr;
+    if (xInput) xInput.value = finalX;
+    if (yInput) yInput.value = finalY;
+
+    // 2. 카카오맵 URL 자동 입력
+    const mapInput = document.getElementById('diary-input-map');
+    const mapUrl = place?.place_url || existingMatch?.map_url || (finalKakaoId ? `https://place.map.kakao.com/${finalKakaoId}` : '');
+    if (mapInput && mapUrl) {
+        mapInput.value = mapUrl;
+    }
+
+    // 3. 식당 분류 (Category) 자동 선택
+    let targetCat = existingMatch?.category || '';
+    if (!targetCat && place?.category_name) {
+        targetCat = (typeof mapKakaoCategoryToStandard === 'function') 
+            ? mapKakaoCategoryToStandard(place.category_name, restaurantName) 
+            : place.category_name.split('>').pop().trim();
+    }
+    if (targetCat && notionSelectors?.category) {
+        notionSelectors.category.setSelected([targetCat]);
+    }
+
+    // 4. 지역 대분류 & 소분류 자동 선택
+    let largeLoc = existingMatch?.location_large || '';
+    let smallLoc = existingMatch?.location_small || '';
+    if ((!largeLoc || !smallLoc) && (place?.address_name || place?.road_address_name)) {
+        const parsed = extractRegionFromAddress(place.address_name, place.road_address_name);
+        if (!largeLoc && parsed.large) largeLoc = parsed.large;
+        if (!smallLoc && parsed.small) smallLoc = parsed.small;
+    }
+    if (largeLoc && smallLoc && notionSelectors?.location_small && typeof notionSelectors.location_small.selectSmallWithLarge === 'function') {
+        notionSelectors.location_small.selectSmallWithLarge(largeLoc, smallLoc);
+    } else {
+        if (largeLoc && notionSelectors?.location_large) {
+            notionSelectors.location_large.setSelected([largeLoc]);
+        }
+        if (smallLoc && notionSelectors?.location_small) {
+            notionSelectors.location_small.setSelected([smallLoc]);
+        }
+    }
+
+    // 5. 대표 메뉴 및 수저 평점 (기존 등록 식당인 경우 채움)
+    if (existingMatch) {
+        if (existingMatch.menu && notionSelectors?.menu) {
+            const menuArr = Array.isArray(existingMatch.menu) ? existingMatch.menu : (typeof existingMatch.menu === 'string' ? existingMatch.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
+            if (menuArr.length > 0) notionSelectors.menu.setSelected(menuArr);
+        }
+
+        if (existingMatch.rate) {
+            const spoonCount = (existingMatch.rate.match(/🥄/g) || []).length || 1;
             const rateInput = document.getElementById('diary-input-rate');
             const rateLabel = document.getElementById('diary-rate-label');
             const ratePicker = document.getElementById('diary-rate-picker');
@@ -9217,7 +9595,6 @@ function autoFillRestaurantData(restaurantName) {
         refreshDiaryPhotoGrid(restaurantName);
     }
 
-    // Update Visit Count Badge in Drawer
     updateDrawerVisitBadge(restaurantName);
 }
 
@@ -9563,6 +9940,15 @@ function openDiaryDrawer(dateStr, prefillData = null) {
     if (mapInput) mapInput.value = prefillData?.mapUrl || '';
     if (memoInput) memoInput.value = '';
 
+    const kakaoIdInput = document.getElementById('diary-input-kakao-id');
+    const roadAddrInput = document.getElementById('diary-input-road-address');
+    const xInput = document.getElementById('diary-input-x');
+    const yInput = document.getElementById('diary-input-y');
+    if (kakaoIdInput) kakaoIdInput.value = prefillData?.kakao_id || '';
+    if (roadAddrInput) roadAddrInput.value = prefillData?.road_address || '';
+    if (xInput) xInput.value = prefillData?.x || '';
+    if (yInput) yInput.value = prefillData?.y || '';
+
     if (typeof initAllNotionSelectors === 'function') initAllNotionSelectors();
     if (typeof notionSelectors !== 'undefined') {
         Object.values(notionSelectors).forEach(sel => sel.clear());
@@ -9636,6 +10022,15 @@ function openEditDiaryDrawer(entry) {
     if (dateInput) dateInput.value = entry.date || '';
     if (mapInput) mapInput.value = entry.map_url || '';
     if (memoInput) memoInput.value = entry.memo || '';
+
+    const kakaoIdInput = document.getElementById('diary-input-kakao-id');
+    const roadAddrInput = document.getElementById('diary-input-road-address');
+    const xInput = document.getElementById('diary-input-x');
+    const yInput = document.getElementById('diary-input-y');
+    if (kakaoIdInput) kakaoIdInput.value = entry.kakao_id || '';
+    if (roadAddrInput) roadAddrInput.value = entry.road_address || '';
+    if (xInput) xInput.value = entry.x || '';
+    if (yInput) yInput.value = entry.y || '';
 
     // Load and render photos for this restaurant
     if (typeof refreshDiaryPhotoGrid === 'function') {
@@ -9749,23 +10144,48 @@ function saveDiaryEntry() {
     const map_url = document.getElementById('diary-input-map')?.value.trim() || '';
     const memo = document.getElementById('diary-input-memo')?.value.trim() || '';
 
-    const key = name.trim().toLowerCase();
+    // Master entity metadata
+    const kakao_id = document.getElementById('diary-input-kakao-id')?.value.trim() || '';
+    const road_address = document.getElementById('diary-input-road-address')?.value.trim() || '';
+    const x = document.getElementById('diary-input-x')?.value.trim() || '';
+    const y = document.getElementById('diary-input-y')?.value.trim() || '';
+
+    // De-duplication check: Match against existing restaurant master data
+    const matchedExisting = findExistingRestaurant({
+        kakaoId: kakao_id,
+        name: name,
+        mapUrl: map_url,
+        roadAddress: road_address,
+        locationLarge: location_large,
+        locationSmall: location_small,
+        x: x,
+        y: y
+    });
+
+    // Unify to canonical restaurant name and key
+    const finalName = matchedExisting ? matchedExisting.name : name;
+    const key = finalName.trim().toLowerCase();
+
     const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : 'spoonmap_diary';
     const overridesKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides';
 
     // ─── Mode A: Restaurant Master Info Batch Edit (From LIST Tab) ───
     if (editId && editId.startsWith('__MASTER_EDIT__')) {
-        // 1. Save to overrides
         const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
         overrides[key] = {
-            name,
+            ...(overrides[key] || {}),
+            name: finalName,
             category,
             location_large,
             location_small,
             menu,
             rate,
-            map_url,
+            map_url: map_url || overrides[key]?.map_url || '',
             memo,
+            kakao_id: kakao_id || overrides[key]?.kakao_id || '',
+            road_address: road_address || overrides[key]?.road_address || '',
+            x: x || overrides[key]?.x || '',
+            y: y || overrides[key]?.y || '',
             updated_at: new Date().toISOString()
         };
         localStorage.setItem(overridesKey, JSON.stringify(overrides));
@@ -9773,17 +10193,21 @@ function saveDiaryEntry() {
             saveToCloud('overrides', overrides);
         }
 
-        // 2. Batch sync all entries in user diary for this restaurant
         const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
         let diaryUpdated = false;
         existing.forEach(entry => {
             if (entry.name && entry.name.trim().toLowerCase() === key) {
+                entry.name = finalName;
                 entry.category = category;
                 if (location_large) entry.location_large = location_large;
                 if (location_small) entry.location_small = location_small;
                 if (menu.length > 0) entry.menu = menu;
                 if (rate) entry.rate = rate;
                 if (map_url) entry.map_url = map_url;
+                if (kakao_id) entry.kakao_id = kakao_id;
+                if (road_address) entry.road_address = road_address;
+                if (x) entry.x = x;
+                if (y) entry.y = y;
                 diaryUpdated = true;
             }
         });
@@ -9798,14 +10222,13 @@ function saveDiaryEntry() {
         renderDiaryCalendar();
         if (window.renderApp) window.renderApp();
 
-        // Refresh and re-open Detail Modal with updated item
         const allUnified = getUnifiedRestaurantData();
         const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key);
         if (updatedItem) {
             openRestaurantDetailModal(updatedItem);
         }
 
-        showDiaryToast(`✅ "${name}" 식당 정보가 전체 일괄 수정되었습니다!`);
+        showDiaryToast(`"${finalName}" 정보 수정 완료`);
         return;
     }
 
@@ -9825,15 +10248,19 @@ function saveDiaryEntry() {
             id: isNaN(Number(editId)) ? editId : Number(editId),
             originalCsvId: isCsvId ? editId : (idx !== -1 ? existing[idx].originalCsvId : undefined),
             originalDate: originalCsvDate || (idx !== -1 ? existing[idx].originalDate : undefined),
-            name,
+            name: finalName,
             date: date || '',
             category,
             rate,
             menu,
             location_large,
             location_small,
-            map_url,
+            map_url: map_url || (idx !== -1 ? existing[idx].map_url : ''),
             memo,
+            kakao_id: kakao_id || (idx !== -1 ? existing[idx].kakao_id : ''),
+            road_address: road_address || (idx !== -1 ? existing[idx].road_address : ''),
+            x: x || (idx !== -1 ? existing[idx].x : ''),
+            y: y || (idx !== -1 ? existing[idx].y : ''),
             updated_at: new Date().toISOString()
         };
 
@@ -9843,13 +10270,13 @@ function saveDiaryEntry() {
             existing.push(updatedEntry);
         }
         localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
-        showDiaryToast(`✏️ "${name}" 기록이 수정되었습니다!`);
+        showDiaryToast(`"${finalName}" 수정 완료`);
     } else {
         // Create mode
         const existingIdx = existing.findIndex(e => e.name && e.name.trim().toLowerCase() === key && (date ? e.date === date : !e.date));
         const newEntry = {
             id: existingIdx !== -1 ? existing[existingIdx].id : Date.now(),
-            name,
+            name: finalName,
             date: date || '',
             category,
             rate,
@@ -9858,6 +10285,10 @@ function saveDiaryEntry() {
             location_small,
             map_url,
             memo,
+            kakao_id,
+            road_address,
+            x,
+            y,
             created_at: existingIdx !== -1 ? (existing[existingIdx].created_at || new Date().toISOString()) : new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
@@ -9867,19 +10298,24 @@ function saveDiaryEntry() {
             existing.push(newEntry);
         }
         localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
-        showDiaryToast(date ? `✅ "${name}" 기록이 저장됐습니다!` : `✅ "${name}" 식당이 등록되었습니다!`);
+        showDiaryToast(date ? `"${finalName}" 방문 기록 저장 완료` : `"${finalName}" 등록 완료`);
     }
 
     // ─── Global Sync: Always sync overrides & all visits so LIST and DIARY share identical info! ───
     const overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
     overrides[key] = {
-        name,
+        ...(overrides[key] || {}),
+        name: finalName,
         category,
         location_large,
         location_small,
         menu,
         rate,
-        map_url,
+        map_url: map_url || overrides[key]?.map_url || '',
+        kakao_id: kakao_id || overrides[key]?.kakao_id || '',
+        road_address: road_address || overrides[key]?.road_address || '',
+        x: x || overrides[key]?.x || '',
+        y: y || overrides[key]?.y || '',
         updated_at: new Date().toISOString()
     };
     localStorage.setItem(overridesKey, JSON.stringify(overrides));
@@ -9887,10 +10323,15 @@ function saveDiaryEntry() {
     // Batch sync other diary records of this restaurant
     existing.forEach(entry => {
         if (entry.name && entry.name.trim().toLowerCase() === key) {
+            entry.name = finalName;
             entry.category = category;
             if (location_large) entry.location_large = location_large;
             if (location_small) entry.location_small = location_small;
             if (menu.length > 0) entry.menu = menu;
+            if (kakao_id) entry.kakao_id = kakao_id;
+            if (road_address) entry.road_address = road_address;
+            if (x) entry.x = x;
+            if (y) entry.y = y;
         }
     });
     localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
