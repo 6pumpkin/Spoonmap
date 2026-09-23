@@ -4763,10 +4763,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return masterData.filter(item => {
             const catMatch = currentFilters.category.length === 0 || 
                            currentFilters.category.some(c => item.category && item.category.includes(c));
-            const largeMatch = currentFilters.location_large.length === 0 || 
-                             currentFilters.location_large.includes(item.location_large);
-            const smallMatch = currentFilters.location_small.length === 0 || 
-                             currentFilters.location_small.includes(item.location_small);
+            const hasLarge = currentFilters.location_large && currentFilters.location_large.length > 0;
+            const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
+            let locMatch = true;
+            if (hasLarge || hasSmall) {
+                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
+                locMatch = matchLarge || matchSmall;
+            }
             
             let searchMatch = true;
             if (currentFilters.searchQuery) {
@@ -4776,7 +4780,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (useSub && item.location_small && item.location_small.toLowerCase().includes(currentFilters.searchQuery)) searchMatch = true;
             }
 
-            return catMatch && largeMatch && smallMatch && searchMatch;
+            return catMatch && locMatch && searchMatch;
         });
     }
 
@@ -5167,8 +5171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isActive) {
                         currentFilters.location_large = currentFilters.location_large.filter(l => l !== loc);
                     } else {
-                        currentFilters.location_large = [loc];
-                        currentFilters.location_small = [];
+                        if (!Array.isArray(currentFilters.location_large)) currentFilters.location_large = [];
+                        currentFilters.location_large.push(loc);
                     }
                     updateLocationActiveBadges();
                     renderDynamicLocationFilters();
@@ -5205,8 +5209,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isActive) {
                         currentFilters.location_large = currentFilters.location_large.filter(l => l !== loc);
                     } else {
-                        currentFilters.location_large = [loc];
-                        currentFilters.location_small = [];
+                        if (!Array.isArray(currentFilters.location_large)) currentFilters.location_large = [];
+                        currentFilters.location_large.push(loc);
                     }
                     updateLocationActiveBadges();
                     renderDynamicLocationFilters();
@@ -5227,10 +5231,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isActive) {
                         currentFilters.location_small = currentFilters.location_small.filter(l => l !== loc);
                     } else {
-                        currentFilters.location_small = [loc];
-                        if (smallToLarge[loc]) {
-                            currentFilters.location_large = [smallToLarge[loc]];
-                        }
+                        if (!Array.isArray(currentFilters.location_small)) currentFilters.location_small = [];
+                        currentFilters.location_small.push(loc);
                     }
                     updateLocationActiveBadges();
                     renderDynamicLocationFilters();
@@ -5449,7 +5451,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (idx > -1) {
                 currentFilters['category'].splice(idx, 1);
             } else {
-                currentFilters['category'] = [cat];
+                currentFilters['category'].push(cat);
             }
         }
 
@@ -5804,10 +5806,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const catMatch = currentFilters.category.length === 0 || 
                            currentFilters.category.some(c => item.category && item.category.includes(c));
-            const largeMatch = currentFilters.location_large.length === 0 || 
-                              currentFilters.location_large.includes(item.location_large);
-            const smallMatch = currentFilters.location_small.length === 0 || 
-                              currentFilters.location_small.includes(item.location_small);
+            const hasLarge = currentFilters.location_large && currentFilters.location_large.length > 0;
+            const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
+            let locMatch = true;
+            if (hasLarge || hasSmall) {
+                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
+                locMatch = matchLarge || matchSmall;
+            }
             const rateMatch = currentFilters.rate.length === 0 ||
                             currentFilters.rate.includes(item.rate);
             

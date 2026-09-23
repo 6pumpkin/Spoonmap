@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609220102">
+    <link rel="stylesheet" href="style.css?v=202609232350">
 </head>
 
 <body class="light-theme">
@@ -162,11 +162,14 @@
                         <button class="sort-btn" data-sort="rate-desc">수저 높은순</button>
                         <button class="sort-btn" data-sort="name-asc">이름순</button>
                     </div>
+                    <div class="mobile-sidebar-footer">
+                        <button type="button" class="mobile-sidebar-apply-btn" onclick="window.toggleMobileSidebar()">적용</button>
+                    </div>
                 </section>
             </aside>
 
             <section class="content" id="list-main-content">
-                <!-- Mobile Category Icon Chips Bar (Pure icons + filter button) -->
+                <!-- Mobile Category Icon Chips Bar (All 16 Canonical Categories + Filter Button) -->
                 <div class="mobile-cat-chips-bar" id="mobile-cat-chips-bar">
                     <button type="button" class="mobile-filter-icon-btn" id="btn-mobile-open-filter" onclick="toggleMobileSidebar()" title="상세 필터">🎛️</button>
                     <div class="mobile-cat-scroll" id="mobile-cat-scroll">
@@ -179,8 +182,14 @@
                         <button type="button" class="mobile-cat-chip" data-cat="🥡아시안" onclick="handleMobileCatClick(this, '🥡아시안')" title="아시안">🥡</button>
                         <button type="button" class="mobile-cat-chip" data-cat="🌮세계요리" onclick="handleMobileCatClick(this, '🌮세계요리')" title="세계요리">🌮</button>
                         <button type="button" class="mobile-cat-chip" data-cat="🍙분식" onclick="handleMobileCatClick(this, '🍙분식')" title="분식">🍙</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🍗치킨" onclick="handleMobileCatClick(this, '🍗치킨')" title="치킨">🍗</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🍔패스트푸드" onclick="handleMobileCatClick(this, '🍔패스트푸드')" title="패스트푸드">🍔</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🍕피자" onclick="handleMobileCatClick(this, '🍕피자')" title="피자">🍕</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🐟해산물" onclick="handleMobileCatClick(this, '🐟해산물')" title="해산물">🐟</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🥗샐러드" onclick="handleMobileCatClick(this, '🥗샐러드')" title="샐러드">🥗</button>
                         <button type="button" class="mobile-cat-chip" data-cat="☕카페" onclick="handleMobileCatClick(this, '☕카페')" title="카페">☕</button>
-                        <button type="button" class="mobile-cat-chip" data-cat="🍺주점" onclick="handleMobileCatClick(this, '🍺주점')" title="주점">🍺</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🍺술집" onclick="handleMobileCatClick(this, '🍺술집')" title="술집">🍺</button>
+                        <button type="button" class="mobile-cat-chip" data-cat="🍽️뷔페" onclick="handleMobileCatClick(this, '🍽️뷔페')" title="뷔페">🍽️</button>
                     </div>
                 </div>
 
@@ -1188,12 +1197,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609220102"></script>
-    <script src="data.js?v=202609220102"></script>
-    <script src="ddoganzip_data.js?v=202609220102"></script>
-    <script src="meogeultende_data.js?v=202609220102"></script>
-    <script src="jungyugwang_data.js?v=202609220102"></script>
-    <script src="app.js?v=202609220102"></script>
+    <script src="regions.js?v=202609232350"></script>
+    <script src="data.js?v=202609232350"></script>
+    <script src="ddoganzip_data.js?v=202609232350"></script>
+    <script src="meogeultende_data.js?v=202609232350"></script>
+    <script src="jungyugwang_data.js?v=202609232350"></script>
+    <script src="app.js?v=202609232350"></script>
 </body>
 
 </html>
