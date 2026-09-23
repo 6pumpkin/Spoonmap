@@ -1432,36 +1432,146 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupBottomSheetSwipeGestures() {
         const sheets = [
-            { handleSel: '#diary-add-drawer .bottom-sheet-handle', closeFn: () => (typeof closeDiaryDrawer === 'function' && closeDiaryDrawer()) },
-            { handleSel: '#mobile-card-overlay .bottom-sheet-handle', closeFn: () => (typeof closeMobileOverlay === 'function' && closeMobileOverlay()) },
-            { handleSel: '#main-sidebar .bottom-sheet-handle', closeFn: () => (typeof window.toggleMobileSidebar === 'function' && window.toggleMobileSidebar()) }
+            {
+                handleSel: '#list-detail-modal-overlay .bottom-sheet-handle',
+                cardSel: '#list-detail-modal-overlay .list-detail-modal-card',
+                overlaySel: '#list-detail-modal-overlay',
+                closeFn: () => (typeof closeRestaurantDetailModal === 'function' && closeRestaurantDetailModal(true))
+            },
+            {
+                handleSel: '#diary-add-drawer .bottom-sheet-handle',
+                cardSel: '#diary-add-drawer',
+                overlaySel: '#diary-drawer-overlay',
+                closeFn: () => (typeof closeDiaryDrawer === 'function' && closeDiaryDrawer())
+            },
+            {
+                handleSel: '#mobile-card-overlay .bottom-sheet-handle',
+                cardSel: '#mobile-card-detail',
+                overlaySel: '#mobile-card-overlay',
+                closeFn: () => (typeof closeMobileOverlay === 'function' && closeMobileOverlay())
+            },
+            {
+                handleSel: '#main-sidebar .bottom-sheet-handle',
+                cardSel: '#main-sidebar',
+                overlaySel: null,
+                closeFn: () => (typeof window.toggleMobileSidebar === 'function' && window.toggleMobileSidebar())
+            }
         ];
 
-        sheets.forEach(({ handleSel, closeFn }) => {
+        sheets.forEach(({ handleSel, cardSel, overlaySel, closeFn }) => {
             const handle = document.querySelector(handleSel);
-            if (!handle) return;
+            const card = cardSel ? document.querySelector(cardSel) : null;
+            const overlay = overlaySel ? document.querySelector(overlaySel) : null;
+            if (!handle || !card) return;
+
             let startY = 0;
             let currentY = 0;
+            let startTime = 0;
+            let isDragging = false;
+            let hasMoved = false;
 
             handle.addEventListener('touchstart', (e) => {
-                if (e.touches && e.touches[0]) {
-                    startY = e.touches[0].clientY;
-                    currentY = startY;
-                }
+                if (!e.touches || !e.touches[0]) return;
+                startY = e.touches[0].clientY;
+                currentY = startY;
+                startTime = Date.now();
+                isDragging = true;
+                hasMoved = false;
+                card.style.transition = 'none';
+                if (overlay) overlay.style.transition = 'none';
             }, { passive: true });
 
             handle.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches[0]) {
-                    currentY = e.touches[0].clientY;
-                }
-            }, { passive: true });
+                if (!isDragging || !e.touches || !e.touches[0]) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
 
-            handle.addEventListener('touchend', () => {
-                if (currentY - startY > 50) {
-                    closeFn();
+                if (deltaY > 6) {
+                    hasMoved = true;
                 }
+
+                if (deltaY > 0) {
+                    if (e.cancelable) e.preventDefault();
+                    card.style.transform = `translateY(${deltaY}px)`;
+                    if (overlay) {
+                        const opacityVal = Math.max(0.2, 1 - (deltaY / 400));
+                        overlay.style.opacity = opacityVal;
+                    }
+                } else {
+                    const damped = deltaY * 0.15;
+                    card.style.transform = `translateY(${damped}px)`;
+                }
+            }, { passive: false });
+
+            const finishDrag = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+
+                const endY = (e && e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : currentY;
+                const deltaY = endY - startY;
+                const elapsed = Math.max(1, Date.now() - startTime);
+                const velocity = deltaY / elapsed;
+
+                const shouldClose = deltaY > 55 || (velocity > 0.35 && deltaY > 20);
+
+                if (shouldClose) {
+                    card.style.transition = 'transform 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
+                    card.style.transform = 'translateY(100%)';
+                    if (overlay) {
+                        overlay.style.transition = 'opacity 0.26s ease';
+                        overlay.style.opacity = '0';
+                    }
+                    setTimeout(() => {
+                        card.style.transform = '';
+                        card.style.transition = '';
+                        if (overlay) {
+                            overlay.style.opacity = '';
+                            overlay.style.transition = '';
+                        }
+                        closeFn();
+                    }, 260);
+                } else {
+                    card.style.transition = 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
+                    card.style.transform = 'translateY(0)';
+                    if (overlay) {
+                        overlay.style.transition = 'opacity 0.22s ease';
+                        overlay.style.opacity = '';
+                    }
+                    setTimeout(() => {
+                        card.style.transform = '';
+                        card.style.transition = '';
+                        if (overlay) {
+                            overlay.style.transition = '';
+                        }
+                    }, 230);
+                }
+
                 startY = 0;
                 currentY = 0;
+            };
+
+            handle.addEventListener('touchend', finishDrag, { passive: true });
+            handle.addEventListener('touchcancel', finishDrag, { passive: true });
+
+            handle.addEventListener('click', () => {
+                if (hasMoved) return;
+                if (window.innerWidth <= 768) {
+                    card.style.transition = 'transform 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
+                    card.style.transform = 'translateY(100%)';
+                    if (overlay) {
+                        overlay.style.transition = 'opacity 0.26s ease';
+                        overlay.style.opacity = '0';
+                    }
+                    setTimeout(() => {
+                        card.style.transform = '';
+                        card.style.transition = '';
+                        if (overlay) {
+                            overlay.style.opacity = '';
+                            overlay.style.transition = '';
+                        }
+                        closeFn();
+                    }, 260);
+                }
             });
         });
     }
@@ -6373,19 +6483,54 @@ function openRestaurantDetailModal(item) {
         if (scrapeBtn) scrapeBtn.style.display = 'none';
     }
 
+    // Ensure clean state before opening
+    const modalContentCard = overlay.querySelector('.list-detail-modal-card');
+    if (modalContentCard) {
+        modalContentCard.style.transform = '';
+        modalContentCard.style.transition = '';
+    }
+    overlay.style.opacity = '';
+    overlay.style.transition = '';
+
     // Open Modal
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
-function closeRestaurantDetailModal() {
+function closeRestaurantDetailModal(immediate = false) {
     const overlay = document.getElementById('list-detail-modal-overlay');
-    if (overlay) {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-    }
+    if (!overlay) return;
+
     // Close open popovers
     document.querySelectorAll('.notion-dropdown-popover.open').forEach(p => p.classList.remove('open'));
+
+    const isMobile = window.innerWidth <= 768;
+    const card = overlay.querySelector('.list-detail-modal-card');
+
+    if (isMobile && card && !immediate && overlay.classList.contains('open')) {
+        card.style.transition = 'transform 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
+        card.style.transform = 'translateY(100%)';
+        overlay.style.transition = 'opacity 0.26s ease';
+        overlay.style.opacity = '0';
+
+        setTimeout(() => {
+            overlay.classList.remove('open');
+            card.style.transform = '';
+            card.style.transition = '';
+            overlay.style.opacity = '';
+            overlay.style.transition = '';
+            document.body.style.overflow = '';
+        }, 260);
+    } else {
+        overlay.classList.remove('open');
+        if (card) {
+            card.style.transform = '';
+            card.style.transition = '';
+        }
+        overlay.style.opacity = '';
+        overlay.style.transition = '';
+        document.body.style.overflow = '';
+    }
 }
 
 // Switch between 'view' and 'edit' mode in the center modal

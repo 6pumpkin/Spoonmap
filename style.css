@@ -7176,19 +7176,37 @@ input[type="date"].drawer-input {
     /* ── 3. Universal Bottom Sheet Style & Handlebar ── */
     .bottom-sheet-handle {
         display: block !important;
-        width: 38px !important;
-        height: 4.5px !important;
+        width: 44px !important;
+        height: 5px !important;
         background: #CBD5E1 !important;
         border-radius: 3px !important;
         margin: 10px auto 8px auto !important;
         flex-shrink: 0 !important;
         cursor: grab !important;
+        position: relative !important;
+        touch-action: none !important;
+        transition: background 0.15s ease !important;
+    }
+
+    .bottom-sheet-handle:active {
+        background: #94A3B8 !important;
+        cursor: grabbing !important;
+    }
+
+    .bottom-sheet-handle::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -14px !important;
+        bottom: -14px !important;
+        left: -35px !important;
+        right: -35px !important;
     }
 
     /* Restaurant Detail Modal -> Bottom Sheet */
     .list-detail-modal-overlay {
         align-items: flex-end !important;
         padding: 0 !important;
+        transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.28s !important;
     }
 
     /* ── Restaurant Detail & Edit Modal as Slim Bottom Sheet ── */
@@ -7202,7 +7220,13 @@ input[type="date"].drawer-input {
         box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.22) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        transform: translateY(0) !important;
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+    }
+
+    .list-detail-modal-overlay.open .list-detail-modal-card {
+        transform: translateY(0);
     }
 
     .list-detail-close-btn {
@@ -7492,12 +7516,14 @@ input[type="date"].drawer-input {
         box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.18) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        transform: translateY(100%) !important;
-        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
     }
 
-    .diary-add-drawer.open {
-        transform: translateY(0) !important;
+    .diary-add-drawer.open,
+    .diary-drawer-overlay.open .diary-add-drawer {
+        transform: translateY(0);
     }
 
     /* Profile / Share Modals -> Bottom Sheets */
