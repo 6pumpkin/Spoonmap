@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609240136">
+    <link rel="stylesheet" href="style.css?v=202609240153">
 </head>
 
 <body class="light-theme">
@@ -73,13 +73,16 @@
             <div class="auth-protected-content" id="list-protected-content">
                 <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="필터 접기/열기">🎛️</button>
 
+                <!-- 모바일 필터 백드롭 -->
+                <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.toggleMobileSidebar()"></div>
+
             <aside class="sidebar" id="main-sidebar">
                 <div class="bottom-sheet-handle"></div>
                 <div class="sidebar-header-bar">
-                    <h3>Filter</h3>
-                    <div style="display:flex; align-items:center; gap:6px;">
+                    <h3 class="sidebar-header-title">필터</h3>
+                    <div style="display:flex; align-items:center; gap:8px;">
                         <button id="btn-reset-all-filters" class="all-filters-reset-btn" title="모든 검색 및 필터 초기화">
-                            ↺
+                            ↺ 초기화
                         </button>
                         <button type="button" class="mobile-sidebar-close-btn" onclick="window.toggleMobileSidebar()" title="닫기">✕</button>
                     </div>
@@ -163,7 +166,7 @@
                         <button class="sort-btn" data-sort="name-asc">이름순</button>
                     </div>
                     <div class="mobile-sidebar-footer">
-                        <button type="button" class="mobile-sidebar-apply-btn" onclick="window.toggleMobileSidebar()">적용</button>
+                        <button type="button" class="mobile-sidebar-apply-btn" onclick="window.toggleMobileSidebar()">필터 적용하기</button>
                     </div>
                 </section>
             </aside>
@@ -1268,12 +1271,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609240136"></script>
-    <script src="data.js?v=202609240136"></script>
-    <script src="ddoganzip_data.js?v=202609240136"></script>
-    <script src="meogeultende_data.js?v=202609240136"></script>
-    <script src="jungyugwang_data.js?v=202609240136"></script>
-    <script src="app.js?v=202609240136"></script>
+    <script src="regions.js?v=202609240153"></script>
+    <script src="data.js?v=202609240153"></script>
+    <script src="ddoganzip_data.js?v=202609240153"></script>
+    <script src="meogeultende_data.js?v=202609240153"></script>
+    <script src="jungyugwang_data.js?v=202609240153"></script>
+    <script src="app.js?v=202609240153"></script>
 </body>
 
 </html>

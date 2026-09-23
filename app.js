@@ -1453,7 +1453,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 handleSel: '#main-sidebar .bottom-sheet-handle',
                 cardSel: '#main-sidebar',
-                overlaySel: null,
+                overlaySel: '#sidebar-backdrop',
                 closeFn: () => (typeof window.toggleMobileSidebar === 'function' && window.toggleMobileSidebar())
             }
         ];
@@ -1797,7 +1797,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.category) {
                 item.category.split(',').forEach(c => {
                     const t = c.trim();
-                    if (t) categories.add(t);
+                    if (t) {
+                        const std = (typeof mapKakaoCategoryToStandard === 'function') ? mapKakaoCategoryToStandard(t, '') : t;
+                        categories.add(std || t);
+                    }
                 });
             }
             if (item.location_large) locations.add(item.location_large.trim());
@@ -2828,9 +2831,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Clear previous page items & Prepend Drag Handle & Reset Scroll to Top!
         resultsList.innerHTML = `
-            <div id="map-sheet-handle" class="bottom-sheet-handle">
-                <div class="handle-bar"></div>
-            </div>
+            <div id="map-sheet-handle" class="bottom-sheet-handle"></div>
         `;
         resultsList.scrollTop = 0;
         if (typeof attachMapSheetSwipe === 'function') {
@@ -5451,7 +5452,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.category) {
                 item.category.split(',').forEach(cat => {
                     const t = cat.trim();
-                    if (t) categories.add(t);
+                    if (t) {
+                        const std = (typeof mapKakaoCategoryToStandard === 'function') ? mapKakaoCategoryToStandard(t, '') : t;
+                        categories.add(std || t);
+                    }
                 });
             }
             if (item.location_large) {
@@ -5947,8 +5951,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleMobileSidebar() {
         const sidebar = document.getElementById('main-sidebar') || document.querySelector('.sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
         if (!sidebar) return;
         const isOpen = sidebar.classList.toggle('mobile-open');
+        if (backdrop) backdrop.classList.toggle('show', isOpen);
         document.body.style.overflow = isOpen ? 'hidden' : '';
     }
     window.toggleMobileSidebar = toggleMobileSidebar;

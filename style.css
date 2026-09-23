@@ -6992,6 +6992,7 @@ input[type="date"].drawer-input {
 .bottom-sheet-handle {
     display: none;
 }
+.sidebar-backdrop,
 .mobile-sidebar-close-btn {
     display: none;
 }
@@ -7808,7 +7809,26 @@ input[type="date"].drawer-input {
         display: none !important;
     }
 
-    /* Filter Sidebar as Mobile Bottom Sheet */
+    /* ── 4. LIST Tab Mobile Filter Bottom Sheet ── */
+    .sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        z-index: 1499 !important;
+        opacity: 0;
+        transition: opacity 0.25s ease !important;
+    }
+    .sidebar-backdrop.show {
+        display: block !important;
+        opacity: 1 !important;
+    }
+
     .sidebar {
         display: none;
         position: fixed !important;
@@ -7818,62 +7838,269 @@ input[type="date"].drawer-input {
         top: auto !important;
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 82dvh !important;
-        border-radius: 22px 22px 0 0 !important;
+        max-height: 85dvh !important;
+        border-radius: 24px 24px 0 0 !important;
         z-index: 1500 !important;
         background: #FFFFFF !important;
-        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22) !important;
         overflow-y: auto !important;
-        padding: 1.2rem !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 0 16px 16px 16px !important;
+        box-sizing: border-box !important;
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        will-change: transform;
     }
 
     .sidebar.mobile-open {
         display: block !important;
-        animation: slideUpSheet 0.25s ease-out forwards !important;
+        transform: translateY(0) !important;
+    }
+
+    .sidebar-header-bar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 14px !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+    }
+
+    .sidebar-header-bar h3,
+    .sidebar-header-title {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin: 0 !important;
+        letter-spacing: -0.3px !important;
+    }
+
+    .all-filters-reset-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        background: #F1F5F9 !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #64748B !important;
+        padding: 5px 11px !important;
+        border-radius: 20px !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .all-filters-reset-btn:hover {
+        background: #E2E8F0 !important;
+        color: #0F172A !important;
     }
 
     .mobile-sidebar-close-btn {
         display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: #F1F5F9;
-        border: 1px solid #E2E8F0;
-        color: #64748B;
-        font-size: 0.85rem;
-        cursor: pointer;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 50% !important;
+        background: #F1F5F9 !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #64748B !important;
+        font-size: 0.85rem !important;
+        cursor: pointer !important;
     }
 
-    @keyframes slideUpSheet {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
+    /* 방문 기간 지정 카드 슬림화 */
+    .filter-section.date-range-section {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 14px !important;
+        padding: 12px 14px !important;
+        margin-bottom: 16px !important;
     }
 
+    .date-range-section h3 {
+        font-size: 0.84rem !important;
+        font-weight: 800 !important;
+        color: #334155 !important;
+        margin-bottom: 10px !important;
+    }
+
+    .date-filter-inputs {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .date-input-box {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+    }
+
+    .date-input-box label {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        color: #64748B !important;
+    }
+
+    .sidebar-date-input {
+        width: 100% !important;
+        height: 36px !important;
+        padding: 0 8px !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-filter-actions {
+        display: flex !important;
+        gap: 8px !important;
+    }
+
+    .date-filter-btn {
+        flex: 1 !important;
+        height: 36px !important;
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25) !important;
+    }
+
+    .date-reset-btn {
+        height: 36px !important;
+        padding: 0 14px !important;
+        background: #FFFFFF !important;
+        color: #64748B !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+    }
+
+    /* 필터 섹션 제목 & 간격 */
+    .filter-section {
+        margin-bottom: 16px !important;
+    }
+
+    .filter-section h3 {
+        font-size: 0.84rem !important;
+        font-weight: 800 !important;
+        color: #334155 !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.2px !important;
+    }
+
+    /* 필터 버튼들: 모바일 세련된 컴팩트 칩 */
+    .filter-group {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .filter-btn, .sort-btn {
+        height: 32px !important;
+        padding: 0 11px !important;
+        border-radius: 9px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.12s ease !important;
+        box-sizing: border-box !important;
+        white-space: nowrap !important;
+    }
+
+    .filter-btn:hover, .sort-btn:hover {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+    }
+
+    .filter-btn.active, .sort-btn.active {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.28) !important;
+    }
+
+    #rate-filters .filter-btn.active {
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+        border-color: #F59E0B !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+    }
+
+    /* 지역 검색창 */
+    .loc-search-box-wrap {
+        position: relative !important;
+        margin-bottom: 8px !important;
+    }
+
+    .loc-search-box-wrap input#location-filter-input {
+        width: 100% !important;
+        height: 38px !important;
+        padding: 0 32px 0 34px !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 9px !important;
+        font-size: 0.82rem !important;
+        background: #F8FAFC !important;
+        box-sizing: border-box !important;
+    }
+
+    .loc-search-icon {
+        position: absolute !important;
+        left: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        font-size: 0.85rem !important;
+        color: #94A3B8 !important;
+    }
+
+    /* 하단 플로팅 '적용하기' 버튼 푸터 */
     .mobile-sidebar-footer {
         position: sticky !important;
-        bottom: -1.2rem !important;
-        left: 0 !important;
-        right: 0 !important;
-        background: #FFFFFF !important;
-        padding: 10px 0 6px 0 !important;
-        margin-top: 14px !important;
+        bottom: -16px !important;
+        left: -16px !important;
+        right: -16px !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding: 10px 16px 14px 16px !important;
+        margin: 16px -16px -16px -16px !important;
         border-top: 1px solid #F1F5F9 !important;
-        z-index: 10 !important;
+        z-index: 20 !important;
     }
 
     .mobile-sidebar-apply-btn {
         width: 100% !important;
-        padding: 12px !important;
-        background: var(--coral-main, #FF4757) !important;
+        height: 44px !important;
+        padding: 0 !important;
+        background: #FF4757 !important;
         color: #FFFFFF !important;
-        font-size: 0.95rem !important;
+        font-size: 0.92rem !important;
         font-weight: 800 !important;
         border: none !important;
         border-radius: 12px !important;
         cursor: pointer !important;
-        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25) !important;
+        box-shadow: 0 4px 14px rgba(255, 71, 87, 0.3) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         transition: transform 0.1s ease !important;
     }
 
@@ -8366,33 +8593,37 @@ input[type="date"].drawer-input {
         padding: 10px 12px !important;
     }
 
-    /* 하단 결과창 상단 가로 핸들 (스와이프 다운 제스처) */
+    /* 하단 결과창 및 모달 상단 핸들 (배경 투명, 뒤 가림 없는 미니멀 그레이 핸들) */
+    #map-sheet-handle,
     .bottom-sheet-handle {
-        width: 100% !important;
-        height: 22px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: grab !important;
-        touch-action: none !important;
-        user-select: none !important;
+        display: block !important;
+        width: 44px !important;
+        height: 5px !important;
+        background: #CBD5E1 !important;
+        border-radius: 3px !important;
+        margin: 10px auto 8px auto !important;
         flex-shrink: 0 !important;
-        position: sticky !important;
-        top: 0 !important;
-        background: #FFFFFF !important;
-        z-index: 10 !important;
-        margin-top: -2px !important;
-        margin-bottom: 2px !important;
+        cursor: grab !important;
+        position: relative !important;
+        top: auto !important;
+        touch-action: none !important;
+        transition: background 0.15s ease !important;
+        z-index: 5 !important;
+    }
+    .bottom-sheet-handle:active {
+        background: #94A3B8 !important;
+        cursor: grabbing !important;
+    }
+    .bottom-sheet-handle::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -14px !important;
+        bottom: -14px !important;
+        left: -35px !important;
+        right: -35px !important;
     }
     .bottom-sheet-handle .handle-bar {
-        width: 38px !important;
-        height: 4px !important;
-        border-radius: 2px !important;
-        background: #CBD5E1 !important;
-        transition: background 0.2s ease !important;
-    }
-    .bottom-sheet-handle:active .handle-bar {
-        background: #94A3B8 !important;
+        display: none !important;
     }
 
     /* 하단 결과창 슬림 패딩 & 접기/펴기 transition */
