@@ -7068,9 +7068,33 @@ input[type="date"].drawer-input {
         flex-shrink: 0 !important;
     }
 
-    .header-user-auth img, .header-user-auth .user-avatar {
+    .header-user-auth img, .header-user-auth .user-avatar, .header-user-auth .user-avatar-placeholder {
         width: 30px !important;
         height: 30px !important;
+        border-radius: 50% !important;
+    }
+
+    .header-user-auth .user-info-text,
+    .header-user-auth .user-logout-btn {
+        display: none !important;
+    }
+
+    .header-user-auth .user-profile-badge {
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        gap: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .header-user-auth .kakao-login-btn {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+        height: 30px !important;
+    }
+
+    .header-user-auth .kakao-login-btn span {
+        display: none !important;
     }
 
     .search-filters {

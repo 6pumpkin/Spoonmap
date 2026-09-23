@@ -5860,7 +5860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 delete item.period_latest_date;
             }
 
-            return catMatch && largeMatch && smallMatch && rateMatch && searchMatch && dateMatch;
+            return catMatch && locMatch && rateMatch && searchMatch && dateMatch;
         });
 
         // Multi-level Sort Execution
@@ -6066,16 +6066,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return masterData.filter(item => {
             if (!item.map_url) return false;
 
-            const catMatch = currentFilters.category === 'all' || 
-                           (item.category && item.category.includes(currentFilters.category));
-            const largeMatch = currentFilters.location_large === 'all' || 
-                              item.location_large === currentFilters.location_large;
-            const smallMatch = currentFilters.location_small === 'all' || 
-                              item.location_small === currentFilters.location_small;
-            const rateMatch = currentFilters.rate === 'all' ||
-                            item.rate === currentFilters.rate;
+            const catMatch = currentFilters.category.length === 0 || 
+                           currentFilters.category.some(c => item.category && item.category.includes(c));
+            const hasLarge = currentFilters.location_large && currentFilters.location_large.length > 0;
+            const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
+            let locMatch = true;
+            if (hasLarge || hasSmall) {
+                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
+                locMatch = matchLarge || matchSmall;
+            }
+            const rateMatch = currentFilters.rate.length === 0 ||
+                            currentFilters.rate.includes(item.rate);
 
-            return catMatch && largeMatch && smallMatch && rateMatch;
+            return catMatch && locMatch && rateMatch;
         });
     }
 
