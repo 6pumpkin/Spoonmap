@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spoonmap MAP 탭 모던 미니멀 UI 프리뷰</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #0F172A;
+      color: #1E293B;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 10px 30px;
+    }
+
+    /* ── 1. Top Control Panel (Testing Header) ── */
+    .control-panel {
+      width: 100%;
+      max-width: 410px;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      color: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .title-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+
+    .toggle-diff-group {
+      display: flex;
+      background: #0F172A;
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .diff-btn {
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      color: #94A3B8;
+      background: transparent;
+      transition: all 0.15s ease;
+    }
+
+    .diff-btn.active {
+      background: #FF4757;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
+    }
+
+    .diff-btn.active.before {
+      background: #F59E0B;
+      color: #0F172A;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+    }
+
+    .banner-info {
+      background: #1E293B;
+      border: 1px solid #3B82F6;
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: #DBEAFE;
+    }
+    .banner-info strong { color: #60A5FA; }
+
+    .banner-info.before-alert {
+      background: #78350F;
+      border-color: #F59E0B;
+      color: #FEF3C7;
+    }
+
+    .interactive-tags-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .interactive-tags-row::-webkit-scrollbar { display: none; }
+
+    .quick-test-btn {
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      background: #334155;
+      color: #E2E8F0;
+      border: 1px solid #475569;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .quick-test-btn:hover { background: #475569; }
+
+    /* ── 2. Mobile Simulation Frame ── */
+    .mobile-frame {
+      width: 100%;
+      max-width: 390px;
+      height: 740px;
+      background: #FFFFFF;
+      border: 10px solid #1E293B;
+      border-radius: 40px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Fake Status Bar */
+    .phone-status-bar {
+      height: 24px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #0F172A;
+      z-index: 900;
+      flex-shrink: 0;
+    }
+
+    /* App Header */
+    .app-header {
+      height: 46px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      gap: 8px;
+      z-index: 800;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 900;
+      font-size: 16px;
+      color: #FF4757;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    .header-search-wrap {
+      flex: 1;
+      height: 30px;
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .gear-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid #FF4757;
+      object-fit: cover;
+    }
+
+    /* ── 3. MAP Container Viewport ── */
+    .map-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #E8ECEF;
+    }
+
+    /* Simulated Vector Map Canvas */
+    .map-canvas-sim {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #F4F3F0;
+      background-image: 
+        radial-gradient(#CBD5E1 1.5px, transparent 1.5px),
+        linear-gradient(to right, rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+      background-size: 30px 30px, 60px 60px, 60px 60px;
+      overflow: hidden;
+    }
+
+    /* Map Landmarks Simulation */
+    .map-road-h {
+      position: absolute;
+      top: 44%;
+      left: -20%;
+      width: 140%;
+      height: 12px;
+      background: #FED7AA;
+      border-top: 1.5px solid #FDBA74;
+      border-bottom: 1.5px solid #FDBA74;
+      transform: rotate(-6deg);
+    }
+    .map-road-v {
+      position: absolute;
+      top: -10%;
+      left: 55%;
+      width: 14px;
+      height: 120%;
+      background: #FEE2E2;
+      border-left: 1.5px solid #FECACA;
+      border-right: 1.5px solid #FECACA;
+      transform: rotate(12deg);
+    }
+    .map-park {
+      position: absolute;
+      top: 25%;
+      left: 20%;
+      width: 90px;
+      height: 70px;
+      background: #DCFCE7;
+      border-radius: 18px;
+      border: 1px solid #BBF7D0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #16A34A;
+      font-weight: 700;
+    }
+    .map-subway-station {
+      position: absolute;
+      top: 48%;
+      left: 45%;
+      background: #FFFFFF;
+      border: 1.5px solid #3B82F6;
+      border-radius: 12px;
+      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: 800;
+      color: #1D4ED8;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Simulated Map Pins */
+    .map-pin {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 20;
+    }
+    .map-pin:hover, .map-pin.active {
+      transform: translate(-50%, -110%) scale(1.15);
+      z-index: 35;
+    }
+    .pin-bubble {
+      background: #FFFFFF;
+      border: 1.5px solid #FF4757;
+      border-radius: 16px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #1E293B;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .pin-bubble.star-wishlist {
+      border-color: #F59E0B;
+      background: #FFFBEB;
+      color: #B45309;
+    }
+    .pin-bubble.friend-pin {
+      border-color: #7C3AED;
+      background: #FAF5FF;
+      color: #6D28D9;
+    }
+    .pin-bubble.both-pin {
+      border-color: #EA580C;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FAF5FF 100%);
+      color: #431407;
+    }
+    .pin-bubble .badge-corner {
+      background: #EF4444;
+      color: #FFF;
+      font-size: 8.5px;
+      border-radius: 6px;
+      padding: 0 3px;
+    }
+    .pin-stem {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #FF4757;
+      margin-top: -1px;
+    }
+    .pin-bubble.star-wishlist + .pin-stem { border-top-color: #F59E0B; }
+    .pin-bubble.friend-pin + .pin-stem { border-top-color: #7C3AED; }
+    .pin-bubble.both-pin + .pin-stem { border-top-color: #EA580C; }
+
+    /* ── 4. [NEW AFTER] 모던 지도 스타일 플로팅 컨트롤 ── */
+    .after-top-controls {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      right: 12px;
+      width: auto !important;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+    .after-top-controls > * {
+      pointer-events: auto;
+    }
+
+    /* Row 1: Search Box (깔끔하고 슬림한 검색창) */
+    .map-search-row {
+      width: 100%;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      padding: 0 6px 0 12px;
+      gap: 8px;
+    }
+    .map-search-row input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1E293B;
+      background: transparent;
+    }
+    .map-search-row input::placeholder {
+      color: #94A3B8;
+    }
+    .search-reset-btn {
+      width: 26px;
+      height: 26px;
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      color: #64748B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .search-reset-btn:hover {
+      background: #1890FF;
+      color: #FFFFFF;
+      border-color: #1890FF;
+    }
+
+    /* Row 2: 요새 지도 스타일 초간결 플로팅 칩 (음식 카테고리 + 별표 버튼) */
+    .map-floating-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modern-chip-btn {
+      height: 34px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .modern-chip-btn:hover {
+      background: #FFFFFF;
+      border-color: #CBD5E1;
+      transform: translateY(-1px);
+    }
+    .modern-chip-btn:active {
+      transform: translateY(0);
+    }
+
+    .modern-chip-btn .caret {
+      font-size: 9px;
+      color: #94A3B8;
+      transition: transform 0.2s ease;
+      margin-left: 1px;
+    }
+    .modern-chip-btn.open .caret {
+      transform: rotate(180deg);
+      color: #0F172A;
+    }
+
+    /* 카테고리 버튼 상태 */
+    .modern-chip-btn.cat-active {
+      background: #FFF1F2;
+      border-color: #FF4757;
+      color: #E11D48;
+      box-shadow: 0 2px 10px rgba(255, 71, 87, 0.22);
+    }
+    .cat-clear-icon {
+      font-size: 9px;
+      color: #FF4757;
+      margin-left: 2px;
+      padding: 1px 3px;
+      border-radius: 50%;
+      background: rgba(255, 71, 87, 0.12);
+    }
+
+    /* 별표 버튼 상태 */
+    .modern-chip-btn.star-active {
+      background: #FFFBEB;
+      border-color: #F59E0B;
+      color: #B45309;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+    }
+    .modern-chip-btn.friend-active {
+      background: #FAF5FF;
+      border-color: #7C3AED;
+      color: #6D28D9;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
+    }
+    .modern-chip-btn.both-active {
+      background: linear-gradient(135deg, #FFFBEB 0%, #FAF5FF 100%);
+      border-color: #EA580C;
+      color: #9A3412;
+      box-shadow: 0 2px 12px rgba(234, 88, 12, 0.22);
+    }
+
+    .chip-count-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 10px;
+      background: #F1F5F9;
+      color: #64748B;
+    }
+    .modern-chip-btn.star-active .chip-count-badge {
+      background: #F59E0B;
+      color: #FFFFFF;
+    }
+    .modern-chip-btn.friend-active .chip-count-badge {
+      background: #7C3AED;
+      color: #FFFFFF;
+    }
+    .modern-chip-btn.both-active .chip-count-badge {
+      background: #EA580C;
+      color: #FFFFFF;
+    }
+
+    /* ── Dropdown Backdrop ── */
+    .dropdown-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 110;
+      background: transparent;
+      display: none;
+    }
+
+    /* ── [NEW] 세로 1줄 컴팩트 카테고리 팝오버 (지도 안 가림!) ── */
+    .popover-cat-menu {
+      position: absolute;
+      top: 88px;
+      left: 12px;
+      width: 136px;
+      max-height: 330px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 4px;
+      z-index: 120;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      overflow-y: auto;
+      animation: popInMenu 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popInMenu {
+      from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .pop-cat-item {
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+    .pop-cat-item:hover {
+      background: #F1F5F9;
+      color: #0F172A;
+    }
+    .pop-cat-item.active {
+      background: #FFF1F2;
+      color: #FF4757;
+      font-weight: 800;
+    }
+    .pop-cat-item .check-mark {
+      font-size: 10px;
+      font-weight: 800;
+      color: #FF4757;
+    }
+
+    /* ── [NEW] 군더더기 없는 별표 (찜 & 친구) 미니 팝오버 ── */
+    .popover-star-menu {
+      position: absolute;
+      top: 88px;
+      left: 62px;
+      width: 195px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 8px 10px;
+      z-index: 120;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      animation: popInMenu 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pop-section-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      padding: 0 2px;
+    }
+
+    .pop-row-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .pop-divider {
+      height: 1px;
+      background: #F1F5F9;
+      margin: 2px 0;
+    }
+
+    /* 슬림 토글 스위치 */
+    .toggle-switch-sm {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .toggle-switch-sm input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider-sm {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #CBD5E1;
+      border-radius: 18px;
+      transition: 0.2s;
+    }
+    .toggle-slider-sm:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .toggle-switch-sm input:checked + .toggle-slider-sm {
+      background-color: #F59E0B;
+    }
+    .toggle-switch-sm input.friend-toggle:checked + .toggle-slider-sm {
+      background-color: #7C3AED;
+    }
+    .toggle-switch-sm input:checked + .toggle-slider-sm:before {
+      transform: translateX(14px);
+    }
+
+    /* 친구 목록 미니 서브 아이템 */
+    .friends-sub-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 2px 0 2px 6px;
+      border-left: 2px solid #EDE9FE;
+      margin-left: 6px;
+    }
+
+    .friend-sub-item {
+      height: 27px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .friend-sub-item:hover {
+      background: #F8FAFC;
+    }
+    .friend-sub-item.active {
+      color: #7C3AED;
+      background: #FAF5FF;
+      font-weight: 700;
+    }
+    .friend-sub-item .f-check {
+      font-size: 10px;
+      font-weight: 800;
+      color: #7C3AED;
+    }
+
+    .pop-footer-link {
+      padding-top: 2px;
+      text-align: right;
+    }
+    .pop-footer-link button {
+      background: none;
+      border: none;
+      font-size: 10px;
+      font-weight: 600;
+      color: #94A3B8;
+      cursor: pointer;
+      padding: 2px;
+    }
+    .pop-footer-link button:hover {
+      color: #6366F1;
+    }
+
+    /* ── Floating Re-search Button ── */
+    .research-floating-btn {
+      position: absolute;
+      bottom: 270px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFFFFF;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #1E293B;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .research-floating-btn:hover {
+      background: #F8FAFC;
+      transform: translateX(-50%) scale(1.03);
+    }
+
+    /* ── 5. Bottom Sheet (검색 결과 목록) ── */
+    .map-bottom-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 255px;
+      background: #FFFFFF;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+    }
+    .map-bottom-sheet.peek-mode {
+      transform: translateY(calc(100% - 46px)) !important;
+    }
+
+    .bottom-sheet-handle {
+      width: 100%;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none !important;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .handle-bar {
+      width: 38px;
+      height: 4px;
+      border-radius: 2px;
+      background: #CBD5E1;
+      transition: background 0.2s ease;
+    }
+    .bottom-sheet-handle:active .handle-bar {
+      background: #94A3B8;
+    }
+
+    .sheet-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #0F172A;
+      flex-shrink: 0;
+    }
+    .sheet-count-badge {
+      background: #F1F5F9;
+      color: #64748B;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+
+    /* Slim Search Results List */
+    .slim-results-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .slim-result-item {
+      padding: 7px 9px;
+      border-radius: 10px;
+      border: 1px solid #F1F5F9;
+      background: #FFFFFF;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .slim-result-item:hover {
+      background: #F8FAFC;
+      border-color: #E2E8F0;
+    }
+    .result-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .result-place-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .result-tag-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 6px;
+    }
+    .result-tag-badge.saved {
+      background: #FEF3C7;
+      color: #B45309;
+    }
+    .result-tag-badge.friend {
+      background: #FAF5FF;
+      color: #7C3AED;
+    }
+    .result-tag-badge.both {
+      background: #FFEDD5;
+      color: #C2410C;
+    }
+    .result-place-sub {
+      font-size: 10px;
+      color: #64748B;
+    }
+
+    /* Pagination */
+    .sheet-pagination {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-top: 1px solid #F1F5F9;
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .pag-num-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pag-num-btn.active {
+      background: #FF4757;
+      border-color: #FF4757;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
+    }
+
+    /* ── Bottom Nav (Fixed Footer) ── */
+    .mobile-bnav {
+      height: 48px;
+      background: #FFFFFF;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 500;
+      flex-shrink: 0;
+    }
+    .bnav-item {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+    .bnav-item.active {
+      color: #FF4757;
+      font-weight: 800;
+      position: relative;
+    }
+    .bnav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 2.5px;
+      background: #FF4757;
+      border-radius: 2px;
+    }
+
+    /* Toast Notification */
+    .sim-toast {
+      position: absolute;
+      top: 145px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      color: #FFFFFF;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      z-index: 600;
+      pointer-events: none;
+      display: none;
+      animation: popIn 0.2s ease-out;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    @keyframes popIn {
+      from { transform: translateX(-50%) scale(0.85); opacity: 0; }
+      to { transform: translateX(-50%) scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── 1. Top Control Panel ── -->
+  <div class="control-panel">
+    <div class="control-row">
+      <div class="title-badge">
+        <span>🗺️</span> 모던 미니멀 지도 UI 프리뷰
+      </div>
+      <div class="toggle-diff-group">
+        <button id="btn-after" class="diff-btn active" onclick="setDiff('after')">✨ 모던 개선안</button>
+        <button id="btn-before" class="diff-btn" onclick="setDiff('before')">⚠️ 기존 문제점</button>
+      </div>
+    </div>
+
+    <!-- Explanatory Banner -->
+    <div id="banner" class="banner-info">
+      <strong>✨ 요새 지도 스타일 (초슬림 & 미니멀 반영):</strong><br>
+      • <strong>[🍴] 카테고리</strong>: 구구절절한 글자 없이 이모지만 깔끔 배치. 누르면 지도 안 가리는 세로 1줄 컴팩트 메뉴.<br>
+      • <strong>[⭐] 찜 & 친구</strong>: 설명 싹 빼고 찜 식당(12) / 친구 지도 토글만 미니멀 팝오버로 정돈.
+    </div>
+
+    <!-- Quick Action Triggers -->
+    <div class="interactive-tags-row">
+      <span style="font-size:10px; color:#94A3B8; font-weight:700;">빠른 테스트:</span>
+      <button class="quick-test-btn" onclick="toggleCatPanel()">🍴 카테고리 열기</button>
+      <button class="quick-test-btn" onclick="toggleStarPanel()">⭐ 찜/친구 열기</button>
+      <button class="quick-test-btn" onclick="togglePeekMode()">↕️ 결과창 접기/펴기</button>
+      <button class="quick-test-btn" onclick="simulatePageClick(2)">📄 2페이지(스크롤 고정)</button>
+    </div>
+  </div>
+
+  <!-- ── 2. Mobile Simulation Frame ── -->
+  <div class="mobile-frame">
+    <!-- Top Status Bar -->
+    <div class="phone-status-bar">
+      <span>9:41</span>
+      <span>5G 📶 100% 🔋</span>
+    </div>
+
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="brand-logo">Spoonmap</div>
+      <div class="header-search-wrap">
+        <span>🔍</span>
+        <span>식당, 메뉴, 지역 검색...</span>
+      </div>
+      <div class="header-icons">
+        <div class="gear-btn">⚙️</div>
+        <img class="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop" alt="프로필">
+      </div>
+    </header>
+
+    <!-- MAP Viewport Canvas -->
+    <main class="map-container">
+      <div class="map-canvas-sim">
+        <!-- Roads & Landmarks -->
+        <div class="map-road-h"></div>
+        <div class="map-road-v"></div>
+        <div class="map-park">🌲 경복궁</div>
+        <div class="map-subway-station">🚇 광화문역</div>
+
+        <!-- Dynamic Pins Container -->
+        <div id="pins-container">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Floating "현 위치에서 재검색" Button -->
+        <button class="research-floating-btn" onclick="showToast('🔄 현 지도 영역에서 맛집 재검색 완료')">
+          <span>🔄</span> 현 위치에서 재검색
+        </button>
+      </div>
+
+      <!-- Backdrop for dropdowns -->
+      <div id="panel-backdrop" class="dropdown-modal-backdrop" onclick="closeAllPanels()"></div>
+
+      <!-- ============================================== -->
+      <!-- [BEFORE] 기존 문제 화면 (버튼 겹침 + 우측 12px 잘림) -->
+      <!-- ============================================== -->
+      <div id="before-overlay" class="before-top-overlay" style="display:none; position:absolute; top:0; left:0; right:0; z-index:100;">
+        <div style="position:absolute; top:15px; left:15px; width:80px; height:74px; background:#FFF; border:1.5px solid rgba(0,0,0,0.12); border-radius:18px; padding:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-weight:800; font-size:13px; box-shadow:0 4px 14px rgba(0,0,0,0.14);">
+          <span style="font-size:20px;">🍴</span>
+          <span>음식점 ⌄</span>
+        </div>
+        <div style="position:absolute; top:10px; left:12px; width:100%; height:38px; background:#FFF; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.14); display:flex; align-items:center; padding:0 10px; gap:6px;">
+          <span style="font-size:12px;">🔍 현 화면에서 검색</span>
+          <div style="flex:1;"></div>
+          <div style="width:28px; height:28px; background:#1890FF; border-radius:6px; color:#FFF; display:flex; align-items:center; justify-content:center; margin-right:4px;">🔄</div>
+        </div>
+        <div style="position:absolute; top:58px; left:12px; width:100%; display:flex; gap:6px;">
+          <button style="flex:1; height:34px; border:1.5px solid #F59E0B; background:#FFFBEB; color:#B45309; border-radius:10px; font-size:11px; font-weight:700;">⭐ 찜 가게 목록</button>
+          <button style="flex:1; height:34px; border:1.5px solid #7C3AED; background:#FAF5FF; color:#7C3AED; border-radius:10px; font-size:11px; font-weight:700;">👥 친구 지도</button>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- [AFTER] 개선안: 모던 미니멀 플로팅 컨트롤       -->
+      <!-- ============================================== -->
+      <div id="after-overlay" class="after-top-controls">
+        <!-- Row 1: Search Box -->
+        <div class="map-search-row">
+          <span>🔍</span>
+          <input type="text" id="sim-map-search-input" placeholder="현 화면에서 검색" value="">
+          <button class="search-reset-btn" onclick="resetSearch()" title="검색 초기화">🔄</button>
+        </div>
+
+        <!-- Row 2: 요새 지도 스타일 초간결 플로팅 칩 (음식 카테고리 + 별표 버튼) -->
+        <div class="map-floating-chips-row">
+          <!-- Button 1: 음식 카테고리 버튼 (이모지 기반) -->
+          <button id="btn-cat-chip" class="modern-chip-btn" onclick="toggleCatPanel()">
+            <span id="cat-chip-icon" style="font-size:14px;">🍴</span>
+            <span id="cat-chip-text" style="display:none;"></span>
+            <span id="cat-chip-clear" class="cat-clear-icon" style="display:none;" onclick="event.stopPropagation(); resetCat();">✕</span>
+            <span class="caret" id="cat-caret">▼</span>
+          </button>
+
+          <!-- Button 2: 별표 버튼 (찜 가게 + 친구 지도) -->
+          <button id="btn-star-chip" class="modern-chip-btn" onclick="toggleStarPanel()">
+            <span style="font-size:13px;">⭐</span>
+            <span class="caret" id="star-caret">▼</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── [POP 1] 세로 1줄 컴팩트 카테고리 팝오버 (지도 안 가림!) ── -->
+      <div id="popover-cat" class="popover-cat-menu">
+        <div class="pop-cat-item active" onclick="selectCat('전체', '🍴')">
+          <span>🍴 전체</span>
+          <span class="check-mark">✓</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('한식', '🍚')">
+          <span>🍚 한식</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('일식', '🍣')">
+          <span>🍣 일식</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('중식', '🥢')">
+          <span>🥢 중식</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('양식', '🍝')">
+          <span>🍝 양식</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('고기', '🥩')">
+          <span>🥩 고기·구이</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('카페', '☕')">
+          <span>☕ 카페·디저트</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('술집', '🍺')">
+          <span>🍺 술집</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('분식', '🍢')">
+          <span>🍢 분식</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('치킨', '🍗')">
+          <span>🍗 치킨</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('피자', '🍕')">
+          <span>🍕 피자·버거</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('패스트푸드', '🍔')">
+          <span>🍔 패스트푸드</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('아시아음식', '🍜')">
+          <span>🍜 아시안</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('샐러드', '🥗')">
+          <span>🥗 샐러드</span>
+        </div>
+        <div class="pop-cat-item" onclick="selectCat('기타', '🍽️')">
+          <span>🍽️ 기타</span>
+        </div>
+      </div>
+
+      <!-- ── [POP 2] 군더더기 없는 별표(찜 & 친구) 미니 팝오버 ── -->
+      <div id="popover-star" class="popover-star-menu">
+        <!-- Section 1: 찜 식당 -->
+        <div class="pop-section-row">
+          <div class="pop-row-left">
+            <span>⭐</span>
+            <span>내 찜 식당 (12)</span>
+          </div>
+          <label class="toggle-switch-sm">
+            <input type="checkbox" id="switch-wishlist" checked onchange="onToggleChange()">
+            <span class="toggle-slider-sm"></span>
+          </label>
+        </div>
+
+        <div class="pop-divider"></div>
+
+        <!-- Section 2: 친구 지도 -->
+        <div class="pop-section-row">
+          <div class="pop-row-left">
+            <span>👥</span>
+            <span>친구 지도</span>
+          </div>
+          <label class="toggle-switch-sm">
+            <input type="checkbox" id="switch-friends" class="friend-toggle" checked onchange="onToggleChange()">
+            <span class="toggle-slider-sm"></span>
+          </label>
+        </div>
+
+        <!-- Sub list: Friend Channels -->
+        <div class="friends-sub-list" id="friends-sub-list">
+          <div class="friend-sub-item active" id="f-item-ddogan" onclick="toggleFriend('ddogan', '또간집')">
+            <span>📺 또간집 (24)</span>
+            <span class="f-check">✓</span>
+          </div>
+          <div class="friend-sub-item" id="f-item-sung" onclick="toggleFriend('sung', '먹을텐데')">
+            <span>🎙️ 먹을텐데 (38)</span>
+            <span class="f-check" style="display:none;">✓</span>
+          </div>
+          <div class="friend-sub-item" id="f-item-jung" onclick="toggleFriend('jung', '정육왕')">
+            <span>🥩 정육왕 (15)</span>
+            <span class="f-check" style="display:none;">✓</span>
+          </div>
+        </div>
+
+        <div class="pop-divider"></div>
+
+        <!-- Footer Link: 친구 관리 -->
+        <div class="pop-footer-link">
+          <button onclick="showToast('⚙️ 친구 추가/관리 페이지로 이동')">⚙️ 친구 관리 ➔</button>
+        </div>
+      </div>
+
+      <!-- ── 5. Bottom Sheet (검색 결과 목록) ── -->
+      <div id="sim-bottom-sheet" class="map-bottom-sheet">
+        <!-- Handle Bar (Swipe down to Peek / Swipe up to Expand) -->
+        <div class="bottom-sheet-handle" onclick="togglePeekMode()" title="탭하여 접기/펼치기">
+          <div class="handle-bar"></div>
+        </div>
+
+        <div class="sheet-header-row">
+          <div>
+            <span>검색 결과</span>
+            <span class="sheet-count-badge" id="result-count-txt">18개</span>
+          </div>
+        </div>
+
+        <!-- Slim Result List -->
+        <div class="slim-results-list" id="sim-results-list">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="sheet-pagination">
+          <button class="pag-num-btn active" onclick="simulatePageClick(1)">1</button>
+          <button class="pag-num-btn" onclick="simulatePageClick(2)">2</button>
+          <button class="pag-num-btn" onclick="simulatePageClick(3)">3</button>
+          <button class="pag-num-btn" onclick="simulatePageClick(4)">4</button>
+        </div>
+      </div>
+
+      <!-- Toast Feedback -->
+      <div id="sim-toast" class="sim-toast"></div>
+    </main>
+
+    <!-- Bottom Nav Bar -->
+    <nav class="mobile-bnav">
+      <div class="bnav-item">홈</div>
+      <div class="bnav-item active">MAP</div>
+      <div class="bnav-item">리스트</div>
+      <div class="bnav-item">다이어리</div>
+      <div class="bnav-item">마이</div>
+    </nav>
+  </div>
+
+  <script>
+    // Sample Places Data
+    const samplePlaces = [
+      { name: '토속촌 삼계탕', cat: '한식', loc: '종로구 자하문로5길', top: '22%', left: '26%', isWishlist: true, friend: 'ddogan', friendName: '또간집', emoji: '🍲' },
+      { name: '광화문 미진', cat: '한식', loc: '종로구 종로 19', top: '42%', left: '48%', isWishlist: true, friend: null, emoji: '🍜' },
+      { name: '우진가 일식당', cat: '일식', loc: '종로구 청진동', top: '35%', left: '72%', isWishlist: false, friend: 'sung', friendName: '먹을텐데', emoji: '🍣' },
+      { name: '포시즌스 보칼리노', cat: '양식', loc: '종로구 새문안로', top: '56%', left: '32%', isWishlist: true, friend: null, emoji: '🍝' },
+      { name: '대성집 도가니탕', cat: '한식', loc: '종로구 행촌동', top: '64%', left: '18%', isWishlist: false, friend: 'jung', friendName: '정육왕', emoji: '🥩' },
+      { name: '멘텐 라멘', cat: '일식', loc: '중구 충무로', top: '62%', left: '68%', isWishlist: true, friend: 'ddogan', friendName: '또간집', emoji: '🍜' },
+      { name: '커피원 원두랩', cat: '카페', loc: '종로구 인사동', top: '30%', left: '60%', isWishlist: false, friend: null, catOnly: true, emoji: '☕' },
+      { name: '효자동 목고기', cat: '고기', loc: '종로구 효자동', top: '18%', left: '42%', isWishlist: false, friend: 'jung', friendName: '정육왕', emoji: '🥩' },
+    ];
+
+    // State
+    let currentDiff = 'after';
+    let openPanel = null; // 'cat' | 'star' | null
+    let selectedCat = '전체';
+    let selectedEmoji = '🍴';
+    let isWishlistOn = true;
+    let isFriendsOn = true;
+    let activeFriends = {
+      ddogan: true,
+      sung: false,
+      jung: false
+    };
+    let isPeekMode = false;
+    let currentPage = 1;
+
+    function init() {
+      renderMapPins();
+      renderResultsList();
+      updateStarChipUI();
+      initBottomSheetGesture();
+    }
+
+    // Toggle Diff Mode (After vs Before)
+    function setDiff(mode) {
+      currentDiff = mode;
+      document.getElementById('btn-after').classList.toggle('active', mode === 'after');
+      document.getElementById('btn-before').classList.toggle('active', mode === 'before');
+      document.getElementById('btn-before').classList.toggle('before', mode === 'before');
+
+      const afterEl = document.getElementById('after-overlay');
+      const beforeEl = document.getElementById('before-overlay');
+      const banner = document.getElementById('banner');
+
+      closeAllPanels();
+
+      if (mode === 'before') {
+        afterEl.style.display = 'none';
+        beforeEl.style.display = 'block';
+        banner.className = 'banner-info before-alert';
+        banner.innerHTML = '<strong>⚠️ 이전 문제 화면:</strong><br>1. 좌상단 PC용 80×74px 음식점 상자가 삐져나와 겹침.<br>2. 가로폭 100%+left:12px로 인해 버튼 우측 12px 잘림 현상 발생.<br>3. 검색 시 세로 스크롤이 하단 페이지 번호로 튕김.';
+      } else {
+        afterEl.style.display = 'flex';
+        beforeEl.style.display = 'none';
+        banner.className = 'banner-info';
+        banner.innerHTML = '<strong>✨ 요새 지도 스타일 (초슬림 & 미니멀 반영):</strong><br>• <strong>[🍴] 카테고리</strong>: 구구절절한 글자 없이 이모지만 깔끔 배치. 누르면 지도 안 가리는 세로 1줄 컴팩트 메뉴.<br>• <strong>[⭐] 찜 & 친구</strong>: 설명 싹 빼고 찜 식당(12) / 친구 지도 토글만 미니멀 팝오버로 정돈.';
+      }
+    }
+
+    // Toggle Category Menu
+    function toggleCatPanel() {
+      if (openPanel === 'cat') {
+        closeAllPanels();
+      } else {
+        closeAllPanels();
+        openPanel = 'cat';
+        document.getElementById('popover-cat').style.display = 'flex';
+        document.getElementById('btn-cat-chip').classList.add('open');
+        document.getElementById('panel-backdrop').style.display = 'block';
+      }
+    }
+
+    // Toggle Star & Friends Menu
+    function toggleStarPanel() {
+      if (openPanel === 'star') {
+        closeAllPanels();
+      } else {
+        closeAllPanels();
+        openPanel = 'star';
+        document.getElementById('popover-star').style.display = 'flex';
+        document.getElementById('btn-star-chip').classList.add('open');
+        document.getElementById('panel-backdrop').style.display = 'block';
+      }
+    }
+
+    function closeAllPanels() {
+      openPanel = null;
+      document.getElementById('popover-cat').style.display = 'none';
+      document.getElementById('popover-star').style.display = 'none';
+      document.getElementById('panel-backdrop').style.display = 'none';
+      document.getElementById('btn-cat-chip').classList.remove('open');
+      document.getElementById('btn-star-chip').classList.remove('open');
+    }
+
+    // Select Category (세로 1줄 목록에서 선택)
+    function selectCat(catName, emoji) {
+      selectedCat = catName;
+      selectedEmoji = emoji;
+
+      // Update active highlight in menu
+      document.querySelectorAll('.pop-cat-item').forEach(item => {
+        const isMatch = item.innerText.includes(catName);
+        item.classList.toggle('active', isMatch);
+        let check = item.querySelector('.check-mark');
+        if (isMatch) {
+          if (!check) {
+            check = document.createElement('span');
+            check.className = 'check-mark';
+            check.innerText = '✓';
+            item.appendChild(check);
+          }
+        } else if (check) {
+          check.remove();
+        }
+      });
+
+      // Update Button UI
+      const btn = document.getElementById('btn-cat-chip');
+      const icon = document.getElementById('cat-chip-icon');
+      const text = document.getElementById('cat-chip-text');
+      const clearIcon = document.getElementById('cat-chip-clear');
+
+      if (catName === '전체') {
+        btn.classList.remove('cat-active');
+        icon.innerText = '🍴';
+        text.style.display = 'none';
+        clearIcon.style.display = 'none';
+        showToast('🍴 전체 카테고리 보기');
+      } else {
+        btn.classList.add('cat-active');
+        icon.innerText = emoji;
+        text.innerText = catName;
+        text.style.display = 'inline';
+        clearIcon.style.display = 'inline';
+        showToast(`📍 [${emoji} ${catName}] 필터링 완료`);
+      }
+
+      closeAllPanels();
+      renderMapPins();
+      renderResultsList();
+    }
+
+    function resetCat() {
+      selectCat('전체', '🍴');
+    }
+
+    // Toggle Wishlist / Friends Switches
+    function onToggleChange() {
+      isWishlistOn = document.getElementById('switch-wishlist').checked;
+      isFriendsOn = document.getElementById('switch-friends').checked;
+
+      // Show/hide sub list
+      document.getElementById('friends-sub-list').style.opacity = isFriendsOn ? '1' : '0.4';
+      document.getElementById('friends-sub-list').style.pointerEvents = isFriendsOn ? 'auto' : 'none';
+
+      updateStarChipUI();
+      renderMapPins();
+      renderResultsList();
+    }
+
+    // Individual Friend Toggle
+    function toggleFriend(friendKey, friendName) {
+      activeFriends[friendKey] = !activeFriends[friendKey];
+      const itemEl = document.getElementById(`f-item-${friendKey}`);
+      const checkEl = itemEl.querySelector('.f-check');
+
+      itemEl.classList.toggle('active', activeFriends[friendKey]);
+      checkEl.style.display = activeFriends[friendKey] ? 'inline' : 'none';
+
+      if (!isFriendsOn) {
+        isFriendsOn = true;
+        document.getElementById('switch-friends').checked = true;
+        document.getElementById('friends-sub-list').style.opacity = '1';
+        document.getElementById('friends-sub-list').style.pointerEvents = 'auto';
+      }
+
+      showToast(activeFriends[friendKey] ? `👥 [${friendName}] 마커 ON` : `👥 [${friendName}] 마커 숨김`);
+      updateStarChipUI();
+      renderMapPins();
+      renderResultsList();
+    }
+
+    // Update Star Chip UI
+    function updateStarChipUI() {
+      const chip = document.getElementById('btn-star-chip');
+      chip.classList.remove('star-active', 'friend-active', 'both-active');
+
+      const anyFriend = isFriendsOn && Object.values(activeFriends).some(v => v);
+
+      if (isWishlistOn && anyFriend) {
+        chip.classList.add('both-active');
+      } else if (isWishlistOn) {
+        chip.classList.add('star-active');
+      } else if (anyFriend) {
+        chip.classList.add('friend-active');
+      }
+    }
+
+    // Toggle Peek / Expand Mode for Bottom Sheet
+    function togglePeekMode() {
+      const sheet = document.getElementById('sim-bottom-sheet');
+      isPeekMode = !isPeekMode;
+      sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+      if (isPeekMode) {
+        sheet.style.transform = 'translateY(calc(100% - 46px))';
+        sheet.classList.add('peek-mode');
+        showToast('🗺️ 결과창을 접었습니다. (지도 넓게 보기)');
+      } else {
+        sheet.style.transform = 'translateY(0)';
+        sheet.classList.remove('peek-mode');
+        showToast('📋 결과 목록을 펼쳤습니다.');
+      }
+    }
+
+    // Bottom sheet drag-down gesture (list tab style)
+    function initBottomSheetGesture() {
+      const handle = document.querySelector('.bottom-sheet-handle');
+      const sheet = document.getElementById('sim-bottom-sheet');
+      if (!handle || !sheet) return;
+
+      let startY = 0;
+      let currentY = 0;
+      let startTime = 0;
+      let isDragging = false;
+
+      handle.addEventListener('touchstart', (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        startTime = Date.now();
+        isDragging = true;
+        sheet.style.transition = 'none';
+      }, { passive: true });
+
+      handle.addEventListener('touchmove', (e) => {
+        if (!isDragging || !e.touches || !e.touches[0]) return;
+        currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+
+        if (e.cancelable) e.preventDefault();
+
+        if (isPeekMode) {
+          const sheetH = sheet.offsetHeight || 255;
+          const peekOffset = sheetH - 46;
+          const newY = Math.max(0, peekOffset + deltaY);
+          sheet.style.transform = `translateY(${newY}px)`;
+        } else {
+          if (deltaY > 0) {
+            sheet.style.transform = `translateY(${deltaY}px)`;
+          } else {
+            sheet.style.transform = `translateY(${deltaY * 0.15}px)`;
+          }
+        }
+      }, { passive: false });
+
+      const finishDrag = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const endY = (e && e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : currentY;
+        const deltaY = endY - startY;
+        const elapsed = Math.max(1, Date.now() - startTime);
+        const velocity = deltaY / elapsed;
+
+        sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+
+        if (isPeekMode) {
+          if (deltaY < -25 || (velocity < -0.3 && deltaY < -10)) {
+            sheet.style.transform = 'translateY(0)';
+            sheet.classList.remove('peek-mode');
+            isPeekMode = false;
+            showToast('📋 결과 목록을 펼쳤습니다.');
+          } else {
+            sheet.style.transform = 'translateY(calc(100% - 46px))';
+          }
+        } else {
+          if (deltaY > 35 || (velocity > 0.3 && deltaY > 15)) {
+            sheet.style.transform = 'translateY(calc(100% - 46px))';
+            sheet.classList.add('peek-mode');
+            isPeekMode = true;
+            showToast('🗺️ 결과창을 접었습니다. (지도 넓게 보기)');
+          } else {
+            sheet.style.transform = 'translateY(0)';
+          }
+        }
+      };
+
+      handle.addEventListener('touchend', finishDrag, { passive: true });
+      handle.addEventListener('touchcancel', finishDrag, { passive: true });
+
+      handle.addEventListener('click', () => {
+        togglePeekMode();
+      });
+    }
+
+    function resetSearch() {
+      document.getElementById('sim-map-search-input').value = '';
+      selectCat('전체', '🍴');
+      isWishlistOn = true;
+      isFriendsOn = true;
+      document.getElementById('switch-wishlist').checked = true;
+      document.getElementById('switch-friends').checked = true;
+      updateStarChipUI();
+      renderMapPins();
+      renderResultsList();
+      showToast('🔄 검색 및 필터가 초기화되었습니다.');
+    }
+
+    function simulatePageClick(pageNum) {
+      currentPage = pageNum;
+      document.querySelectorAll('.pag-num-btn').forEach(b => {
+        b.classList.toggle('active', b.innerText == pageNum);
+      });
+
+      // Key Fix: scrollTop = 0 고정 (페이지 번호로 튕기지 않고 1위 검색 결과 유지!)
+      const listEl = document.getElementById('sim-results-list');
+      listEl.scrollTop = 0;
+
+      showToast(`📄 ${pageNum}페이지로 이동 (스크롤 튕김 없이 1위 맛집 고정)`);
+      renderResultsList();
+    }
+
+    // Render Map Pins
+    function renderMapPins() {
+      const container = document.getElementById('pins-container');
+      container.innerHTML = '';
+
+      const anyFriend = isFriendsOn && Object.values(activeFriends).some(v => v);
+
+      samplePlaces.forEach(p => {
+        if (selectedCat !== '전체' && !p.cat.includes(selectedCat)) {
+          return;
+        }
+
+        const isWishMatch = isWishlistOn && p.isWishlist;
+        const isFriendMatch = isFriendsOn && p.friend && activeFriends[p.friend];
+
+        if (!isWishlistOn && !anyFriend) {
+          // General mode
+        } else {
+          if (!isWishMatch && !isFriendMatch && !p.catOnly) return;
+        }
+
+        let bubbleClass = '';
+        let badgeCorner = '';
+
+        if (isWishMatch && isFriendMatch) {
+          bubbleClass = 'both-pin';
+          badgeCorner = '<span class="badge-corner" style="background:#7C3AED;">공통</span>';
+        } else if (isWishMatch) {
+          bubbleClass = 'star-wishlist';
+          badgeCorner = '<span class="badge-corner" style="background:#F59E0B;">찜</span>';
+        } else if (isFriendMatch) {
+          bubbleClass = 'friend-pin';
+          badgeCorner = '<span class="badge-corner" style="background:#7C3AED;">친구</span>';
+        }
+
+        const pinDiv = document.createElement('div');
+        pinDiv.className = 'map-pin';
+        pinDiv.style.top = p.top;
+        pinDiv.style.left = p.left;
+        pinDiv.innerHTML = `
+          <div class="pin-bubble ${bubbleClass}">
+            <span>${p.emoji}</span>
+            <span>${p.name}</span>
+            ${badgeCorner}
+          </div>
+          <div class="pin-stem"></div>
+        `;
+        pinDiv.onclick = () => {
+          showToast(`📍 [${p.name}] 선택`);
+        };
+        container.appendChild(pinDiv);
+      });
+    }
+
+    // Render Results List
+    function renderResultsList() {
+      const list = document.getElementById('sim-results-list');
+      list.innerHTML = '';
+
+      const anyFriend = isFriendsOn && Object.values(activeFriends).some(v => v);
+
+      const filtered = samplePlaces.filter(p => {
+        if (selectedCat !== '전체' && !p.cat.includes(selectedCat)) return false;
+        const isWishMatch = isWishlistOn && p.isWishlist;
+        const isFriendMatch = isFriendsOn && p.friend && activeFriends[p.friend];
+        if (!isWishlistOn && !anyFriend) return true;
+        return isWishMatch || isFriendMatch || p.catOnly;
+      });
+
+      document.getElementById('result-count-txt').innerText = `${filtered.length * 4}개`;
+
+      filtered.forEach(p => {
+        const isWishMatch = isWishlistOn && p.isWishlist;
+        const isFriendMatch = isFriendsOn && p.friend && activeFriends[p.friend];
+
+        let tagHtml = '';
+        if (isWishMatch && isFriendMatch) {
+          tagHtml = `<span class="result-tag-badge both">🌟 찜 & ${p.friendName}</span>`;
+        } else if (isWishMatch) {
+          tagHtml = `<span class="result-tag-badge saved">⭐ 찜</span>`;
+        } else if (isFriendMatch) {
+          tagHtml = `<span class="result-tag-badge friend">👥 ${p.friendName}</span>`;
+        }
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'slim-result-item';
+        itemEl.innerHTML = `
+          <div class="result-row-top">
+            <span class="result-place-title">${p.name}</span>
+            ${tagHtml}
+          </div>
+          <div class="result-place-sub">${p.cat} • ${p.loc}</div>
+        `;
+        itemEl.onclick = () => {
+          showToast(`📍 "${p.name}" 지도로 이동`);
+        };
+        list.appendChild(itemEl);
+      });
+
+      list.scrollTop = 0;
+    }
+
+    // Toast
+    let toastTimeout = null;
+    function showToast(msg) {
+      const t = document.getElementById('sim-toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        t.style.display = 'none';
+      }, 2000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

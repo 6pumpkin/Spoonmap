@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609240034">
+    <link rel="stylesheet" href="style.css?v=202609240120">
 </head>
 
 <body class="light-theme">
@@ -612,9 +612,75 @@
                         <button id="map-reset-btn" class="map-reset-btn" title="검색 초기화">🔄</button>
                     </div>
                     <div class="map-quick-filters">
-                        <button id="btn-show-wishlist" class="map-quick-filter-btn" type="button">⭐ 찜 가게 목록</button>
-                        <button id="btn-toggle-friends-panel" class="map-quick-filter-btn friend-toggle-btn" type="button">👥 친구 지도</button>
+                        <!-- 모바일 2개 간편 칩 (음식 카테고리 + 별표 버튼) -->
+                        <button id="btn-cat-chip" class="modern-chip-btn mobile-only-chip" type="button" title="음식 카테고리">
+                            <span id="cat-chip-icon">🍴</span>
+                            <span id="cat-chip-text" style="display:none;"></span>
+                            <span id="cat-chip-clear" class="cat-clear-icon" style="display:none;">✕</span>
+                            <span class="caret">▼</span>
+                        </button>
+                        <button id="btn-star-chip" class="modern-chip-btn mobile-only-chip" type="button" title="찜 & 친구 지도">
+                            <span style="font-size:13px;">⭐</span>
+                            <span class="caret">▼</span>
+                        </button>
+
+                        <!-- 데스크톱용 기존 버튼 -->
+                        <button id="btn-show-wishlist" class="map-quick-filter-btn desktop-only-btn" type="button">⭐ 찜 가게 목록</button>
+                        <button id="btn-toggle-friends-panel" class="map-quick-filter-btn friend-toggle-btn desktop-only-btn" type="button">👥 친구 지도</button>
                     </div>
+
+                    <!-- 모바일 플로팅 팝오버 메뉴들 -->
+                    <div id="map-popover-backdrop" class="map-popover-backdrop" style="display:none;"></div>
+
+                    <!-- 1. 카테고리 세로 1줄 팝오버 -->
+                    <div id="popover-cat-menu" class="popover-cat-menu" style="display:none;">
+                        <div class="pop-cat-item active" data-keyword=""><span>🍴 전체</span><span class="check-mark">✓</span></div>
+                        <div class="pop-cat-item" data-keyword="한식"><span>🍚 한식</span></div>
+                        <div class="pop-cat-item" data-keyword="일식"><span>🍣 일식</span></div>
+                        <div class="pop-cat-item" data-keyword="중식"><span>🥢 중식</span></div>
+                        <div class="pop-cat-item" data-keyword="양식"><span>🍝 양식</span></div>
+                        <div class="pop-cat-item" data-keyword="고기"><span>🥩 고기·구이</span></div>
+                        <div class="pop-cat-item" data-keyword="카페"><span>☕ 카페·디저트</span></div>
+                        <div class="pop-cat-item" data-keyword="술집"><span>🍺 술집</span></div>
+                        <div class="pop-cat-item" data-keyword="분식"><span>🍢 분식</span></div>
+                        <div class="pop-cat-item" data-keyword="치킨"><span>🍗 치킨</span></div>
+                        <div class="pop-cat-item" data-keyword="피자"><span>🍕 피자·버거</span></div>
+                        <div class="pop-cat-item" data-keyword="패스트푸드"><span>🍔 패스트푸드</span></div>
+                        <div class="pop-cat-item" data-keyword="아시아음식"><span>🍜 아시안</span></div>
+                        <div class="pop-cat-item" data-keyword="샐러드"><span>🥗 샐러드</span></div>
+                        <div class="pop-cat-item" data-keyword="기타"><span>🍽️ 기타</span></div>
+                    </div>
+
+                    <!-- 2. 별표 (찜 & 친구) 미니 팝오버 -->
+                    <div id="popover-star-menu" class="popover-star-menu" style="display:none;">
+                        <div class="pop-section-row" id="pop-row-wishlist">
+                            <div class="pop-row-left">
+                                <span>⭐</span>
+                                <span>내 찜 식당</span>
+                            </div>
+                            <label class="toggle-switch-sm">
+                                <input type="checkbox" id="switch-wishlist-toggle">
+                                <span class="toggle-slider-sm"></span>
+                            </label>
+                        </div>
+                        <div class="pop-divider"></div>
+                        <div class="pop-section-row" id="pop-row-friends">
+                            <div class="pop-row-left">
+                                <span>👥</span>
+                                <span>친구 지도</span>
+                            </div>
+                            <label class="toggle-switch-sm">
+                                <input type="checkbox" id="switch-friends-toggle">
+                                <span class="toggle-slider-sm"></span>
+                            </label>
+                        </div>
+                        <div id="pop-friends-sub-list" class="friends-sub-list" style="display:none;"></div>
+                        <div class="pop-divider"></div>
+                        <div class="pop-footer-link">
+                            <button type="button" onclick="window.openFriendManageModal()">⚙️ 친구 관리 ➔</button>
+                        </div>
+                    </div>
+
                     <div id="map-friends-bar" class="map-friends-bar" style="display:none;">
                         <div class="friends-bar-header">
                             <span class="friends-bar-title">👥 친구 맛집 레이어</span>
@@ -625,6 +691,10 @@
                         </div>
                     </div>
                     <div id="map-results-list" class="map-results-list">
+                        <!-- 모바일용 드래그 핸들 (아래로 내리면 부드럽게 닫힘) -->
+                        <div id="map-sheet-handle" class="bottom-sheet-handle">
+                            <div class="handle-bar"></div>
+                        </div>
                         <!-- Search results items will be injected here -->
                         <div class="map-empty-state">
                             <i class="icon-search"></i>
@@ -1198,12 +1268,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609240034"></script>
-    <script src="data.js?v=202609240034"></script>
-    <script src="ddoganzip_data.js?v=202609240034"></script>
-    <script src="meogeultende_data.js?v=202609240034"></script>
-    <script src="jungyugwang_data.js?v=202609240034"></script>
-    <script src="app.js?v=202609240034"></script>
+    <script src="regions.js?v=202609240120"></script>
+    <script src="data.js?v=202609240120"></script>
+    <script src="ddoganzip_data.js?v=202609240120"></script>
+    <script src="meogeultende_data.js?v=202609240120"></script>
+    <script src="jungyugwang_data.js?v=202609240120"></script>
+    <script src="app.js?v=202609240120"></script>
 </body>
 
 </html>

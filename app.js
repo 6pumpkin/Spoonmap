@@ -2820,9 +2820,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const startIndex = (safePage - 1) * pageSize;
         const pageItems = allResults.slice(startIndex, startIndex + pageSize);
 
-        // 1. Clear previous page items & Reset Scroll to Top!
-        resultsList.innerHTML = '';
+        // 1. Clear previous page items & Prepend Drag Handle & Reset Scroll to Top!
+        resultsList.innerHTML = `
+            <div id="map-sheet-handle" class="bottom-sheet-handle">
+                <div class="handle-bar"></div>
+            </div>
+        `;
         resultsList.scrollTop = 0;
+        if (typeof attachMapSheetSwipe === 'function') {
+            attachMapSheetSwipe();
+        }
 
         // 2. Build current page items
         pageItems.forEach(res => {
@@ -2901,12 +2908,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             resultsList.appendChild(pagContainer);
 
-            // Auto-center active page button in scroll view
+            // Auto-center active page button in scroll view (가로 스크롤 전용 수식으로 부모 세로 스크롤 튕김 방지!)
             if (activeBtn) {
-                setTimeout(() => {
-                    activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-                }, 50);
+                pagContainer.scrollLeft = activeBtn.offsetLeft - (pagContainer.offsetWidth / 2) + (activeBtn.offsetWidth / 2);
             }
+            resultsList.scrollTop = 0;
         }
     }
 
@@ -4862,6 +4868,330 @@ document.addEventListener('DOMContentLoaded', () => {
             window.openFriendManageModal();
         });
     }
+
+    // =========================================================================
+    // Mobile Map Modern Chips, Popovers & Drag-down Sheet Controller
+    // =========================================================================
+    function attachMapSheetSwipe() {
+        const sheet = document.getElementById('map-results-list');
+        const handle = document.getElementById('map-sheet-handle');
+        if (!sheet || !handle) return;
+        if (handle._swipeAttached) return;
+        handle._swipeAttached = true;
+
+        let startY = 0;
+        let currentY = 0;
+        let startTime = 0;
+        let isDragging = false;
+
+        handle.addEventListener('touchstart', (e) => {
+            if (!e.touches || !e.touches[0]) return;
+            startY = e.touches[0].clientY;
+            currentY = startY;
+            startTime = Date.now();
+            isDragging = true;
+            sheet.style.transition = 'none';
+        }, { passive: true });
+
+        handle.addEventListener('touchmove', (e) => {
+            if (!isDragging || !e.touches || !e.touches[0]) return;
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+
+            if (e.cancelable) e.preventDefault();
+
+            const isCollapsed = sheet.classList.contains('collapsed-peek');
+            if (isCollapsed) {
+                const sheetH = sheet.offsetHeight || 300;
+                const peekOffset = sheetH - 44;
+                const newY = Math.max(0, peekOffset + deltaY);
+                sheet.style.transform = `translateY(${newY}px)`;
+            } else {
+                if (deltaY > 0) {
+                    sheet.style.transform = `translateY(${deltaY}px)`;
+                } else {
+                    sheet.style.transform = `translateY(${deltaY * 0.15}px)`;
+                }
+            }
+        }, { passive: false });
+
+        const finishDrag = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const endY = (e && e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : currentY;
+            const deltaY = endY - startY;
+            const elapsed = Math.max(1, Date.now() - startTime);
+            const velocity = deltaY / elapsed;
+            const isCollapsed = sheet.classList.contains('collapsed-peek');
+
+            sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+
+            if (isCollapsed) {
+                if (deltaY < -30 || (velocity < -0.3 && deltaY < -10)) {
+                    sheet.style.transform = 'translateY(0)';
+                    sheet.classList.remove('collapsed-peek');
+                } else {
+                    sheet.style.transform = 'translateY(calc(100% - 44px))';
+                }
+            } else {
+                if (deltaY > 35 || (velocity > 0.3 && deltaY > 15)) {
+                    sheet.style.transform = 'translateY(calc(100% - 44px))';
+                    sheet.classList.add('collapsed-peek');
+                } else {
+                    sheet.style.transform = 'translateY(0)';
+                }
+            }
+        };
+
+        handle.addEventListener('touchend', finishDrag, { passive: true });
+        handle.addEventListener('touchcancel', finishDrag, { passive: true });
+
+        // Click/tap toggle fallback
+        handle.addEventListener('click', () => {
+            sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+            const isCollapsed = sheet.classList.contains('collapsed-peek');
+            if (isCollapsed) {
+                sheet.style.transform = 'translateY(0)';
+                sheet.classList.remove('collapsed-peek');
+            } else {
+                sheet.style.transform = 'translateY(calc(100% - 44px))';
+                sheet.classList.add('collapsed-peek');
+            }
+        });
+    }
+    window.attachMapSheetSwipe = attachMapSheetSwipe;
+    attachMapSheetSwipe();
+
+    function initMobileMapChipsAndPopovers() {
+        const catChip = document.getElementById('btn-cat-chip');
+        const starChip = document.getElementById('btn-star-chip');
+        const popCat = document.getElementById('popover-cat-menu');
+        const popStar = document.getElementById('popover-star-menu');
+        const backdrop = document.getElementById('map-popover-backdrop');
+        const catIcon = document.getElementById('cat-chip-icon');
+        const catText = document.getElementById('cat-chip-text');
+        const catClear = document.getElementById('cat-chip-clear');
+
+        const switchWishlist = document.getElementById('switch-wishlist-toggle');
+        const switchFriends = document.getElementById('switch-friends-toggle');
+        const friendsSubList = document.getElementById('pop-friends-sub-list');
+
+        if (!catChip || !starChip || !popCat || !popStar) return;
+
+        function closeAllPopovers() {
+            popCat.style.display = 'none';
+            popStar.style.display = 'none';
+            if (backdrop) backdrop.style.display = 'none';
+            catChip.classList.remove('open');
+            starChip.classList.remove('open');
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeAllPopovers);
+        }
+
+        // 1. Category Chip Click
+        catChip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = popCat.style.display === 'flex';
+            closeAllPopovers();
+            if (!isOpen) {
+                popCat.style.display = 'flex';
+                catChip.classList.add('open');
+                if (backdrop) backdrop.style.display = 'block';
+            }
+        });
+
+        // Category Items Selection
+        popCat.querySelectorAll('.pop-cat-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const keyword = item.dataset.keyword || '';
+                popCat.querySelectorAll('.pop-cat-item').forEach(i => {
+                    i.classList.remove('active');
+                    const c = i.querySelector('.check-mark');
+                    if (c) c.remove();
+                });
+                item.classList.add('active');
+                const check = document.createElement('span');
+                check.className = 'check-mark';
+                check.innerText = '✓';
+                item.appendChild(check);
+
+                if (!keyword || keyword === '전체') {
+                    window.currCategory = '';
+                    window.currSubKeyword = '';
+                    catChip.classList.remove('cat-active');
+                    if (catIcon) catIcon.innerText = '🍴';
+                    if (catText) catText.style.display = 'none';
+                    if (catClear) catClear.style.display = 'none';
+                } else {
+                    window.currCategory = 'FD6';
+                    window.currSubKeyword = keyword;
+                    catChip.classList.add('cat-active');
+                    const emojiMap = {
+                        '한식': '🍚', '일식': '🍣', '중식': '🥢', '양식': '🍝',
+                        '고기': '🥩', '카페': '☕', '술집': '🍺', '분식': '🍢',
+                        '치킨': '🍗', '피자': '🍕', '패스트푸드': '🍔', '아시아음식': '🍜',
+                        '샐러드': '🥗', '기타': '🍽️'
+                    };
+                    const em = emojiMap[keyword] || '🍴';
+                    if (catIcon) catIcon.innerText = em;
+                    if (catText) {
+                        catText.innerText = keyword;
+                        catText.style.display = 'inline';
+                    }
+                    if (catClear) catClear.style.display = 'inline';
+                }
+
+                closeAllPopovers();
+                const sheet = document.getElementById('map-results-list');
+                if (sheet) {
+                    sheet.style.transform = 'translateY(0)';
+                    sheet.classList.remove('collapsed-peek');
+                }
+                updateMapMarkers();
+            });
+        });
+
+        // Category Clear (✕)
+        if (catClear) {
+            catClear.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.currCategory = '';
+                window.currSubKeyword = '';
+                catChip.classList.remove('cat-active');
+                if (catIcon) catIcon.innerText = '🍴';
+                if (catText) catText.style.display = 'none';
+                if (catClear) catClear.style.display = 'none';
+                popCat.querySelectorAll('.pop-cat-item').forEach(i => {
+                    i.classList.remove('active');
+                    const c = i.querySelector('.check-mark');
+                    if (c) c.remove();
+                });
+                const allItem = popCat.querySelector('.pop-cat-item[data-keyword=""]');
+                if (allItem) {
+                    allItem.classList.add('active');
+                    const check = document.createElement('span');
+                    check.className = 'check-mark';
+                    check.innerText = '✓';
+                    allItem.appendChild(check);
+                }
+                closeAllPopovers();
+                updateMapMarkers();
+            });
+        }
+
+        // 2. Star Chip Click
+        starChip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = popStar.style.display === 'flex';
+            closeAllPopovers();
+            if (!isOpen) {
+                popStar.style.display = 'flex';
+                starChip.classList.add('open');
+                if (backdrop) backdrop.style.display = 'block';
+                renderMobileFriendsListInPopover();
+            }
+        });
+
+        // Wishlist Toggle
+        if (switchWishlist) {
+            switchWishlist.addEventListener('change', () => {
+                updateStarChipHighlight();
+                if (switchWishlist.checked) {
+                    showWishlistPlacesOnMap();
+                } else {
+                    updateMapMarkers();
+                }
+            });
+        }
+
+        // Friends Toggle
+        if (switchFriends) {
+            switchFriends.addEventListener('change', () => {
+                const isOn = switchFriends.checked;
+                if (friendsSubList) friendsSubList.style.display = isOn ? 'flex' : 'none';
+                updateStarChipHighlight();
+
+                if (isOn) {
+                    const activeIds = getActiveFriendIds();
+                    const friends = getFriendsList();
+                    if (activeIds.length === 0 && friends.length > 0) {
+                        toggleActiveFriendId(friends[0].id);
+                    }
+                    renderMobileFriendsListInPopover();
+                    getActiveFriendIds().forEach(fid => {
+                        const f = friends.find(item => item.id === fid);
+                        if (f) renderFriendMarkers(f);
+                    });
+                } else {
+                    if (window.activeFriendMarkersMap) {
+                        window.activeFriendMarkersMap.forEach(mList => mList.forEach(m => m.setMap(null)));
+                        window.activeFriendMarkersMap.clear();
+                    }
+                }
+            });
+        }
+
+        function updateStarChipHighlight() {
+            starChip.classList.remove('star-active', 'friend-active', 'both-active');
+            const wishOn = switchWishlist && switchWishlist.checked;
+            const friendOn = switchFriends && switchFriends.checked && (typeof getActiveFriendIds === 'function' && getActiveFriendIds().length > 0);
+
+            if (wishOn && friendOn) {
+                starChip.classList.add('both-active');
+            } else if (wishOn) {
+                starChip.classList.add('star-active');
+            } else if (friendOn) {
+                starChip.classList.add('friend-active');
+            }
+        }
+        window.updateMobileStarChipHighlight = updateStarChipHighlight;
+
+        function renderMobileFriendsListInPopover() {
+            if (!friendsSubList || typeof getFriendsList !== 'function') return;
+            const friends = getFriendsList();
+            const activeIds = new Set(getActiveFriendIds());
+
+            friendsSubList.innerHTML = '';
+            if (friends.length === 0) {
+                friendsSubList.innerHTML = `<div style="font-size:10.5px; color:#94A3B8; padding:4px 6px;">등록된 친구가 없습니다.</div>`;
+                return;
+            }
+
+            friends.forEach(f => {
+                const isActive = activeIds.has(f.id);
+                const itemEl = document.createElement('div');
+                itemEl.className = `friend-sub-item ${isActive ? 'active' : ''}`;
+                itemEl.innerHTML = `
+                    <span>${f.name}</span>
+                    <span class="f-check" style="${isActive ? '' : 'display:none;'}">✓</span>
+                `;
+                itemEl.addEventListener('click', () => {
+                    const nextActive = !itemEl.classList.contains('active');
+                    itemEl.classList.toggle('active', nextActive);
+                    const chk = itemEl.querySelector('.f-check');
+                    if (chk) chk.style.display = nextActive ? 'inline' : 'none';
+
+                    toggleActiveFriendId(f.id);
+                    if (nextActive) {
+                        renderFriendMarkers(f);
+                    } else {
+                        if (typeof removeFriendMarkers === 'function') {
+                            removeFriendMarkers(f.id);
+                        } else if (window.activeFriendMarkersMap && window.activeFriendMarkersMap.has(f.id)) {
+                            window.activeFriendMarkersMap.get(f.id).forEach(m => m.setMap(null));
+                            window.activeFriendMarkersMap.delete(f.id);
+                        }
+                    }
+                    updateStarChipHighlight();
+                });
+                friendsSubList.appendChild(itemEl);
+            });
+        }
+    }
+    initMobileMapChipsAndPopovers();
 
     // Helper to get filtered data for map
     function getFilteredData() {
