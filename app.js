@@ -5241,7 +5241,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
             let locMatch = true;
             if (hasLarge || hasSmall) {
-                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchLarge = hasLarge && currentFilters.location_large.some(reg => {
+                    if (!reg) return false;
+                    const r = reg.trim();
+                    return (item.location_large && (item.location_large.includes(r) || r.includes(item.location_large))) ||
+                           (item.location_small && (item.location_small.includes(r) || r.includes(item.location_small))) ||
+                           (item.road_address && item.road_address.includes(r)) ||
+                           (item.address && item.address.includes(r));
+                });
                 const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
                 locMatch = matchLarge || matchSmall;
             }
@@ -5891,6 +5898,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'location_large') {
             currentFilters.location_small = [];
             updateSmallLocationFilters(currentFilters.location_large);
+            if (typeof syncRegionUI === 'function') syncRegionUI();
+            if (typeof updatePickerSelectedBanner === 'function') updatePickerSelectedBanner();
         }
         if (type === 'category') {
             syncMobileCatChips();
@@ -5949,15 +5958,281 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.handleMobileCatClick = handleMobileCatClick;
 
-    function toggleMobileSidebar() {
+    function toggleMobileSidebar(force) {
         const sidebar = document.getElementById('main-sidebar') || document.querySelector('.sidebar');
         const backdrop = document.getElementById('sidebar-backdrop');
         if (!sidebar) return;
-        const isOpen = sidebar.classList.toggle('mobile-open');
+        const isOpen = typeof force === 'boolean' ? sidebar.classList.toggle('mobile-open', force) : sidebar.classList.toggle('mobile-open');
         if (backdrop) backdrop.classList.toggle('show', isOpen);
         document.body.style.overflow = isOpen ? 'hidden' : '';
     }
     window.toggleMobileSidebar = toggleMobileSidebar;
+
+    // ── Full Regions Database by Province (mobile_list_preview.html 표준 데이터) ──
+    const ALL_REGIONS_DATA = {
+        '서울': [
+            { name: '종로구', desc: '광화문, 익선동, 서촌' },
+            { name: '중구', desc: '을지로, 명동, 동대문' },
+            { name: '용산구', desc: '이태원, 한남동, 삼각지' },
+            { name: '성동구', desc: '성수동, 서울숲, 옥수' },
+            { name: '마포구', desc: '홍대, 연남동, 망원동' },
+            { name: '강남구', desc: '신사동, 압구정, 역삼' },
+            { name: '서초구', desc: '강남역, 반포, 양재' },
+            { name: '송파구', desc: '잠실, 방이동, 송리단길' },
+            { name: '영등포구', desc: '여의도, 문래동, 영등포' },
+            { name: '광진구', desc: '건대, 뚝섬, 구의' },
+            { name: '서대문구', desc: '신촌, 이대, 연희동' },
+            { name: '동대문구', desc: '청량리, 제기동' },
+            { name: '은평구', desc: '연신내, 불광' },
+            { name: '성북구', desc: '성북동, 안암동' },
+            { name: '노원구', desc: '노원역, 상계' },
+            { name: '강동구', desc: '천호동, 성내동' },
+            { name: '관악구', desc: '샤로수길, 신림' },
+            { name: '동작구', desc: '노량진, 사당' },
+            { name: '양천구', desc: '목동' },
+            { name: '강서구', desc: '마곡, 발산' }
+        ],
+        '경기/인천': [
+            { name: '성남시', desc: '분당, 판교, 정자동' },
+            { name: '수원시', desc: '행궁동, 인계동, 광교' },
+            { name: '고양시', desc: '일산, 밤리단길' },
+            { name: '용인시', desc: '수지, 보정동카페거리' },
+            { name: '부천시', desc: '신중동, 상동' },
+            { name: '안양시', desc: '평촌, 범계, 안양일번가' },
+            { name: '인천 연수구', desc: '송도국제도시' },
+            { name: '인천 부평구', desc: '부평테마거리' },
+            { name: '하남시', desc: '미사경정공원' },
+            { name: '남양주시', desc: '다산, 별내' }
+        ],
+        '부산/경상': [
+            { name: '부산 해운대구', desc: '해리단길, 달맞이길' },
+            { name: '부산 부산진구', desc: '서면, 전포카페거리' },
+            { name: '부산 수영구', desc: '광안리해변' },
+            { name: '부산 중구', desc: '남포동, 자갈치' },
+            { name: '대구 중구', desc: '동성로, 교동' },
+            { name: '대구 수성구', desc: '들안길, 범어동' },
+            { name: '경주시', desc: '황리단길, 첨성대' },
+            { name: '포항시', desc: '영일대, 구룡포' }
+        ],
+        '제주/기타': [
+            { name: '제주 제주시', desc: '애월, 조천, 제주시내' },
+            { name: '제주 서귀포시', desc: '중문, 성산, 올레시장' },
+            { name: '강원 강릉시', desc: '안목해변, 초당순두부' },
+            { name: '강원 속초시', desc: '중앙시장, 대포항' },
+            { name: '강원 춘천시', desc: '닭갈비골목, 명동' },
+            { name: '대전 유성구', desc: '봉명동, 궁동' },
+            { name: '전남 여수시', desc: '돌산, 이순신광장' }
+        ]
+    };
+
+    let currentPickerProvince = 'ALL';
+    let pickerSearchQuery = '';
+
+    function toggleAllRegionsSheet(open) {
+        const sheet = document.getElementById('all-regions-sheet');
+        if (!sheet) return;
+        const isOpen = typeof open === 'boolean' ? open : !sheet.classList.contains('show');
+        sheet.classList.toggle('show', isOpen);
+        sheet.classList.toggle('open', isOpen);
+        if (isOpen) {
+            updatePickerSelectedBanner();
+            renderPickerRegions();
+        }
+    }
+    window.toggleAllRegionsSheet = toggleAllRegionsSheet;
+
+    function updatePickerSelectedBanner() {
+        const txt = document.getElementById('picker-selected-text');
+        if (!txt) return;
+        const regions = currentFilters.location_large || [];
+        if (regions.length === 0) {
+            txt.textContent = '전체 지역';
+        } else if (regions.length === 1) {
+            txt.textContent = regions[0];
+        } else {
+            txt.textContent = `${regions.join(', ')} (${regions.length}곳)`;
+        }
+    }
+    window.updatePickerSelectedBanner = updatePickerSelectedBanner;
+
+    function handlePickerSearch(val) {
+        pickerSearchQuery = (val || '').trim().toLowerCase();
+        renderPickerRegions();
+    }
+    window.handlePickerSearch = handlePickerSearch;
+
+    function clearPickerSearch() {
+        const input = document.getElementById('picker-search-input');
+        if (input) input.value = '';
+        pickerSearchQuery = '';
+        renderPickerRegions();
+    }
+    window.clearPickerSearch = clearPickerSearch;
+
+    function filterPickerProvince(prov, btn) {
+        currentPickerProvince = prov;
+        document.querySelectorAll('.prov-tab').forEach(b => {
+            b.classList.remove('active');
+        });
+        if (btn) btn.classList.add('active');
+        renderPickerRegions();
+    }
+    window.filterPickerProvince = filterPickerProvince;
+
+    function renderPickerRegions() {
+        const container = document.getElementById('picker-regions-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        let categoriesToShow = Object.keys(ALL_REGIONS_DATA);
+        if (currentPickerProvince !== 'ALL') {
+            categoriesToShow = [currentPickerProvince];
+        }
+
+        let totalMatches = 0;
+        const selectedRegions = currentFilters.location_large || [];
+
+        categoriesToShow.forEach(provName => {
+            let regions = ALL_REGIONS_DATA[provName] || [];
+            if (pickerSearchQuery) {
+                regions = regions.filter(r => 
+                    r.name.toLowerCase().includes(pickerSearchQuery) || 
+                    (r.desc && r.desc.toLowerCase().includes(pickerSearchQuery))
+                );
+            }
+
+            if (regions.length === 0) return;
+            totalMatches += regions.length;
+
+            const section = document.createElement('div');
+
+            const title = document.createElement('div');
+            title.className = "region-picker-group-title";
+            title.innerHTML = `<span>📍</span> <span>${provName}</span> <span style="font-size:0.68rem; color:#94A3B8; font-weight:normal;">(${regions.length})</span>`;
+            section.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = "region-picker-grid";
+
+            regions.forEach(r => {
+                const isSelected = selectedRegions.includes(r.name);
+                const card = document.createElement('div');
+                card.className = `region-picker-card ${isSelected ? 'active' : ''}`;
+                card.onclick = () => {
+                    pickRegionAndClose(r.name);
+                };
+
+                card.innerHTML = `
+                    <div class="region-picker-card-top">
+                        <div class="region-picker-card-name">${r.name}</div>
+                        ${isSelected ? '<span class="region-picker-card-check">✓</span>' : ''}
+                    </div>
+                    <div class="region-picker-card-desc">${r.desc}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            section.appendChild(grid);
+            container.appendChild(section);
+        });
+
+        if (totalMatches === 0) {
+            container.innerHTML = `
+                <div style="padding: 40px 16px; text-align: center; color: #94A3B8; font-size: 0.8rem;">
+                    <span style="font-size: 1.8rem; display: block; margin-bottom: 8px;">🔍</span>
+                    "<strong>${pickerSearchQuery}</strong>"에 해당하는 지역이 없습니다.<br>
+                    <span style="font-size: 0.72rem; color: #94A3B8; margin-top: 4px; display: block;">구 또는 동 이름을 검색해보세요.</span>
+                </div>
+            `;
+        }
+    }
+    window.renderPickerRegions = renderPickerRegions;
+
+    function pickRegionAndClose(regVal) {
+        if (!currentFilters.location_large) currentFilters.location_large = [];
+        if (regVal === 'all') {
+            currentFilters.location_large = [];
+        } else {
+            const idx = currentFilters.location_large.indexOf(regVal);
+            if (idx > -1) {
+                currentFilters.location_large.splice(idx, 1);
+            } else {
+                currentFilters.location_large.push(regVal);
+            }
+        }
+        currentFilters.location_small = [];
+        updatePickerSelectedBanner();
+        renderPickerRegions();
+        syncRegionUI();
+        listDisplayCount = 50;
+        render();
+    }
+    window.pickRegionAndClose = pickRegionAndClose;
+
+    function handleRegionQuickClick(regVal, btn) {
+        if (!currentFilters.location_large) currentFilters.location_large = [];
+        if (regVal === 'all') {
+            currentFilters.location_large = [];
+        } else {
+            const idx = currentFilters.location_large.indexOf(regVal);
+            if (idx > -1) {
+                currentFilters.location_large.splice(idx, 1);
+            } else {
+                currentFilters.location_large.push(regVal);
+            }
+        }
+        currentFilters.location_small = [];
+        syncRegionUI();
+        updatePickerSelectedBanner();
+        listDisplayCount = 50;
+        render();
+    }
+    window.handleRegionQuickClick = handleRegionQuickClick;
+
+    function syncRegionUI() {
+        const badge = document.getElementById('active-region-badge');
+        const searchDisplay = document.getElementById('sheet-region-search-display');
+        const regions = currentFilters.location_large || [];
+        const isAll = regions.length === 0;
+
+        if (badge) {
+            if (isAll) {
+                badge.textContent = '전체';
+                badge.className = "active-region-badge";
+            } else {
+                badge.textContent = regions.length === 1 
+                    ? regions[0] 
+                    : `${regions[0]} 외 ${regions.length - 1}곳`;
+                badge.className = "active-region-badge has-selection";
+            }
+        }
+
+        if (searchDisplay) {
+            searchDisplay.value = isAll ? '' : `📍 ${regions.join(', ')}`;
+        }
+
+        // Sync Quick Chips
+        document.querySelectorAll('.reg-chip').forEach(b => {
+            const rVal = b.dataset.region;
+            if (rVal === 'all') {
+                b.classList.toggle('active', isAll);
+            } else {
+                const match = regions.some(r => rVal.includes(r) || r.includes(rVal));
+                b.classList.toggle('active', match);
+            }
+        });
+    }
+    window.syncRegionUI = syncRegionUI;
+
+    function applyFiltersFromSheet() {
+        toggleMobileSidebar(false);
+        listDisplayCount = 50;
+        render();
+        if (typeof showDiaryToast === 'function') {
+            showDiaryToast('필터 조건이 적용되었습니다.');
+        }
+    }
+    window.applyFiltersFromSheet = applyFiltersFromSheet;
 
     function updateSmallLocationFilters(largeValuesArray) {
         if (locationSmallFilterGroup) {
@@ -6289,7 +6564,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
             let locMatch = true;
             if (hasLarge || hasSmall) {
-                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchLarge = hasLarge && currentFilters.location_large.some(reg => {
+                    if (!reg) return false;
+                    const r = reg.trim();
+                    return (item.location_large && (item.location_large.includes(r) || r.includes(item.location_large))) ||
+                           (item.location_small && (item.location_small.includes(r) || r.includes(item.location_small))) ||
+                           (item.road_address && item.road_address.includes(r)) ||
+                           (item.address && item.address.includes(r));
+                });
                 const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
                 locMatch = matchLarge || matchSmall;
             }
@@ -6530,6 +6812,8 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshSidebarFilters();
         if (typeof syncMobileCatChips === 'function') syncMobileCatChips();
         updateFilterButtonsUI();
+        if (typeof syncRegionUI === 'function') syncRegionUI();
+        if (typeof updatePickerSelectedBanner === 'function') updatePickerSelectedBanner();
         listDisplayCount = 50;
         render();
 
@@ -6551,7 +6835,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasSmall = currentFilters.location_small && currentFilters.location_small.length > 0;
             let locMatch = true;
             if (hasLarge || hasSmall) {
-                const matchLarge = hasLarge && currentFilters.location_large.includes(item.location_large);
+                const matchLarge = hasLarge && currentFilters.location_large.some(reg => {
+                    if (!reg) return false;
+                    const r = reg.trim();
+                    return (item.location_large && (item.location_large.includes(r) || r.includes(item.location_large))) ||
+                           (item.location_small && (item.location_small.includes(r) || r.includes(item.location_small))) ||
+                           (item.road_address && item.road_address.includes(r)) ||
+                           (item.address && item.address.includes(r));
+                });
                 const matchSmall = hasSmall && currentFilters.location_small.includes(item.location_small);
                 locMatch = matchLarge || matchSmall;
             }

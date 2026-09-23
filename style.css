@@ -7809,7 +7809,7 @@ input[type="date"].drawer-input {
         display: none !important;
     }
 
-    /* ── 4. LIST Tab Mobile Filter Bottom Sheet ── */
+    /* ── 4. LIST Tab Mobile Filter Bottom Sheet (mobile_list_preview.html 완벽 이식) ── */
     .sidebar-backdrop {
         display: none;
         position: fixed !important;
@@ -7838,54 +7838,70 @@ input[type="date"].drawer-input {
         top: auto !important;
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 85dvh !important;
-        border-radius: 24px 24px 0 0 !important;
+        max-height: 88dvh !important;
+        border-radius: 28px 28px 0 0 !important;
         z-index: 1500 !important;
         background: #FFFFFF !important;
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22) !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 0 16px 16px 16px !important;
-        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        padding: 0 !important;
         transform: translateY(100%);
         transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
         will-change: transform;
     }
 
     .sidebar.mobile-open {
-        display: block !important;
+        display: flex !important;
         transform: translateY(0) !important;
     }
 
+    .bottom-sheet-handle {
+        width: 100% !important;
+        padding: 12px 0 6px 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        background: transparent !important;
+        margin: 0 !important;
+        position: static !important;
+        height: auto !important;
+    }
+
+    .bottom-sheet-handle .handle-bar {
+        width: 40px !important;
+        height: 4px !important;
+        border-radius: 9999px !important;
+        background: #CBD5E1 !important;
+        display: block !important;
+    }
+
     .sidebar-header-bar {
+        padding: 8px 20px 12px 20px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        padding-bottom: 12px !important;
-        margin-bottom: 14px !important;
         border-bottom: 1px solid #F1F5F9 !important;
+        margin: 0 !important;
+        background: #FFFFFF !important;
     }
 
-    .sidebar-header-bar h3,
     .sidebar-header-title {
-        font-size: 1.15rem !important;
+        font-size: 1.05rem !important;
         font-weight: 800 !important;
-        color: #0F172A !important;
-        margin: 0 !important;
+        color: #1E293B !important;
         letter-spacing: -0.3px !important;
     }
 
     .all-filters-reset-btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
+        font-size: 0.75rem !important;
+        color: #64748B !important;
+        font-weight: 600 !important;
+        padding: 4px 9px !important;
+        border-radius: 8px !important;
         background: #F1F5F9 !important;
         border: 1px solid #E2E8F0 !important;
-        color: #64748B !important;
-        padding: 5px 11px !important;
-        border-radius: 20px !important;
-        font-size: 0.78rem !important;
-        font-weight: 700 !important;
         cursor: pointer !important;
         transition: all 0.15s ease !important;
     }
@@ -7896,194 +7912,320 @@ input[type="date"].drawer-input {
     }
 
     .mobile-sidebar-close-btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 30px !important;
-        height: 30px !important;
+        width: 28px !important;
+        height: 28px !important;
         border-radius: 50% !important;
         background: #F1F5F9 !important;
-        border: 1px solid #E2E8F0 !important;
-        color: #64748B !important;
-        font-size: 0.85rem !important;
+        color: #475569 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.75rem !important;
+        font-weight: bold !important;
+        border: none !important;
         cursor: pointer !important;
     }
 
-    /* 방문 기간 지정 카드 슬림화 */
-    .filter-section.date-range-section {
-        background: #F8FAFC !important;
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 14px !important;
-        padding: 12px 14px !important;
-        margin-bottom: 16px !important;
+    .sidebar-scroll-content {
+        padding: 16px 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+        -webkit-overflow-scrolling: touch !important;
+        font-size: 0.75rem !important;
     }
 
-    .date-range-section h3 {
-        font-size: 0.84rem !important;
-        font-weight: 800 !important;
-        color: #334155 !important;
-        margin-bottom: 10px !important;
+    .filter-section-title {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #1E293B !important;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    /* ① 방문 기간 지정 카드 */
+    .filter-section.date-range-section {
+        background: #F8FAFC !important;
+        padding: 14px !important;
+        border-radius: 16px !important;
+        border: 1px solid #E2E8F0 !important;
+        margin: 0 !important;
     }
 
     .date-filter-inputs {
-        display: flex !important;
-        align-items: center !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 8px !important;
-        margin-bottom: 10px !important;
-    }
-
-    .date-input-box {
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 3px !important;
-    }
-
-    .date-input-box label {
-        font-size: 0.72rem !important;
-        font-weight: 700 !important;
-        color: #64748B !important;
+        margin-bottom: 8px !important;
     }
 
     .sidebar-date-input {
-        width: 100% !important;
-        height: 36px !important;
-        padding: 0 8px !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 8px !important;
-        font-size: 0.82rem !important;
         background: #FFFFFF !important;
-        color: #0F172A !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+        color: #334155 !important;
+        height: 36px !important;
+        outline: none !important;
+        width: 100% !important;
         box-sizing: border-box !important;
     }
 
     .date-filter-actions {
         display: flex !important;
-        gap: 8px !important;
+        gap: 6px !important;
     }
 
     .date-filter-btn {
         flex: 1 !important;
-        height: 36px !important;
+        height: 34px !important;
+        padding: 0 !important;
         background: #FF4757 !important;
         color: #FFFFFF !important;
+        font-weight: 700 !important;
+        font-size: 0.75rem !important;
+        border-radius: 12px !important;
         border: none !important;
-        border-radius: 8px !important;
-        font-size: 0.82rem !important;
-        font-weight: 800 !important;
         cursor: pointer !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25) !important;
     }
 
     .date-reset-btn {
-        height: 36px !important;
+        height: 34px !important;
         padding: 0 14px !important;
         background: #FFFFFF !important;
-        color: #64748B !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 8px !important;
-        font-size: 0.82rem !important;
-        font-weight: 700 !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #475569 !important;
+        font-weight: 500 !important;
+        font-size: 0.75rem !important;
+        border-radius: 12px !important;
         cursor: pointer !important;
     }
 
-    /* 필터 섹션 제목 & 간격 */
-    .filter-section {
-        margin-bottom: 16px !important;
+    /* ② 카테고리 칩 */
+    .cat-sheet-section {
+        margin: 0 !important;
     }
 
-    .filter-section h3 {
-        font-size: 0.84rem !important;
-        font-weight: 800 !important;
-        color: #334155 !important;
-        margin-bottom: 8px !important;
-        letter-spacing: -0.2px !important;
-    }
-
-    /* 필터 버튼들: 모바일 세련된 컴팩트 칩 */
-    .filter-group {
+    .cat-sheet-group {
         display: flex !important;
         flex-wrap: wrap !important;
         gap: 6px !important;
     }
 
-    .filter-btn, .sort-btn {
-        height: 32px !important;
-        padding: 0 11px !important;
-        border-radius: 9px !important;
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-        background: #F8FAFC !important;
+    .cat-sheet-group .filter-btn {
+        padding: 6px 12px !important;
+        height: auto !important;
+        border-radius: 9999px !important;
+        font-size: 0.75rem !important;
+        font-weight: 500 !important;
+        background: #F1F5F9 !important;
+        color: #334155 !important;
         border: 1px solid #E2E8F0 !important;
-        color: #475569 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
         cursor: pointer !important;
-        transition: all 0.12s ease !important;
-        box-sizing: border-box !important;
+        transition: all 0.1s ease !important;
         white-space: nowrap !important;
     }
 
-    .filter-btn:hover, .sort-btn:hover {
-        background: #F1F5F9 !important;
-        color: #0F172A !important;
-    }
-
-    .filter-btn.active, .sort-btn.active {
+    .cat-sheet-group .filter-btn.active {
         background: #FF4757 !important;
         color: #FFFFFF !important;
         font-weight: 700 !important;
         border-color: #FF4757 !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.28) !important;
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.25) !important;
     }
 
-    #rate-filters .filter-btn.active {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
-        border-color: #F59E0B !important;
+    /* ③ 수저 평점 */
+    .rate-sheet-section {
+        margin: 0 !important;
+    }
+
+    .rate-options-grid {
+        display: grid !important;
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 4px !important;
+    }
+
+    .rate-options-grid .filter-btn {
+        padding: 8px 0 !important;
+        height: auto !important;
+        background: #F1F5F9 !important;
+        font-weight: 500 !important;
+        border-radius: 12px !important;
+        color: #334155 !important;
+        border: 1px solid #E2E8F0 !important;
+        text-align: center !important;
+        cursor: pointer !important;
+        font-size: 0.75rem !important;
+    }
+
+    .rate-options-grid .filter-btn.active {
+        background: #FF4757 !important;
         color: #FFFFFF !important;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+        font-weight: 700 !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.25) !important;
     }
 
-    /* 지역 검색창 */
-    .loc-search-box-wrap {
-        position: relative !important;
-        margin-bottom: 8px !important;
-    }
-
-    .loc-search-box-wrap input#location-filter-input {
-        width: 100% !important;
-        height: 38px !important;
-        padding: 0 32px 0 34px !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 9px !important;
-        font-size: 0.82rem !important;
+    /* ④ 지역 필터 */
+    .region-sheet-card {
         background: #F8FAFC !important;
+        padding: 14px !important;
+        border-radius: 16px !important;
+        border: 1px solid #E2E8F0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin: 0 !important;
+    }
+
+    .region-sheet-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .region-sheet-title-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #1E293B !important;
+    }
+
+    .active-region-badge {
+        font-size: 0.65rem !important;
+        background: #FEE2E2 !important;
+        color: #FF4757 !important;
+        font-weight: 700 !important;
+        padding: 2px 8px !important;
+        border-radius: 9999px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .active-region-badge.has-selection {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.3) !important;
+    }
+
+    .btn-all-regions-link {
+        font-size: 0.7rem !important;
+        color: #FF4757 !important;
+        font-weight: 700 !important;
+        background: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+    }
+
+    .sheet-region-trigger {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        cursor: pointer !important;
+    }
+
+    .sheet-region-trigger input {
+        width: 100% !important;
+        padding: 8px 28px 8px 32px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 12px !important;
+        font-size: 0.75rem !important;
+        color: #1E293B !important;
+        outline: none !important;
+        cursor: pointer !important;
         box-sizing: border-box !important;
     }
 
-    .loc-search-icon {
+    .sheet-region-search-icon {
         position: absolute !important;
         left: 10px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        font-size: 0.85rem !important;
+        font-size: 0.75rem !important;
         color: #94A3B8 !important;
+        pointer-events: none !important;
     }
 
-    /* 하단 플로팅 '적용하기' 버튼 푸터 */
+    .sheet-region-arrow {
+        position: absolute !important;
+        right: 10px !important;
+        font-size: 0.75rem !important;
+        color: #94A3B8 !important;
+        pointer-events: none !important;
+    }
+
+    .region-chips-group {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .reg-chip {
+        padding: 5px 10px !important;
+        border-radius: 8px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #334155 !important;
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+    }
+
+    .reg-chip.active {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.2) !important;
+    }
+
+    /* ⑤ 정렬 기준 */
+    .sort-sheet-section {
+        margin: 0 !important;
+    }
+
+    .sort-options-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .sort-options-grid .sort-btn {
+        padding: 8px 0 !important;
+        height: auto !important;
+        border-radius: 12px !important;
+        font-size: 0.75rem !important;
+        font-weight: 500 !important;
+        background: #F1F5F9 !important;
+        color: #334155 !important;
+        border: 1px solid #E2E8F0 !important;
+        text-align: center !important;
+        cursor: pointer !important;
+    }
+
+    .sort-options-grid .sort-btn.active {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.25) !important;
+    }
+
+    /* 하단 푸터 '적용' 버튼 */
     .mobile-sidebar-footer {
-        position: sticky !important;
-        bottom: -16px !important;
-        left: -16px !important;
-        right: -16px !important;
-        background: rgba(255, 255, 255, 0.96) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        padding: 10px 16px 14px 16px !important;
-        margin: 16px -16px -16px -16px !important;
+        padding: 12px 16px !important;
         border-top: 1px solid #F1F5F9 !important;
-        z-index: 20 !important;
+        background: #FFFFFF !important;
+        margin: 0 !important;
+        position: static !important;
+        z-index: 10 !important;
     }
 
     .mobile-sidebar-apply-btn {
@@ -8097,7 +8239,7 @@ input[type="date"].drawer-input {
         border: none !important;
         border-radius: 12px !important;
         cursor: pointer !important;
-        box-shadow: 0 4px 14px rgba(255, 71, 87, 0.3) !important;
+        box-shadow: 0 4px 14px rgba(255, 71, 87, 0.25) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -8106,6 +8248,255 @@ input[type="date"].drawer-input {
 
     .mobile-sidebar-apply-btn:active {
         transform: scale(0.98) !important;
+    }
+
+    /* ── 4-B. Full Region Explorer Sub-Sheet (#all-regions-sheet) ── */
+    .all-regions-sheet {
+        position: fixed !important;
+        inset: 0 !important;
+        background: #FFFFFF !important;
+        z-index: 1550 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        will-change: transform;
+    }
+
+    .all-regions-sheet.show,
+    .all-regions-sheet.open {
+        transform: translateY(0) !important;
+    }
+
+    .all-regions-header {
+        padding: 12px 16px !important;
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .all-regions-header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .all-regions-back-btn {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        background: #F1F5F9 !important;
+        color: #334155 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1rem !important;
+        font-weight: bold !important;
+        border: none !important;
+        cursor: pointer !important;
+    }
+
+    .all-regions-header-left h4 {
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin: 0 !important;
+    }
+
+    .all-regions-header-left p {
+        font-size: 0.68rem !important;
+        color: #94A3B8 !important;
+        margin: 0 !important;
+    }
+
+    .all-regions-reset-btn {
+        font-size: 0.75rem !important;
+        color: #FF4757 !important;
+        font-weight: 700 !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        background: #FFF1F2 !important;
+        border: 1px solid #FFE4E6 !important;
+        cursor: pointer !important;
+    }
+
+    .all-regions-search-bar {
+        padding: 12px 16px 10px 16px !important;
+        background: #F8FAFC !important;
+        border-bottom: 1px solid #E2E8F0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .all-regions-search-wrap {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .all-regions-search-wrap input {
+        width: 100% !important;
+        padding: 8px 30px 8px 32px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 12px !important;
+        font-size: 0.78rem !important;
+        color: #0F172A !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+    }
+
+    .all-regions-search-icon {
+        position: absolute !important;
+        left: 10px !important;
+        font-size: 0.78rem !important;
+        color: #94A3B8 !important;
+        pointer-events: none !important;
+    }
+
+    .all-regions-search-clear {
+        position: absolute !important;
+        right: 8px !important;
+        background: none !important;
+        border: none !important;
+        color: #94A3B8 !important;
+        font-size: 0.75rem !important;
+        cursor: pointer !important;
+    }
+
+    .all-regions-prov-tabs {
+        display: flex !important;
+        gap: 5px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 2px !important;
+    }
+
+    .all-regions-prov-tabs .prov-tab {
+        padding: 5px 11px !important;
+        border-radius: 8px !important;
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        background: #FFFFFF !important;
+        color: #475569 !important;
+        border: 1px solid #CBD5E1 !important;
+        white-space: nowrap !important;
+        cursor: pointer !important;
+    }
+
+    .all-regions-prov-tabs .prov-tab.active {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border-color: #FF4757 !important;
+    }
+
+    .picker-selected-banner {
+        padding: 8px 16px !important;
+        background: #FFF1F2 !important;
+        border-bottom: 1px solid #FFE4E6 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        font-size: 0.75rem !important;
+    }
+
+    .picker-selected-banner strong {
+        color: #FF4757 !important;
+        font-weight: 700 !important;
+    }
+
+    .picker-confirm-btn {
+        padding: 4px 10px !important;
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        font-size: 0.72rem !important;
+        border-radius: 6px !important;
+        border: none !important;
+        cursor: pointer !important;
+    }
+
+    .all-regions-scroll-list {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .region-picker-group-title {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        padding-bottom: 4px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .region-picker-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .region-picker-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        text-align: left !important;
+        cursor: pointer !important;
+        box-sizing: border-box !important;
+        transition: all 0.1s ease !important;
+    }
+
+    .region-picker-card.active {
+        background: #FF4757 !important;
+        color: #FFFFFF !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25) !important;
+    }
+
+    .region-picker-card-top {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .region-picker-card-name {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #0F172A !important;
+    }
+
+    .region-picker-card.active .region-picker-card-name {
+        color: #FFFFFF !important;
+    }
+
+    .region-picker-card-check {
+        font-size: 0.78rem !important;
+        font-weight: 900 !important;
+        color: #FFFFFF !important;
+    }
+
+    .region-picker-card-desc {
+        font-size: 0.68rem !important;
+        color: #94A3B8 !important;
+        margin-top: 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .region-picker-card.active .region-picker-card-desc {
+        color: rgba(255, 255, 255, 0.82) !important;
     }
 
     /* ── 5. DIARY Tab Mobile: Slim Header & Day Feed ── */
