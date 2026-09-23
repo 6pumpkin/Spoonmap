@@ -6297,7 +6297,7 @@ function openRestaurantDetailModal(item) {
     if (routeBtn) routeBtn.href = getKakaoDirectionsUrl(item);
 
     // 7. Visit History Timeline with rich memo & clickable date
-    if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회 방문`;
+    if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회`;
     if (historyListEl) {
         historyListEl.innerHTML = '';
         if (visits.length > 0) {
@@ -6309,16 +6309,17 @@ function openRestaurantDetailModal(item) {
             sortedVisits.forEach((v, idx) => {
                 const orderNum = sortedVisits.length - idx;
                 const memoText = (v.data && (v.data.memo || v.data.review)) || v.memo || '';
+                const shortDate = (v.date && v.date.length === 10) ? v.date.slice(2) : (v.date || '날짜 미지정');
                 const div = document.createElement('div');
                 div.className = 'history-item-card';
                 div.title = v.date ? `클릭하면 ${v.date} 다이어리로 이동합니다` : '클릭하여 방문 날짜를 입력할 수 있습니다';
                 div.innerHTML = `
                     <div class="history-item-top">
                         <span class="history-date-link">
-                            📅 ${v.date || '방문일자 미지정'}
-                            <span class="jump-hint">${v.date ? '다이어리 보기 ➔' : '날짜 입력 ➔'}</span>
+                            📅 ${shortDate}
+                            <span class="jump-hint">${v.date ? '다이어리 ➔' : '입력 ➔'}</span>
                         </span>
-                        <span class="history-order-chip">${orderNum >= 2 ? '🔥' : '📍'} ${orderNum}회차 방문</span>
+                        <span class="history-order-chip">${orderNum >= 2 ? '🔥' : '📍'} ${orderNum}회</span>
                     </div>
                     ${memoText ? `
                         <div class="history-item-memo">
@@ -6339,9 +6340,10 @@ function openRestaurantDetailModal(item) {
                 historyListEl.appendChild(div);
             });
         } else {
+            const shortLatest = (item.date && item.date.length === 10) ? item.date.slice(2) : (item.date || '기록 없음');
             historyListEl.innerHTML = `
-                <div class="history-item-card" style="text-align:center; color:var(--text-muted); padding:1rem;">
-                    📅 최근 방문 날짜: ${item.date || '기록 없음'}
+                <div class="history-item-card" style="text-align:center; color:var(--text-muted); padding:0.8rem;">
+                    📅 최근 방문: ${shortLatest}
                 </div>
             `;
         }

@@ -7191,17 +7191,284 @@ input[type="date"].drawer-input {
         padding: 0 !important;
     }
 
+    /* ── Restaurant Detail & Edit Modal as Slim Bottom Sheet ── */
     .list-detail-modal-card {
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 88dvh !important;
-        border-radius: 22px 22px 0 0 !important;
+        max-height: 90dvh !important;
+        border-radius: 24px 24px 0 0 !important;
         margin: 0 !important;
-        padding: 0 1.2rem 1.4rem !important;
-        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.18) !important;
+        padding: 0 14px 24px 14px !important;
+        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.22) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
         transform: translateY(0) !important;
+    }
+
+    .list-detail-close-btn {
+        top: 10px !important;
+        right: 12px !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1.1rem !important;
+        background: #F1F5F9 !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #64748B !important;
+    }
+
+    .list-detail-header {
+        padding-bottom: 8px !important;
+        margin-bottom: 8px !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        padding-right: 32px !important;
+    }
+
+    .list-detail-title-group {
+        gap: 6px !important;
+    }
+
+    .list-detail-name {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        line-height: 1.3 !important;
+    }
+
+    .list-detail-visit-badge {
+        font-size: 0.68rem !important;
+        padding: 1px 7px !important;
+        border-radius: 12px !important;
+    }
+
+    .list-detail-rate-box {
+        font-size: 0.95rem !important;
+        margin-top: 2px !important;
+    }
+
+    .list-detail-body {
+        gap: 9px !important;
+    }
+
+    /* Photo Section */
+    .list-detail-photo-section {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 8px 10px !important;
+    }
+
+    .list-photo-header {
+        margin-bottom: 6px !important;
+    }
+
+    .list-photo-header .detail-label {
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+    }
+
+    .photo-preview-grid {
+        gap: 6px !important;
+    }
+
+    .photo-preview-item, .photo-add-trigger {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Tag Info Group */
+    .list-detail-info-group {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+    }
+
+    .list-detail-row {
+        gap: 2px !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .detail-label {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        color: #64748B !important;
+    }
+
+    .detail-tags-wrap {
+        gap: 4px !important;
+        justify-content: flex-end !important;
+    }
+
+    .detail-tags-wrap .diary-mini-tag {
+        font-size: 0.72rem !important;
+        padding: 2px 7px !important;
+        border-radius: 6px !important;
+        font-weight: 700 !important;
+    }
+
+    /* Map Buttons */
+    .list-detail-maps-group {
+        gap: 4px !important;
+    }
+
+    .detail-map-btns {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 5px !important;
+    }
+
+    .detail-map-btn {
+        height: 30px !important;
+        padding: 0 4px !important;
+        border-radius: 8px !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        gap: 3px !important;
+    }
+
+    /* Main Action Two Buttons */
+    .list-detail-action-bar {
+        gap: 8px !important;
+        margin-top: 2px !important;
+    }
+
+    .detail-add-diary-btn, .detail-edit-restaurant-btn {
+        height: 36px !important;
+        padding: 0 12px !important;
+        font-size: 0.8rem !important;
+        font-weight: 800 !important;
+        border-radius: 10px !important;
+    }
+
+    /* Visit History Card */
+    .list-detail-history-group {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 8px 10px !important;
+        gap: 6px !important;
+    }
+
+    .history-header {
+        font-size: 0.72rem !important;
+    }
+
+    .history-count-text {
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        color: #FF4757 !important;
+    }
+
+    .history-list {
+        max-height: 180px !important;
+        gap: 4px !important;
+    }
+
+    .history-item-card {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        padding: 7px 10px !important;
+        gap: 2px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .history-item-top {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .history-date-link {
+        white-space: nowrap !important;
+        font-size: 0.76rem !important;
+        font-weight: 800 !important;
+        flex-shrink: 1 !important;
+        min-width: 0 !important;
+        gap: 4px !important;
+    }
+
+    .history-date-link .jump-hint {
+        white-space: nowrap !important;
+        font-size: 0.66rem !important;
+        font-weight: 700 !important;
+        padding: 1px 5px !important;
+        border-radius: 4px !important;
+        margin-left: 4px !important;
+        background: #FFF1F2 !important;
+        color: #FF4757 !important;
+        border: 1px solid #FFE4E6 !important;
+    }
+
+    .history-order-chip {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        font-size: 0.68rem !important;
+        font-weight: 800 !important;
+        padding: 1px 7px !important;
+        border-radius: 12px !important;
+        background: #FEF3C7 !important;
+        color: #B45309 !important;
+        border: 1px solid #FDE68A !important;
+    }
+
+    .history-item-memo {
+        font-size: 0.72rem !important;
+    }
+
+    /* Edit Mode Form Slimming */
+    .modal-edit-body {
+        gap: 7px !important;
+    }
+
+    .modal-edit-body .drawer-field {
+        margin-bottom: 4px !important;
+    }
+
+    .modal-edit-body .drawer-label {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .modal-edit-body .drawer-input {
+        height: 33px !important;
+        font-size: 0.78rem !important;
+        padding: 0 8px !important;
+        border-radius: 8px !important;
+    }
+
+    .modal-edit-body .notion-tag-input-bar {
+        min-height: 33px !important;
+        padding: 2px 6px !important;
+        border-radius: 8px !important;
+    }
+
+    .modal-edit-body .notion-selected-tag {
+        font-size: 0.72rem !important;
+        padding: 1px 6px !important;
+    }
+
+    .modal-edit-body .drawer-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .modal-edit-body .drawer-actions {
+        margin-top: 8px !important;
+        gap: 6px !important;
+    }
+
+    .modal-edit-body .drawer-actions button {
+        height: 35px !important;
+        font-size: 0.8rem !important;
+        font-weight: 800 !important;
+        border-radius: 8px !important;
     }
 
     /* Diary Add Drawer -> Bottom Sheet */
