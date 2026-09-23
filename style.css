@@ -6995,6 +6995,11 @@ input[type="date"].drawer-input {
 .mobile-sidebar-close-btn {
     display: none;
 }
+.map-popover-backdrop,
+.popover-cat-menu,
+.popover-star-menu {
+    display: none;
+}
 
 /* Mobile Screens (<= 768px: Z Flip 6, iPhone, Galaxy, etc.) */
 @media (max-width: 768px) {
@@ -8147,13 +8152,17 @@ input[type="date"].drawer-input {
 
     /* 플로팅 팝오버 백드롭 */
     .map-popover-backdrop {
-        position: absolute !important;
+        position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         z-index: 105 !important;
         background: transparent !important;
+        display: none !important;
+    }
+    .map-popover-backdrop.show {
+        display: block !important;
     }
 
     /* 1. 카테고리 세로 1줄 팝오버 메뉴 */
@@ -8170,10 +8179,13 @@ input[type="date"].drawer-input {
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
         padding: 4px !important;
         z-index: 120 !important;
-        display: flex !important;
+        display: none !important;
         flex-direction: column !important;
         gap: 2px !important;
         overflow-y: auto !important;
+    }
+    .popover-cat-menu.show {
+        display: flex !important;
         animation: popInMenu 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     .pop-cat-item {
@@ -8218,9 +8230,12 @@ input[type="date"].drawer-input {
         border: 1px solid rgba(0, 0, 0, 0.08) !important;
         padding: 8px 10px !important;
         z-index: 120 !important;
-        display: flex !important;
+        display: none !important;
         flex-direction: column !important;
         gap: 6px !important;
+    }
+    .popover-star-menu.show {
+        display: flex !important;
         animation: popInMenu 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     .pop-section-row {
@@ -8400,13 +8415,64 @@ input[type="date"].drawer-input {
         transform: translateY(calc(100% - 44px)) !important;
     }
 
-    /* 검색 결과 아이템 30% 슬림 압축 */
-    .map-result-item {
-        padding: 8px 10px !important;
-        margin-bottom: 6px !important;
+    /* 검색 결과 아이템 모바일 컴팩트 슬림화 (한 화면에 5~6개 노출) */
+    .result-item {
+        padding: 6px 10px !important;
+        margin-bottom: 3px !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border-radius: 8px !important;
+        transition: background 0.15s ease !important;
     }
-    .map-result-item h4 {
-        font-size: 0.88rem !important;
+    .result-item.is-saved {
+        border-left: 3px solid #EF4444 !important;
+        padding-left: 8px !important;
+        background-color: #FEF2F2 !important;
+    }
+    .result-item.is-wishlist {
+        border-left: 3px solid #F59E0B !important;
+        padding-left: 8px !important;
+        background-color: #FFFBEB !important;
+    }
+    .result-item-top {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        margin-bottom: 2px !important;
+    }
+    .result-item h4 {
+        font-size: 0.84rem !important;
+        font-weight: 800 !important;
+        color: #111827 !important;
+        margin-bottom: 0 !important;
+        line-height: 1.25 !important;
+    }
+    .result-item p {
+        font-size: 0.72rem !important;
+        color: #64748B !important;
+        line-height: 1.25 !important;
+        margin-bottom: 0 !important;
+    }
+    .saved-place-chip {
+        font-size: 0.65rem !important;
+        font-weight: 800 !important;
+        padding: 1.5px 5.5px !important;
+        border-radius: 5px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* 모바일 페이지네이션 슬림화 */
+    .map-pagination-container {
+        padding: 6px 4px !important;
+        margin-top: 4px !important;
+        gap: 5px !important;
+    }
+    .map-pag-btn {
+        min-width: 28px !important;
+        height: 28px !important;
+        font-size: 0.78rem !important;
+        border-radius: 7px !important;
+        padding: 0 4px !important;
     }
 
     .research-btn {

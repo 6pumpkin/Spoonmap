@@ -2343,12 +2343,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.currentHoverOverlay.setMap(null);
                         window.currentHoverOverlay = null;
                     }
+                    if (typeof window.closeAllMobileMapPopovers === 'function') {
+                        window.closeAllMobileMapPopovers();
+                    }
                 });
 
                 kakao.maps.event.addListener(map, 'click', () => {
                     if (window.currentHoverOverlay) {
                         window.currentHoverOverlay.setMap(null);
                         window.currentHoverOverlay = null;
+                    }
+                    if (typeof window.closeAllMobileMapPopovers === 'function') {
+                        window.closeAllMobileMapPopovers();
                     }
                 });
 
@@ -2914,6 +2920,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             resultsList.scrollTop = 0;
         }
+
+        resultsList.scrollTop = 0;
+        requestAnimationFrame(() => {
+            if (resultsList) resultsList.scrollTop = 0;
+        });
     }
 
     // =========================================================================
@@ -4980,26 +4991,47 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!catChip || !starChip || !popCat || !popStar) return;
 
         function closeAllPopovers() {
-            popCat.style.display = 'none';
-            popStar.style.display = 'none';
-            if (backdrop) backdrop.style.display = 'none';
+            popCat.classList.remove('show');
+            popStar.classList.remove('show');
+            if (backdrop) backdrop.classList.remove('show');
             catChip.classList.remove('open');
             starChip.classList.remove('open');
+            popCat.style.removeProperty('display');
+            popStar.style.removeProperty('display');
+            if (backdrop) backdrop.style.removeProperty('display');
         }
+        window.closeAllMobileMapPopovers = closeAllPopovers;
 
         if (backdrop) {
-            backdrop.addEventListener('click', closeAllPopovers);
+            backdrop.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeAllPopovers();
+            });
+            backdrop.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                closeAllPopovers();
+            }, { passive: true });
         }
+
+        // Global outside click listener
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#btn-cat-chip') && 
+                !e.target.closest('#btn-star-chip') && 
+                !e.target.closest('#popover-cat-menu') && 
+                !e.target.closest('#popover-star-menu')) {
+                closeAllPopovers();
+            }
+        });
 
         // 1. Category Chip Click
         catChip.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isOpen = popCat.style.display === 'flex';
+            const isOpen = popCat.classList.contains('show');
             closeAllPopovers();
             if (!isOpen) {
-                popCat.style.display = 'flex';
+                popCat.classList.add('show');
                 catChip.classList.add('open');
-                if (backdrop) backdrop.style.display = 'block';
+                if (backdrop) backdrop.classList.add('show');
             }
         });
 
@@ -5049,6 +5081,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sheet) {
                     sheet.style.transform = 'translateY(0)';
                     sheet.classList.remove('collapsed-peek');
+                    sheet.scrollTop = 0;
                 }
                 updateMapMarkers();
             });
@@ -5085,12 +5118,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Star Chip Click
         starChip.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isOpen = popStar.style.display === 'flex';
+            const isOpen = popStar.classList.contains('show');
             closeAllPopovers();
             if (!isOpen) {
-                popStar.style.display = 'flex';
+                popStar.classList.add('show');
                 starChip.classList.add('open');
-                if (backdrop) backdrop.style.display = 'block';
+                if (backdrop) backdrop.classList.add('show');
                 renderMobileFriendsListInPopover();
             }
         });
