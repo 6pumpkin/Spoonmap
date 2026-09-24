@@ -1,0 +1,350 @@
+<!-- Copy of mobile_place_detail_proposal.html in workspace -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스푼맵 식당 상세 화면 모바일 리뉴얼 제안</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .sheet-transition {
+      transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 p-3 sm:p-6 antialiased flex flex-col items-center min-h-screen">
+  <div class="w-full max-w-4xl mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-600">Mobile UX Proposal</span>
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900">식당 상세 화면 모바일 리뉴얼 프로토타입</h1>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-500">최신 지도 앱(네이버 지도, 카카오맵, 캐치테이블) 표준을 반영한 콤팩트 바텀시트 디자인입니다.</p>
+    </div>
+    <div class="flex items-center bg-slate-100 p-1 rounded-xl self-start sm:self-auto border border-slate-200 text-xs font-bold">
+      <button id="btn-view-new" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-rose-600 font-extrabold transition-all" onclick="switchView('new')">✨ 신규 추천안 (New)</button>
+      <button id="btn-view-old" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all" onclick="switchView('old')">기존 화면 (Before)</button>
+    </div>
+  </div>
+
+  <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+    <div class="md:col-span-6 flex justify-center">
+      <div class="w-[375px] h-[720px] bg-slate-900 rounded-[44px] p-3 shadow-2xl border-4 border-slate-800 relative flex flex-col overflow-hidden">
+        <div class="w-28 h-5 bg-black rounded-full mx-auto mb-1 z-30 flex items-center justify-end pr-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+        </div>
+        <div class="flex-1 bg-slate-50 rounded-[32px] overflow-hidden relative flex flex-col">
+          <div class="absolute inset-0 bg-[#e8ece9] flex flex-col">
+            <svg class="w-full h-full opacity-35" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#94a3b8" stroke-width="0.8"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+              <path d="M 0 150 Q 120 180 200 120 T 375 220" fill="none" stroke="#60a5fa" stroke-width="6" opacity="0.7"/>
+              <path d="M 50 0 Q 80 180 220 280 T 300 600" fill="none" stroke="#fbbf24" stroke-width="5" opacity="0.6"/>
+            </svg>
+            <div class="absolute top-[28%] left-[45%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+              <div class="bg-rose-500 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 border-2 border-white animate-bounce">
+                <span>🍚</span>
+                <span>우래옥 본점</span>
+              </div>
+              <div class="w-2.5 h-2.5 bg-rose-500 rotate-45 -mt-1 border-r border-b border-white"></div>
+            </div>
+            <div class="absolute top-2 left-3 right-3 z-10 flex flex-col gap-2">
+              <div class="h-[42px] bg-white rounded-xl shadow-md border border-slate-200/80 flex items-center px-3.5 justify-between">
+                <span class="text-xs text-slate-500 font-medium">🔍 현 화면에서 검색</span>
+                <span class="text-slate-400 text-sm hover:text-slate-700">🔄</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="h-8 px-3 rounded-full bg-white shadow-sm border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <span>🍴 음식 카테고리</span>
+                  <span class="text-[9px] text-slate-400">▼</span>
+                </div>
+                <div class="h-8 px-2.5 rounded-full bg-white shadow-sm border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <span>⭐</span>
+                  <span class="text-[9px] text-slate-400">▼</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NEW 모바일 바텀시트 -->
+          <div id="new-sheet" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] shadow-2xl z-20 flex flex-col sheet-transition max-h-[82%] border-t border-slate-100">
+            <div class="w-full pt-2.5 pb-1 flex justify-center cursor-pointer select-none" onclick="toggleSheetHeight()">
+              <div class="w-10 h-1 bg-slate-300 rounded-full"></div>
+            </div>
+            <div class="px-4 py-2 flex items-center justify-between border-b border-slate-100/80">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 text-sm font-bold flex-shrink-0 transition-colors" title="목록으로">
+                  ←
+                </button>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-base font-extrabold text-slate-900 truncate">우래옥 본점</h2>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60 flex-shrink-0">🥄 4.8</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-medium truncate">음식점 > 한식 > 평양냉면 · 서울 중구 주교동</p>
+                </div>
+              </div>
+              <button id="btn-mock-wish" class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-base flex-shrink-0 transition-all active:scale-90" onclick="toggleWish(this)">
+                ⭐
+              </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar text-slate-800">
+              <div class="relative rounded-xl overflow-hidden shadow-sm bg-slate-100 aspect-[16/9] border border-slate-200/60">
+                <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80" alt="음식 사진" class="w-full h-full object-cover">
+                <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  📷 1 / 6
+                </div>
+                <div class="absolute bottom-2 left-2 flex gap-1">
+                  <div class="w-6 h-6 rounded border-2 border-white overflow-hidden shadow">
+                    <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=100&auto=format&fit=crop&q=80" class="w-full h-full object-cover">
+                  </div>
+                  <div class="w-6 h-6 rounded border border-white/60 opacity-80 overflow-hidden shadow">
+                    <img src="https://images.unsplash.com/photo-1552611052-33e04de081de?w=100&auto=format&fit=crop&q=80" class="w-full h-full object-cover">
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap gap-1.5">
+                  <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hover:bg-rose-100 transition-colors" onclick="toggleYoutubeSnippet()">
+                    <span class="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[9px]">▶</span>
+                    <span>성시경 먹을텐데</span>
+                    <span class="text-[9px] text-rose-400">▼</span>
+                  </button>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold">
+                    <span>👥</span>
+                    <span>박준호 추천</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold">
+                    <span>🌟 내 찐맛집</span>
+                  </span>
+                </div>
+
+                <div id="yt-subpanel" class="p-2.5 bg-rose-50/70 border border-rose-100 rounded-xl space-y-1 text-xs">
+                  <div class="flex items-center justify-between text-rose-900 font-bold">
+                    <span>📺 [sub] 성시경의 먹을텐데 l 을지로 우래옥</span>
+                    <a href="https://youtube.com" target="_blank" class="text-[11px] text-rose-600 underline">영상 보기 ↗</a>
+                  </div>
+                  <p class="text-[11.5px] text-slate-600">"맛있는 냉면과 다양한 메뉴의 향연, 언제 가도 실패 없는 곳"</p>
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-700 flex items-center gap-1">💬 실제 방문자 한줄평</span>
+                  <span class="text-[10px] text-slate-400">다음 블로그</span>
+                </div>
+                <p id="review-text" class="text-slate-600 leading-snug line-clamp-2">
+                  "서울 평양냉면 맛집 우래옥에 다녀왔습니다. 메밀 향 가득 퍼지는 면과 진한 육수가 코 끝을 간질이는 서울 1티어 냉면집..."
+                </p>
+                <button class="text-[11px] text-rose-500 font-bold hover:underline" onclick="toggleReviewClamp()">더보기</button>
+              </div>
+
+              <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-2">
+                <div class="font-bold text-slate-800 flex items-center gap-1">
+                  <span>🍴 대표 메뉴</span>
+                </div>
+                <div class="space-y-1.5 font-medium">
+                  <div class="flex justify-between items-center text-slate-700">
+                    <span>평양냉면</span>
+                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
+                    <span class="font-bold text-slate-900">16,000원</span>
+                  </div>
+                  <div class="flex justify-between items-center text-slate-700">
+                    <span>비빔냉면</span>
+                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
+                    <span class="font-bold text-slate-900">16,000원</span>
+                  </div>
+                  <div class="flex justify-between items-center text-slate-700">
+                    <span>온면</span>
+                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
+                    <span class="font-bold text-slate-900">16,000원</span>
+                  </div>
+                  <div class="flex justify-between items-center text-slate-700">
+                    <span>불고기 (1인)</span>
+                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
+                    <span class="font-bold text-slate-900">37,000원</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-slate-100 space-y-2">
+              <div class="grid grid-cols-3 gap-1.5 text-xs font-bold">
+                <a href="#" class="py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center gap-1 hover:bg-emerald-100 transition-colors">
+                  <span class="font-extrabold text-[11px]">N</span> 네이버
+                </a>
+                <a href="#" class="py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center gap-1 hover:bg-amber-100 transition-colors">
+                  <span class="font-extrabold text-[11px]">K</span> 카카오
+                </a>
+                <a href="#" class="py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center gap-1 hover:bg-blue-100 transition-colors">
+                  <span>🧭</span> 길찾기
+                </a>
+              </div>
+              <button class="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 text-white font-extrabold text-sm shadow-md shadow-rose-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5">
+                <span>➕</span>
+                <span>내 맛집에 추가</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- OLD 기존 화면 -->
+          <div id="old-sheet" class="hidden absolute bottom-0 left-0 right-0 bg-white rounded-t-[20px] shadow-2xl z-20 flex flex-col max-h-[85%] border-t border-slate-200 overflow-y-auto p-4 space-y-3">
+            <button class="text-rose-600 font-bold text-xs text-left mb-1">← 목록으로 돌아가기</button>
+            <div class="h-36 bg-slate-200 rounded-lg overflow-hidden flex items-center justify-center text-slate-400 text-xs">
+              [기존 거대 갤러리 이미지]
+            </div>
+            <h2 class="text-lg font-black text-slate-900">우래옥 본점</h2>
+            <div class="flex gap-2">
+              <span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-xs">음식점 > 한식 > 냉면</span>
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs">주교동</span>
+            </div>
+            <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2 text-xs">
+              <div class="flex items-center gap-1.5">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">먹</span>
+                <span class="font-extrabold text-slate-900">성시경의 먹을텐데 님의 추천 맛집</span>
+              </div>
+              <p class="text-slate-600">💬 "맛있는 냉면과 다양한 메뉴의 향연"</p>
+              <div class="p-2 bg-rose-50 border border-rose-200 rounded text-rose-700 font-bold flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px]">▶</span>
+                <span>[sub] 성시경의 먹을텐데 I 을지로 우래옥</span>
+              </div>
+              <p class="text-[11px] text-slate-500">🍴 대표 메뉴: 평양냉면 (16000원), 비빔냉면 (16000원)...</p>
+            </div>
+            <div class="p-3 border border-rose-300 bg-rose-50/50 rounded-xl text-xs space-y-1">
+              <p class="font-bold text-rose-700">" [서울 중구] <우래옥> 평양냉면 // 서울 맛집, 서울 평양냉면 맛집, 을지로 맛집, 우래옥 웨이팅 "</p>
+              <p class="text-slate-600 leading-relaxed">
+                서울 평양냉면 맛집 우래옥에 다녀왔습니다. 메밀 향 가득 퍼지는 면과 진한 육수가 코 끝을 간질이는 서울 평양냉면 맛집 우래옥, 리뷰 시작합니다. 서울특별시 중구 창경궁로 62-29...
+              </p>
+              <p class="text-right text-[10px] text-rose-500 font-bold">출처: 먹고자고 ↗</p>
+            </div>
+            <div class="space-y-2 pt-2 border-t">
+              <div class="grid grid-cols-3 gap-2 text-xs font-bold">
+                <button class="py-2.5 rounded-lg bg-emerald-100 text-emerald-800">네이버 지도</button>
+                <button class="py-2.5 rounded-lg bg-rose-100 text-rose-800">카카오맵</button>
+                <button class="py-2.5 rounded-lg bg-blue-100 text-blue-800">길찾기</button>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                <button class="py-3 rounded-lg bg-rose-500 text-white">내 맛집에 추가</button>
+                <button class="py-3 rounded-lg border border-slate-300 bg-white">찜하기</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="h-12 bg-white border-t border-slate-200 flex items-center justify-around text-[10px] font-bold text-slate-400 z-30">
+            <span>DIARY</span>
+            <span>LIST</span>
+            <span class="text-rose-500">MAP</span>
+            <span>AI</span>
+            <span>PROFILE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:col-span-6 space-y-4">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>🎯</span>
+          <span>주요 개선 4대 핵심 포인트</span>
+        </h3>
+        <div class="space-y-3 text-xs leading-relaxed text-slate-600">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <strong class="text-slate-900 text-sm block mb-1">1. 하단 액션 버튼 그룹 슬림화 (120px ➔ 70px)</strong>
+            <p>기존에는 버튼 5개가 2열로 크게 배치되어 스크롤을 막았습니다. <strong>[⭐ 찜하기]</strong>는 상단 헤더 우측으로 이동하고, 하단에는 <strong>[➕ 내 맛집 추가]</strong> 메인 버튼과 슬림한 3분할 지도 칩(네이버/카카오/길찾기)만 남겼습니다.</p>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <strong class="text-slate-900 text-sm block mb-1">2. 성시경 / 크리에이터 추천 알약 뱃지화</strong>
+            <p>화면 절반을 채우던 거대한 보라색 카드를 <strong>[▶ 성시경 먹을텐데]</strong>, <strong>[👥 박준호 추천]</strong> 등의 세련된 알약 뱃지로 압축했습니다. 탭 시에만 가볍게 요약이 펼쳐집니다.</p>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <strong class="text-slate-900 text-sm block mb-1">3. 블로그 후기 2줄 요약 + 더보기 토글</strong>
+            <p>장문의 줄글 후기 대신 2줄 말줄임(clamp) 처리하고, <code>[더보기]</code>를 눌렀을 때만 펼쳐지도록 하여 시각적 피로도를 대폭 낮췄습니다.</p>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <strong class="text-slate-900 text-sm block mb-1">4. 정돈된 대표 메뉴 점선 테이블</strong>
+            <p>기존 쉼표 나열식 텍스트 대신 캐치테이블/네이버 지도처럼 <strong>메뉴명과 가격이 우측에 칼같이 정렬되는 리스트</strong>로 정돈했습니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-800 space-y-1.5">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>💡</span>
+          <span>목업 직접 체험해보기</span>
+        </div>
+        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-amber-900/80">
+          <li>상단 <strong>'✨ 신규 추천안'</strong>과 <strong>'기존 화면'</strong> 버튼을 눌러 시각적 차이를 비교해보세요.</li>
+          <li>목업 상단 <strong>드래그 핸들(─)</strong>을 누르면 시트 높이가 접힘/펼침으로 변경됩니다.</li>
+          <li>헤더의 <strong>⭐ 찜하기</strong> 버튼을 눌러 인터랙티브 피드백을 확인해보세요.</li>
+          <li><strong>[▶ 성시경 먹을텐데]</strong> 뱃지를 누르면 영상 링크가 토글됩니다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchView(mode) {
+      const newSheet = document.getElementById('new-sheet');
+      const oldSheet = document.getElementById('old-sheet');
+      const btnNew = document.getElementById('btn-view-new');
+      const btnOld = document.getElementById('btn-view-old');
+      if (mode === 'new') {
+        newSheet.classList.remove('hidden');
+        oldSheet.classList.add('hidden');
+        btnNew.className = "px-3 py-1.5 rounded-lg bg-white shadow-sm text-rose-600 font-extrabold transition-all";
+        btnOld.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-medium";
+      } else {
+        newSheet.classList.add('hidden');
+        oldSheet.classList.remove('hidden');
+        btnOld.className = "px-3 py-1.5 rounded-lg bg-white shadow-sm text-rose-600 font-extrabold transition-all";
+        btnNew.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-medium";
+      }
+    }
+    let isExpanded = false;
+    function toggleSheetHeight() {
+      const sheet = document.getElementById('new-sheet');
+      isExpanded = !isExpanded;
+      sheet.style.maxHeight = isExpanded ? '92%' : '65%';
+    }
+    let isWished = false;
+    function toggleWish(btn) {
+      isWished = !isWished;
+      if (isWished) {
+        btn.classList.add('bg-amber-50', 'text-amber-500', 'border-amber-300', 'scale-110');
+        btn.classList.remove('text-slate-400', 'bg-slate-100', 'border-slate-200');
+      } else {
+        btn.classList.remove('bg-amber-50', 'text-amber-500', 'border-amber-300', 'scale-110');
+        btn.classList.add('text-slate-400', 'bg-slate-100', 'border-slate-200');
+      }
+    }
+    let isYtOpen = true;
+    function toggleYoutubeSnippet() {
+      const panel = document.getElementById('yt-subpanel');
+      isYtOpen = !isYtOpen;
+      panel.style.display = isYtOpen ? 'block' : 'none';
+    }
+    let isClamped = true;
+    function toggleReviewClamp() {
+      const p = document.getElementById('review-text');
+      const btn = event.target;
+      isClamped = !isClamped;
+      if (isClamped) {
+        p.classList.add('line-clamp-2');
+        btn.innerText = '더보기';
+      } else {
+        p.classList.remove('line-clamp-2');
+        btn.innerText = '접기';
+      }
+    }
+  </script>
+</body>
+</html>

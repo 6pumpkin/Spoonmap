@@ -2461,9 +2461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bounds = new kakao.maps.LatLngBounds();
 
         // Initialize library feature variables
-        if (!window.currCategory && !mapSearchValue && !window.isSharedMapMode) {
-            window.currCategory = 'FD6';
-        }
+        if (!window.currCategory) window.currCategory = '';
         
         // Add Category Selection Logic
         const categoryItems = document.querySelectorAll('#category-menu > li');
@@ -3922,11 +3920,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetMapSearchToInitial = function() {
         const input = document.getElementById('map-search-input');
         if (input) input.value = '';
-        window.currCategory = 'FD6';
+        window.currCategory = '';
         window.currSubKeyword = '';
         if (currentFilters) currentFilters.searchQuery = '';
         document.querySelectorAll('#category-menu > li').forEach(li => {
-            li.classList.toggle('on', li.id === 'FD6');
+            li.classList.remove('on');
             li.classList.remove('sub-open');
         });
         document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
@@ -3934,16 +3932,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const popCat = document.getElementById('popover-cat-menu');
         if (popCat) {
             popCat.querySelectorAll('.pop-cat-item').forEach(i => {
-                const isAll = !i.dataset.keyword;
-                i.classList.toggle('active', isAll);
+                i.classList.remove('active');
                 const c = i.querySelector('.check-mark');
                 if (c) c.remove();
-                if (isAll) {
-                    const check = document.createElement('span');
-                    check.className = 'check-mark';
-                    check.innerText = '✓';
-                    i.appendChild(check);
-                }
             });
         }
         const catChip = document.getElementById('btn-cat-chip');
@@ -3952,8 +3943,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (catIcon) catIcon.innerText = '🍴';
         const catText = document.getElementById('cat-chip-text');
         if (catText) {
-            catText.innerText = '전체';
-            catText.style.display = 'inline';
+            catText.innerText = '';
+            catText.style.display = 'none';
         }
         const catClear = document.getElementById('cat-chip-clear');
         if (catClear) catClear.style.display = 'none';
@@ -3961,9 +3952,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const detailPanel = document.getElementById('map-place-detail');
         if (detailPanel) detailPanel.style.display = 'none';
         const resultsList = document.getElementById('map-results-list');
-        if (resultsList) resultsList.style.display = 'block';
+        if (resultsList) {
+            resultsList.style.display = 'block';
+            resultsList.innerHTML = `
+                <div class="map-empty-state">
+                    <i class="icon-search"></i>
+                    <p>검색어를 입력하여 대사전에서 찾아보세요</p>
+                </div>
+            `;
+        }
 
-        updateMapMarkers();
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
     };
 
     window.handleBackFromPlaceDetail = function() {
@@ -5028,10 +5032,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: false });
         }
 
-        // Initialize chip label to '전체' by default
-        if (catText && !catText.innerText) {
-            catText.innerText = '전체';
-            catText.style.display = 'inline';
+        // Ensure initial chip label is clean and hidden
+        if (catText) {
+            catText.innerText = '';
+            catText.style.display = 'none';
+        }
+        if (catClear) {
+            catClear.style.display = 'none';
         }
 
         // Global outside click listener
@@ -5080,7 +5087,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         catText.innerText = '전체';
                         catText.style.display = 'inline';
                     }
-                    if (catClear) catClear.style.display = 'none';
+                    if (catClear) catClear.style.display = 'inline';
                 } else {
                     window.currCategory = 'FD6';
                     window.currSubKeyword = keyword;
@@ -5115,13 +5122,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (catClear) {
             catClear.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.currCategory = 'FD6';
+                window.currCategory = '';
                 window.currSubKeyword = '';
                 catChip.classList.remove('cat-active');
                 if (catIcon) catIcon.innerText = '🍴';
                 if (catText) {
-                    catText.innerText = '전체';
-                    catText.style.display = 'inline';
+                    catText.innerText = '';
+                    catText.style.display = 'none';
                 }
                 if (catClear) catClear.style.display = 'none';
                 popCat.querySelectorAll('.pop-cat-item').forEach(i => {
@@ -5129,14 +5136,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const c = i.querySelector('.check-mark');
                     if (c) c.remove();
                 });
-                const allItem = popCat.querySelector('.pop-cat-item[data-keyword=""]');
-                if (allItem) {
-                    allItem.classList.add('active');
-                    const check = document.createElement('span');
-                    check.className = 'check-mark';
-                    check.innerText = '✓';
-                    allItem.appendChild(check);
-                }
                 closeAllPopovers();
                 updateMapMarkers();
             });
