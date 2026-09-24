@@ -11365,6 +11365,7 @@ window.openRestaurantDetailFromDiary = openRestaurantDetailFromDiary;
 
 function renderDiaryMobileFeed(dateStr, entries) {
     const feedHeader = document.getElementById('diary-mobile-feed-title');
+    const feedAction = document.getElementById('diary-mobile-feed-action');
     const feedList = document.getElementById('diary-mobile-feed-list');
     if (!feedHeader || !feedList) return;
 
@@ -11380,8 +11381,22 @@ function renderDiaryMobileFeed(dateStr, entries) {
         }
     } catch(e) {}
 
-    // Clean date header without (0곳) as explicitly requested by user
+    // Clean date header without (0곳)
     feedHeader.innerHTML = `<span style="margin-right:6px;">📅</span><span>${formattedDate}</span>`;
+
+    // '+ 기록 추가' button on the right side of header when date has entries
+    if (feedAction) {
+        if (entries.length > 0) {
+            feedAction.innerHTML = `
+                <button type="button" class="btn-feed-add-record" onclick="openDiaryDrawer('${dateStr}')">
+                    <span style="font-size:13px; font-weight:800; line-height:1; margin-right:3px;">+</span> 기록 추가
+                </button>
+            `;
+        } else {
+            feedAction.innerHTML = '';
+        }
+    }
+
     feedList.innerHTML = '';
 
     if (entries.length === 0) {
@@ -11419,47 +11434,22 @@ function renderDiaryMobileFeed(dateStr, entries) {
             ? `<span class="card-visit-tag" style="font-size:0.72rem; padding:2px 6px;">${totalCount >= 10 ? '👑' : '🔥'}${orderNum}회차</span>`
             : '';
 
-        const restPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(entry.name) : [];
-        const photoTagHtml = restPhotos.length > 0 ? `<span class="card-photo-tag" style="font-size:0.72rem; padding:2px 6px;">📷 ${restPhotos.length}</span>` : '';
-
         card.innerHTML = `
-            <div class="feed-card-main-click" title="식당 상세 정보 보기">
-                <div class="feed-card-left">
-                    <div class="feed-card-name">${escapeHtml(entry.name)}</div>
-                    <div class="feed-card-meta">
-                        ${catHtml}
-                        ${spoonCount > 0 ? `<span class="card-spoons">${'🥄'.repeat(spoonCount)}</span>` : ''}
-                        ${entry.memo ? `<span class="feed-card-memo">📝 ${escapeHtml(entry.memo)}</span>` : ''}
-                    </div>
-                </div>
-                <div class="feed-card-right">
-                    ${visitBadge}
-                    ${photoTagHtml}
-                    <span class="feed-chevron" title="식당 상세 정보 보기">›</span>
+            <div class="feed-card-left">
+                <div class="feed-card-name">${escapeHtml(entry.name)}</div>
+                <div class="feed-card-meta">
+                    ${catHtml}
+                    ${spoonCount > 0 ? `<span class="card-spoons">${'🥄'.repeat(spoonCount)}</span>` : ''}
+                    ${entry.memo ? `<span class="feed-card-memo">📝 ${escapeHtml(entry.memo)}</span>` : ''}
                 </div>
             </div>
-            <button type="button" class="feed-card-edit-btn" title="방문 기록 수정">
-                ✏️
-            </button>
+            ${visitBadge ? `<div class="feed-card-right">${visitBadge}</div>` : ''}
         `;
 
-        // Main card click -> Open Restaurant Detail Modal
-        const mainClickArea = card.querySelector('.feed-card-main-click');
-        if (mainClickArea) {
-            mainClickArea.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openRestaurantDetailFromDiary(entry);
-            });
-        }
-
-        // Edit button click -> Open Diary Edit Drawer
-        const editBtn = card.querySelector('.feed-card-edit-btn');
-        if (editBtn) {
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openEditDiaryDrawer(entry);
-            });
-        }
+        // Direct click on the restaurant card opens '방문 기록 수정' drawer
+        card.addEventListener('click', () => {
+            openEditDiaryDrawer(entry);
+        });
 
         feedList.appendChild(card);
     });
