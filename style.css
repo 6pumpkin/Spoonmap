@@ -8695,10 +8695,57 @@ span.desktop-only {
         top: 10px !important;
         left: 12px !important;
         right: 12px !important;
+        height: 42px !important;
         z-index: 50 !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14) !important;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12) !important;
         background: #FFFFFF !important;
         border-radius: 12px !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 4px 0 14px !important;
+        gap: 0 !important;
+        box-sizing: border-box !important;
+        margin-bottom: 0 !important;
+    }
+
+    .map-search-box input {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        height: 100% !important;
+        font-size: 0.88rem !important;
+        color: #1E293B !important;
+        flex: 1 !important;
+        outline: none !important;
+    }
+
+    .map-search-box input:focus {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .map-search-box .map-reset-btn {
+        background: transparent !important;
+        color: #64748B !important;
+        border: none !important;
+        border-radius: 8px !important;
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: background 0.15s ease !important;
+    }
+
+    .map-search-box .map-reset-btn:active {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
     }
 
     /* 모바일에서 PC 전용 카테고리 메뉴 및 전역 검색 버튼 숨김 (겹침 방지) */
@@ -8720,7 +8767,7 @@ span.desktop-only {
         right: 12px !important;
         width: auto !important;
         box-sizing: border-box !important;
-        z-index: 49 !important;
+        z-index: 110 !important;
         display: flex !important;
         gap: 6px !important;
         pointer-events: none !important;

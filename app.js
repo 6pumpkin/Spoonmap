@@ -2461,7 +2461,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const bounds = new kakao.maps.LatLngBounds();
 
         // Initialize library feature variables
-        if (!window.currCategory) window.currCategory = '';
+        if (!window.currCategory && !mapSearchValue && !window.isSharedMapMode) {
+            window.currCategory = 'FD6';
+        }
         
         // Add Category Selection Logic
         const categoryItems = document.querySelectorAll('#category-menu > li');
@@ -3920,37 +3922,48 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetMapSearchToInitial = function() {
         const input = document.getElementById('map-search-input');
         if (input) input.value = '';
-        window.currCategory = '';
+        window.currCategory = 'FD6';
         window.currSubKeyword = '';
         if (currentFilters) currentFilters.searchQuery = '';
         document.querySelectorAll('#category-menu > li').forEach(li => {
-            li.classList.remove('on');
+            li.classList.toggle('on', li.id === 'FD6');
             li.classList.remove('sub-open');
         });
         document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
 
-        const resultsList = document.getElementById('map-results-list');
+        const popCat = document.getElementById('popover-cat-menu');
+        if (popCat) {
+            popCat.querySelectorAll('.pop-cat-item').forEach(i => {
+                const isAll = !i.dataset.keyword;
+                i.classList.toggle('active', isAll);
+                const c = i.querySelector('.check-mark');
+                if (c) c.remove();
+                if (isAll) {
+                    const check = document.createElement('span');
+                    check.className = 'check-mark';
+                    check.innerText = '✓';
+                    i.appendChild(check);
+                }
+            });
+        }
+        const catChip = document.getElementById('btn-cat-chip');
+        if (catChip) catChip.classList.remove('cat-active');
+        const catIcon = document.getElementById('cat-chip-icon');
+        if (catIcon) catIcon.innerText = '🍴';
+        const catText = document.getElementById('cat-chip-text');
+        if (catText) {
+            catText.innerText = '전체';
+            catText.style.display = 'inline';
+        }
+        const catClear = document.getElementById('cat-chip-clear');
+        if (catClear) catClear.style.display = 'none';
+
         const detailPanel = document.getElementById('map-place-detail');
-        const quickFilters = document.querySelector('.map-quick-filters');
-
         if (detailPanel) detailPanel.style.display = 'none';
-        if (resultsList) {
-            resultsList.style.display = 'block';
-            resultsList.innerHTML = `
-                <div class="map-empty-state">
-                    <i class="icon-search"></i>
-                    <p>검색어를 입력하여 대사전에서 찾아보세요</p>
-                </div>
-            `;
-        }
-        if (quickFilters) quickFilters.style.display = 'flex';
+        const resultsList = document.getElementById('map-results-list');
+        if (resultsList) resultsList.style.display = 'block';
 
-        markers.forEach(m => m.setMap(null));
-        markers = [];
-        if (window.currentMapOverlay) {
-            window.currentMapOverlay.setMap(null);
-            window.currentMapOverlay = null;
-        }
+        updateMapMarkers();
     };
 
     window.handleBackFromPlaceDetail = function() {
@@ -5009,9 +5022,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllPopovers();
             });
             backdrop.addEventListener('touchstart', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 closeAllPopovers();
-            }, { passive: true });
+            }, { passive: false });
+        }
+
+        // Initialize chip label to '전체' by default
+        if (catText && !catText.innerText) {
+            catText.innerText = '전체';
+            catText.style.display = 'inline';
         }
 
         // Global outside click listener
@@ -5052,11 +5072,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.appendChild(check);
 
                 if (!keyword || keyword === '전체') {
-                    window.currCategory = '';
+                    window.currCategory = 'FD6';
                     window.currSubKeyword = '';
                     catChip.classList.remove('cat-active');
                     if (catIcon) catIcon.innerText = '🍴';
-                    if (catText) catText.style.display = 'none';
+                    if (catText) {
+                        catText.innerText = '전체';
+                        catText.style.display = 'inline';
+                    }
                     if (catClear) catClear.style.display = 'none';
                 } else {
                     window.currCategory = 'FD6';
@@ -5092,11 +5115,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (catClear) {
             catClear.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.currCategory = '';
+                window.currCategory = 'FD6';
                 window.currSubKeyword = '';
                 catChip.classList.remove('cat-active');
                 if (catIcon) catIcon.innerText = '🍴';
-                if (catText) catText.style.display = 'none';
+                if (catText) {
+                    catText.innerText = '전체';
+                    catText.style.display = 'inline';
+                }
                 if (catClear) catClear.style.display = 'none';
                 popCat.querySelectorAll('.pop-cat-item').forEach(i => {
                     i.classList.remove('active');
