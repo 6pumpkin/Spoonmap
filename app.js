@@ -4575,7 +4575,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const friend = friends.find(f => f.id === friendId);
         if (!friend) return;
 
-        let shouldZoomFriend = null;
         if (idx > -1) {
             // Deactivate
             activeIds.splice(idx, 1);
@@ -4592,11 +4591,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Activate
             activeIds.push(friendId);
             saveActiveFriendIds(activeIds);
-            shouldZoomFriend = friendId;
             showDiaryToast(`⭐ [${friend.nickname || friend.name}] 맛집 마커 겹쳐보기 ON!`);
         }
 
-        renderAllActiveFriendOverlays(shouldZoomFriend);
+        renderAllActiveFriendOverlays();
         renderFriendChips();
         if (typeof renderFriendModalList === 'function') {
             renderFriendModalList();
@@ -4786,7 +4784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Backward-compatible alias
     function renderFriendMarkers(friend, bounds = null, shouldExtend = false) {
-        renderAllActiveFriendOverlays(shouldExtend ? friend.id : null);
+        renderAllActiveFriendOverlays();
     }
 
     function clearFriendMarkers(friendId) {
