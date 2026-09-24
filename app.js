@@ -2348,22 +2348,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Setup research button
                 const researchBtn = document.getElementById('btn-research');
-                researchBtn.addEventListener('click', () => {
-                    researchBtn.style.display = 'none';
-                    updateMapMarkers();
-                });
+                if (researchBtn) {
+                    researchBtn.addEventListener('click', () => {
+                        researchBtn.style.display = 'none';
+                        updateMapMarkers();
+                    });
+                }
 
                 // Global Search Toggle logic
                 window.isGlobalSearchActive = false;
                 const globalToggleBtn = document.getElementById('btn-global-toggle');
-                globalToggleBtn.addEventListener('click', () => {
-                    window.isGlobalSearchActive = !window.isGlobalSearchActive;
-                    globalToggleBtn.classList.toggle('active', window.isGlobalSearchActive);
-                    
-                    if (window.isGlobalSearchActive) {
-                        researchBtn.style.display = 'none';
-                    }
-                });
+                if (globalToggleBtn) {
+                    globalToggleBtn.addEventListener('click', () => {
+                        window.isGlobalSearchActive = !window.isGlobalSearchActive;
+                        globalToggleBtn.classList.toggle('active', window.isGlobalSearchActive);
+                        
+                        if (window.isGlobalSearchActive) {
+                            if (researchBtn) researchBtn.style.display = 'none';
+                        }
+                        if (typeof updateMapMarkers === 'function') {
+                            updateMapMarkers();
+                        }
+                    });
+                }
 
                 kakao.maps.event.addListener(map, 'dragstart', () => {
                     if (window.currentHoverOverlay) {
@@ -2387,12 +2394,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Map drag: show "현 위치에서 재검색" button instead of auto re-searching
                 kakao.maps.event.addListener(map, 'dragend', () => {
-                    // Only show the button if the user has an active search or category
-                    const hasKeyword = document.getElementById('map-search-input')?.value.trim();
-                    if (!window.isGlobalSearchActive && (window.currCategory || hasKeyword)) {
-                        researchBtn.style.display = 'flex';
-                    } else if (!window.currCategory && !hasKeyword) {
-                        researchBtn.style.display = 'flex';
+                    if (window.isGlobalSearchActive) return;
+                    if (researchBtn) {
+                        researchBtn.style.display = 'inline-flex';
                     }
                 });
                 // NOTE: zoom_changed intentionally not wired - causes setBounds loop.
@@ -2455,6 +2459,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateMapMarkers() {
         if (!map) return;
+
+        const researchBtn = document.getElementById('btn-research');
+        if (researchBtn) researchBtn.style.display = 'none';
 
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');

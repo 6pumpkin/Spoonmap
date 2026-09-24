@@ -2479,6 +2479,17 @@ main {
     display: inline-flex;
 }
 
+/* Map Action Chips Container & Responsive Text */
+.map-action-chips {
+    display: contents;
+}
+.btn-text-pc {
+    display: inline;
+}
+.btn-text-mo {
+    display: none;
+}
+
 /* Global Search Floating Button (Top Center of Map) */
 .global-search-btn {
     position: absolute;
@@ -2526,6 +2537,8 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     cursor: pointer;
     transition: all 0.2s ease;
+    align-items: center;
+    gap: 6px;
 }
 
 .research-btn:hover {
@@ -8884,8 +8897,8 @@ span.desktop-only {
         color: #0F172A !important;
     }
 
-    /* 모바일에서 PC 전용 카테고리 메뉴 및 전역 검색 버튼 숨김 (겹침 방지) */
-    #category-menu, .global-search-btn {
+    /* 모바일에서 PC 전용 카테고리 메뉴 숨김 */
+    #category-menu {
         display: none !important;
     }
 
@@ -8896,11 +8909,18 @@ span.desktop-only {
         display: none !important;
     }
 
+    .btn-text-pc {
+        display: none !important;
+    }
+    .btn-text-mo {
+        display: inline !important;
+    }
+
     .map-quick-filters {
         position: absolute !important;
         top: 54px !important;
         left: 12px !important;
-        right: 12px !important;
+        right: auto !important;
         width: auto !important;
         box-sizing: border-box !important;
         z-index: 110 !important;
@@ -8910,6 +8930,79 @@ span.desktop-only {
     }
     .map-quick-filters > * {
         pointer-events: auto !important;
+    }
+
+    /* 모바일 지도 상단 우측 액션 칩 (재검색 + 전국검색) */
+    .map-action-chips {
+        display: flex !important;
+        position: absolute !important;
+        top: 54px !important;
+        right: 12px !important;
+        height: 34px !important;
+        z-index: 110 !important;
+        align-items: center !important;
+        gap: 6px !important;
+        pointer-events: none !important;
+    }
+    .map-action-chips > * {
+        pointer-events: auto !important;
+    }
+
+    .map-action-chips .research-btn,
+    .map-action-chips .global-search-btn {
+        position: static !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        height: 34px !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        padding: 0 10px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        white-space: nowrap !important;
+        user-select: none !important;
+        box-sizing: border-box !important;
+    }
+
+    .map-action-chips .global-search-btn {
+        display: inline-flex !important;
+    }
+    .map-action-chips .global-search-btn:active {
+        transform: scale(0.96) !important;
+    }
+    .map-action-chips .global-search-btn.active {
+        background: #FFF1F2 !important;
+        border-color: var(--coral-main, #FF4757) !important;
+        color: var(--coral-main, #FF4757) !important;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.25) !important;
+    }
+
+    .map-action-chips .research-btn {
+        display: none;
+    }
+    .map-action-chips .research-btn[style*="display: none"] {
+        display: none !important;
+    }
+    .map-action-chips .research-btn[style*="display: flex"],
+    .map-action-chips .research-btn[style*="display: inline-flex"] {
+        display: inline-flex !important;
+    }
+    .map-action-chips .research-btn:active {
+        transform: scale(0.96) !important;
+        background: #F1F5F9 !important;
     }
 
     /* 요새 지도 스타일 초간결 플로팅 칩 (음식 카테고리 + 별표 버튼) */
@@ -9729,13 +9822,6 @@ span.desktop-only {
         padding: 0 4px !important;
     }
 
-    .research-btn {
-        bottom: 54px !important;
-        top: auto !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 45 !important;
-    }
 
     /* ── 7. AI Sommelier & ROULETTE Mobile Viewport Fit ── */
     .sommelier-container {
