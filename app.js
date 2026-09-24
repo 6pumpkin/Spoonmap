@@ -11103,7 +11103,7 @@ function renderDiaryCalendar() {
 
                 const tagsHtml = catArray.map(c => {
                     const color = getNotionTagColor(c);
-                    return `<span class="diary-mini-tag" style="background:${color.bg}; color:${color.color}">${c}</span>`;
+                    return `<span class="diary-mini-tag" style="background:${color.bg}; color:${color.color}">${escapeHtml(c)}</span>`;
                 }).join('');
 
                 const visitBadgeHtml = (totalCount >= 2 && orderNum >= 2) 
@@ -11113,18 +11113,30 @@ function renderDiaryCalendar() {
                 const restPhotos = (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(entry.name) : [];
                 const photoTagHtml = restPhotos.length > 0 ? `<span class="card-photo-tag">📷 ${restPhotos.length}</span>` : '';
 
+                // Get category emoji for compact view
+                const catEmoji = getCategoryEmoji(entry.category);
+
                 card.innerHTML = `
-                    <div class="card-name" title="${entry.name}">${entry.name}</div>
-                    <div class="card-sub-row">
-                        ${visitBadgeHtml}
-                        ${photoTagHtml}
-                        ${tagsHtml}
+                    <!-- Mobile Compact View: 1-line chip -->
+                    <div class="card-mobile-compact" title="${escapeHtml(entry.name)}">
+                        <span class="compact-cat-dot">${catEmoji}</span>
+                        <span class="compact-name">${escapeHtml(entry.name)}</span>
                     </div>
-                    ${spoonCount > 0 ? `<div class="card-spoon-row"><span class="card-spoon">${'🥄'.repeat(spoonCount)}</span></div>` : ''}
-                    ${entry.memo ? `<div class="card-memo-row" title="${entry.memo}">📝 ${entry.memo}</div>` : ''}
+
+                    <!-- Desktop Full View: standard Notion-style card -->
+                    <div class="card-desktop-full">
+                        <div class="card-name" title="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</div>
+                        <div class="card-sub-row">
+                            ${visitBadgeHtml}
+                            ${photoTagHtml}
+                            ${tagsHtml}
+                        </div>
+                        ${spoonCount > 0 ? `<div class="card-spoon-row"><span class="card-spoon">${'🥄'.repeat(spoonCount)}</span></div>` : ''}
+                        ${entry.memo ? `<div class="card-memo-row" title="${escapeHtml(entry.memo)}">📝 ${escapeHtml(entry.memo)}</div>` : ''}
+                    </div>
                 `;
 
-                // Drag Start
+                // Desktop Drag & Drop (HTML5)
                 card.addEventListener('dragstart', (e) => {
                     draggedEntryData = entry;
                     card.classList.add('is-dragging');
@@ -11136,9 +11148,118 @@ function renderDiaryCalendar() {
                     draggedEntryData = null;
                 });
 
-                // Click -> Open Edit Drawer
+                // Mobile Touch Drag & Drop
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let isTouchDragging = false;
+                let touchGhost = null;
+                let touchDragTimer = null;
+                let currentHoveredCell = null;
+
+                card.addEventListener('touchstart', (e) => {
+                    if (window.innerWidth > 768) return;
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    isTouchDragging = false;
+                    currentHoveredCell = null;
+
+                    touchDragTimer = setTimeout(() => {
+                        isTouchDragging = true;
+                        card.classList.add('is-dragging');
+
+                        touchGhost = document.createElement('div');
+                        touchGhost.className = 'diary-touch-ghost';
+                        touchGhost.innerHTML = `<span>${catEmoji}</span> <span>${escapeHtml(entry.name)}</span>`;
+                        touchGhost.style.left = `${touch.clientX}px`;
+                        touchGhost.style.top = `${touch.clientY}px`;
+                        document.body.appendChild(touchGhost);
+
+                        if (navigator.vibrate) navigator.vibrate(30);
+                    }, 220);
+                }, { passive: true });
+
+                card.addEventListener('touchmove', (e) => {
+                    if (window.innerWidth > 768) return;
+                    const touch = e.touches[0];
+                    const dx = Math.abs(touch.clientX - touchStartX);
+                    const dy = Math.abs(touch.clientY - touchStartY);
+
+                    if (!isTouchDragging) {
+                        if (dx > 8 || dy > 8) {
+                            clearTimeout(touchDragTimer);
+                        }
+                        return;
+                    }
+
+                    if (e.cancelable) e.preventDefault();
+                    if (touchGhost) {
+                        touchGhost.style.left = `${touch.clientX}px`;
+                        touchGhost.style.top = `${touch.clientY}px`;
+                    }
+
+                    const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const targetCell = elem ? elem.closest('.diary-day-cell') : null;
+
+                    if (targetCell !== currentHoveredCell) {
+                        if (currentHoveredCell) currentHoveredCell.classList.remove('drag-over');
+                        currentHoveredCell = targetCell;
+                        if (currentHoveredCell) currentHoveredCell.classList.add('drag-over');
+                    }
+                }, { passive: false });
+
+                card.addEventListener('touchend', (e) => {
+                    if (window.innerWidth > 768) return;
+                    clearTimeout(touchDragTimer);
+
+                    if (isTouchDragging) {
+                        card.classList.remove('is-dragging');
+                        if (touchGhost) {
+                            touchGhost.remove();
+                            touchGhost = null;
+                        }
+
+                        const changedTouch = e.changedTouches[0];
+                        const elem = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+                        const targetCell = elem ? elem.closest('.diary-day-cell') : null;
+
+                        if (currentHoveredCell) {
+                            currentHoveredCell.classList.remove('drag-over');
+                            currentHoveredCell = null;
+                        }
+
+                        if (targetCell && targetCell.dataset.date && targetCell.dataset.date !== entry.date) {
+                            moveDiaryEntryToDate(entry, targetCell.dataset.date);
+                        }
+                        isTouchDragging = false;
+                    }
+                });
+
+                card.addEventListener('touchcancel', () => {
+                    clearTimeout(touchDragTimer);
+                    if (isTouchDragging) {
+                        card.classList.remove('is-dragging');
+                        if (touchGhost) {
+                            touchGhost.remove();
+                            touchGhost = null;
+                        }
+                        if (currentHoveredCell) {
+                            currentHoveredCell.classList.remove('drag-over');
+                            currentHoveredCell = null;
+                        }
+                        isTouchDragging = false;
+                    }
+                });
+
+                // Click -> On mobile select day, on desktop open edit drawer
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (window.innerWidth <= 768) {
+                        grid.querySelectorAll('.diary-day-cell').forEach(c => c.classList.remove('is-selected-day'));
+                        cell.classList.add('is-selected-day');
+                        renderDiaryMobileFeed(dateStr, entries);
+                        return;
+                    }
                     openEditDiaryDrawer(entry);
                 });
 
@@ -11167,7 +11288,7 @@ function renderDiaryCalendar() {
 
         // Click cell to select day and show in mobile feed
         cell.addEventListener('click', (e) => {
-            if (e.target.closest('.diary-add-btn') || e.target.closest('.diary-entry-card')) return;
+            if (e.target.closest('.diary-add-btn')) return;
             grid.querySelectorAll('.diary-day-cell').forEach(c => c.classList.remove('is-selected-day'));
             cell.classList.add('is-selected-day');
             renderDiaryMobileFeed(dateStr, entries);
@@ -11202,6 +11323,46 @@ function renderDiaryCalendar() {
     }
 }
 
+function getCategoryEmoji(cat) {
+    if (!cat) return '🍴';
+    if (cat.includes('카페') || cat.includes('디저트')) return '☕';
+    if (cat.includes('일식') || cat.includes('초밥') || cat.includes('라멘')) return '🍣';
+    if (cat.includes('한식') || cat.includes('고기') || cat.includes('찌개') || cat.includes('국밥')) return '🍚';
+    if (cat.includes('중식') || cat.includes('마라') || cat.includes('딤섬')) return '🥟';
+    if (cat.includes('양식') || cat.includes('파스타') || cat.includes('피자') || cat.includes('버거')) return '🍕';
+    if (cat.includes('술집') || cat.includes('바') || cat.includes('주점') || cat.includes('이자카야')) return '🍺';
+    if (cat.includes('분식') || cat.includes('떡볶이')) return '🍢';
+    return '🍴';
+}
+
+function openRestaurantDetailFromDiary(entry) {
+    if (!entry || !entry.name) return;
+    const key = entry.name.trim().toLowerCase();
+    const allUnified = typeof getUnifiedRestaurantData === 'function' ? getUnifiedRestaurantData() : [];
+    let item = allUnified.find(r => r.name && r.name.trim().toLowerCase() === key);
+
+    if (!item) {
+        item = {
+            id: entry.id || `diary-${Date.now()}`,
+            name: entry.name,
+            category: entry.category || '기타',
+            rate: entry.rate || '🥄',
+            memo: entry.memo || '',
+            photos: (typeof getRestaurantPhotos === 'function') ? getRestaurantPhotos(entry.name) : [],
+            source: entry.source || 'diary',
+            naver_url: entry.map_url || `https://map.naver.com/v5/search/${encodeURIComponent(entry.name)}`,
+            kakao_url: `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
+        };
+    }
+
+    if (typeof openRestaurantDetailModal === 'function') {
+        openRestaurantDetailModal(item);
+    } else {
+        openEditDiaryDrawer(entry);
+    }
+}
+window.openRestaurantDetailFromDiary = openRestaurantDetailFromDiary;
+
 function renderDiaryMobileFeed(dateStr, entries) {
     const feedHeader = document.getElementById('diary-mobile-feed-title');
     const feedList = document.getElementById('diary-mobile-feed-list');
@@ -11219,15 +11380,20 @@ function renderDiaryMobileFeed(dateStr, entries) {
         }
     } catch(e) {}
 
-    feedHeader.textContent = `📅 ${formattedDate} (${entries.length}곳)`;
+    // Clean date header without (0곳) as explicitly requested by user
+    feedHeader.innerHTML = `<span style="margin-right:6px;">📅</span><span>${formattedDate}</span>`;
     feedList.innerHTML = '';
 
     if (entries.length === 0) {
         const emptyDiv = document.createElement('div');
         emptyDiv.className = 'diary-feed-empty';
         emptyDiv.innerHTML = `
-            <p style="margin-bottom:8px;">이 날짜에 등록된 방문 기록이 없습니다.</p>
-            <button type="button" class="btn-primary" style="font-size:0.78rem; padding:5px 12px; border-radius:8px;" onclick="openDiaryDrawer('${dateStr}')">+ 새 방문 기록 추가</button>
+            <div class="feed-empty-icon">🍽️</div>
+            <div class="feed-empty-title">이 날짜에 등록된 방문 기록이 없습니다</div>
+            <div class="feed-empty-desc">기억에 남는 맛있는 순간을 기록해보세요!</div>
+            <button type="button" class="btn-diary-add-coral" onclick="openDiaryDrawer('${dateStr}')">
+                <span style="font-size:1.1rem; line-height:1; margin-right:4px;">+</span> 새 방문 기록 추가
+            </button>
         `;
         feedList.appendChild(emptyDiv);
         return;
@@ -11236,9 +11402,6 @@ function renderDiaryMobileFeed(dateStr, entries) {
     entries.forEach(entry => {
         const card = document.createElement('div');
         card.className = 'diary-mobile-feed-card';
-        card.addEventListener('click', () => {
-            openEditDiaryDrawer(entry);
-        });
 
         const visitInfo = getAllVisitsForRestaurant(entry.name);
         const visitIdx = visitInfo.findIndex(v => String(v.id) === String(entry.id) || v.date === entry.date);
@@ -11249,7 +11412,7 @@ function renderDiaryMobileFeed(dateStr, entries) {
         const catArray = entry.category ? entry.category.split(',').map(c => c.trim()).filter(Boolean) : [];
         const catHtml = catArray.map(c => {
             const color = getNotionTagColor(c);
-            return `<span class="card-cat-badge" style="background:${color.bg}; color:${color.color}">${c}</span>`;
+            return `<span class="card-cat-badge" style="background:${color.bg}; color:${color.color}">${escapeHtml(c)}</span>`;
         }).join('');
 
         const visitBadge = (totalCount >= 2 && orderNum >= 2)
@@ -11260,20 +11423,43 @@ function renderDiaryMobileFeed(dateStr, entries) {
         const photoTagHtml = restPhotos.length > 0 ? `<span class="card-photo-tag" style="font-size:0.72rem; padding:2px 6px;">📷 ${restPhotos.length}</span>` : '';
 
         card.innerHTML = `
-            <div class="feed-card-left">
-                <div class="feed-card-name">${escapeHtml(entry.name)}</div>
-                <div class="feed-card-meta">
-                    ${catHtml}
-                    ${spoonCount > 0 ? `<span class="card-spoons">${'🥄'.repeat(spoonCount)}</span>` : ''}
-                    ${entry.memo ? `<span class="feed-card-memo">📝 ${escapeHtml(entry.memo)}</span>` : ''}
+            <div class="feed-card-main-click" title="식당 상세 정보 보기">
+                <div class="feed-card-left">
+                    <div class="feed-card-name">${escapeHtml(entry.name)}</div>
+                    <div class="feed-card-meta">
+                        ${catHtml}
+                        ${spoonCount > 0 ? `<span class="card-spoons">${'🥄'.repeat(spoonCount)}</span>` : ''}
+                        ${entry.memo ? `<span class="feed-card-memo">📝 ${escapeHtml(entry.memo)}</span>` : ''}
+                    </div>
+                </div>
+                <div class="feed-card-right">
+                    ${visitBadge}
+                    ${photoTagHtml}
+                    <span class="feed-chevron" title="식당 상세 정보 보기">›</span>
                 </div>
             </div>
-            <div class="feed-card-right">
-                ${visitBadge}
-                ${photoTagHtml}
-                <span class="feed-chevron">›</span>
-            </div>
+            <button type="button" class="feed-card-edit-btn" title="방문 기록 수정">
+                ✏️
+            </button>
         `;
+
+        // Main card click -> Open Restaurant Detail Modal
+        const mainClickArea = card.querySelector('.feed-card-main-click');
+        if (mainClickArea) {
+            mainClickArea.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openRestaurantDetailFromDiary(entry);
+            });
+        }
+
+        // Edit button click -> Open Diary Edit Drawer
+        const editBtn = card.querySelector('.feed-card-edit-btn');
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditDiaryDrawer(entry);
+            });
+        }
 
         feedList.appendChild(card);
     });

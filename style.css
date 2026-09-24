@@ -3835,6 +3835,18 @@ main {
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
+.card-mobile-compact {
+    display: none;
+}
+
+.card-desktop-full {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
 .diary-entry-card:hover {
     border-color: var(--coral-main);
     background: #ffffff;
@@ -8639,15 +8651,28 @@ span.desktop-only {
     }
 
     .diary-day-cell {
-        min-height: 48px !important;
-        padding: 0.25rem 0.2rem !important;
-        transition: border-color 0.15s ease, background-color 0.15s ease;
+        min-height: 52px !important;
+        max-height: 72px !important;
+        padding: 3px 2px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        overflow: hidden !important;
+        border-radius: 8px !important;
+        user-select: none;
+        transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
     }
 
     .diary-day-cell.is-selected-day {
         border: 2px solid #FF4757 !important;
         background-color: #FFF5F5 !important;
-        box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2) !important;
+        box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.25) !important;
+    }
+
+    .diary-day-cell.drag-over {
+        border: 2px dashed #FF4757 !important;
+        background-color: #FFF0F2 !important;
+        transform: scale(1.05);
     }
 
     .diary-weekday {
@@ -8656,7 +8681,103 @@ span.desktop-only {
     }
 
     .diary-date-num {
-        font-size: 0.76rem !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 2px !important;
+        text-align: center !important;
+    }
+
+    .diary-day-cell.is-today .diary-date-num {
+        color: #FF4757 !important;
+        background: #FFE4E6 !important;
+        border-radius: 50% !important;
+        width: 17px !important;
+        height: 17px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 2px !important;
+    }
+
+    .diary-day-cell .diary-entries {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin-top: 1px !important;
+    }
+
+    /* Mobile Compact Entry Card inside Calendar Grid */
+    .card-desktop-full {
+        display: none !important;
+    }
+
+    .card-mobile-compact {
+        display: flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .compact-cat-dot {
+        font-size: 0.65rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .compact-name {
+        font-size: 0.62rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.2 !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+
+    .diary-entry-card {
+        padding: 2px 3px !important;
+        border-radius: 4px !important;
+        border: 1px solid #FFE4E6 !important;
+        background: #FFF1F2 !important;
+        margin: 0 0 2px 0 !important;
+        box-shadow: none !important;
+        min-height: 16px !important;
+        max-height: 18px !important;
+        cursor: pointer !important;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .diary-entry-card.is-dragging {
+        opacity: 0.3 !important;
+        transform: scale(0.92) !important;
+    }
+
+    /* Limit to max 2 items visible in calendar cell on mobile */
+    .diary-day-cell .diary-entry-card:nth-child(n+3) {
+        display: none !important;
+    }
+
+    /* Hide desktop inline "+ 추가" button on mobile calendar cell */
+    .diary-day-cell .diary-add-btn {
+        display: none !important;
+    }
+
+    .diary-more-chip {
+        font-size: 0.58rem !important;
+        padding: 0 1px !important;
+        color: #FF4757 !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        text-align: center !important;
+        margin-top: 1px !important;
     }
 
     .diary-mobile-day-feed {
@@ -8666,34 +8787,90 @@ span.desktop-only {
     }
 
     .diary-mobile-feed-header {
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        color: #1E293B !important;
+        margin-bottom: 8px !important;
+        padding-left: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Modern Coral & Soft White Empty State */
+    .diary-feed-empty {
+        text-align: center !important;
+        padding: 26px 16px !important;
+        background: #FFFFFF !important;
+        border-radius: 16px !important;
+        border: 1px dashed #CBD5E1 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .feed-empty-icon {
+        font-size: 1.8rem !important;
+        margin-bottom: 6px !important;
+        line-height: 1 !important;
+    }
+
+    .feed-empty-title {
         font-size: 0.88rem !important;
         font-weight: 700 !important;
         color: #334155 !important;
-        margin-bottom: 8px !important;
-        padding-left: 4px !important;
+        margin-bottom: 4px !important;
     }
 
-    .diary-feed-empty {
-        text-align: center;
-        padding: 24px 12px;
-        background: #F8FAFC;
-        border-radius: 12px;
-        border: 1px dashed #CBD5E1;
-        color: #94A3B8;
-        font-size: 0.82rem;
+    .feed-empty-desc {
+        font-size: 0.76rem !important;
+        color: #94A3B8 !important;
+        margin-bottom: 12px !important;
+    }
+
+    .btn-diary-add-coral {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 9px 20px !important;
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        box-shadow: 0 3px 10px rgba(255, 71, 87, 0.28) !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .btn-diary-add-coral:active {
+        transform: scale(0.97) !important;
     }
 
     .diary-mobile-feed-card {
         background: #FFFFFF !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         border: 1px solid #E2E8F0 !important;
         padding: 10px 12px !important;
         margin-bottom: 8px !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        cursor: pointer !important;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    }
+
+    .diary-mobile-feed-card:active {
+        transform: scale(0.99) !important;
+        background: #FAF8F5 !important;
+    }
+
+    .feed-card-main-click {
+        flex: 1 !important;
+        min-width: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        cursor: pointer !important;
     }
 
     .feed-card-left {
@@ -8703,7 +8880,7 @@ span.desktop-only {
 
     .feed-card-name {
         font-weight: 700;
-        font-size: 0.92rem;
+        font-size: 0.94rem;
         color: #1E293B;
         margin-bottom: 4px;
         white-space: nowrap;
@@ -8747,6 +8924,48 @@ span.desktop-only {
         color: #94A3B8;
         font-size: 1.1rem;
         font-weight: bold;
+    }
+
+    .feed-card-edit-btn {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.85rem !important;
+        color: #64748B !important;
+        cursor: pointer !important;
+        margin-left: 8px !important;
+        flex-shrink: 0 !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .feed-card-edit-btn:active {
+        background: #E2E8F0 !important;
+        transform: scale(0.95) !important;
+    }
+
+    /* Floating Touch Drag Ghost Element on Mobile */
+    .diary-touch-ghost {
+        position: fixed !important;
+        z-index: 10000 !important;
+        pointer-events: none !important;
+        background: #FFFFFF !important;
+        border: 2px solid #FF4757 !important;
+        color: #0F172A !important;
+        padding: 6px 12px !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 24px rgba(255, 71, 87, 0.3) !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        transform: translate(-50%, -120%) scale(1.05) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        white-space: nowrap !important;
     }
 
     /* Floating Diary + Button on Mobile */
