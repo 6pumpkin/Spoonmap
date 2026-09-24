@@ -3990,7 +3990,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.35rem 1.75rem;
+    padding: 1.1rem 1.4rem;
     border-bottom: 1.5px solid var(--border-subtle);
     background: var(--surface-bg);
     flex-shrink: 0;
@@ -4002,23 +4002,23 @@ main {
     gap: 0.6rem;
 }
 
-.drawer-icon { font-size: 1.3rem; }
+.drawer-icon { font-size: 1.2rem; }
 
 .drawer-header h3 {
-    font-size: 1.35rem;
-    font-weight: 900;
+    font-size: 1.2rem;
+    font-weight: 800;
     color: var(--text-primary);
     margin: 0;
 }
 
 .drawer-close-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 1.5px solid var(--border-subtle);
     background: var(--surface-card);
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -4034,10 +4034,10 @@ main {
 .drawer-body {
     flex: 1;
     overflow-y: auto;
-    padding: 1.75rem;
+    padding: 1.2rem 1.4rem;
     display: flex;
     flex-direction: column;
-    gap: 1.35rem;
+    gap: 1rem;
 }
 
 .drawer-field {
@@ -7632,10 +7632,11 @@ span.desktop-only {
         border-radius: 8px !important;
     }
 
-    /* Diary Add Drawer -> Bottom Sheet */
+    /* ── Diary Add & Edit Drawer Mobile Slimming (Matching List View Detail Modal) ── */
     .diary-drawer-overlay {
         align-items: flex-end !important;
         padding: 0 !important;
+        transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.28s !important;
     }
 
     .diary-add-drawer {
@@ -7646,21 +7647,281 @@ span.desktop-only {
         top: auto !important;
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 88dvh !important;
-        border-radius: 22px 22px 0 0 !important;
+        max-height: 90dvh !important;
+        border-radius: 24px 24px 0 0 !important;
         margin: 0 !important;
-        padding: 0 1.2rem 1.4rem !important;
-        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.18) !important;
+        padding: 0 14px 22px 14px !important;
+        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.2) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
         transform: translateY(100%);
         transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        background: #FFFFFF !important;
         will-change: transform;
     }
 
     .diary-add-drawer.open,
     .diary-drawer-overlay.open .diary-add-drawer {
         transform: translateY(0);
+    }
+
+    .diary-add-drawer .bottom-sheet-handle {
+        padding: 8px 0 4px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .diary-add-drawer .handle-bar {
+        width: 36px !important;
+        height: 4px !important;
+        border-radius: 2px !important;
+        background: #CBD5E1 !important;
+    }
+
+    .diary-add-drawer .drawer-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 6px 0 10px 0 !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        background: transparent !important;
+        margin-bottom: 4px !important;
+    }
+
+    .diary-add-drawer .drawer-header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .diary-add-drawer .drawer-icon {
+        font-size: 1.1rem !important;
+    }
+
+    .diary-add-drawer .drawer-header h3 {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin: 0 !important;
+    }
+
+    .diary-add-drawer .drawer-close-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1rem !important;
+        background: #F1F5F9 !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #64748B !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .diary-add-drawer .drawer-close-btn:active {
+        background: #E2E8F0 !important;
+        transform: scale(0.95) !important;
+    }
+
+    .diary-add-drawer .drawer-body {
+        padding: 8px 0 10px 0 !important;
+        gap: 8px !important;
+        overflow-y: visible !important;
+    }
+
+    .diary-add-drawer .drawer-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        margin-bottom: 6px !important;
+    }
+
+    .diary-add-drawer .drawer-field {
+        margin-bottom: 6px !important;
+        gap: 2px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .diary-add-drawer .drawer-row .drawer-field {
+        margin-bottom: 0 !important;
+    }
+
+    .diary-add-drawer .drawer-label {
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .diary-add-drawer .drawer-label .required {
+        color: #EF4444 !important;
+    }
+
+    .diary-add-drawer .drawer-input {
+        height: 35px !important;
+        font-size: 0.82rem !important;
+        padding: 0 10px !important;
+        border-radius: 9px !important;
+        border: 1px solid #E2E8F0 !important;
+        background: #FAFAFA !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        color: #1E293B !important;
+        font-weight: 600 !important;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease !important;
+    }
+
+    .diary-add-drawer .drawer-input:focus {
+        background: #FFFFFF !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.15) !important;
+    }
+
+    .diary-add-drawer .drawer-textarea {
+        height: auto !important;
+        min-height: 54px !important;
+        padding: 7px 10px !important;
+        font-size: 0.82rem !important;
+        line-height: 1.35 !important;
+        resize: none !important;
+    }
+
+    /* Compact Notion Tag Fields inside Drawer */
+    .diary-add-drawer .notion-tag-input-bar {
+        min-height: 35px !important;
+        padding: 2px 6px !important;
+        border-radius: 9px !important;
+        border: 1px solid #E2E8F0 !important;
+        background: #FAFAFA !important;
+        gap: 4px !important;
+    }
+
+    .diary-add-drawer .notion-tag-input-bar:focus-within {
+        background: #FFFFFF !important;
+        border-color: #FF4757 !important;
+        box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.15) !important;
+    }
+
+    .diary-add-drawer .notion-selected-tag {
+        font-size: 0.72rem !important;
+        padding: 1.5px 6px !important;
+        border-radius: 5px !important;
+        line-height: 1.2 !important;
+    }
+
+    .diary-add-drawer .notion-tag-placeholder {
+        font-size: 0.76rem !important;
+        color: #94A3B8 !important;
+    }
+
+    /* Compact Rate Spoons */
+    .diary-add-drawer .diary-rate-picker {
+        gap: 4px !important;
+        padding: 2px 0 !important;
+    }
+
+    .diary-add-drawer .rate-spoon {
+        font-size: 1.35rem !important;
+    }
+
+    .diary-add-drawer .rate-label {
+        font-size: 0.76rem !important;
+        color: #64748B !important;
+        margin-left: 6px !important;
+    }
+
+    /* Compact Photo Section */
+    .diary-add-drawer .photo-dropzone {
+        padding: 8px 10px !important;
+        border-radius: 12px !important;
+        border: 1.5px dashed #CBD5E1 !important;
+        background: #F8FAFC !important;
+        min-height: 68px !important;
+    }
+
+    .diary-add-drawer .photo-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .diary-add-drawer .photo-thumb-wrap {
+        border-radius: 8px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .diary-add-drawer .photo-delete-btn {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 11px !important;
+        top: 3px !important;
+        right: 3px !important;
+    }
+
+    .diary-add-drawer .photo-add-box {
+        min-height: 64px !important;
+        border-radius: 8px !important;
+        font-size: 0.7rem !important;
+        gap: 2px !important;
+    }
+
+    .diary-add-drawer .photo-add-icon {
+        font-size: 1.1rem !important;
+    }
+
+    /* Clean Bottom Action Buttons */
+    .diary-add-drawer .drawer-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin-top: 8px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #F1F5F9 !important;
+    }
+
+    .diary-add-drawer .drawer-actions button {
+        height: 38px !important;
+        border-radius: 12px !important;
+        font-size: 0.84rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .diary-add-drawer .drawer-delete-btn {
+        background: #FFF1F2 !important;
+        border: 1px solid #FFE4E6 !important;
+        color: #E11D48 !important;
+        padding: 0 16px !important;
+        flex: 0 0 auto !important;
+    }
+
+    .diary-add-drawer .drawer-cancel-btn {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #475569 !important;
+        padding: 0 16px !important;
+        flex: 0 0 auto !important;
+    }
+
+    .diary-add-drawer .drawer-save-btn {
+        background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: 0 3px 10px rgba(255, 71, 87, 0.28) !important;
+        font-weight: 800 !important;
+        flex: 1 !important;
+    }
+
+    .diary-add-drawer .drawer-save-btn:active {
+        transform: scale(0.97) !important;
     }
 
     /* Profile / Share Modals -> Bottom Sheets */
