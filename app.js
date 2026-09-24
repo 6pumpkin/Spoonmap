@@ -1460,6 +1460,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardSel: '#main-sidebar',
                 overlaySel: '#sidebar-backdrop',
                 closeFn: () => (typeof window.toggleMobileSidebar === 'function' && window.toggleMobileSidebar())
+            },
+            {
+                handleSel: '#friend-manage-modal .bottom-sheet-handle',
+                cardSel: '#friend-manage-modal .friend-modal-card',
+                overlaySel: '#friend-manage-modal',
+                closeFn: () => (typeof window.closeFriendManageModal === 'function' && window.closeFriendManageModal())
             }
         ];
 
@@ -4588,6 +4594,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof renderFriendModalList === 'function') {
             renderFriendModalList();
         }
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
+        }
     };
 
     window.renderAllActiveFriendOverlays = function(zoomFriendId = null) {
@@ -5296,7 +5305,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 popStar.classList.add('show');
                 starChip.classList.add('open');
                 if (backdrop) backdrop.classList.add('show');
+                const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                if (switchFriends) switchFriends.checked = activeIds.length > 0;
+                if (friendsSubList) friendsSubList.style.display = activeIds.length > 0 ? 'flex' : 'none';
                 renderMobileFriendsListInPopover();
+                updateStarChipHighlight();
             }
         });
 
@@ -5314,28 +5327,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Friends Toggle
         if (switchFriends) {
-            switchFriends.addEventListener('change', () => {
+            switchFriends.addEventListener('change', async () => {
                 const isOn = switchFriends.checked;
                 if (friendsSubList) friendsSubList.style.display = isOn ? 'flex' : 'none';
-                updateStarChipHighlight();
 
                 if (isOn) {
-                    const activeIds = getActiveFriendIds();
-                    const friends = getFriendsList();
+                    const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
                     if (activeIds.length === 0 && friends.length > 0) {
-                        toggleActiveFriendId(friends[0].id);
+                        if (typeof window.toggleFriendOverlay === 'function') {
+                            await window.toggleFriendOverlay(friends[0].id);
+                        }
+                    } else if (typeof window.renderAllActiveFriendOverlays === 'function') {
+                        window.renderAllActiveFriendOverlays();
                     }
-                    renderMobileFriendsListInPopover();
-                    getActiveFriendIds().forEach(fid => {
-                        const f = friends.find(item => item.id === fid);
-                        if (f) renderFriendMarkers(f);
-                    });
                 } else {
-                    if (window.activeFriendMarkersMap) {
-                        window.activeFriendMarkersMap.forEach(mList => mList.forEach(m => m.setMap(null)));
-                        window.activeFriendMarkersMap.clear();
+                    if (typeof saveActiveFriendIds === 'function') {
+                        saveActiveFriendIds([]);
+                    }
+                    if (typeof window.renderAllActiveFriendOverlays === 'function') {
+                        window.renderAllActiveFriendOverlays();
+                    }
+                    if (typeof renderFriendChips === 'function') {
+                        renderFriendChips();
                     }
                 }
+                renderMobileFriendsListInPopover();
+                updateStarChipHighlight();
             });
         }
 
@@ -5357,7 +5375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderMobileFriendsListInPopover() {
             if (!friendsSubList || typeof getFriendsList !== 'function') return;
             const friends = getFriendsList();
-            const activeIds = new Set(getActiveFriendIds());
+            const activeIds = new Set((typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : []);
 
             friendsSubList.innerHTML = '';
             if (friends.length === 0) {
@@ -5369,27 +5387,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isActive = activeIds.has(f.id);
                 const itemEl = document.createElement('div');
                 itemEl.className = `friend-sub-item ${isActive ? 'active' : ''}`;
+                const restCount = (f.restaurants && Array.isArray(f.restaurants)) ? f.restaurants.length : 0;
                 itemEl.innerHTML = `
-                    <span>${f.name}</span>
+                    <span style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${f.color || '#7C3AED'}; flex-shrink:0;"></span>
+                        <span style="font-weight:600; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.nickname || f.name}</span>
+                        ${restCount > 0 ? `<span style="font-size:9.5px; color:#94A3B8; font-weight:normal; flex-shrink:0;">(${restCount})</span>` : ''}
+                    </span>
                     <span class="f-check" style="${isActive ? '' : 'display:none;'}">✓</span>
                 `;
-                itemEl.addEventListener('click', () => {
-                    const nextActive = !itemEl.classList.contains('active');
-                    itemEl.classList.toggle('active', nextActive);
-                    const chk = itemEl.querySelector('.f-check');
-                    if (chk) chk.style.display = nextActive ? 'inline' : 'none';
-
-                    toggleActiveFriendId(f.id);
-                    if (nextActive) {
-                        renderFriendMarkers(f);
-                    } else {
-                        if (typeof removeFriendMarkers === 'function') {
-                            removeFriendMarkers(f.id);
-                        } else if (window.activeFriendMarkersMap && window.activeFriendMarkersMap.has(f.id)) {
-                            window.activeFriendMarkersMap.get(f.id).forEach(m => m.setMap(null));
-                            window.activeFriendMarkersMap.delete(f.id);
-                        }
+                itemEl.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (typeof window.toggleFriendOverlay === 'function') {
+                        await window.toggleFriendOverlay(f.id);
                     }
+                    const currentActive = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                    if (switchFriends) {
+                        switchFriends.checked = currentActive.length > 0;
+                    }
+                    if (friendsSubList) {
+                        friendsSubList.style.display = 'flex';
+                    }
+                    renderMobileFriendsListInPopover();
                     updateStarChipHighlight();
                 });
                 friendsSubList.appendChild(itemEl);

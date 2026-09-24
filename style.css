@@ -9130,12 +9130,21 @@ span.desktop-only {
         transform: translateX(14px) !important;
     }
     .friends-sub-list {
-        display: flex !important;
+        display: flex;
         flex-direction: column !important;
         gap: 3px !important;
         padding: 2px 0 2px 6px !important;
         border-left: 2px solid #EDE9FE !important;
         margin-left: 6px !important;
+    }
+    .friends-sub-list[style*="display: none"],
+    .friends-sub-list.hidden {
+        display: none !important;
+    }
+    .friend-modal-card .bottom-sheet-handle {
+        margin: 0 -14px 6px -14px !important;
+        width: calc(100% + 28px) !important;
+        border-radius: 24px 24px 0 0 !important;
     }
     .friend-sub-item {
         height: 27px !important;

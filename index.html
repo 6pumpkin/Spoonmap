@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609241551">
+    <link rel="stylesheet" href="style.css?v=202609241651">
 </head>
 
 <body class="light-theme">
@@ -786,7 +786,7 @@
                     <div id="map-friends-bar" class="map-friends-bar" style="display:none;">
                         <div class="friends-bar-header">
                             <span class="friends-bar-title">👥 친구 맛집 레이어</span>
-                            <button id="btn-open-friend-manager" class="friend-manager-link-btn" type="button" onclick="window.openFriendManageModal()">⚙️ 관리/추가</button>
+                            <button id="btn-open-friend-manager" class="friend-manager-link-btn" type="button" onclick="window.openFriendManageModal()">⚙️ 친구 관리</button>
                         </div>
                         <div id="map-friends-chips" class="map-friends-chips">
                             <!-- Injected dynamically via app.js -->
@@ -1289,6 +1289,8 @@
     <!-- ─── Friend Management & Add Friend Modal ─── -->
     <div id="friend-manage-modal" class="list-detail-modal-overlay" style="display:none;" onclick="if(event.target===this)window.closeFriendManageModal()">
         <div class="list-detail-modal-card friend-modal-card">
+            <!-- Mobile Slide Down Handlebar -->
+            <div id="friend-manage-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="친구 관리 창 닫기/접기"><div class="handle-bar"></div></div>
             <button class="list-detail-close-btn" onclick="window.closeFriendManageModal()" title="닫기">&times;</button>
             <div class="modal-header">
                 <h2>👥 친구 지도 & 맛집 관리</h2>
@@ -1296,51 +1298,13 @@
             
             <div class="friend-modal-body">
                 <!-- Section 1: My Friends List -->
-                <div class="friend-modal-section">
+                <div class="friend-modal-section" style="margin-bottom:0;">
                     <div class="section-title-row">
                         <h3>등록된 친구 목록</h3>
-                        <span id="friend-modal-count" class="friend-badge-count">3명</span>
+                        <span id="friend-modal-count" class="friend-badge-count">4명</span>
                     </div>
                     <div id="friend-modal-list" class="friend-modal-list">
                         <!-- Dynamically populated -->
-                    </div>
-                </div>
-
-                <!-- Section 2: Add New Friend Form -->
-                <div class="friend-modal-section add-friend-section">
-                    <h3>➕ 새 친구 맛집 추가</h3>
-                    <div class="add-friend-form">
-                        <div class="form-row-grid">
-                            <div class="form-group">
-                                <label for="new-friend-name">친구 이름 / 닉네임</label>
-                                <input type="text" id="new-friend-name" placeholder="예: 철수, 성수미식가">
-                            </div>
-                            <div class="form-group">
-                                <label for="new-friend-avatar">아바타 (1글자/이모지)</label>
-                                <input type="text" id="new-friend-avatar" placeholder="예: 철 or 🧑‍🍳" maxlength="2">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>테마 컬러</label>
-                            <div class="color-picker-row" id="new-friend-color-picker">
-                                <button type="button" class="color-dot active" data-color="#6366F1" style="background:#6366F1;" title="인디고"></button>
-                                <button type="button" class="color-dot" data-color="#EC4899" style="background:#EC4899;" title="핑크"></button>
-                                <button type="button" class="color-dot" data-color="#10B981" style="background:#10B981;" title="에메랄드"></button>
-                                <button type="button" class="color-dot" data-color="#F59E0B" style="background:#F59E0B;" title="앰버"></button>
-                                <button type="button" class="color-dot" data-color="#8B5CF6" style="background:#8B5CF6;" title="바이올렛"></button>
-                                <button type="button" class="color-dot" data-color="#06B6D4" style="background:#06B6D4;" title="시안"></button>
-                                <button type="button" class="color-dot" data-color="#F97316" style="background:#F97316;" title="오렌지"></button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="new-friend-comment">한줄 소개</label>
-                            <input type="text" id="new-friend-comment" placeholder="예: 성수/을지로 힙한 식당 킬러">
-                        </div>
-                        <div class="form-group">
-                            <label for="new-friend-restaurants">추천 식당 목록 (식당명 또는 식당명 카테고리 / 줄바꿈 구분)</label>
-                            <textarea id="new-friend-restaurants" rows="3" placeholder="예:&#10;몽탄 🥩고기&#10;금돼지식당 🥩고기&#10;어니언 성수 ☕카페"></textarea>
-                        </div>
-                        <button type="button" id="btn-submit-new-friend" class="btn-submit-friend" onclick="window.handleAddNewFriend()">친구 추가하기</button>
                     </div>
                 </div>
             </div>
@@ -1370,12 +1334,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609241551"></script>
-    <script src="data.js?v=202609241551"></script>
-    <script src="ddoganzip_data.js?v=202609241551"></script>
-    <script src="meogeultende_data.js?v=202609241551"></script>
-    <script src="jungyugwang_data.js?v=202609241551"></script>
-    <script src="app.js?v=202609241551"></script>
+    <script src="regions.js?v=202609241651"></script>
+    <script src="data.js?v=202609241651"></script>
+    <script src="ddoganzip_data.js?v=202609241651"></script>
+    <script src="meogeultende_data.js?v=202609241651"></script>
+    <script src="jungyugwang_data.js?v=202609241651"></script>
+    <script src="app.js?v=202609241651"></script>
 </body>
 
 </html>
