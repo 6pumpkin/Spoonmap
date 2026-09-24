@@ -7122,8 +7122,19 @@ span.desktop-only {
     }
 
     :root {
+        --bg-canvas: #FAF8F5;
+        --bg-canvas-subtle: #F4F0EA;
         --m-bnav-height: 52px;
         --m-header-height: 50px;
+    }
+
+    body {
+        background-color: #FAF8F5 !important;
+        background: #FAF8F5 !important;
+    }
+
+    .glass-bg {
+        display: none !important;
     }
 
     /* ── 1. Top Header Slim App Bar ── */
