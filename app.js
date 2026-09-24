@@ -3694,7 +3694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const actionsHtml = `
             <div class="place-detail-actions">
-                <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${safeLarge}', '${safeSmall}')">내 맛집에 추가</button>
+                <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${safeLarge}', '${safeSmall}')">➕ 내 맛집에 추가</button>
                 <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
             </div>
         `;
@@ -3795,31 +3795,41 @@ document.addEventListener('DOMContentLoaded', () => {
                         ⭐
                     </button>
                 </div>
-                <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
 
-                ${friendRecommendHtml}
-                
-                <div class="detail-info-list">
-                    <div class="info-item">
-                        ${ratingHtml}
+                <div class="detail-scroll-body">
+                    <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
+
+                    ${friendRecommendHtml}
+                    
+                    <div class="detail-info-list">
+                        <div class="info-item">
+                            ${ratingHtml}
+                        </div>
                     </div>
                 </div>
 
-                <div class="map-link-container">
-                    <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="detail-naver-btn">
-                        <span class="naver-badge">N</span> 네이버 지도
-                    </a>
-                    <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="detail-kakao-btn">
-                        <span class="kakao-badge">K</span> 카카오맵
-                    </a>
-                    <a href="${routeUrl}" target="_blank" rel="noopener noreferrer" class="detail-route-btn">
-                        🧭 길찾기
-                    </a>
-                </div>
+                <div class="detail-footer-actions">
+                    <div class="map-link-container">
+                        <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="detail-naver-btn">
+                            <span class="naver-badge">N</span> 네이버 지도
+                        </a>
+                        <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="detail-kakao-btn">
+                            <span class="kakao-badge">K</span> 카카오맵
+                        </a>
+                        <a href="${routeUrl}" target="_blank" rel="noopener noreferrer" class="detail-route-btn">
+                            🧭 길찾기
+                        </a>
+                    </div>
 
-                ${actionsHtml}
+                    ${actionsHtml}
+                </div>
             </div>
         `;
+
+        const detailScrollEl = detailPanel.querySelector('.detail-scroll-body');
+        if (detailScrollEl) {
+            detailScrollEl.scrollTop = 0;
+        }
 
         if (typeof attachDetailSheetSwipe === 'function') {
             attachDetailSheetSwipe();
@@ -5012,16 +5022,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let startTime = 0;
         let isDragging = false;
 
-        handle.addEventListener('touchstart', (e) => {
+        const onTouchStart = (e) => {
             if (!e.touches || !e.touches[0]) return;
+            if (e.target.closest('button') || e.target.closest('a')) return;
             startY = e.touches[0].clientY;
             currentY = startY;
             startTime = Date.now();
             isDragging = true;
             sheet.style.transition = 'none';
-        }, { passive: true });
+        };
 
-        handle.addEventListener('touchmove', (e) => {
+        const onTouchMove = (e) => {
             if (!isDragging || !e.touches || !e.touches[0]) return;
             currentY = e.touches[0].clientY;
             const deltaY = currentY - startY;
@@ -5033,7 +5044,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 sheet.style.transform = `translateY(${deltaY * 0.15}px)`;
             }
-        }, { passive: false });
+        };
 
         const finishDrag = (e) => {
             if (!isDragging) return;
@@ -5059,8 +5070,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        handle.addEventListener('touchend', finishDrag, { passive: true });
-        handle.addEventListener('touchcancel', finishDrag, { passive: true });
+        const dragTargets = [handle, sheet.querySelector('.detail-header-row')].filter(Boolean);
+        dragTargets.forEach(target => {
+            target.addEventListener('touchstart', onTouchStart, { passive: true });
+            target.addEventListener('touchmove', onTouchMove, { passive: false });
+            target.addEventListener('touchend', finishDrag, { passive: true });
+            target.addEventListener('touchcancel', finishDrag, { passive: true });
+        });
 
         // Click/tap toggle fallback: smooth close
         handle.addEventListener('click', () => {
