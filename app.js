@@ -4084,7 +4084,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resultsList) {
                 resultsList.innerHTML = `
                     <div class="map-empty-state">
-                        <button class="back-to-list-btn" onclick="resetMapSearchToInitial()" style="margin-bottom:16px;">← 검색 초기화면으로</button>
+                        <div style="margin-bottom:16px;">
+                            <button onclick="resetMapSearchToInitial()" style="display:inline-flex; align-items:center; gap:4px; padding:6px 14px; border-radius:8px; background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">← 돌아가기</button>
+                        </div>
                         <p style="font-size:1.4rem; margin-bottom:8px;">⭐</p>
                         <p><b>찜한 식당이 아직 없습니다.</b></p>
                         <p style="font-size:0.82rem; margin-top:6px; color:#888;">지도에서 식당을 찾아 [찜하기]를 누르면 여기에 모아볼 수 있습니다.</p>
@@ -4249,7 +4251,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             resultsList.innerHTML = `
                 <div class="map-empty-state">
-                    <button class="back-to-list-btn" onclick="resetMapSearchToInitial()" style="margin-bottom:16px;">← 검색 초기화면으로</button>
+                    <div style="margin-bottom:16px;">
+                        <button onclick="resetMapSearchToInitial()" style="display:inline-flex; align-items:center; gap:4px; padding:6px 14px; border-radius:8px; background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">← 돌아가기</button>
+                    </div>
                     <p>찜한 식당 정보를 불러오지 못했습니다.</p>
                 </div>
             `;
@@ -4816,33 +4820,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang';
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
-            const badgeTag = f.id === 'friend_ddoganzip'
-                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(풍자 또간집 📺)</span>'
-                : (f.id === 'friend_meogeultende'
-                    ? '<span style="font-size:10px; color:#2563EB; font-weight:700; background:#EFF6FF; padding:1px 5px; border-radius:4px; border:1px solid #BFDBFE;">(성시경 추천 🍲)</span>'
-                    : (f.id === 'friend_jungyugwang'
-                        ? '<span style="font-size:10px; color:#059669; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(정육왕 추천 🥩)</span>'
-                        : (isDemo 
-                            ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 채널)</span>' 
-                            : (isFollowing 
-                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
-                                : ''))));
+            const restCount = (f.restaurants && Array.isArray(f.restaurants)) ? f.restaurants.length : 0;
+            const toggleId = `friend-toggle-${f.id}`;
             return `
-                <div class="friend-modal-item">
-                    <div class="friend-item-left">
-                        <span class="friend-chip-avatar" style="background:${f.color}; width:28px; height:28px; font-size:13px;">${f.avatarText}</span>
-                        <div class="friend-item-info">
-                            <strong>${f.nickname || f.name} ${badgeTag}</strong>
-                            <span>${f.comment || '추천 맛집'} • ${f.restaurants.length}곳</span>
+                <div class="friend-modal-item" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px; background:#F8FAFC; margin-bottom:6px; border:1px solid #F1F5F9;">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                        <span class="friend-chip-avatar" style="background:${f.color}; width:28px; height:28px; font-size:13px; flex-shrink:0;">${f.avatarText}</span>
+                        <div style="min-width:0; flex:1;">
+                            <div style="font-size:13px; font-weight:700; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${f.nickname || f.name}</div>
+                            <div style="font-size:11px; color:#94A3B8; margin-top:1px;">${restCount}곳</div>
                         </div>
                     </div>
-                    <div class="friend-item-actions">
-                        <button type="button" class="btn-wishlist-toggle" style="font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; background:${isActive ? '#EDE9FE' : '#F3F4F6'}; color:${isActive ? '#6D28D9' : '#4B5563'}; border:1px solid ${isActive ? '#DDD6FE' : '#D1D5DB'}; font-weight:700; white-space:nowrap; flex-shrink:0; min-width:84px; text-align:center;" onclick="window.toggleFriendOverlay('${f.id}'); renderFriendModalList();">
-                            ${isActive ? '지도 켜짐 🟢' : '지도 꺼짐 ⚪'}
-                        </button>
-                        ${(!isDemo && !isFollowing) ? `
-                            <button type="button" class="btn-del-friend" onclick="handleDeleteFriend('${f.id}')" title="친구 삭제">삭제</button>
-                        ` : ''}
+                    <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                        ${(!isDemo && !isFollowing) ? `<button type="button" class="btn-del-friend" onclick="event.stopPropagation(); handleDeleteFriend('${f.id}')" title="친구 삭제" style="font-size:10px; padding:3px 8px; border-radius:5px; background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; cursor:pointer; font-weight:600;">삭제</button>` : ''}
+                        <label class="toggle-switch-sm" style="flex-shrink:0;">
+                            <input type="checkbox" id="${toggleId}" ${isActive ? 'checked' : ''} onchange="window.toggleFriendOverlay('${f.id}'); setTimeout(function(){ if(typeof renderFriendModalList==='function') renderFriendModalList(); }, 100);">
+                            <span class="toggle-slider-sm"></span>
+                        </label>
                     </div>
                 </div>
             `;
@@ -5307,7 +5301,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (backdrop) backdrop.classList.add('show');
                 const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
                 if (switchFriends) switchFriends.checked = activeIds.length > 0;
-                if (friendsSubList) friendsSubList.style.display = activeIds.length > 0 ? 'flex' : 'none';
+                // Always show friends sub list so user can toggle individual friends
+                if (friendsSubList) friendsSubList.style.display = 'flex';
                 renderMobileFriendsListInPopover();
                 updateStarChipHighlight();
             }
@@ -5387,6 +5382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isActive = activeIds.has(f.id);
                 const itemEl = document.createElement('div');
                 itemEl.className = `friend-sub-item ${isActive ? 'active' : ''}`;
+                itemEl.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:2px 4px;';
                 const restCount = (f.restaurants && Array.isArray(f.restaurants)) ? f.restaurants.length : 0;
                 itemEl.innerHTML = `
                     <span style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
@@ -5394,23 +5390,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span style="font-weight:600; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.nickname || f.name}</span>
                         ${restCount > 0 ? `<span style="font-size:9.5px; color:#94A3B8; font-weight:normal; flex-shrink:0;">(${restCount})</span>` : ''}
                     </span>
-                    <span class="f-check" style="${isActive ? '' : 'display:none;'}">✓</span>
+                    <label class="toggle-switch-sm" style="transform:scale(0.75); flex-shrink:0; margin:0;">
+                        <input type="checkbox" ${isActive ? 'checked' : ''} data-friend-id="${f.id}">
+                        <span class="toggle-slider-sm"></span>
+                    </label>
                 `;
-                itemEl.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    if (typeof window.toggleFriendOverlay === 'function') {
-                        await window.toggleFriendOverlay(f.id);
-                    }
-                    const currentActive = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
-                    if (switchFriends) {
-                        switchFriends.checked = currentActive.length > 0;
-                    }
-                    if (friendsSubList) {
-                        friendsSubList.style.display = 'flex';
-                    }
-                    renderMobileFriendsListInPopover();
-                    updateStarChipHighlight();
-                });
+                const toggleInput = itemEl.querySelector('input[type="checkbox"]');
+                if (toggleInput) {
+                    toggleInput.addEventListener('change', async (e) => {
+                        e.stopPropagation();
+                        if (typeof window.toggleFriendOverlay === 'function') {
+                            await window.toggleFriendOverlay(f.id);
+                        }
+                        const currentActive = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                        if (switchFriends) {
+                            switchFriends.checked = currentActive.length > 0;
+                        }
+                        renderMobileFriendsListInPopover();
+                        updateStarChipHighlight();
+                    });
+                }
                 friendsSubList.appendChild(itemEl);
             });
         }

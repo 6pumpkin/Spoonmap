@@ -9138,6 +9138,7 @@ span.desktop-only {
         margin-left: 6px !important;
     }
     .friends-sub-list[style*="display: none"],
+    .friends-sub-list[style*="display:none"],
     .friends-sub-list.hidden {
         display: none !important;
     }
