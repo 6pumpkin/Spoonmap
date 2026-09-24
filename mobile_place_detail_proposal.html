@@ -1,10 +1,9 @@
-<!-- Copy of mobile_place_detail_proposal.html in workspace -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스푼맵 식당 상세 화면 모바일 리뉴얼 제안</title>
+  <title>스푼맵 식당 상세 화면 모바일 리뉴얼 제안 (피드백 반영 2차)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -17,17 +16,21 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 p-3 sm:p-6 antialiased flex flex-col items-center min-h-screen">
+
   <div class="w-full max-w-4xl mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
     <div>
       <div class="flex items-center gap-2 mb-1">
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-600">Mobile UX Proposal</span>
-        <h1 class="text-lg sm:text-xl font-bold text-slate-900">식당 상세 화면 모바일 리뉴얼 프로토타입</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-600">v2.0 Feedback Applied</span>
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900">식당 상세 화면 리뉴얼 (피드백 반영 2차안)</h1>
       </div>
-      <p class="text-xs sm:text-sm text-slate-500">최신 지도 앱(네이버 지도, 카카오맵, 캐치테이블) 표준을 반영한 콤팩트 바텀시트 디자인입니다.</p>
+      <p class="text-xs sm:text-sm text-slate-500">
+        주소 제거(카테고리만 유지), 모호한 뱃지 제거, 불확실한 메뉴 가격표 삭제 및 실시간 지도 연동으로 슬림화했습니다.
+      </p>
     </div>
+
     <div class="flex items-center bg-slate-100 p-1 rounded-xl self-start sm:self-auto border border-slate-200 text-xs font-bold">
-      <button id="btn-view-new" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-rose-600 font-extrabold transition-all" onclick="switchView('new')">✨ 신규 추천안 (New)</button>
-      <button id="btn-view-old" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all" onclick="switchView('old')">기존 화면 (Before)</button>
+      <button id="btn-view-new" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-rose-600 font-extrabold transition-all" onclick="switchView('new')">✨ 2차 수정안 (New)</button>
+      <button id="btn-view-old" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-medium" onclick="switchView('old')">기존 화면 (Before)</button>
     </div>
   </div>
 
@@ -37,6 +40,7 @@
         <div class="w-28 h-5 bg-black rounded-full mx-auto mb-1 z-30 flex items-center justify-end pr-2">
           <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
         </div>
+
         <div class="flex-1 bg-slate-50 rounded-[32px] overflow-hidden relative flex flex-col">
           <div class="absolute inset-0 bg-[#e8ece9] flex flex-col">
             <svg class="w-full h-full opacity-35" xmlns="http://www.w3.org/2000/svg">
@@ -49,13 +53,15 @@
               <path d="M 0 150 Q 120 180 200 120 T 375 220" fill="none" stroke="#60a5fa" stroke-width="6" opacity="0.7"/>
               <path d="M 50 0 Q 80 180 220 280 T 300 600" fill="none" stroke="#fbbf24" stroke-width="5" opacity="0.6"/>
             </svg>
-            <div class="absolute top-[28%] left-[45%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+
+            <div class="absolute top-[26%] left-[45%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
               <div class="bg-rose-500 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 border-2 border-white animate-bounce">
                 <span>🍚</span>
                 <span>우래옥 본점</span>
               </div>
               <div class="w-2.5 h-2.5 bg-rose-500 rotate-45 -mt-1 border-r border-b border-white"></div>
             </div>
+
             <div class="absolute top-2 left-3 right-3 z-10 flex flex-col gap-2">
               <div class="h-[42px] bg-white rounded-xl shadow-md border border-slate-200/80 flex items-center px-3.5 justify-between">
                 <span class="text-xs text-slate-500 font-medium">🔍 현 화면에서 검색</span>
@@ -74,25 +80,30 @@
             </div>
           </div>
 
-          <!-- NEW 모바일 바텀시트 -->
-          <div id="new-sheet" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] shadow-2xl z-20 flex flex-col sheet-transition max-h-[82%] border-t border-slate-100">
+          <!-- NEW 모바일 바텀시트 (2차 수정안) -->
+          <div id="new-sheet" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[24px] shadow-2xl z-20 flex flex-col sheet-transition max-h-[78%] border-t border-slate-100">
             <div class="w-full pt-2.5 pb-1 flex justify-center cursor-pointer select-none" onclick="toggleSheetHeight()">
               <div class="w-10 h-1 bg-slate-300 rounded-full"></div>
             </div>
-            <div class="px-4 py-2 flex items-center justify-between border-b border-slate-100/80">
+
+            <div class="px-4 py-2.5 flex items-center justify-between border-b border-slate-100">
               <div class="flex items-center gap-2.5 min-w-0">
-                <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 text-sm font-bold flex-shrink-0 transition-colors" title="목록으로">
+                <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 text-sm font-bold flex-shrink-0 transition-colors" title="목록으로 돌아가기">
                   ←
                 </button>
                 <div class="min-w-0">
                   <div class="flex items-center gap-1.5">
                     <h2 class="text-base font-extrabold text-slate-900 truncate">우래옥 본점</h2>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60 flex-shrink-0">🥄 4.8</span>
                   </div>
-                  <p class="text-[11px] text-slate-500 font-medium truncate">음식점 > 한식 > 평양냉면 · 서울 중구 주교동</p>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="inline-block text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                      음식점 > 한식 > 평양냉면
+                    </span>
+                  </div>
                 </div>
               </div>
-              <button id="btn-mock-wish" class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-base flex-shrink-0 transition-all active:scale-90" onclick="toggleWish(this)">
+
+              <button id="btn-mock-wish" class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-base flex-shrink-0 transition-all active:scale-90" onclick="toggleWish(this)" title="찜하기">
                 ⭐
               </button>
             </div>
@@ -117,15 +128,12 @@
                 <div class="flex flex-wrap gap-1.5">
                   <button class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold hover:bg-rose-100 transition-colors" onclick="toggleYoutubeSnippet()">
                     <span class="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[9px]">▶</span>
-                    <span>성시경 먹을텐데</span>
+                    <span>성시경 먹을텐데 방영</span>
                     <span class="text-[9px] text-rose-400">▼</span>
                   </button>
                   <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold">
                     <span>👥</span>
                     <span>박준호 추천</span>
-                  </span>
-                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold">
-                    <span>🌟 내 찐맛집</span>
                   </span>
                 </div>
 
@@ -149,30 +157,12 @@
                 <button class="text-[11px] text-rose-500 font-bold hover:underline" onclick="toggleReviewClamp()">더보기</button>
               </div>
 
-              <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-2">
-                <div class="font-bold text-slate-800 flex items-center gap-1">
-                  <span>🍴 대표 메뉴</span>
-                </div>
-                <div class="space-y-1.5 font-medium">
-                  <div class="flex justify-between items-center text-slate-700">
-                    <span>평양냉면</span>
-                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
-                    <span class="font-bold text-slate-900">16,000원</span>
-                  </div>
-                  <div class="flex justify-between items-center text-slate-700">
-                    <span>비빔냉면</span>
-                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
-                    <span class="font-bold text-slate-900">16,000원</span>
-                  </div>
-                  <div class="flex justify-between items-center text-slate-700">
-                    <span>온면</span>
-                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
-                    <span class="font-bold text-slate-900">16,000원</span>
-                  </div>
-                  <div class="flex justify-between items-center text-slate-700">
-                    <span>불고기 (1인)</span>
-                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 h-2"></span>
-                    <span class="font-bold text-slate-900">37,000원</span>
+              <div class="p-3 bg-slate-50/70 border border-dashed border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2 text-slate-600">
+                  <span class="text-base">📋</span>
+                  <div>
+                    <strong class="text-slate-800 block text-[11.5px]">실시간 메뉴 & 최신 가격 안내</strong>
+                    <span class="text-[10.5px] text-slate-500">가격 변동 및 매장 메뉴는 아래 지도 링크에서 확인하세요</span>
                   </div>
                 </div>
               </div>
@@ -181,10 +171,10 @@
             <div class="p-3 bg-white border-t border-slate-100 space-y-2">
               <div class="grid grid-cols-3 gap-1.5 text-xs font-bold">
                 <a href="#" class="py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center gap-1 hover:bg-emerald-100 transition-colors">
-                  <span class="font-extrabold text-[11px]">N</span> 네이버
+                  <span class="font-extrabold text-[11px]">N</span> 네이버 지도
                 </a>
                 <a href="#" class="py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center gap-1 hover:bg-amber-100 transition-colors">
-                  <span class="font-extrabold text-[11px]">K</span> 카카오
+                  <span class="font-extrabold text-[11px]">K</span> 카카오맵
                 </a>
                 <a href="#" class="py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center gap-1 hover:bg-blue-100 transition-colors">
                   <span>🧭</span> 길찾기
@@ -208,6 +198,7 @@
               <span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-xs">음식점 > 한식 > 냉면</span>
               <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs">주교동</span>
             </div>
+
             <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2 text-xs">
               <div class="flex items-center gap-1.5">
                 <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px]">먹</span>
@@ -220,6 +211,7 @@
               </div>
               <p class="text-[11px] text-slate-500">🍴 대표 메뉴: 평양냉면 (16000원), 비빔냉면 (16000원)...</p>
             </div>
+
             <div class="p-3 border border-rose-300 bg-rose-50/50 rounded-xl text-xs space-y-1">
               <p class="font-bold text-rose-700">" [서울 중구] <우래옥> 평양냉면 // 서울 맛집, 서울 평양냉면 맛집, 을지로 맛집, 우래옥 웨이팅 "</p>
               <p class="text-slate-600 leading-relaxed">
@@ -227,6 +219,7 @@
               </p>
               <p class="text-right text-[10px] text-rose-500 font-bold">출처: 먹고자고 ↗</p>
             </div>
+
             <div class="space-y-2 pt-2 border-t">
               <div class="grid grid-cols-3 gap-2 text-xs font-bold">
                 <button class="py-2.5 rounded-lg bg-emerald-100 text-emerald-800">네이버 지도</button>
@@ -255,38 +248,42 @@
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <span>🎯</span>
-          <span>주요 개선 4대 핵심 포인트</span>
+          <span>피드백 반영 3가지 핵심 결정 사항</span>
         </h3>
+        
         <div class="space-y-3 text-xs leading-relaxed text-slate-600">
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong class="text-slate-900 text-sm block mb-1">1. 하단 액션 버튼 그룹 슬림화 (120px ➔ 70px)</strong>
-            <p>기존에는 버튼 5개가 2열로 크게 배치되어 스크롤을 막았습니다. <strong>[⭐ 찜하기]</strong>는 상단 헤더 우측으로 이동하고, 하단에는 <strong>[➕ 내 맛집 추가]</strong> 메인 버튼과 슬림한 3분할 지도 칩(네이버/카카오/길찾기)만 남겼습니다.</p>
+            <strong class="text-slate-900 text-sm block mb-1">1. 상단 주소 완전 제거 & 카테고리만 깔끔 노출</strong>
+            <p>모바일 좁은 상단 바에서 주소 텍스트(예: 서울 중구 주교동...)를 제거하고, <strong>[음식점 > 한식 > 평양냉면]</strong> 카테고리 뱃지만 컴팩트하게 남겨 제목 가독성을 극대화했습니다.</p>
           </div>
+
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong class="text-slate-900 text-sm block mb-1">2. 성시경 / 크리에이터 추천 알약 뱃지화</strong>
-            <p>화면 절반을 채우던 거대한 보라색 카드를 <strong>[▶ 성시경 먹을텐데]</strong>, <strong>[👥 박준호 추천]</strong> 등의 세련된 알약 뱃지로 압축했습니다. 탭 시에만 가볍게 요약이 펼쳐집니다.</p>
+            <strong class="text-slate-900 text-sm block mb-1">2. '🌟 내 찐맛집' 불명확한 뱃지 삭제</strong>
+            <p>기존에 본인이 등록한 일기와 친구 추천이 겹칠 때 뜨던 내부 로직 뱃지였으나, 사용자 입장에서 기준이 모호하므로 완전히 삭제했습니다. 대신 <strong>[▶ 성시경 먹을텐데]</strong>, <strong>[👥 박준호 추천]</strong> 등 명확한 출처 뱃지만 표시합니다.</p>
           </div>
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong class="text-slate-900 text-sm block mb-1">3. 블로그 후기 2줄 요약 + 더보기 토글</strong>
-            <p>장문의 줄글 후기 대신 2줄 말줄임(clamp) 처리하고, <code>[더보기]</code>를 눌렀을 때만 펼쳐지도록 하여 시각적 피로도를 대폭 낮췄습니다.</p>
-          </div>
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <strong class="text-slate-900 text-sm block mb-1">4. 정돈된 대표 메뉴 점선 테이블</strong>
-            <p>기존 쉼표 나열식 텍스트 대신 캐치테이블/네이버 지도처럼 <strong>메뉴명과 가격이 우측에 칼같이 정렬되는 리스트</strong>로 정돈했습니다.</p>
+
+          <div class="p-3 bg-rose-50/60 rounded-xl border border-rose-100">
+            <strong class="text-rose-900 text-sm block mb-1">3. 대표 메뉴/가격 정확도 문제 ➔ 고정 테이블 전면 삭제!</strong>
+            <p class="mb-1.5">
+              사용자분 지적이 정확합니다! <strong>카카오 지도 검색 API는 일반 식당의 실시간 메뉴/가격 정보를 제공하지 않습니다.</strong> 
+              (오직 일부 유튜브 방영 식당에 수동 입력된 텍스트만 있었던 것)
+            </p>
+            <p>
+              따라서 모든 식당에 고정 메뉴판을 두면 <strong>95% 이상의 식당에서 빈 공간이 되거나 가격 변동 시 오정보를 제공</strong>하게 됩니다.
+              ➔ <strong>고정 메뉴 테이블을 과감히 제거</strong>하고, 하단의 <strong>[네이버 지도], [카카오맵] 1-Click 연동</strong>을 통해 각 포털이 실시간으로 관리하는 최신 메뉴판/가격/사진을 보게 하는 것이 가장 정확하고 신뢰도가 높습니다.
+            </p>
           </div>
         </div>
       </div>
-      <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-800 space-y-1.5">
-        <div class="font-bold flex items-center gap-1.5">
-          <span>💡</span>
-          <span>목업 직접 체험해보기</span>
+
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1.5">
+        <div class="font-bold text-slate-800 flex items-center gap-1.5">
+          <span>📱</span>
+          <span>시트 높이가 한눈에 쏙 들어오게 슬림화됨</span>
         </div>
-        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-amber-900/80">
-          <li>상단 <strong>'✨ 신규 추천안'</strong>과 <strong>'기존 화면'</strong> 버튼을 눌러 시각적 차이를 비교해보세요.</li>
-          <li>목업 상단 <strong>드래그 핸들(─)</strong>을 누르면 시트 높이가 접힘/펼침으로 변경됩니다.</li>
-          <li>헤더의 <strong>⭐ 찜하기</strong> 버튼을 눌러 인터랙티브 피드백을 확인해보세요.</li>
-          <li><strong>[▶ 성시경 먹을텐데]</strong> 뱃지를 누르면 영상 링크가 토글됩니다.</li>
-        </ul>
+        <p class="text-[11.5px] leading-relaxed">
+          거대한 메뉴판과 긴 주소, 불필요한 뱃지가 빠져서 이제 바텀시트가 <strong>지도 화면을 불필요하게 가리지 않고 꼭 필요한 핵심 정보만 한눈에</strong> 보여줍니다.
+        </p>
       </div>
     </div>
   </div>
@@ -297,6 +294,7 @@
       const oldSheet = document.getElementById('old-sheet');
       const btnNew = document.getElementById('btn-view-new');
       const btnOld = document.getElementById('btn-view-old');
+
       if (mode === 'new') {
         newSheet.classList.remove('hidden');
         oldSheet.classList.add('hidden');
@@ -309,12 +307,14 @@
         btnNew.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-medium";
       }
     }
+
     let isExpanded = false;
     function toggleSheetHeight() {
       const sheet = document.getElementById('new-sheet');
       isExpanded = !isExpanded;
-      sheet.style.maxHeight = isExpanded ? '92%' : '65%';
+      sheet.style.maxHeight = isExpanded ? '90%' : '60%';
     }
+
     let isWished = false;
     function toggleWish(btn) {
       isWished = !isWished;
@@ -326,12 +326,14 @@
         btn.classList.add('text-slate-400', 'bg-slate-100', 'border-slate-200');
       }
     }
+
     let isYtOpen = true;
     function toggleYoutubeSnippet() {
       const panel = document.getElementById('yt-subpanel');
       isYtOpen = !isYtOpen;
       panel.style.display = isYtOpen ? 'block' : 'none';
     }
+
     let isClamped = true;
     function toggleReviewClamp() {
       const p = document.getElementById('review-text');
