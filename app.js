@@ -1673,6 +1673,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+
         document.body.classList.toggle('is-map-tab', targetTab === 'map');
 
         updateAuthProtectedViews();
@@ -1680,6 +1684,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentActiveTab = targetTab;
         if (targetTab === 'map') {
             initMap();
+            setTimeout(() => { if (map && typeof map.relayout === 'function') map.relayout(); }, 60);
+            setTimeout(() => { if (map && typeof map.relayout === 'function') map.relayout(); }, 200);
         } else if (targetTab === 'sommelier') {
             initSommelierTab();
         } else if (targetTab === 'diary' && isUserLoggedIn()) {
@@ -1731,8 +1737,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (route.tab === 'map') {
             if (route.subPath !== 'place') {
                 if (mapPlaceDetail && mapResultsList) {
-                    mapResultsList.style.display = 'block';
                     mapPlaceDetail.style.display = 'none';
+                    const hasItems = mapResultsList.querySelector('.result-item, .map-result-item');
+                    if (hasItems) {
+                        mapResultsList.style.display = 'block';
+                    } else {
+                        mapResultsList.style.display = 'none';
+                    }
                     if (window.currentMapOverlay) {
                         window.currentMapOverlay.setMap(null);
                         window.currentMapOverlay = null;
@@ -2453,7 +2464,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultsList.innerHTML = '';
         detailPanel.style.display = 'none';
-        resultsList.style.display = 'block';
+        const isInitialState = !mapSearchValue && !window.currCategory && !window.currSubKeyword && !(window.isSharedMapMode && window.sharedMapData);
+        if (isInitialState) {
+            resultsList.style.display = 'none';
+        } else {
+            resultsList.style.display = 'block';
+        }
 
         const quickFilters = document.querySelector('.map-quick-filters');
         if (quickFilters) {
@@ -2724,7 +2740,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.isSharedMapMode && window.sharedMapData) {
                 renderSharedMapOnMap();
             } else {
-                resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
+                resultsList.style.display = 'none';
+                resultsList.innerHTML = '';
             }
         }
     }
@@ -3992,13 +4009,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (detailPanel) detailPanel.style.display = 'none';
         const resultsList = document.getElementById('map-results-list');
         if (resultsList) {
-            resultsList.style.display = 'block';
-            resultsList.innerHTML = `
-                <div class="map-empty-state">
-                    <i class="icon-search"></i>
-                    <p>검색어를 입력하여 대사전에서 찾아보세요</p>
-                </div>
-            `;
+            resultsList.style.display = 'none';
+            resultsList.innerHTML = '';
         }
 
         markers.forEach(m => m.setMap(null));
@@ -4019,7 +4031,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('map-search-input');
 
         if (detailPanel) detailPanel.style.display = 'none';
-        if (resultsList) resultsList.style.display = 'block';
+        if (resultsList) {
+            const hasItems = resultsList.querySelector('.result-item, .map-result-item');
+            if (hasItems) {
+                resultsList.style.display = 'block';
+            } else {
+                resultsList.style.display = 'none';
+            }
+        }
 
         const isSearchEmpty = (!searchInput || !searchInput.value.trim()) && !window.currCategory && !window.currSubKeyword;
         const hasEmptyState = resultsList.querySelector('.map-empty-state');
@@ -5231,6 +5250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllPopovers();
                 const sheet = document.getElementById('map-results-list');
                 if (sheet) {
+                    sheet.style.display = 'block';
                     sheet.style.transform = 'translateY(0)';
                     sheet.classList.remove('collapsed-peek');
                     sheet.scrollTop = 0;
@@ -5257,6 +5277,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const c = i.querySelector('.check-mark');
                     if (c) c.remove();
                 });
+                const sheet = document.getElementById('map-results-list');
+                if (sheet) {
+                    sheet.style.display = 'none';
+                    sheet.innerHTML = '';
+                }
                 closeAllPopovers();
                 updateMapMarkers();
             });
@@ -5945,7 +5970,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsList.style.display = 'block';
 
         if (!query) {
-            resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 위에서 검색하거나 카테고리를 선택해보세요.</p></div>`;
+            resultsList.style.display = 'none';
+            resultsList.innerHTML = '';
             return;
         }
 
