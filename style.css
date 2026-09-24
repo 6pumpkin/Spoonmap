@@ -1247,6 +1247,23 @@ main {
     flex-shrink: 0;
 }
 
+.detail-header-row {
+    display: block;
+}
+
+.detail-title-wrap {
+    display: block;
+}
+
+.mobile-only-wish-btn {
+    display: none !important;
+}
+
+.naver-badge, .kakao-badge {
+    font-weight: 800;
+    margin-right: 2px;
+}
+
 .back-to-list-btn {
     border: none;
     background: transparent;
@@ -9094,7 +9111,7 @@ span.desktop-only {
     }
 
     /* 하단 결과창 슬림 패딩 & 접기/펴기 transition */
-    #map-results-list, #map-place-detail {
+    #map-results-list {
         position: absolute !important;
         bottom: 0 !important;
         left: 0 !important;
@@ -9111,6 +9128,218 @@ span.desktop-only {
     }
     #map-results-list.collapsed-peek {
         transform: translateY(calc(100% - 44px)) !important;
+    }
+
+    /* 모바일 식당 상세 바텀시트 슬림 & 현대화 */
+    #map-place-detail {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-height: 74dvh !important;
+        z-index: 50 !important;
+        background: #FFFFFF !important;
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.16) !important;
+        overflow-y: auto !important;
+        padding: 4px 14px 18px !important;
+        box-sizing: border-box !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    #map-place-detail.collapsed-peek {
+        transform: translateY(calc(100% - 44px)) !important;
+    }
+
+    #map-detail-sheet-handle {
+        width: 38px !important;
+        height: 4px !important;
+        background: #CBD5E1 !important;
+        border-radius: 9999px !important;
+        margin: 6px auto 10px !important;
+        cursor: grab !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-header-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+    }
+
+    .back-to-list-btn {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 50% !important;
+        background: #F8FAFC !important;
+        color: #334155 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        cursor: pointer !important;
+    }
+    .back-to-list-btn:hover {
+        background: #F1F5F9 !important;
+        text-decoration: none !important;
+    }
+
+    .detail-title-wrap {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+
+    .detail-title-wrap .detail-title {
+        font-size: 1.08rem !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin: 0 0 2px 0 !important;
+        line-height: 1.25 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .detail-title-wrap .detail-tags {
+        margin: 0 !important;
+        gap: 4px !important;
+    }
+
+    .detail-title-wrap .tag-category {
+        font-size: 0.72rem !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+        background: #FFF1F2 !important;
+        color: #E11D48 !important;
+        border: 1px solid #FFE4E6 !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+        display: inline-block !important;
+    }
+
+    .mobile-only-wish-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        background: #F8FAFC !important;
+        border: 1.5px solid #E2E8F0 !important;
+        color: #94A3B8 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.1rem !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+    .mobile-only-wish-btn.active {
+        background: #FEF3C7 !important;
+        border-color: #F59E0B !important;
+        color: #D97706 !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    .detail-photo-gallery {
+        margin-bottom: 8px !important;
+    }
+    .main-photo-hero {
+        height: 145px !important;
+        border-radius: 12px !important;
+    }
+    .photo-thumb-list img.thumb-img {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 8px !important;
+    }
+
+    .detail-info-list {
+        margin-bottom: 8px !important;
+    }
+    .detail-info-list .info-item {
+        margin-bottom: 6px !important;
+    }
+    .detail-info-list .info-label {
+        font-size: 0.75rem !important;
+        margin-bottom: 2px !important;
+    }
+    .detail-info-list .info-val {
+        font-size: 0.85rem !important;
+    }
+
+    .blog-review-box {
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        margin-top: 4px !important;
+    }
+    .blog-review-title {
+        font-size: 0.78rem !important;
+        margin-bottom: 3px !important;
+    }
+    .blog-review-body {
+        font-size: 0.74rem !important;
+        line-height: 1.35 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    .blog-review-meta {
+        font-size: 0.68rem !important;
+        margin-top: 4px !important;
+    }
+
+    .map-link-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        margin-top: 6px !important;
+        padding-top: 8px !important;
+        border-top: 1px solid #F1F5F9 !important;
+    }
+    .detail-naver-btn,
+    .detail-kakao-btn,
+    .detail-route-btn {
+        padding: 7px 4px !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        border-radius: 9px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+    }
+    .naver-badge, .kakao-badge {
+        font-weight: 900 !important;
+        font-size: 0.72rem !important;
+    }
+
+    .place-detail-actions {
+        margin-top: 8px !important;
+        gap: 0 !important;
+    }
+    .place-detail-actions .btn-add-to-diary {
+        width: 100% !important;
+        padding: 11px !important;
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #FF4757, #E0484D) !important;
+        box-shadow: 0 3px 12px rgba(255, 71, 87, 0.28) !important;
+    }
+    .place-detail-actions .btn-toggle-wishlist {
+        display: none !important;
     }
 
     /* 검색 결과 아이템 모바일 컴팩트 슬림화 (한 화면에 5~6개 노출) */

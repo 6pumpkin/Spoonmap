@@ -1264,11 +1264,16 @@ window.handleToggleWishlist = function(name, category, location, mapUrl, x = '',
 
     saveUserWishlist(list);
 
-    // Update the single button text & active class in place detail view
+    // Update the button text & active class in place detail view (desktop + mobile)
     const btn = document.getElementById('btn-wishlist-toggle');
     if (btn) {
         btn.textContent = isNowWishlisted ? '찜 취소' : '찜하기';
         btn.classList.toggle('active', isNowWishlisted);
+    }
+    const mobileWishBtn = document.querySelector('.mobile-only-wish-btn');
+    if (mobileWishBtn) {
+        mobileWishBtn.classList.toggle('active', isNowWishlisted);
+        mobileWishBtn.title = isNowWishlisted ? '찜 취소' : '찜하기';
     }
 };
 
@@ -3725,25 +3730,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </a>
                             </div>
                         ` : ''}
-                        ${m.menu && m.menu.length > 0 ? `
-                            <div style="margin-top:6px; font-size:11px; color:#4B5563; line-height:1.4;">
-                                <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${m.menu.slice(0, 4).join(', ')}
-                            </div>
-                        ` : ''}
                     </div>
                 `).join('');
 
                 friendRecommendHtml = `
-                    <div class="friend-recommend-card multi" style="flex-shrink:0 !important; width:100%; box-sizing:border-box; display:block;">
+                    <div class="friend-recommend-card multi" style="flex-shrink:0 !important; width:100%; box-sizing:border-box; display:block; margin-top:10px;">
                         <div class="multi-recommend-header">
                             <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
                                 <span style="font-size:15px; flex-shrink:0;">🔥</span>
                                 <strong style="font-size:12.5px; color:#1E293B; word-break:keep-all;">
-                                    ${fi.isCommon ? '🌟 [내 찐맛집] & ' : ''}${friendsTitle} 동시 추천!
+                                    ${friendsTitle} 동시 추천!
                                 </strong>
                             </div>
                         </div>
-                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin:0 0 6px 0;">✨ 내가 저장한 맛집과도 일치하는 검증된 맛집입니다!</div>` : ''}
                         
                         <div class="multi-friend-carousel-track" onwheel="if(Math.abs(event.deltaY)>Math.abs(event.deltaX)){event.currentTarget.scrollLeft += event.deltaY; event.preventDefault();}">
                             ${matchCards}
@@ -3756,24 +3755,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             } else {
                 friendRecommendHtml = `
-                    <div class="friend-recommend-card" style="background:${fi.isCommon ? '#FFFBEB' : '#F5F3FF'}; border: 1.5px solid ${fi.isCommon ? '#FDE68A' : '#DDD6FE'}; margin-top:12px; border-radius:12px; padding:12px;">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                            <span style="width:24px; height:24px; border-radius:50%; background:${fi.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${fi.avatarText}</span>
-                            <strong style="font-size:13px; color:#1E293B;">${fi.friendName} 님의 ${fi.isCommon ? '🌟 공통 추천 맛집!' : '추천 맛집'}</strong>
+                    <div class="friend-recommend-card" style="background:#F5F3FF; border: 1.5px solid #DDD6FE; margin-top:10px; border-radius:12px; padding:10px 12px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <span style="width:22px; height:22px; border-radius:50%; background:${fi.color}; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0;">${fi.avatarText}</span>
+                            <strong style="font-size:12.5px; color:#1E293B;">${fi.friendName} 님의 추천 맛집</strong>
                         </div>
-                        ${fi.isCommon ? `<div style="font-size:11px; color:#D97706; font-weight:700; margin-bottom:6px;">✨ 나의 저장 목록에도 있는 찐맛집!</div>` : ''}
-                        ${fi.comment ? `<p style="font-size:12px; color:#4B5563; margin:0; line-height:1.4;">💬 "${fi.comment}"</p>` : ''}
+                        ${fi.comment ? `<p style="font-size:11.5px; color:#4B5563; margin:0; line-height:1.4;">💬 "${fi.comment}"</p>` : ''}
                         ${fi.youtubeUrl ? `
-                            <div style="margin-top:8px;">
-                                <a href="${fi.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:6px 12px; border-radius:8px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
-                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#EF4444; color:#fff; font-size:11px; flex-shrink:0;">▶</span>
-                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:12px; color:#1F2937;">${fi.youtubeTitle || '방영 영상 시청'}</span>
+                            <div style="margin-top:6px;">
+                                <a href="${fi.youtubeUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#DC2626; text-decoration:none; background:#FEF2F2; padding:5px 10px; border-radius:7px; border:1px solid #FECACA; width:100%; box-sizing:border-box;">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:#EF4444; color:#fff; font-size:10px; flex-shrink:0;">▶</span>
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-size:11.5px; color:#1F2937;">${fi.youtubeTitle || '방영 영상 시청'}</span>
                                 </a>
-                            </div>
-                        ` : ''}
-                        ${fi.menu && fi.menu.length > 0 ? `
-                            <div style="margin-top:8px; font-size:11px; color:#4B5563; line-height:1.4;">
-                                <strong style="color:#1F2937;">🍴 대표 메뉴:</strong> ${fi.menu.slice(0, 4).join(', ')}
                             </div>
                         ` : ''}
                     </div>
@@ -3782,16 +3775,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         detailPanel.innerHTML = `
+            <div id="map-detail-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="상세 정보 창 닫기/접기"></div>
             <div class="detail-body">
-                <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">
-                    ← 목록으로 돌아가기
-                </button>
-                <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
-                <h3 class="detail-title ${item.closed ? 'is-closed' : ''}">${item.closed ? '<s>' + item.name + '</s> <span class="badge-closed">폐점</span>' : item.name}</h3>
-                <div class="detail-tags">
-                    <span class="detail-tag tag-category">${displayCategory}</span>
-                    ${item.location_small ? `<span class="detail-tag tag-location">${item.location_small}</span>` : `<span class="detail-tag tag-location">${displayAddress}</span>`}
+                <div class="detail-header-row">
+                    <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">
+                        <span class="desktop-only">← 목록으로 돌아가기</span>
+                        <span class="mobile-only">←</span>
+                    </button>
+                    <div class="detail-title-wrap">
+                        <h3 class="detail-title ${item.closed ? 'is-closed' : ''}">${item.closed ? '<s>' + item.name + '</s> <span class="badge-closed">폐점</span>' : item.name}</h3>
+                        <div class="detail-tags">
+                            <span class="detail-tag tag-category">${displayCategory}</span>
+                            <span class="detail-tag tag-location desktop-only">${item.location_small || displayAddress}</span>
+                        </div>
+                    </div>
+                    <button type="button" class="mobile-only-wish-btn mobile-only ${isWishlisted ? 'active' : ''}" 
+                        onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')" 
+                        title="${isWishlisted ? '찜 취소' : '찜하기'}">
+                        ⭐
+                    </button>
                 </div>
+                <div id="detail-photo-gallery" class="detail-photo-gallery"></div>
 
                 ${friendRecommendHtml}
                 
@@ -3803,19 +3807,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <div class="map-link-container">
                     <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="detail-naver-btn">
-                        네이버 지도
+                        <span class="naver-badge">N</span> 네이버 지도
                     </a>
                     <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="detail-kakao-btn">
-                        카카오맵
+                        <span class="kakao-badge">K</span> 카카오맵
                     </a>
                     <a href="${routeUrl}" target="_blank" rel="noopener noreferrer" class="detail-route-btn">
-                        길찾기
+                        🧭 길찾기
                     </a>
                 </div>
 
                 ${actionsHtml}
             </div>
         `;
+
+        if (typeof attachDetailSheetSwipe === 'function') {
+            attachDetailSheetSwipe();
+        }
 
         // Trigger Photo Display: Combine User Photos with Kakao/Daum Search Photos!
         const photoGalleryEl = document.getElementById('detail-photo-gallery');
@@ -4991,6 +4999,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.attachMapSheetSwipe = attachMapSheetSwipe;
     attachMapSheetSwipe();
+
+    function attachDetailSheetSwipe() {
+        const sheet = document.getElementById('map-place-detail');
+        const handle = document.getElementById('map-detail-sheet-handle');
+        if (!sheet || !handle) return;
+        if (handle._swipeAttached) return;
+        handle._swipeAttached = true;
+
+        let startY = 0;
+        let currentY = 0;
+        let startTime = 0;
+        let isDragging = false;
+
+        handle.addEventListener('touchstart', (e) => {
+            if (!e.touches || !e.touches[0]) return;
+            startY = e.touches[0].clientY;
+            currentY = startY;
+            startTime = Date.now();
+            isDragging = true;
+            sheet.style.transition = 'none';
+        }, { passive: true });
+
+        handle.addEventListener('touchmove', (e) => {
+            if (!isDragging || !e.touches || !e.touches[0]) return;
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+
+            if (e.cancelable) e.preventDefault();
+
+            if (deltaY > 0) {
+                sheet.style.transform = `translateY(${deltaY}px)`;
+            } else {
+                sheet.style.transform = `translateY(${deltaY * 0.15}px)`;
+            }
+        }, { passive: false });
+
+        const finishDrag = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const endY = (e && e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : currentY;
+            const deltaY = endY - startY;
+            const elapsed = Math.max(1, Date.now() - startTime);
+            const velocity = deltaY / elapsed;
+
+            sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+
+            if (deltaY > 60 || (velocity > 0.4 && deltaY > 20)) {
+                sheet.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    sheet.style.transform = '';
+                    if (typeof handleBackFromPlaceDetail === 'function') {
+                        handleBackFromPlaceDetail();
+                    }
+                }, 280);
+            } else {
+                sheet.style.transform = 'translateY(0)';
+            }
+        };
+
+        handle.addEventListener('touchend', finishDrag, { passive: true });
+        handle.addEventListener('touchcancel', finishDrag, { passive: true });
+
+        // Click/tap toggle fallback: smooth close
+        handle.addEventListener('click', () => {
+            sheet.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+            sheet.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                sheet.style.transform = '';
+                if (typeof handleBackFromPlaceDetail === 'function') {
+                    handleBackFromPlaceDetail();
+                }
+            }, 280);
+        });
+    }
+    window.attachDetailSheetSwipe = attachDetailSheetSwipe;
 
     function initMobileMapChipsAndPopovers() {
         const catChip = document.getElementById('btn-cat-chip');
