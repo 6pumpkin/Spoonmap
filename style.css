@@ -6980,22 +6980,29 @@ input[type="date"].drawer-input {
    ========================================================================== */
 
 /* Desktop Defaults: Hidden on PC (Screens > 768px) */
-.mobile-bottom-nav {
-    display: none;
-}
-.mobile-cat-chips-bar {
-    display: none;
-}
-.diary-mobile-day-feed {
-    display: none;
-}
-.bottom-sheet-handle {
-    display: none;
-}
+.mobile-bottom-nav,
+.mobile-cat-chips-bar,
+.diary-mobile-day-feed,
+.bottom-sheet-handle,
 .sidebar-backdrop,
-.mobile-sidebar-close-btn {
-    display: none;
+.mobile-sidebar-close-btn,
+.mobile-sidebar-footer,
+.all-regions-sheet,
+.mobile-only {
+    display: none !important;
 }
+
+.desktop-only {
+    display: block;
+}
+span.desktop-only {
+    display: inline;
+}
+
+.sidebar-scroll-content {
+    display: contents;
+}
+
 .map-popover-backdrop,
 .popover-cat-menu,
 .popover-star-menu {
@@ -7004,6 +7011,19 @@ input[type="date"].drawer-input {
 
 /* Mobile Screens (<= 768px: Z Flip 6, iPhone, Galaxy, etc.) */
 @media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+    .mobile-only {
+        display: block !important;
+    }
+    span.mobile-only {
+        display: inline !important;
+    }
+    .bottom-sheet-handle.mobile-only {
+        display: flex !important;
+    }
+
     :root {
         --m-bnav-height: 52px;
         --m-header-height: 50px;

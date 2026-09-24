@@ -6221,6 +6221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 b.classList.toggle('active', match);
             }
         });
+
+        // Keep desktop location filter in sync
+        if (typeof updateLocationActiveBadges === 'function') updateLocationActiveBadges();
+        if (typeof renderDynamicLocationFilters === 'function') renderDynamicLocationFilters();
     }
     window.syncRegionUI = syncRegionUI;
 

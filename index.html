@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609240219">
+    <link rel="stylesheet" href="style.css?v=202609241016">
 </head>
 
 <body class="light-theme">
@@ -73,60 +73,17 @@
             <div class="auth-protected-content" id="list-protected-content">
                 <button id="btn-toggle-sidebar" class="sidebar-toggle-btn" title="필터 접기/열기">🎛️</button>
 
-                <!-- 모바일 필터 백드롭 -->
-                <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="window.toggleMobileSidebar(false)"></div>
-
-                <!-- ── Full Region Explorer Sub-Sheet (모든 지역 탐색 전용 모바일 서브시트) ── -->
-                <div id="all-regions-sheet" class="all-regions-sheet">
-                    <!-- Sub-Sheet Header -->
-                    <div class="all-regions-header">
-                        <div class="all-regions-header-left">
-                            <button type="button" class="all-regions-back-btn" onclick="window.toggleAllRegionsSheet(false)">←</button>
-                            <div>
-                                <h4>지역 전체 선택</h4>
-                                <p>모든 시·도 및 자치구 탐색</p>
-                            </div>
-                        </div>
-                        <button type="button" class="all-regions-reset-btn" onclick="window.pickRegionAndClose('all')">전체 지역</button>
-                    </div>
-
-                    <!-- Search & Province Bar -->
-                    <div class="all-regions-search-bar">
-                        <div class="all-regions-search-wrap">
-                            <span class="all-regions-search-icon">🔍</span>
-                            <input type="text" id="picker-search-input" oninput="window.handlePickerSearch(this.value)" placeholder="지역명 검색 (예: 을지로, 성수, 분당, 해운대...)">
-                            <button type="button" id="btn-picker-search-clear" class="all-regions-search-clear" onclick="window.clearPickerSearch()">✕</button>
-                        </div>
-                        <div class="all-regions-prov-tabs" id="all-regions-prov-tabs">
-                            <button type="button" class="prov-tab active" onclick="window.filterPickerProvince('ALL', this)">전체</button>
-                            <button type="button" class="prov-tab" onclick="window.filterPickerProvince('서울', this)">서울 (25개구)</button>
-                            <button type="button" class="prov-tab" onclick="window.filterPickerProvince('경기/인천', this)">경기·인천</button>
-                            <button type="button" class="prov-tab" onclick="window.filterPickerProvince('부산/경상', this)">부산·경상</button>
-                            <button type="button" class="prov-tab" onclick="window.filterPickerProvince('제주/기타', this)">제주·기타</button>
-                        </div>
-                    </div>
-
-                    <!-- Current Selected Region Banner -->
-                    <div id="picker-selected-banner" class="picker-selected-banner">
-                        <span>현재 선택: <strong id="picker-selected-text">전체 지역</strong></span>
-                        <button type="button" class="picker-confirm-btn" onclick="window.toggleAllRegionsSheet(false)">선택 완료</button>
-                    </div>
-
-                    <!-- Region Items List (Organized by Provinces) -->
-                    <div class="all-regions-scroll-list" id="picker-regions-container">
-                        <!-- Rendered via JS -->
-                    </div>
-                </div>
-
             <aside class="sidebar" id="main-sidebar">
-                <div class="bottom-sheet-handle"><div class="handle-bar"></div></div>
+                <div class="bottom-sheet-handle mobile-only"><div class="handle-bar"></div></div>
                 <div class="sidebar-header-bar">
-                    <span class="sidebar-header-title">Filter</span>
+                    <h3 class="desktop-only">Filter</h3>
+                    <span class="sidebar-header-title mobile-only">Filter</span>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <button id="btn-reset-all-filters" class="all-filters-reset-btn" title="모든 검색 및 필터 초기화">
-                            ↺ 초기화
+                            <span class="desktop-only">↺</span>
+                            <span class="mobile-only">↺ 초기화</span>
                         </button>
-                        <button type="button" class="mobile-sidebar-close-btn" onclick="window.toggleMobileSidebar(false)" title="닫기">✕</button>
+                        <button type="button" class="mobile-sidebar-close-btn mobile-only" onclick="window.toggleMobileSidebar(false)" title="닫기">✕</button>
                     </div>
                 </div>
 
@@ -134,11 +91,18 @@
                     <!-- ① 방문 기간 지정 (PC 1번 위치) -->
                     <section class="filter-section date-range-section">
                         <div class="filter-section-title">
-                            <span>📅 방문 기간 지정</span>
+                            <h3 class="desktop-only" style="margin-bottom:0.8rem;">📅 방문 기간 지정</h3>
+                            <span class="mobile-only">📅 방문 기간 지정</span>
                         </div>
                         <div class="date-filter-inputs">
-                            <input type="date" id="filter-start-date" class="sidebar-date-input" placeholder="yy-m-d">
-                            <input type="date" id="filter-end-date" class="sidebar-date-input" placeholder="yy-m-d">
+                            <div class="date-input-box">
+                                <label for="filter-start-date" class="desktop-only">Start</label>
+                                <input type="date" id="filter-start-date" class="sidebar-date-input" placeholder="yy-m-d">
+                            </div>
+                            <div class="date-input-box">
+                                <label for="filter-end-date" class="desktop-only">End</label>
+                                <input type="date" id="filter-end-date" class="sidebar-date-input" placeholder="yy-m-d">
+                            </div>
                         </div>
                         <div class="date-filter-actions">
                             <button type="button" id="btn-apply-date-filter" class="date-filter-btn">기간 적용</button>
@@ -150,7 +114,8 @@
                     <!-- ② 카테고리 (PC 2번 위치: 모든 카테고리 포함, 다중 선택 가능) -->
                     <section class="filter-section cat-sheet-section">
                         <div class="filter-section-title">
-                            <span>🍽️ 카테고리</span>
+                            <h3 class="desktop-only">카테고리</h3>
+                            <span class="mobile-only">🍽️ 카테고리</span>
                         </div>
                         <div class="filter-group cat-sheet-group" id="category-filters">
                             <button type="button" class="filter-btn active" data-filter="category" data-value="all">전체</button>
@@ -160,77 +125,102 @@
                     <!-- ③ 수저 평점 (PC 3번 위치: 1개~5개 완비, 다중 선택 가능) -->
                     <section class="filter-section rate-sheet-section">
                         <div class="filter-section-title">
-                            <span>🥄 수저 평점</span>
+                            <h3 class="desktop-only">수저 평점</h3>
+                            <span class="mobile-only">🥄 수저 평점</span>
                         </div>
-                        <div class="rate-options-grid" id="rate-filters">
+                        <div class="filter-group rate-options-grid" id="rate-filters">
                             <button type="button" class="filter-btn active" data-filter="rate" data-value="all">전체</button>
-                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄">1개</button>
-                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄">2개</button>
-                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄">3개</button>
-                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄">4개</button>
-                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄🥄">5개</button>
+                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄"><span class="desktop-only">🥄 </span>1개</button>
+                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄"><span class="desktop-only">🥄 </span>2개</button>
+                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄"><span class="desktop-only">🥄 </span>3개</button>
+                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄"><span class="desktop-only">🥄 </span>4개</button>
+                            <button type="button" class="filter-btn" data-filter="rate" data-value="🥄🥄🥄🥄🥄"><span class="desktop-only">🥄 </span>5개</button>
                         </div>
                     </section>
 
                     <!-- ④ 지역 필터 (PC 4번 위치: 검색창 + 모든 지역 전체보기 화면 연동, 다중 선택 가능) -->
-                    <section class="filter-section region-sheet-card" id="location-filter-section">
-                        <div class="region-sheet-header">
-                            <div class="region-sheet-title-left">
-                                <span>📍 지역 필터</span>
-                                <span id="active-region-badge" class="active-region-badge">전체</span>
+                    <section class="filter-section" id="location-filter-section">
+                        <!-- Desktop View: Original PC Location Search & Filter -->
+                        <div class="desktop-only">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                <h3 style="margin-bottom: 0;">지역 필터</h3>
+                                <button type="button" id="btn-reset-location-filter" class="date-reset-btn" style="display:none; padding: 2px 8px; font-size: 0.72rem;">초기화</button>
                             </div>
-                            <button type="button" class="btn-all-regions-link" onclick="window.toggleAllRegionsSheet(true)">
-                                모든 지역 보기 ↗
-                            </button>
+
+                            <div class="loc-search-box-wrap">
+                                <span class="loc-search-icon">🔍</span>
+                                <input type="text" id="location-filter-input" placeholder="지역 검색" autocomplete="off">
+                                <button type="button" id="btn-clear-loc-filter" class="loc-clear-btn" style="display:none;" title="검색어 지우기">&times;</button>
+                            </div>
+
+                            <!-- Active Filter Badges -->
+                            <div id="location-active-badges" class="location-active-badges" style="display:none;"></div>
+
+                            <!-- Matched / Recommended Location Tags -->
+                            <div class="filter-group" id="location-matched-filters">
+                                <button type="button" class="filter-btn active" data-filter="location_large" data-value="all">전체</button>
+                            </div>
+
+                            <!-- Hidden legacy containers so existing selectors do not break -->
+                            <div id="location-large-filters" style="display:none;"></div>
+                            <div id="location-small-filters" style="display:none;"></div>
+                            <div id="small-location-section" style="display:none;"></div>
+                            <div id="location-more-container" style="display:none;">
+                                <button type="button" id="btn-more-location" style="display:none;"></button>
+                                <button type="button" id="btn-collapse-location" style="display:none;"></button>
+                            </div>
                         </div>
 
-                        <!-- Region Search / Trigger -->
-                        <div class="sheet-region-trigger" onclick="window.toggleAllRegionsSheet(true)">
-                            <span class="sheet-region-search-icon">🔍</span>
-                            <input type="text" id="sheet-region-search-display" readonly placeholder="지역 검색 또는 전체 목록 보기...">
-                            <span class="sheet-region-arrow">▾</span>
-                        </div>
+                        <!-- Mobile View: Mobile Region Sheet Card -->
+                        <div class="mobile-only region-sheet-card">
+                            <div class="region-sheet-header">
+                                <div class="region-sheet-title-left">
+                                    <span>📍 지역 필터</span>
+                                    <span id="active-region-badge" class="active-region-badge">전체</span>
+                                </div>
+                                <button type="button" class="btn-all-regions-link" onclick="window.toggleAllRegionsSheet(true)">
+                                    모든 지역 보기 ↗
+                                </button>
+                            </div>
 
-                        <!-- Quick Region Chips -->
-                        <div class="region-chips-group" id="region-chips-group">
-                            <button type="button" class="reg-chip active" data-region="all" onclick="window.handleRegionQuickClick('all', this)">전체 지역</button>
-                            <button type="button" class="reg-chip" data-region="종로구" onclick="window.handleRegionQuickClick('종로구', this)">서울 종로구</button>
-                            <button type="button" class="reg-chip" data-region="중구" onclick="window.handleRegionQuickClick('중구', this)">서울 중구</button>
-                            <button type="button" class="reg-chip" data-region="용산구" onclick="window.handleRegionQuickClick('용산구', this)">서울 용산구</button>
-                            <button type="button" class="reg-chip" data-region="성동구" onclick="window.handleRegionQuickClick('성동구', this)">서울 성동구(성수)</button>
-                            <button type="button" class="reg-chip" data-region="마포구" onclick="window.handleRegionQuickClick('마포구', this)">서울 마포구</button>
-                            <button type="button" class="reg-chip" data-region="강남구" onclick="window.handleRegionQuickClick('강남구', this)">서울 강남구</button>
-                            <button type="button" class="reg-chip" data-region="부산" onclick="window.handleRegionQuickClick('부산', this)">부산</button>
-                            <button type="button" class="reg-chip" data-region="제주" onclick="window.handleRegionQuickClick('제주', this)">제주</button>
-                        </div>
+                            <!-- Region Search / Trigger -->
+                            <div class="sheet-region-trigger" onclick="window.toggleAllRegionsSheet(true)">
+                                <span class="sheet-region-search-icon">🔍</span>
+                                <input type="text" id="sheet-region-search-display" readonly placeholder="지역 검색 또는 전체 목록 보기...">
+                                <span class="sheet-region-arrow">▾</span>
+                            </div>
 
-                        <!-- Hidden legacy elements for safety -->
-                        <div id="location-active-badges" style="display:none;"></div>
-                        <div id="location-matched-filters" style="display:none;"></div>
-                        <div id="location-large-filters" style="display:none;"></div>
-                        <div id="location-small-filters" style="display:none;"></div>
-                        <div id="small-location-section" style="display:none;"></div>
-                        <div id="location-more-container" style="display:none;"></div>
-                        <button id="btn-reset-location-filter" style="display:none;"></button>
-                        <input type="text" id="location-filter-input" style="display:none;">
-                        <button id="btn-clear-loc-filter" style="display:none;"></button>
+                            <!-- Quick Region Chips -->
+                            <div class="region-chips-group" id="region-chips-group">
+                                <button type="button" class="reg-chip active" data-region="all" onclick="window.handleRegionQuickClick('all', this)">전체 지역</button>
+                                <button type="button" class="reg-chip" data-region="종로구" onclick="window.handleRegionQuickClick('종로구', this)">서울 종로구</button>
+                                <button type="button" class="reg-chip" data-region="중구" onclick="window.handleRegionQuickClick('중구', this)">서울 중구</button>
+                                <button type="button" class="reg-chip" data-region="용산구" onclick="window.handleRegionQuickClick('용산구', this)">서울 용산구</button>
+                                <button type="button" class="reg-chip" data-region="성동구" onclick="window.handleRegionQuickClick('성동구', this)">서울 성동구(성수)</button>
+                                <button type="button" class="reg-chip" data-region="마포구" onclick="window.handleRegionQuickClick('마포구', this)">서울 마포구</button>
+                                <button type="button" class="reg-chip" data-region="강남구" onclick="window.handleRegionQuickClick('강남구', this)">서울 강남구</button>
+                                <button type="button" class="reg-chip" data-region="부산" onclick="window.handleRegionQuickClick('부산', this)">부산</button>
+                                <button type="button" class="reg-chip" data-region="제주" onclick="window.handleRegionQuickClick('제주', this)">제주</button>
+                            </div>
+                        </div>
                     </section>
 
                     <!-- ⑤ 정렬 기준 (PC 5번 위치: 기본, 또간집, 수저 높은순, 이름순) -->
                     <section class="filter-section sort-sheet-section">
                         <div class="filter-section-title">
-                            <span>✨ 정렬 기준</span>
+                            <h3 class="desktop-only">정렬</h3>
+                            <span class="mobile-only">✨ 정렬 기준</span>
                         </div>
-                        <div class="sort-options-grid" id="sort-filters">
+                        <div class="filter-group sort-options-grid" id="sort-filters">
                             <button type="button" class="sort-btn active" data-sort="default">기본</button>
-                            <button type="button" class="sort-btn" data-sort="visit-desc">🔥 또간집순</button>
-                            <button type="button" class="sort-btn" data-sort="rate-desc">🥄 평점순</button>
-                            <button type="button" class="sort-btn" data-sort="name-asc">가나다순</button>
+                            <button type="button" class="sort-btn" data-sort="visit-desc"><span class="mobile-only">🔥 </span>또간집<span class="mobile-only">순</span></button>
+                            <button type="button" class="sort-btn" data-sort="rate-desc"><span class="desktop-only">수저 높은순</span><span class="mobile-only">🥄 평점순</span></button>
+                            <button type="button" class="sort-btn" data-sort="name-asc"><span class="desktop-only">이름순</span><span class="mobile-only">가나다순</span></button>
                         </div>
                     </section>
                 </div>
 
-                <div class="mobile-sidebar-footer">
+                <div class="mobile-sidebar-footer mobile-only">
                     <button type="button" class="mobile-sidebar-apply-btn" onclick="window.applyFiltersFromSheet()">적용</button>
                 </div>
             </aside>
@@ -291,6 +281,51 @@
             </section>
             </div>
             <div class="auth-locked-placeholder" id="list-locked-view" style="display:none;"></div>
+
+            <!-- 모바일 필터 백드롭 -->
+            <div id="sidebar-backdrop" class="sidebar-backdrop mobile-only" onclick="window.toggleMobileSidebar(false)"></div>
+
+            <!-- ── Full Region Explorer Sub-Sheet (모든 지역 탐색 전용 모바일 서브시트) ── -->
+            <div id="all-regions-sheet" class="all-regions-sheet mobile-only">
+                <!-- Sub-Sheet Header -->
+                <div class="all-regions-header">
+                    <div class="all-regions-header-left">
+                        <button type="button" class="all-regions-back-btn" onclick="window.toggleAllRegionsSheet(false)">←</button>
+                        <div>
+                            <h4>지역 전체 선택</h4>
+                            <p>모든 시·도 및 자치구 탐색</p>
+                        </div>
+                    </div>
+                    <button type="button" class="all-regions-reset-btn" onclick="window.pickRegionAndClose('all')">전체 지역</button>
+                </div>
+
+                <!-- Search & Province Bar -->
+                <div class="all-regions-search-bar">
+                    <div class="all-regions-search-wrap">
+                        <span class="all-regions-search-icon">🔍</span>
+                        <input type="text" id="picker-search-input" oninput="window.handlePickerSearch(this.value)" placeholder="지역명 검색 (예: 을지로, 성수, 분당, 해운대...)">
+                        <button type="button" id="btn-picker-search-clear" class="all-regions-search-clear" onclick="window.clearPickerSearch()">✕</button>
+                    </div>
+                    <div class="all-regions-prov-tabs" id="all-regions-prov-tabs">
+                        <button type="button" class="prov-tab active" onclick="window.filterPickerProvince('ALL', this)">전체</button>
+                        <button type="button" class="prov-tab" onclick="window.filterPickerProvince('서울', this)">서울 (25개구)</button>
+                        <button type="button" class="prov-tab" onclick="window.filterPickerProvince('경기/인천', this)">경기·인천</button>
+                        <button type="button" class="prov-tab" onclick="window.filterPickerProvince('부산/경상', this)">부산·경상</button>
+                        <button type="button" class="prov-tab" onclick="window.filterPickerProvince('제주/기타', this)">제주·기타</button>
+                    </div>
+                </div>
+
+                <!-- Current Selected Region Banner -->
+                <div id="picker-selected-banner" class="picker-selected-banner">
+                    <span>현재 선택: <strong id="picker-selected-text">전체 지역</strong></span>
+                    <button type="button" class="picker-confirm-btn" onclick="window.toggleAllRegionsSheet(false)">선택 완료</button>
+                </div>
+
+                <!-- Region Items List (Organized by Provinces) -->
+                <div class="all-regions-scroll-list" id="picker-regions-container">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
         </div>
 
         <!-- Mobile card detail overlay -->
@@ -1335,12 +1370,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609240219"></script>
-    <script src="data.js?v=202609240219"></script>
-    <script src="ddoganzip_data.js?v=202609240219"></script>
-    <script src="meogeultende_data.js?v=202609240219"></script>
-    <script src="jungyugwang_data.js?v=202609240219"></script>
-    <script src="app.js?v=202609240219"></script>
+    <script src="regions.js?v=202609241016"></script>
+    <script src="data.js?v=202609241016"></script>
+    <script src="ddoganzip_data.js?v=202609241016"></script>
+    <script src="meogeultende_data.js?v=202609241016"></script>
+    <script src="jungyugwang_data.js?v=202609241016"></script>
+    <script src="app.js?v=202609241016"></script>
 </body>
 
 </html>
