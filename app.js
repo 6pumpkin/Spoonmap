@@ -1673,6 +1673,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        document.body.classList.toggle('is-map-tab', targetTab === 'map');
+
         updateAuthProtectedViews();
 
         currentActiveTab = targetTab;
@@ -2836,7 +2838,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Clear previous page items & Prepend Drag Handle & Reset Scroll to Top!
         resultsList.innerHTML = `
-            <div id="map-sheet-handle" class="bottom-sheet-handle"></div>
+            <div id="map-sheet-handle" class="bottom-sheet-handle"><div class="handle-bar"></div></div>
         `;
         resultsList.scrollTop = 0;
         if (typeof attachMapSheetSwipe === 'function') {
@@ -3601,20 +3603,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cleanContents = doc.contents.replace(/<[^>]+>/g, '').trim().slice(0, 100) + '...';
                     
                     containerEl.innerHTML = `
-                        <div class="blog-review-box">
-                            <div class="blog-review-title">" ${cleanTitle} "</div>
-                            <div class="blog-review-body">${cleanContents}</div>
-                            <div class="blog-review-meta">
-                                출처: <a href="${doc.url}" target="_blank" class="blog-link" rel="noopener noreferrer">${doc.blogname || 'Daum 블로그 리뷰'} ↗</a>
+                        <div class="blog-review-card">
+                            <div class="blog-review-header">
+                                <span class="blog-review-header-title">💬 실제 방문자 한줄평</span>
+                                <span class="blog-review-header-source">다음 블로그</span>
+                            </div>
+                            <p class="blog-review-body">
+                                "${cleanContents}"
+                            </p>
+                            <div class="blog-review-footer">
+                                <a href="${doc.url}" target="_blank" rel="noopener noreferrer" class="blog-review-more-btn">더보기 ↗</a>
                             </div>
                         </div>
                     `;
                 } else {
-                    containerEl.innerHTML = `<div class="rating-notice">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</div>`;
+                    containerEl.innerHTML = `
+                        <div class="blog-review-card">
+                            <div class="blog-review-header">
+                                <span class="blog-review-header-title">💬 실제 방문자 한줄평</span>
+                            </div>
+                            <p class="blog-review-body" style="-webkit-line-clamp:unset; color:#94A3B8;">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</p>
+                        </div>
+                    `;
                 }
             })
             .catch(() => {
-                containerEl.innerHTML = `<div class="rating-notice">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</div>`;
+                containerEl.innerHTML = `
+                    <div class="blog-review-card">
+                        <div class="blog-review-header">
+                            <span class="blog-review-header-title">💬 실제 방문자 한줄평</span>
+                        </div>
+                        <p class="blog-review-body" style="-webkit-line-clamp:unset; color:#94A3B8;">아래 카카오맵 상세 버튼에서 전체 별점 및 리뷰를 확인하실 수 있습니다.</p>
+                    </div>
+                `;
             });
     }
 
@@ -3647,7 +3668,7 @@ document.addEventListener('DOMContentLoaded', () => {
                <div class="info-val rating-val" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                    ${getSpoonBadgeHtml(item)}
                </div>`
-            : `<div class="info-label">💬 실제 방문자 후기 한줄평</div><div id="unvisited-blog-review-box" class="info-val"></div>`;
+            : `<div id="unvisited-blog-review-box" class="info-val" style="margin-top:2px;"></div>`;
 
         // Detailed category
         const displayCategory = placeData?.category_name || item.category || '기타';
@@ -3775,7 +3796,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         detailPanel.innerHTML = `
-            <div id="map-detail-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="상세 정보 창 닫기/접기"></div>
+            <div id="map-detail-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="상세 정보 창 닫기/접기"><div class="handle-bar"></div></div>
             <div class="detail-body">
                 <div class="detail-header-row">
                     <button class="back-to-list-btn" onclick="handleBackFromPlaceDetail()">

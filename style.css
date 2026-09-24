@@ -1402,14 +1402,37 @@ main {
     display: inline-block;
 }
 
-/* Daum Blog Review Snippet Box for Unvisited Places */
+/* Daum Blog Review Snippet Box & Card for Unvisited Places */
+.blog-review-card,
 .blog-review-box {
-    background: var(--bg-canvas-subtle);
-    border: 1.5px solid var(--border-hover);
+    background: #FFFFFF;
+    border: 1px solid var(--border-hover, #E2E8F0);
     border-radius: 14px;
-    padding: 12px;
+    padding: 12px 14px;
     margin-top: 6px;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.blog-review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.blog-review-header-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.blog-review-header-source {
+    font-size: 0.72rem;
+    color: #94A3B8;
+    font-weight: 500;
 }
 
 .blog-review-title {
@@ -1424,6 +1447,29 @@ main {
     font-size: 0.82rem;
     color: var(--text-secondary);
     line-height: 1.45;
+    margin: 0 0 6px 0;
+}
+
+.blog-review-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.blog-review-more-btn,
+.blog-link {
+    font-size: 0.75rem;
+    color: var(--coral-main);
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.blog-review-more-btn:hover,
+.blog-link:hover {
+    text-decoration: underline;
+    opacity: 0.8;
 }
 
 .blog-review-meta {
@@ -1432,17 +1478,6 @@ main {
     margin-top: 8px;
     text-align: right;
     font-weight: 600;
-}
-
-.blog-link {
-    color: var(--coral-main);
-    text-decoration: underline;
-    font-weight: 700;
-    transition: opacity 0.2s ease;
-}
-
-.blog-link:hover {
-    opacity: 0.8;
 }
 
 .tag-category {
@@ -7234,31 +7269,44 @@ span.desktop-only {
 
     /* ── 3. Universal Bottom Sheet Style & Handlebar ── */
     .bottom-sheet-handle {
-        display: block !important;
-        width: 44px !important;
-        height: 5px !important;
-        background: #CBD5E1 !important;
-        border-radius: 3px !important;
-        margin: 10px auto 8px auto !important;
-        flex-shrink: 0 !important;
+        width: 100% !important;
+        height: 22px !important;
+        padding: 6px 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #FFFFFF !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 20 !important;
         cursor: grab !important;
-        position: relative !important;
         touch-action: none !important;
-        transition: background 0.15s ease !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+        border-radius: 20px 20px 0 0 !important;
     }
 
     .bottom-sheet-handle:active {
-        background: #94A3B8 !important;
         cursor: grabbing !important;
     }
 
-    .bottom-sheet-handle::before {
+    .bottom-sheet-handle .handle-bar,
+    .bottom-sheet-handle:empty::after {
         content: '' !important;
-        position: absolute !important;
-        top: -14px !important;
-        bottom: -14px !important;
-        left: -35px !important;
-        right: -35px !important;
+        display: block !important;
+        width: 36px !important;
+        height: 3.5px !important;
+        background: #CBD5E1 !important;
+        border-radius: 9999px !important;
+        transition: background 0.15s ease !important;
+        pointer-events: none !important;
+        flex-shrink: 0 !important;
+    }
+
+    .bottom-sheet-handle:active .handle-bar,
+    .bottom-sheet-handle:active::after {
+        background: #94A3B8 !important;
     }
 
     /* Restaurant Detail Modal -> Bottom Sheet */
@@ -7907,21 +7955,25 @@ span.desktop-only {
         pointer-events: auto !important;
     }
 
-    .bottom-sheet-handle {
+    .sidebar .bottom-sheet-handle {
         width: 100% !important;
-        padding: 12px 0 6px 0 !important;
+        height: 22px !important;
+        padding: 6px 0 !important;
+        margin: 0 !important;
         display: flex !important;
+        align-items: center !important;
         justify-content: center !important;
         cursor: pointer !important;
-        background: transparent !important;
-        margin: 0 !important;
-        position: static !important;
-        height: auto !important;
+        background: #FFFFFF !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 20 !important;
+        border-radius: 28px 28px 0 0 !important;
     }
 
-    .bottom-sheet-handle .handle-bar {
-        width: 40px !important;
-        height: 4px !important;
+    .sidebar .bottom-sheet-handle .handle-bar {
+        width: 36px !important;
+        height: 3.5px !important;
         border-radius: 9999px !important;
         background: #CBD5E1 !important;
         display: block !important;
@@ -8695,11 +8747,46 @@ span.desktop-only {
         box-shadow: 0 4px 16px rgba(255, 71, 87, 0.4) !important;
     }
 
-    /* ── 6. MAP Tab: Fullscreen Map & Floating Mobile Controls ── */
+    /* ── 6. MAP Tab: Fullscreen Map & Floating Mobile Controls (Zero Bottom Void) ── */
+    body.is-map-tab,
+    body:has(#map-view.active) {
+        overflow: hidden !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+
+    body.is-map-tab main,
+    body:has(#map-view.active) main {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        min-height: 0 !important;
+        height: calc(100dvh - var(--m-header-height) - var(--m-bnav-height) - env(safe-area-inset-bottom, 0px)) !important;
+        max-height: calc(100dvh - var(--m-header-height) - var(--m-bnav-height) - env(safe-area-inset-bottom, 0px)) !important;
+        overflow: hidden !important;
+        position: relative !important;
+        margin: 0 !important;
+    }
+
+    body.is-map-tab #map-view.tab-content.active,
+    body:has(#map-view.active) #map-view.tab-content.active {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        position: relative !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     .map-layout {
         display: block !important;
         position: relative !important;
-        height: calc(100dvh - var(--m-header-height) - var(--m-bnav-height) - env(safe-area-inset-bottom, 0px)) !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow: hidden !important;
     }
 
@@ -9085,37 +9172,54 @@ span.desktop-only {
         padding: 10px 12px !important;
     }
 
-    /* 하단 결과창 및 모달 상단 핸들 (배경 투명, 뒤 가림 없는 미니멀 그레이 핸들) */
+    /* 하단 결과창 및 모달 상단 핸들 (슬림한 3.5px 캡슐 바 & 스티키 고정) */
     #map-sheet-handle,
+    #map-detail-sheet-handle,
     .bottom-sheet-handle {
-        display: block !important;
-        width: 44px !important;
-        height: 5px !important;
-        background: #CBD5E1 !important;
-        border-radius: 3px !important;
-        margin: 10px auto 8px auto !important;
-        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 22px !important;
+        padding: 6px 0 !important;
+        margin: 0 !important;
+        background: #FFFFFF !important;
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 20 !important;
         cursor: grab !important;
-        position: relative !important;
-        top: auto !important;
         touch-action: none !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+        border-radius: 20px 20px 0 0 !important;
         transition: background 0.15s ease !important;
-        z-index: 5 !important;
     }
-    .bottom-sheet-handle:active {
-        background: #94A3B8 !important;
+    .bottom-sheet-handle:active,
+    #map-sheet-handle:active,
+    #map-detail-sheet-handle:active {
         cursor: grabbing !important;
     }
-    .bottom-sheet-handle::before {
+    .bottom-sheet-handle .handle-bar,
+    #map-sheet-handle .handle-bar,
+    #map-detail-sheet-handle .handle-bar,
+    .bottom-sheet-handle:empty::after {
         content: '' !important;
-        position: absolute !important;
-        top: -14px !important;
-        bottom: -14px !important;
-        left: -35px !important;
-        right: -35px !important;
+        display: block !important;
+        width: 36px !important;
+        height: 3.5px !important;
+        background: #CBD5E1 !important;
+        border-radius: 9999px !important;
+        transition: background 0.15s ease !important;
+        pointer-events: none !important;
+        flex-shrink: 0 !important;
     }
-    .bottom-sheet-handle .handle-bar {
-        display: none !important;
+    .bottom-sheet-handle:active .handle-bar,
+    #map-sheet-handle:active .handle-bar,
+    #map-detail-sheet-handle:active .handle-bar,
+    .bottom-sheet-handle:active::after {
+        background: #94A3B8 !important;
     }
 
     /* 하단 결과창 슬림 패딩 & 접기/펴기 transition */
@@ -9130,9 +9234,13 @@ span.desktop-only {
         border-radius: 20px 20px 0 0 !important;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.14) !important;
         overflow-y: auto !important;
-        padding: 4px 12px 14px !important;
+        padding: 0 12px 14px 12px !important;
         box-sizing: border-box !important;
         transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    #map-results-list #map-sheet-handle {
+        margin: 0 -12px 4px -12px !important;
+        width: calc(100% + 24px) !important;
     }
     #map-results-list.collapsed-peek {
         transform: translateY(calc(100% - 44px)) !important;
@@ -9162,13 +9270,7 @@ span.desktop-only {
     }
 
     #map-detail-sheet-handle {
-        width: 38px !important;
-        height: 4px !important;
-        background: #CBD5E1 !important;
-        border-radius: 9999px !important;
-        margin: 8px auto 4px !important;
-        cursor: grab !important;
-        flex-shrink: 0 !important;
+        border-radius: 22px 22px 0 0 !important;
     }
 
     #map-place-detail .detail-body {
@@ -9318,13 +9420,34 @@ span.desktop-only {
         font-size: 0.85rem !important;
     }
 
-    .blog-review-box {
-        background: #F8FAFC !important;
+    .blog-review-box,
+    .blog-review-card {
+        background: #FFFFFF !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 12px !important;
-        padding: 10px 12px !important;
+        padding: 12px 14px !important;
         margin-top: 4px !important;
-        box-shadow: none !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        box-sizing: border-box !important;
+    }
+    .blog-review-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 6px !important;
+    }
+    .blog-review-header-title {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    .blog-review-header-source {
+        font-size: 0.7rem !important;
+        color: #94A3B8 !important;
+        font-weight: 500 !important;
     }
     .blog-review-title {
         font-size: 0.8rem !important;
@@ -9337,13 +9460,32 @@ span.desktop-only {
         text-overflow: ellipsis !important;
     }
     .blog-review-body {
-        font-size: 0.76rem !important;
-        color: #64748B !important;
-        line-height: 1.4 !important;
+        font-size: 0.78rem !important;
+        color: #475569 !important;
+        line-height: 1.45 !important;
         display: -webkit-box !important;
         -webkit-line-clamp: 2 !important;
         -webkit-box-orient: vertical !important;
         overflow: hidden !important;
+        margin: 0 0 6px 0 !important;
+    }
+    .blog-review-footer {
+        display: flex !important;
+        justify-content: flex-end !important;
+        margin-top: 4px !important;
+    }
+    .blog-review-more-btn,
+    .blog-link {
+        font-size: 0.74rem !important;
+        color: #FF4757 !important;
+        text-decoration: none !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        display: inline-block !important;
+    }
+    .blog-review-more-btn:hover,
+    .blog-link:hover {
+        text-decoration: underline !important;
     }
     .blog-review-meta {
         font-size: 0.7rem !important;
@@ -9351,14 +9493,6 @@ span.desktop-only {
         margin-top: 4px !important;
         text-align: right !important;
         font-weight: 600 !important;
-    }
-    .blog-link {
-        color: #FF4757 !important;
-        text-decoration: none !important;
-        font-weight: 700 !important;
-    }
-    .blog-link:hover {
-        text-decoration: underline !important;
     }
 
     /* 하단 액션바 고정 (지도 바로가기 3열 + 내 맛집에 추가) */
