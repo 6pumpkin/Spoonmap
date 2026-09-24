@@ -9052,7 +9052,8 @@ span.desktop-only {
         position: absolute !important;
         top: 92px !important;
         left: 62px !important;
-        width: 195px !important;
+        width: 224px !important;
+        max-height: 420px !important;
         background: rgba(255, 255, 255, 0.98) !important;
         backdrop-filter: blur(16px) !important;
         border-radius: 14px !important;
@@ -9063,6 +9064,8 @@ span.desktop-only {
         display: none !important;
         flex-direction: column !important;
         gap: 6px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     .popover-star-menu.show {
         display: flex !important;
@@ -9074,6 +9077,17 @@ span.desktop-only {
         justify-content: space-between !important;
         height: 32px !important;
         padding: 0 2px !important;
+    }
+    .pop-friends-header {
+        cursor: pointer !important;
+    }
+    .pop-friends-badge {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        padding: 2px 7px !important;
+        border-radius: 10px !important;
+        white-space: nowrap !important;
+        transition: all 0.15s ease !important;
     }
     .pop-row-left {
         display: flex !important;
@@ -9130,48 +9144,68 @@ span.desktop-only {
         transform: translateX(14px) !important;
     }
     .friends-sub-list {
-        display: flex;
+        display: flex !important;
         flex-direction: column !important;
-        gap: 3px !important;
-        padding: 2px 0 2px 6px !important;
-        border-left: 2px solid #EDE9FE !important;
-        margin-left: 6px !important;
+        gap: 4px !important;
+        padding: 2px 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        max-height: 240px !important;
+        overflow-y: auto !important;
     }
-    .friends-sub-list[style*="display: none"],
-    .friends-sub-list[style*="display:none"],
-    .friends-sub-list.hidden {
-        display: none !important;
+    .pop-friend-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 5px 6px !important;
+        border-radius: 8px !important;
+        background: #F8FAFC !important;
+        border: 1px solid #F1F5F9 !important;
+        transition: all 0.15s ease !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+    }
+    .pop-friend-row:hover {
+        background: #F1F5F9 !important;
+    }
+    .pop-friend-row.active {
+        background: #FAF5FF !important;
+        border-color: #DDD6FE !important;
+    }
+    .pop-friend-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+    }
+    .pop-friend-avatar {
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50% !important;
+        color: #FFFFFF !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+    .pop-friend-name {
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .pop-friend-row.active .pop-friend-name {
+        color: #6D28D9 !important;
     }
     .friend-modal-card .bottom-sheet-handle {
         margin: 0 -14px 6px -14px !important;
         width: calc(100% + 28px) !important;
         border-radius: 24px 24px 0 0 !important;
-    }
-    .friend-sub-item {
-        height: 27px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 0 6px !important;
-        border-radius: 6px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        color: #64748B !important;
-        cursor: pointer !important;
-        transition: all 0.12s ease !important;
-    }
-    .friend-sub-item:hover {
-        background: #F8FAFC !important;
-    }
-    .friend-sub-item.active {
-        color: #7C3AED !important;
-        background: #FAF5FF !important;
-        font-weight: 700 !important;
-    }
-    .friend-sub-item .f-check {
-        font-size: 10px !important;
-        font-weight: 800 !important;
-        color: #7C3AED !important;
     }
     .pop-footer-link {
         padding-top: 2px !important;
@@ -9342,7 +9376,7 @@ span.desktop-only {
         background: #FFFFFF !important;
     }
 
-    .back-to-list-btn {
+    .detail-header-row .back-to-list-btn {
         width: 34px !important;
         height: 34px !important;
         border-radius: 50% !important;
@@ -9360,9 +9394,41 @@ span.desktop-only {
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
         cursor: pointer !important;
     }
-    .back-to-list-btn:hover {
+    .detail-header-row .back-to-list-btn:hover {
         background: #F1F5F9 !important;
         text-decoration: none !important;
+    }
+
+    /* 지도 검색 초기화 / 찜 식당 빈화면 초기화 버튼 */
+    .btn-reset-map-search,
+    .map-empty-state .back-to-list-btn,
+    #map-results-list > .back-to-list-btn {
+        width: auto !important;
+        min-width: 140px !important;
+        height: 38px !important;
+        border-radius: 9999px !important;
+        background: #F8FAFC !important;
+        color: #334155 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        padding: 0 18px !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        border: 1px solid #CBD5E1 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+        cursor: pointer !important;
+        margin: 0 auto 16px auto !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+    }
+    .btn-reset-map-search:hover,
+    .map-empty-state .back-to-list-btn:hover,
+    #map-results-list > .back-to-list-btn:hover {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+        border-color: #94A3B8 !important;
     }
 
     .detail-title-wrap {
