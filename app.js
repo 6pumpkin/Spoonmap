@@ -487,6 +487,20 @@ async function syncFromCloud() {
             } else if (followingKey && localStorage.getItem(followingKey)) {
                 await saveToCloud('following', JSON.parse(localStorage.getItem(followingKey)));
             }
+
+            // Sync Custom Friends (친구 지도)
+            if (Array.isArray(cloudData.custom_friends)) {
+                localStorage.setItem('spoonmap_custom_friends', JSON.stringify(cloudData.custom_friends));
+                hasChanges = true;
+            } else if (localStorage.getItem('spoonmap_custom_friends')) {
+                await saveToCloud('custom_friends', JSON.parse(localStorage.getItem('spoonmap_custom_friends') || '[]'));
+            }
+
+            // Sync Active Friend IDs (켜진 친구 지도 상태)
+            if (Array.isArray(cloudData.active_friend_ids)) {
+                localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify(cloudData.active_friend_ids));
+                hasChanges = true;
+            }
         } else {
             // First time cloud initialization: Upload all existing local data! (Auto-Migration)
             console.log('[Spoonmap] First-time cloud sync: Uploading local data to Firestore...');
@@ -497,6 +511,8 @@ async function syncFromCloud() {
                 custom_options: localCustomOpt,
                 profile: (typeof getUserProfile === 'function') ? getUserProfile() : null,
                 following: (typeof getUserFollowingList === 'function') ? getUserFollowingList() : null,
+                custom_friends: (typeof getCustomFriends === 'function') ? getCustomFriends() : [],
+                active_friend_ids: (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [],
                 updated_at: new Date().toISOString(),
                 user_info: getCurrentUser()
             }, { merge: true });
@@ -519,6 +535,11 @@ async function syncFromCloud() {
         if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
         if (typeof window.populateRecommendCategories === 'function') window.populateRecommendCategories();
         if (typeof renderProfileView === 'function') renderProfileView();
+        if (typeof renderFriendChips === 'function') renderFriendChips();
+        if (typeof renderAllActiveFriendOverlays === 'function') renderAllActiveFriendOverlays();
+        if (typeof window.renderMobileFriendsListInPopover === 'function') window.renderMobileFriendsListInPopover();
+        if (typeof window.updateMobileStarChipHighlight === 'function') window.updateMobileStarChipHighlight();
+        if (typeof renderFriendModalList === 'function') renderFriendModalList();
     } catch (err) {
         console.error('[Spoonmap] Firestore Sync Error:', err);
     }
@@ -4283,6 +4304,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveCustomFriends(list) {
         localStorage.setItem('spoonmap_custom_friends', JSON.stringify(list));
+        if (typeof saveToCloud === 'function' && typeof isUserLoggedIn === 'function' && isUserLoggedIn()) {
+            saveToCloud('custom_friends', list);
+        }
     }
 
     // Cache for followed users' restaurants
@@ -4534,6 +4558,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveActiveFriendIds(ids) {
         localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify(ids));
+        if (typeof saveToCloud === 'function' && typeof isUserLoggedIn === 'function' && isUserLoggedIn()) {
+            saveToCloud('active_friend_ids', ids);
+        }
     }
 
     window.activeFriendMarkersMap = new Map();
