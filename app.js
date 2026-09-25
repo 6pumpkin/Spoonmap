@@ -1705,6 +1705,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.scrollTop = 0;
 
         document.body.classList.toggle('is-map-tab', targetTab === 'map');
+        document.body.classList.toggle('is-sommelier-tab', targetTab === 'sommelier');
 
         updateAuthProtectedViews();
 
@@ -8288,8 +8289,12 @@ function initSommelierTab() {
             <div class="chat-bubble">
                 안녕하세요! <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
-                원하시는 <b>개수(예: 1차 3곳, 2차 3곳), 추천 출처(내 맛집만 vs 카카오 지도 실시간), 코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br><br>
-                💡 상단의 추천 샘플 질문을 누르시거나 하단 창에 원하는 질문을 입력하세요!
+                원하시는 <b>코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br>
+                <div style="margin-top: 10px;">
+                    <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
+                        💡 추천 질문 목록 보기
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -8305,6 +8310,61 @@ function initSommelierTab() {
         input.dataset.bound = 'true';
     }
 }
+
+window.showSommelierPromptsList = function() {
+    const thread = document.getElementById('sommelier-chat-thread');
+    if (!thread) return;
+
+    const promptsDiv = document.createElement('div');
+    promptsDiv.className = 'chat-msg ai-msg';
+    promptsDiv.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble sommelier-prompts-guide">
+            <div class="prompts-guide-header">
+                <b>💡 추천 질문 모음</b>
+                <span class="prompts-guide-sub">원하는 질문을 터치하면 바로 추천해 드려요!</span>
+            </div>
+            
+            <div class="prompt-category-group">
+                <div class="prompt-category-title">📍 실시간 & 내 맛집</div>
+                <div class="prompt-btn-grid">
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌐 카카오 지도 실시간 추천 1차 3곳과 2차 3곳 추천해줘')">🌐 카카오 1차 3곳 + 2차 3곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🔥 내 맛집 데이터에서만 5수저 맛집 3곳 추천해줘')">🔥 내 맛집 5수저 3곳만</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🔥 내가 2번 이상 방문해서 검증된 또간집 중에서 3곳 추천해줘')">🔥 검증된 찐 또간집 3곳</button>
+                </div>
+            </div>
+
+            <div class="prompt-category-group">
+                <div class="prompt-category-title">🥂 데이트 & 코스</div>
+                <div class="prompt-btn-grid">
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌧️ 비 오는 날 연남동 데이트 코스 1차 고기집 1곳, 2차 카페 1곳 추천해줘')">🌧️ 연남동 고기 + 카페 데이트</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍰 성수동 1차 감성 양식당 1곳, 2차 디저트 카페 1곳 데이트 코스 짜줘')">🍰 성수동 양식 + 디저트 코스</button>
+                </div>
+            </div>
+
+            <div class="prompt-category-group">
+                <div class="prompt-category-title">🍺 모임 / 회식 / 2차</div>
+                <div class="prompt-btn-grid">
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍺 강남역 근처 카카오 지도 실시간 2차 술집 2곳 추천해줘')">🍺 강남역 2차 술집 2곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🥩 여의도에서 팀 회식하기 좋은 넓고 친절한 고깃집 2곳 추천해줘')">🥩 여의도 회식 고깃집 2곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌙 이태원 근처 분위기 좋고 늦게까지 하는 2차 요리주점 2곳')">🌙 이태원 심야 2차 요리주점 2곳</button>
+                </div>
+            </div>
+
+            <div class="prompt-category-group">
+                <div class="prompt-category-title">🍚 혼밥 & 맛집 탐방</div>
+                <div class="prompt-btn-grid">
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍶 신촌에서 눈치 안 보고 편하게 혼밥하기 좋은 맛집 2곳 알려줘')">🍶 신촌 편한 혼밥 맛집 2곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('💰 홍대 주변 푸짐하고 가성비 뛰어난 혜자 맛집 3곳 알려줘')">💰 홍대 푸짐한 가성비 3곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍲 종로 근처 속 확 풀리는 얼큰한 국물/해장 맛집 2곳')">🍲 종로 속풀리는 국물/해장 2곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌮 이태원에서 카카오 지도로 안 가본 타코/남미 음식점 3곳 찾아줘')">🌮 이태원 신상 타코/남미 3곳</button>
+                </div>
+            </div>
+        </div>
+    `;
+    thread.appendChild(promptsDiv);
+    thread.scrollTop = thread.scrollHeight;
+};
 
 function handleSommelierSend() {
     const thread = document.getElementById('sommelier-chat-thread');
@@ -8382,8 +8442,9 @@ function injectNaverButtons(html) {
             const name = titleText.replace(/<[^>]+>/g, '').trim();
             const query = encodeURIComponent(addr ? addr + ' ' + name : name);
             const naverUrl = 'https://map.naver.com/p/search/' + query;
-            const naverBtn = '<a href="' + naverUrl + '" target="_blank" class="rec-naver-pill-btn">\uD83D\uDDFA\uFE0F \ub124\uc774\ubc84\uc9c0\ub3c4\uc5d0\uc11c \ubcf4\uae30</a>';
-            return titleTag + middle + '<div class="rec-map-btns">' + kakaoBtn + naverBtn + '</div>';
+            const cleanKakaoBtn = kakaoBtn.replace('에서 보기', '').replace('에서보기', '');
+            const naverBtn = '<a href="' + naverUrl + '" target="_blank" class="rec-naver-pill-btn">\uD83D\uDDFA\uFE0F \ub124\uc774\ubc84\uc9c0\ub3c4</a>';
+            return titleTag + middle + '<div class="rec-map-btns">' + cleanKakaoBtn + naverBtn + '</div>';
         }
     );
 }
@@ -8405,8 +8466,8 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
             <div class="rec-place-meta">📍 <b>위치:</b> ${cleanAddr}</div>
             <p class="rec-place-desc">${cleanDesc}</p>
             <div class="rec-map-btns">
-                <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
-                <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="rec-naver-pill-btn">🗺️ 네이버지도에서 보기</a>
+                <a href="${mapUrls.kakaoUrl}" target="_blank" rel="noopener noreferrer" class="rec-kakao-pill-btn">👈 카카오맵</a>
+                <a href="${mapUrls.naverUrl}" target="_blank" rel="noopener noreferrer" class="rec-naver-pill-btn">🗺️ 네이버지도</a>
             </div>
         </div>
     `;
@@ -8972,7 +9033,7 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
     <h4 class="rec-place-title">실제 매장 이름</h4>
     <div class="rec-place-meta">📍 <b>위치:</b> 실제 도로명 주소</div>
     <p class="rec-place-desc">대표 메뉴 맛, 실제 방문자 리뷰 핵심 포인트, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
-    <a href="실제카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵에서 보기</a>
+    <a href="실제카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵</a>
 </div>`;
 
             const modelsToTry = [
