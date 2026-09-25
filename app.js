@@ -8235,6 +8235,17 @@ window.sendSommelierQuickPrompt = function(promptText) {
     }
 };
 
+window.resetSommelierChat = function() {
+    const input = document.getElementById('sommelier-user-input');
+    if (input) input.value = '';
+    sommelierInitialized = false;
+    if (window.sommelierContext) {
+        window.sommelierContext.lastLocation = null;
+        window.sommelierContext.lastPlaces = [];
+    }
+    initSommelierTab();
+};
+
 window.toggleChipsExpand = function() {
     const extraChips = document.querySelectorAll('.chip-extra');
     const toggleText = document.getElementById('chips-toggle-text');
@@ -8283,10 +8294,16 @@ function initSommelierTab() {
         </div>
     `;
 
-    sendBtn.addEventListener('click', handleSommelierSend);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleSommelierSend();
-    });
+    if (!sendBtn.dataset.bound) {
+        sendBtn.addEventListener('click', handleSommelierSend);
+        sendBtn.dataset.bound = 'true';
+    }
+    if (!input.dataset.bound) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleSommelierSend();
+        });
+        input.dataset.bound = 'true';
+    }
 }
 
 function handleSommelierSend() {
