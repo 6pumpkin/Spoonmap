@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoonmap 모바일 뷰포트 시뮬레이터 📱</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :root {
+            --bg-workspace: #0F172A;
+            --surface-panel: #1E293B;
+            --surface-card: #334155;
+            --border-color: #475569;
+            --coral-main: #FF4757;
+            --coral-hover: #E83849;
+            --coral-light: #FFF0F2;
+            --text-primary: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-sub: #CBD5E1;
+            --phone-bezel: #1E293B;
+            --phone-border: #334155;
+        }
+
+        body {
+            background-color: var(--bg-workspace);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ── Top Control Bar ── */
+        .top-toolbar {
+            background: var(--surface-panel);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #FFFFFF;
+            background: linear-gradient(135deg, var(--coral-main), #FF6B81);
+            padding: 5px 12px;
+            border-radius: 9999px;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+            white-space: nowrap;
+        }
+
+        /* Preset Select Box */
+        .preset-select {
+            background: var(--surface-card);
+            color: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .preset-select:focus, .preset-select:hover {
+            border-color: var(--coral-main);
+            box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2);
+        }
+
+        /* Dimension Inputs */
+        .dim-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 3px 8px;
+        }
+
+        .dim-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .dim-input {
+            width: 48px;
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            outline: none;
+        }
+
+        .dim-input::-webkit-inner-spin-button,
+        .dim-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Tool Buttons */
+        .tool-btn {
+            background: var(--surface-card);
+            color: var(--text-sub);
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .tool-btn:hover {
+            background: #475569;
+            color: #FFFFFF;
+            border-color: #64748B;
+        }
+
+        .tool-btn.active {
+            background: var(--coral-main);
+            color: #FFFFFF;
+            border-color: var(--coral-main);
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.35);
+        }
+
+        /* Tab Jump Bar */
+        .tab-jump-group {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .tab-jump-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-jump-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .tab-jump-btn.active {
+            background: var(--coral-main);
+            color: #FFFFFF;
+        }
+
+        /* ── Workspace Area ── */
+        .workspace-area {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: radial-gradient(#1E293B 1px, transparent 1px) 0 0 / 24px 24px, #0F172A;
+        }
+
+        /* ── Phone Mockup Frame ── */
+        .phone-frame-wrapper {
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: center center;
+            flex-shrink: 0;
+        }
+
+        .phone-frame {
+            position: relative;
+            background: var(--phone-bezel);
+            border-radius: 46px;
+            padding: 12px;
+            box-shadow: 
+                0 0 0 1.5px #475569,
+                0 0 0 10px #1E293B,
+                0 0 0 12px #334155,
+                0 30px 80px -15px rgba(0, 0, 0, 0.8),
+                0 15px 30px -5px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.15s ease, height 0.15s ease, border-radius 0.2s ease;
+        }
+
+        /* Bezel OFF Mode */
+        .phone-frame.no-bezel {
+            border-radius: 8px;
+            padding: 0;
+            box-shadow: 
+                0 0 0 1.5px var(--coral-main),
+                0 25px 60px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .phone-frame.no-bezel .phone-notch,
+        .phone-frame.no-bezel .phone-home-indicator {
+            display: none !important;
+        }
+
+        /* Phone Top Notch / Dynamic Island */
+        .phone-notch {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88px;
+            height: 22px;
+            background: #000000;
+            border-radius: 20px;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            pointer-events: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .camera-lens {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #111E2E;
+            box-shadow: inset 0 0 2px #00FFFF, 0 0 2px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Screen Screen / Iframe Container */
+        .phone-screen {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border-radius: 36px;
+            overflow: hidden;
+            background: #FAF8F5;
+            position: relative;
+        }
+
+        .phone-frame.no-bezel .phone-screen {
+            border-radius: 6px;
+        }
+
+        .app-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: #FAF8F5;
+        }
+
+        /* Drag Overlay (prevents iframe from eating mouse events during resize drag) */
+        .drag-shield {
+            position: absolute;
+            inset: 0;
+            z-index: 99;
+            display: none;
+            cursor: se-resize;
+        }
+
+        .is-dragging .drag-shield {
+            display: block !important;
+        }
+
+        /* Resizing Handles */
+        .resize-handle-corner {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 22px;
+            height: 22px;
+            background: var(--coral-main);
+            border: 2.5px solid #FFFFFF;
+            border-radius: 50%;
+            cursor: se-resize;
+            z-index: 80;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            transition: transform 0.15s ease;
+        }
+
+        .resize-handle-corner:hover, .is-dragging .resize-handle-corner {
+            transform: scale(1.3);
+            background: #FF6B81;
+        }
+
+        .resize-handle-right {
+            position: absolute;
+            top: 25%;
+            bottom: 25%;
+            right: -8px;
+            width: 10px;
+            cursor: e-resize;
+            z-index: 75;
+        }
+
+        .resize-handle-bottom {
+            position: absolute;
+            bottom: -8px;
+            left: 25%;
+            right: 25%;
+            height: 10px;
+            cursor: s-resize;
+            z-index: 75;
+        }
+
+        /* ── Live Metrics HUD (Bottom Floating Pill) ── */
+        .metrics-hud {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 90;
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .hud-val {
+            color: #FFFFFF;
+            font-weight: 800;
+        }
+
+        .hud-highlight {
+            color: var(--coral-main);
+            font-weight: 800;
+        }
+
+        .hud-divider {
+            width: 1px;
+            height: 14px;
+            background: var(--border-color);
+        }
+
+        /* ── Help Modal ── */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: var(--surface-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            color: var(--text-primary);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: var(--text-sub);
+            margin-bottom: 20px;
+        }
+
+        .modal-body b {
+            color: #FFFFFF;
+        }
+
+        .modal-tip-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-size: 12.5px;
+        }
+
+        .modal-close-btn {
+            width: 100%;
+            background: var(--coral-main);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: var(--coral-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Top Toolbar ── -->
+    <div class="top-toolbar">
+        <div class="toolbar-group">
+            <div class="brand-badge">📱 Spoonmap 모바일 뷰어</div>
+            
+            <!-- Preset Selector -->
+            <select id="device-preset" class="preset-select" onchange="applyDevicePreset(this.value)">
+                <option value="flip6" selected>⭐ 갤럭시 Z 플립 6 / 5 (360 × 780)</option>
+                <option value="s24">갤럭시 S24 / S23 (360 × 780)</option>
+                <option value="s24ultra">갤럭시 S24 울트라 (412 × 915)</option>
+                <option value="foldOuter">갤럭시 폴드 외판 (344 × 882)</option>
+                <option value="iphone16pro">아이폰 16 / 15 Pro (393 × 852)</option>
+                <option value="iphone16promax">아이폰 16 Pro Max (430 × 932)</option>
+                <option value="iphone14">아이폰 14 / 13 (390 × 844)</option>
+                <option value="iphonese">아이폰 SE / 8 (375 × 667)</option>
+                <option value="custom">✏️ 직접 화면 크기 조절 (Custom)</option>
+            </select>
+
+            <!-- Custom Size Inputs -->
+            <div class="dim-box">
+                <span class="dim-label">W:</span>
+                <input type="number" id="input-w" class="dim-input" value="360" min="280" max="650" onchange="updateCustomSize()">
+                <span class="dim-label">px</span>
+                <span style="color:var(--border-color);">×</span>
+                <span class="dim-label">H:</span>
+                <input type="number" id="input-h" class="dim-input" value="780" min="450" max="1100" onchange="updateCustomSize()">
+                <span class="dim-label">px</span>
+            </div>
+
+            <!-- Rotate Button -->
+            <button type="button" class="tool-btn" onclick="toggleOrientation()" title="가로/세로 화면 회전">
+                <span>🔄 회전</span>
+            </button>
+        </div>
+
+        <!-- Tab Quick Jump Group -->
+        <div class="toolbar-group">
+            <div class="tab-jump-group">
+                <button type="button" class="tab-jump-btn" onclick="jumpToTab('diary')">📅 캘린더</button>
+                <button type="button" class="tab-jump-btn" onclick="jumpToTab('list')">📋 리스트</button>
+                <button type="button" class="tab-jump-btn" onclick="jumpToTab('map')">🗺️ 지도</button>
+                <button type="button" class="tab-jump-btn active" onclick="jumpToTab('sommelier')">🍷 AI 소믈리에</button>
+                <button type="button" class="tab-jump-btn" onclick="jumpToTab('profile')">👤 프로필</button>
+            </div>
+        </div>
+
+        <!-- Display Zoom & Frame Controls -->
+        <div class="toolbar-group">
+            <!-- Scale Select -->
+            <select id="scale-select" class="preset-select" onchange="applyZoom(this.value)">
+                <option value="1">🔍 100% (실제 크기)</option>
+                <option value="0.9">🔍 90%</option>
+                <option value="0.85">🔍 85%</option>
+                <option value="0.8">🔍 80%</option>
+                <option value="0.75">🔍 75%</option>
+                <option value="fit" selected>📱 화면에 맞춤 (Fit)</option>
+            </select>
+
+            <!-- Bezel Frame Toggle -->
+            <button type="button" id="btn-toggle-bezel" class="tool-btn active" onclick="toggleBezel()" title="폰 테두리 프레임 켜기/끄기">
+                <span>🖼️ 폰 케이스</span>
+            </button>
+
+            <!-- Reload Iframe -->
+            <button type="button" class="tool-btn" onclick="reloadIframe()" title="코드 변경 즉시 새로고침">
+                <span>↻ 새로고침</span>
+            </button>
+
+            <!-- DevTools Tip Button -->
+            <button type="button" class="tool-btn" onclick="openHelpModal()" title="F12 개발자도구 팁">
+                <span>💡 브라우저 팁</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Workspace Canvas ── -->
+    <div id="workspace" class="workspace-area">
+        <div id="phone-wrapper" class="phone-frame-wrapper">
+            <div id="phone-frame" class="phone-frame" style="width: 384px; height: 804px;">
+                <!-- Notch / Dynamic Island -->
+                <div class="phone-notch">
+                    <div class="camera-lens"></div>
+                </div>
+
+                <!-- Touch & Mouse Shield during drag -->
+                <div id="drag-shield" class="drag-shield"></div>
+
+                <!-- Screen Iframe Container -->
+                <div class="phone-screen">
+                    <iframe id="spoon-iframe" class="app-iframe" src="./index.html#sommelier"></iframe>
+                </div>
+
+                <!-- Resizing Handles -->
+                <div class="resize-handle-right" onmousedown="startDrag(event, 'x')"></div>
+                <div class="resize-handle-bottom" onmousedown="startDrag(event, 'y')"></div>
+                <div class="resize-handle-corner" onmousedown="startDrag(event, 'both')" title="마우스로 드래그하여 화면 크기 조절"></div>
+            </div>
+        </div>
+
+        <!-- Floating HUD -->
+        <div class="metrics-hud">
+            <div>화면 해상도: <span id="hud-dims" class="hud-val">360 × 780 px</span></div>
+            <div class="hud-divider"></div>
+            <div>비율: <span id="hud-ratio" class="hud-highlight">9:19.5 (갤럭시 Z 플립 6)</span></div>
+            <div class="hud-divider"></div>
+            <div>미디어 쿼리: <span class="hud-val" style="color:#10B981;">모바일 (@media ≤ 768px) 적용</span></div>
+        </div>
+    </div>
+
+    <!-- ── Help Modal ── -->
+    <div id="help-modal" class="modal-backdrop" onclick="closeHelpModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-title">💡 브라우저 자체 모바일 시뮬레이터 안내</div>
+            <div class="modal-body">
+                이 시뮬레이터 외에도 크롬(Chrome)이나 엣지(Edge) 브라우저에 탑재된 <b>전문가용 모바일 개발자 도구</b>를 사용하시면 더욱 정밀한 터치 스와이프 및 네트워크 환경을 테스트하실 수 있습니다.
+                
+                <div class="modal-tip-box">
+                    <b>단축키:</b> 키보드 <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">F12</kbd> (또는 Ctrl + Shift + I)<br>
+                    → 상단 좌측의 <b>스마트폰/태블릿 모양 아이콘</b> (<kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Ctrl + Shift + M</kbd>) 클릭<br>
+                    → 상단 [Dimensions: Responsive]에서 원하는 휴대폰 기종을 선택하거나 마우스로 테두리를 끌어 조절할 수 있습니다!
+                </div>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeHelpModal()">확인 완료</button>
+        </div>
+    </div>
+
+    <script>
+        // Preset Definitions
+        const PRESETS = {
+            flip6: { w: 360, h: 780, name: "갤럭시 Z 플립 6 / 5", ratio: "9:19.5" },
+            s24: { w: 360, h: 780, name: "갤럭시 S24 / S23", ratio: "9:19.5" },
+            s24ultra: { w: 412, h: 915, name: "갤럭시 S24 울트라", ratio: "9:20" },
+            foldOuter: { w: 344, h: 882, name: "갤럭시 폴드 외판", ratio: "9:23" },
+            iphone16pro: { w: 393, h: 852, name: "아이폰 16 / 15 Pro", ratio: "9:19.5" },
+            iphone16promax: { w: 430, h: 932, name: "아이폰 16 Pro Max", ratio: "9:19.5" },
+            iphone14: { w: 390, h: 844, name: "아이폰 14 / 13", ratio: "9:19.5" },
+            iphonese: { w: 375, h: 667, name: "아이폰 SE / 8", ratio: "9:16" }
+        };
+
+        let currentW = 360;
+        let currentH = 780;
+        let isBezelOn = true;
+        let currentZoom = 'fit';
+
+        const phoneFrame = document.getElementById('phone-frame');
+        const phoneWrapper = document.getElementById('phone-wrapper');
+        const inputW = document.getElementById('input-w');
+        const inputH = document.getElementById('input-h');
+        const hudDims = document.getElementById('hud-dims');
+        const hudRatio = document.getElementById('hud-ratio');
+        const iframe = document.getElementById('spoon-iframe');
+        const presetSelect = document.getElementById('device-preset');
+        const scaleSelect = document.getElementById('scale-select');
+
+        // Apply a preset
+        function applyDevicePreset(presetKey) {
+            if (presetKey === 'custom') return;
+            const p = PRESETS[presetKey];
+            if (!p) return;
+            currentW = p.w;
+            currentH = p.h;
+            updateDimensionsUI(p.name, p.ratio);
+        }
+
+        // Apply custom size from inputs
+        function updateCustomSize() {
+            let w = parseInt(inputW.value, 10) || 360;
+            let h = parseInt(inputH.value, 10) || 780;
+            w = Math.max(280, Math.min(750, w));
+            h = Math.max(450, Math.min(1200, h));
+            currentW = w;
+            currentH = h;
+            presetSelect.value = 'custom';
+            updateDimensionsUI("사용자 직접 설정", calculateRatio(w, h));
+        }
+
+        // Calculate aspect ratio string
+        function calculateRatio(w, h) {
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const d = gcd(w, h);
+            const rW = (w / d).toFixed(1);
+            const rH = (h / d).toFixed(1);
+            return `${(w / h * 16).toFixed(1)}:16 (${w}×${h})`;
+        }
+
+        // Update Phone Frame and HUD
+        function updateDimensionsUI(name = "사용자 지정", ratioStr = "") {
+            inputW.value = currentW;
+            inputH.value = currentH;
+
+            // Bezel adds 24px width & height (12px padding each side)
+            const paddingOffset = isBezelOn ? 24 : 0;
+            phoneFrame.style.width = (currentW + paddingOffset) + 'px';
+            phoneFrame.style.height = (currentH + paddingOffset) + 'px';
+
+            hudDims.innerText = `${currentW} × ${currentH} px`;
+            hudRatio.innerText = ratioStr ? `${ratioStr} (${name})` : name;
+
+            if (currentZoom === 'fit') {
+                applyAutoFit();
+            }
+        }
+
+        // Rotate orientation
+        function toggleOrientation() {
+            const temp = currentW;
+            currentW = currentH;
+            currentH = temp;
+            presetSelect.value = 'custom';
+            updateDimensionsUI("회전된 화면", calculateRatio(currentW, currentH));
+        }
+
+        // Toggle Bezel
+        function toggleBezel() {
+            isBezelOn = !isBezelOn;
+            phoneFrame.classList.toggle('no-bezel', !isBezelOn);
+            document.getElementById('btn-toggle-bezel').classList.toggle('active', isBezelOn);
+            updateDimensionsUI();
+        }
+
+        // Zoom & Scale Handler
+        function applyZoom(val) {
+            currentZoom = val;
+            if (val === 'fit') {
+                applyAutoFit();
+            } else {
+                const scale = parseFloat(val) || 1;
+                phoneWrapper.style.transform = `scale(${scale})`;
+            }
+        }
+
+        function applyAutoFit() {
+            const workspace = document.getElementById('workspace');
+            const paddingOffset = isBezelOn ? 24 : 0;
+            const targetW = currentW + paddingOffset;
+            const targetH = currentH + paddingOffset;
+
+            const availW = workspace.clientWidth - 48;
+            const availH = workspace.clientHeight - 80; // keep room for HUD
+
+            const scaleW = availW / targetW;
+            const scaleH = availH / targetH;
+            let bestScale = Math.min(scaleW, scaleH, 1);
+            if (bestScale < 0.5) bestScale = 0.5;
+
+            phoneWrapper.style.transform = `scale(${bestScale.toFixed(2)})`;
+        }
+
+        window.addEventListener('resize', () => {
+            if (currentZoom === 'fit') applyAutoFit();
+        });
+
+        // Tab Navigation Jump
+        function jumpToTab(tabName) {
+            document.querySelectorAll('.tab-jump-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('onclick').includes(tabName));
+            });
+
+            try {
+                if (iframe.contentWindow && iframe.contentWindow.location) {
+                    iframe.contentWindow.location.hash = '#' + tabName;
+                } else {
+                    iframe.src = './index.html#' + tabName;
+                }
+            } catch (e) {
+                iframe.src = './index.html#' + tabName;
+            }
+        }
+
+        // Reload Iframe
+        function reloadIframe() {
+            try {
+                iframe.contentWindow.location.reload();
+            } catch (e) {
+                iframe.src = iframe.src;
+            }
+        }
+
+        // Help Modal
+        function openHelpModal() {
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        // ── Drag to Resize Logic ──
+        let isDragging = false;
+        let dragMode = 'both';
+        let startX, startY, startW, startH;
+
+        function startDrag(e, mode) {
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            dragMode = mode;
+            startX = e.clientX;
+            startY = e.clientY;
+            startW = currentW;
+            startH = currentH;
+
+            document.body.classList.add('is-dragging');
+            document.addEventListener('mousemove', onDragMove);
+            document.addEventListener('mouseup', onDragEnd);
+        }
+
+        function onDragMove(e) {
+            if (!isDragging) return;
+
+            // Account for zoom scale
+            const scaleMatch = phoneWrapper.style.transform.match(/scale\(([^)]+)\)/);
+            const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
+
+            const dx = (e.clientX - startX) / scale;
+            const dy = (e.clientY - startY) / scale;
+
+            if (dragMode === 'x' || dragMode === 'both') {
+                currentW = Math.max(300, Math.min(650, Math.round(startW + dx)));
+            }
+            if (dragMode === 'y' || dragMode === 'both') {
+                currentH = Math.max(450, Math.min(1100, Math.round(startH + dy)));
+            }
+
+            presetSelect.value = 'custom';
+            updateDimensionsUI("자유 드래그 조절", calculateRatio(currentW, currentH));
+        }
+
+        function onDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.classList.remove('is-dragging');
+            document.removeEventListener('mousemove', onDragMove);
+            document.removeEventListener('mouseup', onDragEnd);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            applyDevicePreset('flip6');
+            setTimeout(applyAutoFit, 100);
+        });
+    </script>
+</body>
+</html>

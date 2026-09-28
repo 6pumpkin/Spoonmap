@@ -1,4 +1,4 @@
-param([int]$Port = 8000)
+param([int]$Port = 8000, [string]$Path = "")
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -13,15 +13,17 @@ try {
     exit 1
 }
 
+$openUrl = if ($Path) { "http://localhost:$Port/$Path" } else { "http://localhost:$Port" }
+
 Write-Host "===================================================" -ForegroundColor Green
 Write-Host " Spoonmap Local Server Started Successfully!" -ForegroundColor Cyan
-Write-Host " Address: http://localhost:$Port" -ForegroundColor Yellow
+Write-Host " Address: $openUrl" -ForegroundColor Yellow
 Write-Host " Keep this window open while using the app." -ForegroundColor Gray
 Write-Host "===================================================" -ForegroundColor Green
 
 # Open browser automatically
 try {
-    Start-Process "http://localhost:$Port"
+    Start-Process $openUrl
 } catch {
     # Ignore if browser open fails
 }

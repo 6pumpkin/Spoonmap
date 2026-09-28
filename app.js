@@ -1585,6 +1585,42 @@ document.addEventListener('DOMContentLoaded', () => {
             handle.addEventListener('touchend', finishDrag, { passive: true });
             handle.addEventListener('touchcancel', finishDrag, { passive: true });
 
+            // Laptop/Desktop Mouse Drag Support for Bottom Sheets
+            handle.addEventListener('mousedown', (e) => {
+                startY = e.clientY;
+                currentY = startY;
+                startTime = Date.now();
+                isDragging = true;
+                hasMoved = false;
+                card.style.transition = 'none';
+                if (overlay) overlay.style.transition = 'none';
+
+                const onMouseMove = (ev) => {
+                    if (!isDragging) return;
+                    currentY = ev.clientY;
+                    const deltaY = currentY - startY;
+                    if (deltaY > 6) hasMoved = true;
+                    if (deltaY > 0) {
+                        card.style.transform = `translateY(${deltaY}px)`;
+                        if (overlay) {
+                            const opacityVal = Math.max(0.2, 1 - (deltaY / 400));
+                            overlay.style.opacity = opacityVal;
+                        }
+                    } else {
+                        card.style.transform = `translateY(${deltaY * 0.15}px)`;
+                    }
+                };
+
+                const onMouseUp = (ev) => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    finishDrag(ev);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
             handle.addEventListener('click', () => {
                 if (hasMoved) return;
                 if (window.innerWidth <= 768) {
