@@ -8358,11 +8358,29 @@ function initSommelierTab() {
 
     if (!sendBtn.dataset.bound) {
         sendBtn.addEventListener('click', handleSommelierSend);
+        sendBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleSommelierSend();
+        }, { passive: false });
         sendBtn.dataset.bound = 'true';
     }
     if (!input.dataset.bound) {
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleSommelierSend();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSommelierSend();
+            }
+        });
+        // Crucial for iOS Safari: resets hit-testing coordinate matrix when virtual keyboard is dismissed
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+            }, 60);
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 250);
         });
         input.dataset.bound = 'true';
     }
@@ -8548,6 +8566,18 @@ function handleSommelierSend() {
     `;
     thread.appendChild(userMsgDiv);
     input.value = '';
+    input.blur();
+
+    // Reset viewport scroll offset on iOS Safari
+    const resyncViewport = () => {
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    };
+    resyncViewport();
+    setTimeout(resyncViewport, 50);
+    setTimeout(resyncViewport, 200);
+
     thread.scrollTop = thread.scrollHeight;
 
     // AI Typing Indicator
@@ -8582,6 +8612,10 @@ function handleSommelierSend() {
         `;
         thread.appendChild(aiMsgDiv);
         thread.scrollTop = thread.scrollHeight;
+        setTimeout(() => {
+            resyncViewport();
+            thread.scrollTop = thread.scrollHeight;
+        }, 100);
     };
 
     // 8-second safety fallback timeout so questions NEVER get stuck

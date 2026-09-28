@@ -9561,6 +9561,7 @@ span.desktop-only {
     body:has(#sommelier-view.active) {
         overflow: hidden !important;
         height: 100% !important;
+        overscroll-behavior: none !important;
     }
 
     body.is-map-tab header,
@@ -9590,7 +9591,7 @@ span.desktop-only {
         padding: 0 !important;
         margin: 0 !important;
         position: fixed !important;
-        top: var(--m-header-height) !important;
+        top: calc(var(--m-header-height) + env(safe-area-inset-top, 0px)) !important;
         bottom: calc(var(--m-bnav-height) + env(safe-area-inset-bottom, 0px)) !important;
         left: 0 !important;
         right: 0 !important;
@@ -9598,6 +9599,7 @@ span.desktop-only {
         height: auto !important;
         overflow: hidden !important;
         min-height: 0 !important;
+        overscroll-behavior: none !important;
     }
 
     body.is-map-tab #map-view.tab-content.active,
@@ -10691,7 +10693,8 @@ span.desktop-only {
     .sommelier-chat-card {
         flex: 1 !important;
         min-height: 0 !important;
-        height: auto !important;
+        height: 100% !important;
+        max-height: none !important;
         display: flex !important;
         flex-direction: column !important;
         background: transparent !important;
@@ -10710,6 +10713,7 @@ span.desktop-only {
         flex-direction: column !important;
         gap: 12px !important;
         background: #FAF8F5 !important;
+        overscroll-behavior-y: contain !important;
     }
 
     .chat-msg {
@@ -10766,22 +10770,26 @@ span.desktop-only {
         border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
         padding: 6px 10px !important;
         gap: 8px !important;
+        display: flex !important;
         align-items: center !important;
         flex-shrink: 0 !important;
         z-index: 10 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .chat-input-bar input {
         flex: 1 !important;
         height: 38px !important;
-        padding: 0 12px !important;
+        padding: 0 14px !important;
         background: #F8FAFC !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 19px !important;
-        font-size: 12.5px !important;
+        font-size: 16px !important; /* Prevents iOS Safari from auto-zooming and displacing touch hit-testing */
         color: #1E293B !important;
         font-weight: 500 !important;
         outline: none !important;
+        box-sizing: border-box !important;
         transition: border-color 0.15s ease, background 0.15s ease !important;
     }
 
