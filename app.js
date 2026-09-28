@@ -8574,13 +8574,13 @@ function handleSommelierSend() {
         }, 100);
     };
 
-    // 8-second safety fallback timeout so questions NEVER get stuck
+    // 12-second safety fallback timeout so questions NEVER get stuck
     setTimeout(() => {
         if (!responded) {
             console.warn('Sommelier query timeout, triggering fallback engine...');
             processSommelierFallbackOnly(text, safeCallback);
         }
-    }, 8000);
+    }, 12000);
 
     try {
         processSommelierQuery(text, safeCallback);
@@ -9132,18 +9132,30 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 
             const modelsToTry = [
                 'gemini-3.5-flash-lite',
-                'gemini-3.1-flash-lite',
-                'gemini-3.6-flash'
+                'gemini-3.1-flash-lite'
             ];
 
-            function attemptModel(idx) {
+            const MAX_RETRIES_PER_MODEL = 1; // 503 순간 과부하 발생 시 1회 재시도 (소중한 3.6-flash 쿼터 보존)
+
+            function attemptModel(idx, retryCount = 0) {
                 if (idx >= modelsToTry.length) {
                     console.warn('[Spoonmap] All Gemini models failed. Falling back to local parser.');
                     processSommelierFallbackOnly(query, callback);
                     return;
                 }
                 const model = modelsToTry[idx];
-                console.log(`[Spoonmap] Trying Gemini model: ${model}`);
+                console.log(`[Spoonmap] Trying Gemini model: ${model} (attempt: ${retryCount + 1})`);
+
+                const handleFail = (status, errData) => {
+                    if ((status === 503 || status === 429) && retryCount < MAX_RETRIES_PER_MODEL) {
+                        console.warn(`[Spoonmap] Model ${model} HTTP ${status}. Retrying in 1s (attempt ${retryCount + 2})...`, errData);
+                        setTimeout(() => attemptModel(idx, retryCount + 1), 1000);
+                    } else {
+                        console.warn(`[Spoonmap] Model ${model} failed, moving to next model:`, errData);
+                        attemptModel(idx + 1, 0);
+                    }
+                };
+
                 fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -9155,11 +9167,9 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
                 .then(res => {
                     if (!res.ok) {
                         return res.json().then(errData => {
-                            console.warn(`[Spoonmap] Model ${model} HTTP ${res.status}:`, errData);
-                            attemptModel(idx + 1);
+                            handleFail(res.status, errData);
                         }).catch(() => {
-                            console.warn(`[Spoonmap] Model ${model} HTTP ${res.status}: no JSON error body`);
-                            attemptModel(idx + 1);
+                            handleFail(res.status, 'No JSON error body');
                         });
                     }
                     return res.json();
@@ -9182,16 +9192,16 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
                         callback({ html: textRes });
                     } else {
                         console.warn(`[Spoonmap] Model ${model} returned no candidates:`, data);
-                        attemptModel(idx + 1);
+                        attemptModel(idx + 1, 0);
                     }
                 })
                 .catch(err => {
                     console.warn(`[Spoonmap] Model ${model} fetch error:`, err);
-                    attemptModel(idx + 1);
+                    handleFail(503, err);
                 });
             }
 
-            attemptModel(0);
+            attemptModel(0, 0);
         }
 
         // Multi-Query Kakao Search Engine: Tries primary keyword first, falls back if 0 results
