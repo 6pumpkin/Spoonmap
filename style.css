@@ -3557,6 +3557,51 @@ main {
     color: #14532D;
 }
 
+/* Sommelier Course Tips Box & Visit Badge */
+.sommelier-tips-box {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid var(--coral-main);
+    border-radius: 14px;
+    padding: 13px 16px;
+    margin-top: 12px;
+}
+
+.sommelier-tips-box .tips-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sommelier-tips-box .tips-list {
+    list-style: none;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+.sommelier-visit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FEF3C7;
+    color: #B45309;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid #FDE68A;
+}
+
 .chat-input-bar {
     display: flex;
     gap: 10px;
@@ -7089,6 +7134,9 @@ input[type="date"].drawer-input {
 .mobile-sidebar-close-btn,
 .mobile-sidebar-footer,
 .all-regions-sheet,
+.sommelier-mobile-subbar,
+.btn-show-quick-prompts,
+.sommelier-prompts-guide,
 .mobile-only {
     display: none !important;
 }

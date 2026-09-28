@@ -8343,6 +8343,15 @@ function initSommelierTab() {
     else if (hour >= 17 && hour < 21) timeGreeting = '🥩 시원한 반주와 맛있는 저녁 시간대';
     else timeGreeting = '🍺 출출한 야식 & 술 한잔 시간대';
 
+    const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const mobilePromptBtnHtml = isMobileDevice ? `
+        <div class="mobile-only" style="margin-top: 10px;">
+            <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
+                💡 추천 질문 목록 보기
+            </button>
+        </div>
+    ` : '';
+
     thread.innerHTML = `
         <div class="chat-msg ai-msg">
             <div class="chat-avatar">🤖</div>
@@ -8350,11 +8359,7 @@ function initSommelierTab() {
                 안녕하세요! <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
                 원하시는 <b>코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br>
-                <div class="mobile-only" style="margin-top: 10px;">
-                    <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
-                        💡 추천 질문 목록 보기
-                    </button>
-                </div>
+                ${mobilePromptBtnHtml}
             </div>
         </div>
     `;
@@ -8434,8 +8439,8 @@ window.showSommelierPromptsList = function() {
                 <div class="prompt-btn-grid">
                     <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍶 신촌에서 눈치 안 보고 편하게 혼밥하기 좋은 맛집 2곳 알려줘')">🍶 신촌 편한 혼밥 맛집 2곳</button>
                     <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('💰 홍대 주변 푸짐하고 가성비 뛰어난 혜자 맛집 3곳 알려줘')">💰 홍대 푸짐한 가성비 3곳</button>
-                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍲 종로 근처 속 확 풀리는 얼큰한 국물/해장 맛집 2곳')">🍲 종로 속풀리는 국물/해장 2곳</button>
-                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌮 이태원에서 카카오 지도로 안 가본 타코/남미 음식점 3곳 찾아줘')">🌮 이태원 신상 타코/남미 3곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🍲 종로 근처 속 확 풀리는 얼큰한 국물과 해장 맛집 2곳')">🍲 종로 속풀리는 국물 해장 2곳</button>
+                    <button type="button" class="prompt-select-btn" onclick="sendSommelierQuickPrompt('🌮 이태원에서 카카오 지도로 안 가본 타코 남미 음식점 3곳 찾아줘')">🌮 이태원 신상 타코 남미 3곳</button>
                 </div>
             </div>
         </div>
@@ -8456,6 +8461,19 @@ function cleanMarkdownText(str) {
         .replace(/#/g, '')            // remove #
         .replace(/---/g, '')          // remove ---
         .trim();
+}
+
+function findUserVisitCount(placeName) {
+    if (typeof restaurantData === 'undefined' || !restaurantData || !restaurantData.length) return 0;
+    const cleanName = (placeName || '').replace(/[\s\-_()]+/g, '').toLowerCase();
+    if (!cleanName) return 0;
+    for (const r of restaurantData) {
+        const rName = (r.name || '').replace(/[\s\-_()]+/g, '').toLowerCase();
+        if (rName && (cleanName === rName || (cleanName.length >= 4 && (cleanName.includes(rName) || rName.includes(cleanName))))) {
+            return r.visit_count || (r.spoon_rating ? 1 : 0);
+        }
+    }
+    return 0;
 }
 
 // Gemini 응답 HTML에 네이버지도 버튼을 자동으로 주입하는 함수
@@ -8485,6 +8503,9 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
     const cleanTitle = cleanMarkdownText(placeName);
     const cleanAddr = cleanMarkdownText(addr);
     const cleanDesc = cleanMarkdownText(desc);
+    const visitCount = findUserVisitCount(cleanTitle);
+    const badgeHtml = visitCount > 0 ? `<span class="sommelier-visit-badge">🏆 내 단골집 ${visitCount}회 방문</span>` : '';
+
     const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls({ name: cleanTitle, map_url: mapUrl, location_large: cleanAddr }) : {
         kakaoUrl: (mapUrl && !mapUrl.includes('naver.') ? mapUrl : `https://map.kakao.com/link/search/${encodeURIComponent(cleanTitle)}`),
         naverUrl: (mapUrl && mapUrl.includes('naver.') ? mapUrl : `https://map.naver.com/p/search/${encodeURIComponent(cleanAddr ? cleanAddr + ' ' + cleanTitle : cleanTitle)}`)
@@ -8492,7 +8513,10 @@ function renderCardStandard(tagText, placeName, addr, desc, mapUrl) {
 
     return `
         <div class="rec-card-standard">
-            <span class="rec-tag-pill">${cleanTag}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; width: 100%;">
+                <span class="rec-tag-pill">${cleanTag}</span>
+                ${badgeHtml}
+            </div>
             <h4 class="rec-place-title">${cleanTitle}</h4>
             <div class="rec-place-meta">📍 <b>위치:</b> ${cleanAddr}</div>
             <p class="rec-place-desc">${cleanDesc}</p>
@@ -8797,7 +8821,29 @@ const FOOD_CATEGORIES = [
     { key: '양식', display: '양식', desc: (loc) => `${loc}에서 세련된 분위기의 양식 레스토랑으로 다양한 서양 요리를 즐길 수 있습니다.` },
     { key: '중식', display: '중식', desc: (loc) => `${loc}에서 정통 중국 요리를 즐길 수 있는 중식 레스토랑입니다.` },
     { key: '안주', display: '안주', desc: (loc) => `${loc}에서 술자리에 딱 맞는 다양하고 맛있는 안주를 즐길 수 있는 곳입니다.` },
-    { key: '국물', display: '국물요리', desc: (loc) => `${loc}에서 시원하거나 뜨끈한 국물 요리로 속을 든든하게 채울 수 있는 곳입니다.` }
+    { key: '국물', display: '국물요리', desc: (loc) => `${loc}에서 시원하거나 뜨끈한 국물 요리로 속을 든든하게 채울 수 있는 곳입니다.` },
+    { key: '타코', display: '타코/멕시칸', desc: (loc) => `${loc}에서 멕시코 전통 레시피의 살사 소스와 푸짐한 토핑이 어우러진 정통 타코를 맛볼 수 있는 곳입니다.` },
+    { key: '멕시칸', display: '멕시칸', desc: (loc) => `${loc}에서 타코, 부리또, 퀘사디아 등 다채로운 멕시코 전통 요리를 즐길 수 있는 이색 맛집입니다.` },
+    { key: '남미', display: '남미요리', desc: (loc) => `${loc}에서 이국적인 향신료와 정통 조리법으로 남미의 깊은 미식을 경험할 수 있는 곳입니다.` },
+    { key: '베이커리', display: '베이커리', desc: (loc) => `${loc}에서 매일 아침 구워내는 천연 발효빵과 향긋한 페이스트리를 즐길 수 있는 빵집입니다.` },
+    { key: '빵집', display: '베이커리', desc: (loc) => `${loc}에서 갓 구운 신선한 빵과 달콤한 구움과자를 만날 수 있는 베이커리입니다.` },
+    { key: '브런치', display: '브런치', desc: (loc) => `${loc}에서 여유로운 오전과 오후, 신선한 샐러드와 에그 베네딕트 등 풍성한 브런치를 즐기기 좋습니다.` },
+    { key: '와인바', display: '와인바', desc: (loc) => `${loc}에서 엄선된 내추럴 및 컨벤셔널 와인 페어링으로 로맨틱한 저녁을 보내기 완벽한 와인바입니다.` },
+    { key: '펍', display: '펍/바', desc: (loc) => `${loc}에서 시원한 크래프트 맥주와 이국적인 핑거 푸드로 가볍게 한잔 기울이기 좋은 펍입니다.` },
+    { key: '바', display: '바', desc: (loc) => `${loc}에서 세련된 무드 속에서 시그니처 칵테일과 싱글몰트 위스키를 즐길 수 있는 바입니다.` },
+    { key: '요리주점', display: '요리주점', desc: (loc) => `${loc}에서 수준 높은 제철 요리와 다채로운 주류를 페어링할 수 있는 감성 주점입니다.` },
+    { key: '곱창', display: '곱창/대창', desc: (loc) => `${loc}에서 쫄깃하고 고소한 곱이 가득 찬 소곱창과 대창을 돌판에 구워 먹는 인기 맛집입니다.` },
+    { key: '대창', display: '대창구이', desc: (loc) => `${loc}에서 고소한 풍미와 부드러운 식감이 일품인 대창 구이 전문점입니다.` },
+    { key: '막창', display: '막창구이', desc: (loc) => `${loc}에서 쫄깃한 식감과 특제 막장 소스가 어우러진 막창 전문점입니다.` },
+    { key: '횟집', display: '횟집', desc: (loc) => `${loc}에서 싱싱한 제철 활어회와 푸짐한 해산물 한 상을 맛볼 수 있는 곳입니다.` },
+    { key: '회', display: '회/해산물', desc: (loc) => `${loc}에서 신선한 제철 회와 바다의 풍미를 정갈하게 즐길 수 있는 곳입니다.` },
+    { key: '해산물', display: '해산물', desc: (loc) => `${loc}에서 신선한 조개구이와 제철 해산물 요리를 풍성하게 맛볼 수 있는 해산물 전문점입니다.` },
+    { key: '샤브샤브', display: '샤브샤브', desc: (loc) => `${loc}에서 맑고 시원한 육수에 신선한 야채와 얇게 썬 소고기를 살짝 데쳐 먹는 샤브샤브 맛집입니다.` },
+    { key: '양꼬치', display: '양꼬치', desc: (loc) => `${loc}에서 숯불에 노릇하게 자동 회전 구이로 구워 먹는 육즙 가득한 양꼬치 전문점입니다.` },
+    { key: '오마카세', display: '오마카세', desc: (loc) => `${loc}에서 셰프의 당일 엄선 식재료로 정성스레 이어지는 프리미엄 코스 요리를 즐길 수 있는 곳입니다.` },
+    { key: '분식', display: '분식', desc: (loc) => `${loc}에서 떡볶이, 튀김, 순대 등 누구나 사랑하는 친근하고 맛있는 분식을 즐길 수 있습니다.` },
+    { key: '혼밥', display: '혼밥 맛집', desc: (loc) => `${loc}에서 주변 눈치 볼 필요 없이 편안한 바 좌석에서 오롯이 식사를 즐길 수 있는 1인 혼밥 명소입니다.` },
+    { key: '가성비', display: '가성비 맛집', desc: (loc) => `${loc}에서 착한 가격에 푸짐한 양과 뛰어난 맛을 자랑하는 혜자스러운 가성비 식당입니다.` }
 ];
 
 const CONVERSATIONAL_STOPWORDS = new Set([
@@ -8909,26 +8955,82 @@ function isPlaceInTargetLocation(place, targetLoc) {
 
     const AREA_ALIASES = {
         '홍대': ['마포', '서교', '동교', '상수', '합정', '창전', '연남', '홍대'],
+        '망원': ['마포', '망원'],
+        '상수': ['마포', '상수'],
+        '합정': ['마포', '합정', '서교'],
+        '연남': ['마포', '연남'],
+        '연남동': ['마포', '연남'],
         '신촌': ['서대문', '신촌', '창천', '대현', '노고산', '마포'],
+        '이대': ['서대문', '대현', '신촌', '이화'],
         '강남': ['강남', '서초', '역삼', '서초동', '도곡', '논현'],
         '강남역': ['강남', '서초', '역삼', '서초동'],
+        '양재': ['서초', '양재'],
+        '선릉': ['강남', '역삼', '삼성', '대치'],
+        '삼성': ['강남', '삼성', '코엑스'],
         '성수': ['성수', '성동구'],
         '성수동': ['성수', '성동구'],
-        '연남': ['연남', '마포'],
-        '연남동': ['연남', '마포'],
+        '뚝섬': ['성수', '성동구', '뚝섬'],
+        '서울숲': ['성수', '성동구', '서울숲'],
         '여의도': ['여의도', '여의동', '영등포'],
+        '영등포': ['영등포', '문래', '당산'],
+        '문래': ['영등포', '문래동'],
+        '당산': ['영등포', '당산'],
         '이태원': ['이태원', '용산', '한남', '보광'],
-        '종로': ['종로'],
-        '건대': ['광진', '화양', '자양', '건국'],
-        '잠실': ['송파', '잠실', '신천동', '방이동'],
+        '한남': ['용산', '한남', '이태원', '보광'],
+        '한남동': ['용산', '한남', '이태원'],
+        '용산': ['용산', '한강로', '용리단', '원효'],
+        '용리단길': ['용산', '한강로', '용리단'],
+        '삼각지': ['용산', '한강로', '삼각지'],
+        '종로': ['종로', '관철', '인사', '익선', '묘동', '인의'],
+        '을지로': ['중구', '을지로', '초동', '입정동', '산림동', '명동', '충무로'],
+        '충무로': ['중구', '충무로', '을지로', '필동'],
+        '명동': ['중구', '명동', '을지로'],
+        '익선동': ['종로', '익선', '돈의동'],
+        '서촌': ['종로', '통의', '통인', '누하', '옥인', '체부', '서촌'],
+        '북촌': ['종로', '가회', '계동', '재동', '삼청', '북촌'],
+        '삼청동': ['종로', '삼청', '소격', '안국'],
+        '안국': ['종로', '안국', '인사동', '삼청'],
+        '인사동': ['종로', '인사동', '관훈', '견지'],
         '혜화': ['종로', '혜화', '명륜', '대학로'],
         '대학로': ['종로', '혜화', '명륜', '대학로'],
+        '건대': ['광진', '화양', '자양', '건국', '화양동'],
+        '잠실': ['송파', '잠실', '신천동', '방이동'],
+        '방이동': ['송파', '방이동', '잠실'],
+        '송리단길': ['송파', '송파동', '방이동', '잠실', '석촌'],
+        '석촌호수': ['송파', '송파동', '방이동', '잠실', '석촌'],
         '압구정': ['강남', '신사', '압구정'],
         '신사': ['강남', '신사', '압구정'],
         '가로수길': ['강남', '신사', '압구정'],
-        '익선동': ['종로', '익선', '돈의동'],
-        '문래': ['영등포', '문래동'],
-        '을지로': ['중구', '을지로', '초동', '입정동', '산림동']
+        '청담': ['강남', '청담'],
+        '샤로수길': ['관악', '봉천', '낙성대', '서울대'],
+        '서울대입구': ['관악', '봉천', '낙성대', '서울대'],
+        '판교': ['분당', '판교', '백현', '삼평', '운중', '성남'],
+        '분당': ['분당', '정자', '서현', '야탑', '수내', '미금', '성남'],
+        '정자': ['분당', '정자', '성남'],
+        '서현': ['분당', '서현', '성남'],
+        '야탑': ['분당', '야탑', '성남'],
+        '수원': ['수원', '팔달', '영통', '장안', '권선'],
+        '인계동': ['수원', '인계', '팔달'],
+        '행궁동': ['수원', '행궁', '팔달', '신풍', '장안'],
+        '일산': ['고양', '일산', '백석', '마두', '주엽', '대화'],
+        '송도': ['인천', '연수', '송도'],
+        '부평': ['인천', '부평'],
+        '구월동': ['인천', '남동', '구월'],
+        '해운대': ['부산', '해운대', '우동', '중동', '좌동', '송정'],
+        '광안리': ['부산', '수영', '광안', '민락'],
+        '서면': ['부산', '부산진', '부전', '전포', '범천'],
+        '전포': ['부산', '부산진', '전포', '서면'],
+        '동성로': ['대구', '중구', '동성로', '삼덕', '봉산', '공평'],
+        '교동': ['대구', '중구', '교동'],
+        '동명동': ['광주', '동구', '동명'],
+        '상무지구': ['광주', '서구', '치평', '상무'],
+        '둔산동': ['대전', '서구', '둔산', '탄방'],
+        '봉명동': ['대전', '유성', '봉명'],
+        '객리단길': ['전주', '완산', '고사', '다가'],
+        '한옥마을': ['전주', '완산', '풍남', '교동'],
+        '황리단길': ['경주', '황남', '사정', '포석'],
+        '제주': ['제주', '애월', '서귀포', '한림', '조천', '구좌', '안덕'],
+        '서귀포': ['서귀포', '중문', '성산', '안덕']
     };
 
     const aliases = AREA_ALIASES[cleanTarget] || AREA_ALIASES[targetLoc.toLowerCase()];
@@ -8937,6 +9039,156 @@ function isPlaceInTargetLocation(place, targetLoc) {
     }
 
     return addr.includes(cleanTarget);
+}
+
+// ─── Category Match Validator ───
+function isPlaceMatchingCategory(place, targetCat) {
+    if (!targetCat || targetCat === '맛집' || targetCat === '식당' || targetCat === '음식점') return true;
+    const catName = (place.category_name || '').toLowerCase();
+    const pName = (place.place_name || '').toLowerCase();
+    const catGroup = place.category_group_code || '';
+    const cleanCat = targetCat.toLowerCase();
+
+    if (/카페|커피|디저트|베이커리|빵집/.test(cleanCat)) {
+        return catGroup === 'CE7' || /카페|커피|디저트|베이커리|제과|다방|빙수/.test(catName) || /카페|커피|베이커리|디저트/.test(pName);
+    }
+    if (/고기|삼겹살|소고기|갈비|한우|곱창|막창|구이/.test(cleanCat)) {
+        return /육류|고기|삼겹살|갈비|소고기|한우|곱창|막창|대창|구이|정육/.test(catName) || /갈비|삼겹살|고기|한우|정육|곱창/.test(pName);
+    }
+    if (/양식|파스타|피자|스테이크|이탈리안|프렌치|버거|브런치/.test(cleanCat)) {
+        return /양식|이탈리안|프렌치|패밀리레스토랑|스테이크|파스타|피자|버거|브런치/.test(catName) || /파스타|피자|비스트로|버거|스테이크|키친|다이닝/.test(pName);
+    }
+    if (/일식|초밥|스시|라멘|돈까스|돈가스|우동|사시미|회/.test(cleanCat)) {
+        return /일식|초밥|스시|라멘|돈가스|돈까스|우동|사시미|회|횟집/.test(catName) || /스시|초밥|라멘|카츠|돈까스|이자카야/.test(pName);
+    }
+    if (/중식|중국집|짜장|짬뽕|마라|딤섬|양꼬치/.test(cleanCat)) {
+        return /중식|중국요리|마라|딤섬|양꼬치/.test(catName) || /반점|짬뽕|짜장|마라탕|양꼬치/.test(pName);
+    }
+    if (/술집|주점|맥주|호프|와인|소주|이자카야|포차|바\b|펍/.test(cleanCat)) {
+        return /술집|주점|호프|맥주|와인|이자카야|포장마차|바\(bar\)|칵테일/.test(catName) || /주점|술집|포차|펍|와인|이자카야|비어/.test(pName);
+    }
+    if (/한식|국물|해장|순대|국밥|찌개|백반|한정식/.test(cleanCat)) {
+        return /한식|국밥|해장국|순대|찌개|탕|백반|한정식|국수/.test(catName) || /식당|국밥|해장|순대|옥|식당/.test(pName);
+    }
+    return catName.includes(cleanCat) || pName.includes(cleanCat);
+}
+
+// ─── 3-Stage Dynamic Sommelier Culinary Description Engine ───
+function generateSmartSommelierDescription(place, role, moodText, locDisplay) {
+    const pName = place.place_name || '';
+    const catName = (place.category_name || '').toLowerCase();
+    const roleText = (role || '').toLowerCase();
+
+    // 1. Signature Taste & Culinary Profile
+    let tasteSentence = '';
+    const hash = Math.abs(hashString(pName));
+
+    if (/카페|디저트|커피|베이커리/.test(catName) || /카페|디저트/.test(roleText)) {
+        const tastePool = [
+            '향긋하고 깊은 풍미의 스페셜티 커피와 갓 구워낸 수제 디저트의 밸런스가 뛰어난 공간입니다.',
+            '신선한 원두로 정성스레 추출한 드립 커피와 달콤하고 섬세한 디저트 플레이팅이 돋보입니다.',
+            '진한 에스프레소 베이스 음료와 시그니처 베이커리의 조화가 미식의 즐거움을 더해줍니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else if (/양식|파스타|피자|스테이크|이탈리안/.test(catName) || /양식/.test(roleText)) {
+        const tastePool = [
+            '정통 레시피로 반죽한 생면 파스타와 화덕에서 갓 구운 피자의 풍미가 입안 가득 감도는 곳입니다.',
+            '육즙이 살아있는 두툼한 스테이크와 정갈한 소스 가니쉬의 마리아주가 인상적인 다이닝입니다.',
+            '신선한 제철 식재료와 감각적인 시즈닝이 어우러져 세련되고 깊은 감칠맛을 선사합니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else if (/고기|삼겹살|소고기|갈비|한우|곱창/.test(catName) || /고기/.test(roleText)) {
+        const tastePool = [
+            '두툼하고 신선한 원육을 직화 숯불에 구워내 풍부한 육즙과 그윽한 불향을 온전히 즐길 수 있습니다.',
+            '철저한 저온 숙성을 거쳐 부드러운 육질과 고소한 풍미가 극대화된 프리미엄 육류 전문점입니다.',
+            '정갈한 밑반찬과 신선한 쌈 채소가 곁들여져 고기 본연의 깊은 맛을 풍성하게 만끽할 수 있습니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else if (/일식|초밥|스시|라멘|돈카츠|돈까스/.test(catName) || /일식/.test(roleText)) {
+        const tastePool = [
+            '매일 새벽 공수한 신선한 네타와 알맞은 산도의 샤리가 어우러진 정갈한 초밥을 맛볼 수 있습니다.',
+            '장시간 푹 고아낸 깊고 진한 특제 육수와 쫄깃한 면발의 조화가 감탄을 자아냅니다.',
+            '바삭한 튀김옷과 촉촉한 숙성 등심의 겉바속촉 식감이 일품인 정통 일식 명소입니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else if (/술집|주점|와인|이자카야|호프|맥주/.test(catName) || /술집|2차/.test(roleText)) {
+        const tastePool = [
+            '주류와 절묘하게 어울리는 특색 있는 페어링 요리와 다채로운 주류 라인업을 갖추고 있습니다.',
+            '신선한 재료로 정갈하게 조리한 시그니처 안주와 함께 술 한잔의 여유를 만끽하기 좋습니다.',
+            '깊은 풍미의 수제 요리와 엄선된 셀렉션이 어우러져 한잔 기울이기 완벽한 밤을 선물합니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else if (/한식|국물|해장|국밥|순대/.test(catName) || /한식|국물/.test(roleText)) {
+        const tastePool = [
+            '정성으로 끓여낸 맑고 깊은 사골 육수가 속을 든든하고 따뜻하게 달래주는 정통 맛집입니다.',
+            '손맛이 깃든 정갈한 기본 찬과 감칠맛 넘치는 뚝배기 요리가 편안한 한 끼를 완성해 줍니다.',
+            '신선한 제철 재료로 건강하게 차려낸 든든한 밥상으로 호불호 없이 만족스러운 식사를 보장합니다.'
+        ];
+        tasteSentence = tastePool[hash % tastePool.length];
+    } else {
+        tasteSentence = `${locDisplay}에서 검증된 정갈한 손맛과 신선한 재료로 호불호 없이 만족스러운 식사를 선사합니다.`;
+    }
+
+    // 2. Ambiance & Lighting Profile
+    let ambianceSentence = '';
+    if (moodText.includes('데이트') || /양식|와인|카페/.test(catName)) {
+        ambianceSentence = '은은하고 따뜻한 웜톤 조명과 감성적인 인테리어가 어우러져 아늑하고 로맨틱한 무드를 자아냅니다.';
+    } else if (moodText.includes('혼밥')) {
+        ambianceSentence = '주변 시선 부담 없이 오롯이 나만의 미식에 집중할 수 있는 편안한 좌석 구조가 마련되어 있습니다.';
+    } else if (moodText.includes('회식') || moodText.includes('모임')) {
+        ambianceSentence = '테이블 간격이 여유롭고 쾌적한 공간 배치가 돋보여 동행인들과 즐거운 대화를 나누기에 적합합니다.';
+    } else {
+        ambianceSentence = '깔끔하고 정돈된 내부 공간과 아늑한 좌석 배치로 편안하게 머무르실 수 있습니다.';
+    }
+
+    // 3. Course Transit Flow Profile
+    let flowSentence = '';
+    if (roleText.includes('1차')) {
+        flowSentence = `${locDisplay} 메인 상권 및 역세권과 인접하여 든든하게 식사를 마친 후 다음 코스로 이어가기 좋습니다.`;
+    } else if (roleText.includes('2차')) {
+        flowSentence = '1차 식사를 마친 뒤 가볍게 도보로 이동하여 여유로운 대화와 함께 하루를 마무리하기에 안성맞춤입니다.';
+    } else {
+        flowSentence = '접근성이 뛰어나 인근 골목 산책이나 주변 카페 및 문화 공간으로의 동선 연계가 매우 훌륭합니다.';
+    }
+
+    return `${tasteSentence} ${ambianceSentence} ${flowSentence}`;
+}
+
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return hash;
+}
+
+// ─── Sommelier Course Guide Tips Generator ───
+function generateSommelierTips(list1, list2, locDisplay, moodText, isMultiCourse) {
+    const tips = [];
+    if (isMultiCourse && list1.length > 0 && list2.length > 0) {
+        tips.push('동선 안내: 1차 식사 장소에서 2차 매장까지 도보 5분에서 10분 내외로 여유롭게 이동하실 수 있는 최적의 동선입니다.');
+        tips.push('웨이팅 팁: 저녁 피크시간대인 18시부터 20시 사이에는 대기가 발생할 수 있으니 캐치테이블 원격 줄서기나 사전 유선 확인을 권장합니다.');
+        tips.push('코스 팁: 1차 매장에서 식사를 마치기 약 15분 전 2차 매장의 현장 여유 좌석을 미리 확인하시면 더욱 매끄러운 코스가 완성됩니다.');
+    } else {
+        if (moodText.includes('혼밥')) {
+            tips.push('혼밥 팁: 식사 피크시간인 12시에서 13시, 18시에서 19시를 살짝 피해 방문하시면 한층 더 여유롭고 조용한 식사를 즐기실 수 있습니다.');
+            tips.push('주문 팁: 매장 앞 키오스크가 마련되어 있어 혼자서도 부담 없이 간편하게 주문이 가능합니다.');
+        } else {
+            tips.push('방문 팁: 주말 및 공휴일에는 예약 손님이 많을 수 있으니 방문 전 네이버 지도 예약 가능 여부를 확인하시면 좋습니다.');
+            tips.push('주차 및 교통: 번화가 골목 특성상 인근 공영주차장 이용 또는 대중교통 이용을 추천해 드립니다.');
+        }
+    }
+
+    const itemsHtml = tips.map(t => `<li>• ${escapeHtml(t)}</li>`).join('');
+    return `
+        <div class="sommelier-tips-box">
+            <div class="tips-title">💡 소믈리에 코스 가이드</div>
+            <ul class="tips-list">
+                ${itemsHtml}
+            </ul>
+        </div>
+    `;
 }
 
 // ─── Multi-Course & Multi-Category Extraction Helper ───
@@ -9478,6 +9730,14 @@ function processSommelierFallbackOnly(query, callback) {
                         const f2 = p2.filter(p => isPlaceInTargetLocation(p, targetLocDisplay));
                         if (f2.length > 0) p2 = f2;
                     }
+                    if (cat1Display) {
+                        const cf1 = p1.filter(p => isPlaceMatchingCategory(p, cat1Display));
+                        if (cf1.length > 0) p1 = cf1;
+                    }
+                    if (cat2Display) {
+                        const cf2 = p2.filter(p => isPlaceMatchingCategory(p, cat2Display));
+                        if (cf2.length > 0) p2 = cf2;
+                    }
                     renderCourseFallback(p1, p2);
                 }, searchOptions);
             }, searchOptions);
@@ -9491,6 +9751,10 @@ function processSommelierFallbackOnly(query, callback) {
             if (targetLocDisplay) {
                 const f = places.filter(p => isPlaceInTargetLocation(p, targetLocDisplay));
                 if (f.length > 0) places = f;
+            }
+            if (primaryCatDisplay) {
+                const cf = places.filter(p => isPlaceMatchingCategory(p, primaryCatDisplay));
+                if (cf.length > 0) places = cf;
             }
             const merged = localCandidates.length > 0 ? [...localCandidates, ...places] : places;
             renderSingleFallback(merged);
@@ -9537,25 +9801,27 @@ function processSommelierFallbackOnly(query, callback) {
 
         const cards1Html = list1.map((p) => {
             const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat1Display || '식사');
-            const desc = `${locDisplay}에서 ${moodText}정갈한 맛과 편안한 분위기로 1차 식사를 즐기기 좋은 추천 맛집입니다.`;
-            return renderCardStandard(`1차: ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+            const desc = generateSmartSommelierDescription(p, '1차 식사', moodText, locDisplay);
+            return renderCardStandard(`1차 · ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
         const cards2Html = list2.map((p) => {
             const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat2Display || '카페');
-            const desc = `1차 식사 후 가볍게 이동하여 ${moodText}향긋한 음료와 편안한 대화를 나누기 최적인 2차 추천 장소입니다.`;
-            return renderCardStandard(`2차: ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+            const desc = generateSmartSommelierDescription(p, '2차 디저트 및 주점', moodText, locDisplay);
+            return renderCardStandard(`2차 · ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
         let introText = '';
         if (isExcludeReRec && prevPlaces.length > 0) {
             const prevSummary = prevPlaces.slice(-2).join(', ');
-            introText = `이전 추천 장소 <b>[${escapeHtml(prevSummary)}]</b>를 제외하고, ${moodText}<b>${escapeHtml(locDisplay)}</b> 인근의 새로운 1차 <b>${escapeHtml(cat1Display || '식사')}</b> ${list1.length}곳과 2차 <b>${escapeHtml(cat2Display || '카페/술집')}</b> ${list2.length}곳으로 엄선했습니다! 🍷✨`;
+            introText = `이전에 추천해 드린 <b>${escapeHtml(prevSummary)}</b>를 제외하고, ${moodText}<b>${escapeHtml(locDisplay)}</b> 인근의 새로운 1차 <b>${escapeHtml(cat1Display || '식사')}</b> ${list1.length}곳과 2차 <b>${escapeHtml(cat2Display || '카페 및 술집')}</b> ${list2.length}곳으로 엄선했습니다! 🍷✨`;
         } else {
-            introText = `안녕하세요! Spoonmap AI 미식 소믈리에입니다. ${moodText}<b>${escapeHtml(locDisplay)}</b> 인근으로 1차 <b>${escapeHtml(cat1Display || '식사')}</b> ${list1.length}곳과 2차 <b>${escapeHtml(cat2Display || '카페/술집')}</b> ${list2.length}곳을 준비했습니다.`;
+            introText = `안녕하세요! Spoonmap AI 미식 소믈리에입니다. ${moodText}<b>${escapeHtml(locDisplay)}</b> 인근으로 1차 <b>${escapeHtml(cat1Display || '식사')}</b> ${list1.length}곳과 2차 <b>${escapeHtml(cat2Display || '카페 및 술집')}</b> ${list2.length}곳을 준비했습니다.`;
         }
 
-        callback({ html: `<div class="sommelier-intro-p">${introText}</div><div class="sommelier-rec-grid">${cards1Html}${cards2Html}</div>` });
+        const tipsHtml = generateSommelierTips(list1, list2, locDisplay, moodText, true);
+
+        callback({ html: `<div class="sommelier-intro-p">${introText}</div><div class="sommelier-rec-grid">${cards1Html}${cards2Html}</div>${tipsHtml}` });
     }
 
     function renderSingleFallback(kakaoPlaces = []) {
@@ -9592,19 +9858,21 @@ function processSommelierFallbackOnly(query, callback) {
         let introText = '';
         if (isExcludeReRec && prevPlaces.length > 0) {
             const prevSummary = prevPlaces.slice(-2).join(', ');
-            introText = `앞서 추천해 드린 <b>[${escapeHtml(prevSummary)}]</b> 외에, ${moodText}<b>${escapeHtml(locDisplay)}</b>의 또 다른 <b>${escapeHtml(targetCatDisplay)}</b> ${chosenPlaces.length}곳을 새롭게 엄선했습니다! 🍷✨`;
+            introText = `앞서 추천해 드린 <b>${escapeHtml(prevSummary)}</b> 외에, ${moodText}<b>${escapeHtml(locDisplay)}</b>의 또 다른 <b>${escapeHtml(targetCatDisplay)}</b> ${chosenPlaces.length}곳을 새롭게 엄선했습니다! 🍷✨`;
         } else {
             introText = `안녕하세요! Spoonmap AI 미식 소믈리에입니다. 요청하신 ${moodText}<b>${escapeHtml(locDisplay)} ${escapeHtml(targetCatDisplay)}</b> ${chosenPlaces.length}곳을 엄선해 드립니다.`;
         }
 
         const cardsHtml = chosenPlaces.map((p, i) => {
             const cName = p.category_name ? p.category_name.split('>').pop().trim() : targetCatDisplay;
-            const desc = primaryDescFn(locDisplay);
+            const desc = generateSmartSommelierDescription(p, targetCatDisplay, moodText, locDisplay);
             const tagNum = (isExcludeReRec && prevPlaces.length > 0) ? (prevPlaces.length - newNames.length + i + 1) : (i + 1);
-            return renderCardStandard(`추천 ${tagNum} (${cName})`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
+            return renderCardStandard(`추천 ${tagNum} · ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
-        callback({ html: `<div class="sommelier-intro-p">${introText}</div><div class="sommelier-rec-grid">${cardsHtml}</div>` });
+        const tipsHtml = generateSommelierTips(chosenPlaces, [], locDisplay, moodText, false);
+
+        callback({ html: `<div class="sommelier-intro-p">${introText}</div><div class="sommelier-rec-grid">${cardsHtml}</div>${tipsHtml}` });
     }
 }
 
