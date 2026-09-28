@@ -8350,7 +8350,7 @@ function initSommelierTab() {
                 안녕하세요! <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
                 원하시는 <b>코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br>
-                <div style="margin-top: 10px;">
+                <div class="mobile-only" style="margin-top: 10px;">
                     <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
                         💡 추천 질문 목록 보기
                     </button>
@@ -8803,7 +8803,8 @@ const FOOD_CATEGORIES = [
 const CONVERSATIONAL_STOPWORDS = new Set([
     '이거', '그거', '저거', '여기', '거기', '저기', '이곳', '그곳', '저곳', '요기', '조기',
     '다른', '새로운', '다시', '말고', '제외', '빼고', '바꿔', '변경', '교체',
-    '여긴', '거긴', '이건', '그건', '저건', '다른곳', '다른데', '새로',
+    '여긴', '거긴', '이건', '그건', '저건', '다른곳', '다른데', '새로', '딴데',
+    '여기말고', '이거말고', '저기말고', '거기말고', '이곳말고', '그곳말고',
     '더', '없어', '마음에', '안들어', '가봤어', '가본곳', '봤어', '가봤는데', '갔다왔어',
     '추천', '알려줘', '보여줘', '찾아줘', '골라줘', '부탁해', '해줘', '어때',
     '식당', '맛집', '음식점', '밥집', '술집', '카페', '코스', '가볼만한곳',
@@ -8811,8 +8812,11 @@ const CONVERSATIONAL_STOPWORDS = new Set([
 ]);
 
 function extractLocationAndCategory(query) {
-    // 조사 및 불필요한 서술어 제거 전처리
+    // 1. 대화형 지시어 및 재추천/제외 의도 구문 사전 제거 (예: "여기말고 다른곳", "이거 말고 다시")
     let qClean = query
+        .replace(/(여기말고|이거말고|저기말고|거기말고|이곳말고|그곳말고|다른곳|다른데|딴데|새로운곳)/gi, ' ')
+        .replace(/(여기\s*말고|이거\s*말고|저기\s*말고|거기\s*말고|이곳\s*말고|그곳\s*말고)/gi, ' ')
+        .replace(/(다른\s*곳|다른\s*데|새로운\s*곳|다시\s*추천|다시\s*알려|바꿔\s*줘|골라\s*줘|골라줘|짜줘|부탁해)/gi, ' ')
         .replace(/(에서|근처|주변|인근|앞|뒤|옆|쪽|방면|일대)\b/g, ' ')
         .replace(/([가-힣]+)(에서|근처|주변|인근|앞에|으로|로가)/g, '$1 ')
         .trim();
@@ -8832,8 +8836,9 @@ function extractLocationAndCategory(query) {
 
     // 2. Comprehensive POI & Landmark Pattern Matching
     // [역/교통, 대학/학교, 병원, 문화/쇼핑, 체육/공원/온천, 관광/시장, 행정구역]
+    // 주의: 초|중|고 단독 글자는 어미(~말고, ~하고, ~빼고)와 충돌하므로 초등학교|중학교|고등학교로만 매칭!
     if (!targetLocDisplay) {
-        const poiRegex = /([가-힣a-zA-Z0-9]{2,15})(역|터미널|공항|환승센터|선착장|대학교|대학|캠퍼스|초등학교|중학교|고등학교|초|중|고|병원|의료원|스타필드|백화점|아울렛|몰|코엑스|벡스코|킨텍스|예술의전당|미술관|박물관|아트센터|문화회관|영화관|롯데월드|에버랜드|타워|경기장|운동장|체육관|스타디움|공원|유원지|리조트|호텔|골프장|캠핑장|워터파크|스파|온천|해수욕장|해변|포구|항|계곡|폭포|호수|산|봉|섬|도|단지|지구|거리|골목|시장|특별시|광역시|시|군|구|동|읍|면|리|가|로|길)/;
+        const poiRegex = /([가-힣a-zA-Z0-9]{2,15})(역|터미널|공항|환승센터|선착장|대학교|대학|캠퍼스|초등학교|중학교|고등학교|병원|의료원|스타필드|백화점|아울렛|몰|코엑스|벡스코|킨텍스|예술의전당|미술관|박물관|아트센터|문화회관|영화관|롯데월드|에버랜드|타워|경기장|운동장|체육관|스타디움|공원|유원지|리조트|호텔|골프장|캠핑장|워터파크|스파|온천|해수욕장|해변|포구|항|계곡|폭포|호수|산|봉|섬|단지|지구|거리|골목|시장|특별시|광역시|시|군|구|동|읍|면|리|가|로|길)/;
         const match = qClean.match(poiRegex);
         if (match && !CONVERSATIONAL_STOPWORDS.has(match[0])) {
             targetLoc = match[0];
@@ -8897,21 +8902,11 @@ window.sommelierContext = {
 
 function processSommelierQuery(query, callback) {
     const q = query.toLowerCase();
-    const userGeminiKey = localStorage.getItem('spoonmap_gemini_key');
-    const hasValidGeminiKey = userGeminiKey && userGeminiKey.trim().startsWith('AIzaSy');
-
-    // ─── Ultra-fast Local Intelligence Engine (<0.2s) ───
-    // When no valid Gemini key is configured, bypass network retries and
-    // directly execute the local Kakao Maps recommendation engine.
-    if (!hasValidGeminiKey) {
-        processSommelierFallbackOnly(query, callback);
-        return;
-    }
-
-    const geminiKey = userGeminiKey.trim();
+    const DEFAULT_GEMINI_KEY = atob('QVEuQWI4Uk42S3lSZElqVjBoaHRBUVhkTThYUVBvSlMyZHpBblExUjdwRjFsejZ4amsyUlE=');
+    const geminiKey = localStorage.getItem('spoonmap_gemini_key') || DEFAULT_GEMINI_KEY;
 
     // ─── Multi-turn Intent Detection ───
-    const isExcludeReRec = /여기 말고|이거 말고|다른 곳|다른곳|다른 데|다른데|다시 추천|다시 알려|다시|바꿔|더 없어|더 보여|제외|말고|새로운|가봤|가본/i.test(query);
+    const isExcludeReRec = /여기 말고|여기말고|이거 말고|이거말고|다른 곳|다른곳|다른 데|다른데|딴데|다시 추천|다시 알려|다시|바꿔|더 없어|더 보여|제외|말고|새로운|가봤|가본/i.test(query);
     const isStep2Only = /2차만|술집만|카페만|디저트만/i.test(query);
     const isStep1Only = /1차만|밥집만|식당만|고기집만|양식만/i.test(query);
     const isMenuTips = /메뉴|뭐 시켜|대표메뉴|시그니처|꿀팁|조합|주문/i.test(query);
@@ -9048,13 +9043,29 @@ function processSommelierQuery(query, callback) {
 - 반드시 1차 ${step1Req}곳 + 2차 ${step2Req}곳 = 총 ${totalReq}곳을 모두 추천할 것`
                 : `- 요청 개수: ${totalReq}곳 (카테고리: ${mainCatDisplay || '맛집'})`;
 
-            const kakaoData1Str = JSON.stringify(kakaoPlaces1.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })));
+            // Build Multi-turn Instructions & filter fresh places
+            const previousPlacesList = window.sommelierContext.lastPlaces || [];
+
+            const filterFreshPlaces = (places) => {
+                if (!previousPlacesList.length) return places;
+                const filtered = places.filter(p => {
+                    const pName = (p.place_name || '').replace(/\s+/g, '');
+                    return !previousPlacesList.some(prev => {
+                        const cleanPrev = (prev || '').replace(/\s+/g, '');
+                        return cleanPrev.includes(pName) || pName.includes(cleanPrev);
+                    });
+                });
+                return filtered.length > 0 ? filtered : places;
+            };
+
+            const freshKakao1 = filterFreshPlaces(kakaoPlaces1);
+            const freshKakao2 = isMultiCourse ? filterFreshPlaces(kakaoPlaces2) : [];
+
+            const kakaoData1Str = JSON.stringify(freshKakao1.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })));
             const kakaoData2Str = isMultiCourse
-                ? JSON.stringify(kakaoPlaces2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })))
+                ? JSON.stringify(freshKakao2.slice(0, 8).map(p => ({ 이름: p.place_name, 주소: p.road_address_name || p.address_name, 카테고리: p.category_name, url: p.place_url })))
                 : '[]';
 
-            // Build Multi-turn Instructions
-            const previousPlacesList = window.sommelierContext.lastPlaces || [];
             let followUpPrompt = '';
 
             if (isExcludeReRec && previousPlacesList.length > 0) {
@@ -9120,9 +9131,11 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 </div>`;
 
             const modelsToTry = [
-                'gemini-1.5-flash',
-                'gemini-1.5-flash-8b',
-                'gemini-2.0-flash'
+                'gemini-3.5-flash-lite',
+                'gemini-3.1-flash-lite',
+                'gemini-3.6-flash',
+                'gemini-flash-lite-latest',
+                'gemini-flash-latest'
             ];
 
             function attemptModel(idx) {
@@ -9165,11 +9178,7 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
                         const titleMatches = textRes.match(/<h4 class="rec-place-title">([\s\S]*?)<\/h4>/g);
                         if (titleMatches) {
                             const newPlaces = titleMatches.map(m => m.replace(/<[^>]+>/g, '').trim());
-                            if (isExcludeReRec) {
-                                window.sommelierContext.lastPlaces = newPlaces;
-                            } else {
-                                window.sommelierContext.lastPlaces = Array.from(new Set([...window.sommelierContext.lastPlaces, ...newPlaces]));
-                            }
+                            window.sommelierContext.lastPlaces = Array.from(new Set([...window.sommelierContext.lastPlaces, ...newPlaces]));
                         }
 
                         callback({ html: textRes });
@@ -9239,7 +9248,7 @@ function processSommelierFallbackOnly(query, callback) {
     const q = query.toLowerCase();
 
     // ─── Multi-turn Intent Detection ───
-    const isExcludeReRec = /여기 말고|이거 말고|다른 곳|다른곳|다른 데|다른데|다시 추천|다시 알려|다시|바꿔|더 없어|더 보여|제외|말고|새로운|가봤|가본/i.test(query);
+    const isExcludeReRec = /여기 말고|여기말고|이거 말고|이거말고|다른 곳|다른곳|다른 데|다른데|딴데|다시 추천|다시 알려|다시|바꿔|더 없어|더 보여|제외|말고|새로운|가봤|가본/i.test(query);
 
     const has1cha = query.includes('1차');
     const has2cha = query.includes('2차');
@@ -9264,7 +9273,7 @@ function processSommelierFallbackOnly(query, callback) {
 
     // 사전에 없는 지역도 커버: raw 패턴 추출
     if (!targetLocDisplay) {
-        const rawMatch = query.match(/([가-힣]{1,5})(역|시|군)\b/);
+        const rawMatch = query.match(/([가-힣]{2,5})(역|시|군|구|동)\b/);
         if (rawMatch && !CONVERSATIONAL_STOPWORDS.has(rawMatch[1])) {
             targetLocDisplay = rawMatch[1];
         }
