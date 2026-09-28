@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202609282244">
+    <link rel="stylesheet" href="style.css?v=202609282301">
 </head>
 
 <body class="light-theme">
@@ -96,12 +96,17 @@
                         </div>
                         <div class="date-filter-inputs">
                             <div class="date-input-box">
-                                <label for="filter-start-date" class="desktop-only">Start</label>
-                                <input type="date" id="filter-start-date" class="sidebar-date-input" placeholder="yy-m-d">
+                                <label for="filter-start-date" class="date-input-label">시작일</label>
+                                <div class="date-input-wrap">
+                                    <input type="date" id="filter-start-date" class="sidebar-date-input" aria-label="시작일" data-placeholder="시작일 선택" onchange="this.dataset.hasValue = this.value ? 'true' : 'false'" oninput="this.dataset.hasValue = this.value ? 'true' : 'false'">
+                                </div>
                             </div>
+                            <span class="date-filter-wave">~</span>
                             <div class="date-input-box">
-                                <label for="filter-end-date" class="desktop-only">End</label>
-                                <input type="date" id="filter-end-date" class="sidebar-date-input" placeholder="yy-m-d">
+                                <label for="filter-end-date" class="date-input-label">종료일</label>
+                                <div class="date-input-wrap">
+                                    <input type="date" id="filter-end-date" class="sidebar-date-input" aria-label="종료일" data-placeholder="종료일 선택" onchange="this.dataset.hasValue = this.value ? 'true' : 'false'" oninput="this.dataset.hasValue = this.value ? 'true' : 'false'">
+                                </div>
                             </div>
                         </div>
                         <div class="date-filter-actions">
@@ -1357,12 +1362,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202609282244"></script>
-    <script src="data.js?v=202609282244"></script>
-    <script src="ddoganzip_data.js?v=202609282244"></script>
-    <script src="meogeultende_data.js?v=202609282244"></script>
-    <script src="jungyugwang_data.js?v=202609282244"></script>
-    <script src="app.js?v=202609282244"></script>
+    <script src="regions.js?v=202609282301"></script>
+    <script src="data.js?v=202609282301"></script>
+    <script src="ddoganzip_data.js?v=202609282301"></script>
+    <script src="meogeultende_data.js?v=202609282301"></script>
+    <script src="jungyugwang_data.js?v=202609282301"></script>
+    <script src="app.js?v=202609282301"></script>
 </body>
 
 </html>

@@ -5647,6 +5647,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const endInput = document.getElementById('filter-end-date');
         const badgeInfo = document.getElementById('date-range-badge-info');
 
+        const syncDateInputs = () => {
+            if (startInput) startInput.dataset.hasValue = startInput.value ? 'true' : 'false';
+            if (endInput) endInput.dataset.hasValue = endInput.value ? 'true' : 'false';
+        };
+        if (startInput) {
+            startInput.addEventListener('change', syncDateInputs);
+            startInput.addEventListener('input', syncDateInputs);
+        }
+        if (endInput) {
+            endInput.addEventListener('change', syncDateInputs);
+            endInput.addEventListener('input', syncDateInputs);
+        }
+        syncDateInputs();
+
         if (applyDateBtn) {
             applyDateBtn.addEventListener('click', () => {
                 const s = startInput ? startInput.value : '';
@@ -5659,6 +5673,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 dateRangeFilter.startDate = s;
                 dateRangeFilter.endDate = e;
+                syncDateInputs();
 
                 if (badgeInfo) {
                     let text = '📅 ';
@@ -5677,8 +5692,14 @@ document.addEventListener('DOMContentLoaded', () => {
             resetDateBtn.addEventListener('click', () => {
                 dateRangeFilter.startDate = '';
                 dateRangeFilter.endDate = '';
-                if (startInput) startInput.value = '';
-                if (endInput) endInput.value = '';
+                if (startInput) {
+                    startInput.value = '';
+                    startInput.dataset.hasValue = 'false';
+                }
+                if (endInput) {
+                    endInput.value = '';
+                    endInput.dataset.hasValue = 'false';
+                }
                 if (badgeInfo) {
                     badgeInfo.textContent = '';
                     badgeInfo.style.display = 'none';
@@ -5702,8 +5723,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const startIn = document.getElementById('filter-start-date');
             const endIn = document.getElementById('filter-end-date');
             const badge = document.getElementById('date-range-badge-info');
-            if (startIn) startIn.value = '';
-            if (endIn) endIn.value = '';
+            if (startIn) { startIn.value = ''; startIn.dataset.hasValue = 'false'; }
+            if (endIn) { endIn.value = ''; endIn.dataset.hasValue = 'false'; }
             if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
 
             if (categoryFilterGroup) {
@@ -7096,8 +7117,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchInputEl) searchInputEl.value = '';
         const startDateInput = document.getElementById('filter-start-date');
         const endDateInput = document.getElementById('filter-end-date');
-        if (startDateInput) startDateInput.value = '';
-        if (endDateInput) endDateInput.value = '';
+        if (startDateInput) { startDateInput.value = ''; startDateInput.dataset.hasValue = 'false'; }
+        if (endDateInput) { endDateInput.value = ''; endDateInput.dataset.hasValue = 'false'; }
 
         // 3. Reset sort buttons to default
         document.querySelectorAll('.sort-btn').forEach(b => {
