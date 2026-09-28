@@ -9132,7 +9132,8 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 
             const modelsToTry = [
                 'gemini-3.5-flash-lite',
-                'gemini-3.1-flash-lite'
+                'gemini-3.1-flash-lite',
+                'gemini-3.6-flash'
             ];
 
             function attemptModel(idx) {
@@ -9294,7 +9295,7 @@ function processSommelierFallbackOnly(query, callback) {
     let cat2DescFn = null;
 
     if (has1cha) {
-        const part1 = query.split('1차')[1] || '';
+        const part1 = (query.split('1차')[1] || '').split(/[12]차/)[0];
         for (const cat of FOOD_CATEGORIES) {
             if (part1.toLowerCase().includes(cat.key.toLowerCase())) {
                 cat1Display = cat.display;
@@ -9304,7 +9305,7 @@ function processSommelierFallbackOnly(query, callback) {
         }
     }
     if (has2cha) {
-        const part2 = query.split('2차')[1] || '';
+        const part2 = (query.split('2차')[1] || '').split(/[12]차/)[0];
         for (const cat of FOOD_CATEGORIES) {
             if (part2.toLowerCase().includes(cat.key.toLowerCase())) {
                 cat2Display = cat.display;
@@ -9401,7 +9402,11 @@ function processSommelierFallbackOnly(query, callback) {
         };
 
         let list1 = filterPrev(places1).slice(0, count1);
-        let list2 = filterPrev(places2).slice(0, count2);
+        const list1Names = new Set(list1.map(p => (p.place_name || '').replace(/\s+/g, '')));
+        let list2 = filterPrev(places2).filter(p => !list1Names.has((p.place_name || '').replace(/\s+/g, ''))).slice(0, count2);
+        if (list2.length === 0) {
+            list2 = places2.filter(p => !list1Names.has((p.place_name || '').replace(/\s+/g, ''))).slice(0, count2);
+        }
 
         if (list1.length === 0) {
             list1 = [{ place_name: `${locDisplay} 추천 ${cat1Display || '맛집'}`, address_name: `${locDisplay} 인근`, category_name: cat1Display || '한식', place_url: `https://map.kakao.com/link/search/${encodeURIComponent(locDisplay + ' ' + (cat1Display || '맛집'))}` }];
