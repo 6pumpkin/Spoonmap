@@ -633,15 +633,6 @@ main {
     color: var(--text-secondary);
 }
 
-.date-filter-wave {
-    display: none;
-}
-
-.date-input-wrap {
-    width: 100%;
-    position: relative;
-}
-
 .sidebar-date-input {
     width: 100%;
     box-sizing: border-box;
@@ -8580,19 +8571,18 @@ span.desktop-only {
     }
 
     .date-filter-inputs {
-        display: flex !important;
-        align-items: center !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 8px !important;
         width: 100% !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
     }
 
     .date-input-box {
-        flex: 1 !important;
-        min-width: 0 !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        gap: 3px !important;
+        min-width: 0 !important;
     }
 
     .date-input-label {
@@ -8603,33 +8593,18 @@ span.desktop-only {
         margin-left: 2px !important;
     }
 
-    .date-filter-wave {
-        display: block !important;
-        font-size: 0.95rem !important;
-        font-weight: 800 !important;
-        color: #94A3B8 !important;
-        padding-top: 18px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .date-input-wrap {
-        position: relative !important;
-        width: 100% !important;
-        min-width: 0 !important;
-    }
-
     .sidebar-date-input {
         -webkit-appearance: none !important;
         appearance: none !important;
         background: #FFFFFF !important;
         border: 1px solid #CBD5E1 !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         padding: 0 8px !important;
-        font-size: 0.78rem !important;
+        font-size: 0.76rem !important;
         font-weight: 600 !important;
         color: #1E293B !important;
-        height: 38px !important;
-        line-height: 38px !important;
+        height: 36px !important;
+        line-height: 36px !important;
         outline: none !important;
         width: 100% !important;
         min-width: 0 !important;
@@ -8639,8 +8614,8 @@ span.desktop-only {
     }
 
     .sidebar-date-input::-webkit-date-and-time-value {
-        height: 38px !important;
-        line-height: 38px !important;
+        height: 36px !important;
+        line-height: 36px !important;
         text-align: center !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -8649,19 +8624,6 @@ span.desktop-only {
     .sidebar-date-input:focus {
         border-color: #FF4757 !important;
         box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.15) !important;
-    }
-
-    .sidebar-date-input:not([data-has-value="true"])::before {
-        content: attr(data-placeholder);
-        color: #94A3B8;
-        font-weight: 500;
-        font-size: 0.75rem;
-        line-height: 38px;
-    }
-
-    .sidebar-date-input:focus::before,
-    .sidebar-date-input[data-has-value="true"]::before {
-        display: none !important;
     }
 
     .date-filter-actions {
