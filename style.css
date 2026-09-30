@@ -10714,12 +10714,12 @@ span.desktop-only {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        padding: 6px 12px !important;
+        padding: 5px 12px !important;
         background: #FFFFFF !important;
         border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
         flex-shrink: 0 !important;
         z-index: 10 !important;
-        gap: 8px !important;
+        gap: 6px !important;
         box-sizing: border-box !important;
     }
 
@@ -10727,15 +10727,15 @@ span.desktop-only {
         display: inline-flex !important;
         align-items: center !important;
         background: #F1F5F9 !important;
-        border-radius: 14px !important;
-        padding: 3px !important;
-        gap: 3px !important;
+        border-radius: 12px !important;
+        padding: 2.5px !important;
+        gap: 2px !important;
     }
 
     .ai-segment-btn {
-        padding: 6px 12px !important;
-        border-radius: 11px !important;
-        font-size: 0.8rem !important;
+        padding: 5px 10px !important;
+        border-radius: 9px !important;
+        font-size: 0.76rem !important;
         font-weight: 700 !important;
         color: #64748B !important;
         background: transparent !important;
@@ -10754,17 +10754,17 @@ span.desktop-only {
         background: #FFFFFF !important;
         color: #0F172A !important;
         font-weight: 800 !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
     }
 
     .ai-subbar-tag {
-        font-size: 0.72rem !important;
+        font-size: 0.68rem !important;
         font-weight: 700 !important;
         color: var(--coral-main, #FF4757) !important;
         background: rgba(255, 71, 87, 0.08) !important;
         border: 1px solid rgba(255, 71, 87, 0.2) !important;
-        border-radius: 10px !important;
-        padding: 4px 8px !important;
+        border-radius: 8px !important;
+        padding: 3px 7px !important;
         white-space: nowrap !important;
     }
 
@@ -11107,16 +11107,18 @@ span.desktop-only {
     #recommend-view {
         background: var(--bg-canvas, #FAF8F5) !important;
         min-height: calc(100vh - 65px) !important;
-        padding-bottom: 80px !important;
+        padding-bottom: 120px !important;
+        box-sizing: border-box !important;
     }
 
     .recommend-container {
-        padding: 0 0.75rem 2rem !important;
+        padding: 0.35rem 0.75rem 4rem !important;
         max-width: 520px !important;
         margin: 0 auto !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 0.75rem !important;
+        gap: 0.55rem !important;
+        box-sizing: border-box !important;
     }
 
     .recommend-hero {
@@ -11125,37 +11127,37 @@ span.desktop-only {
 
     .recommend-controls-card {
         background: #FFFFFF !important;
-        border-radius: 20px !important;
-        padding: 1rem 0.95rem !important;
+        border-radius: 18px !important;
+        padding: 0.8rem 0.8rem 0.85rem !important;
         box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04) !important;
         border: 1px solid rgba(226, 232, 240, 0.8) !important;
-        margin-bottom: 0.75rem !important;
+        margin-bottom: 0.55rem !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 0.75rem !important;
+        gap: 0.55rem !important;
     }
 
     .rec-controls-grid,
     .control-row {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+        gap: 6px !important;
     }
 
     .rec-controls-grid .full-width {
         grid-column: 1 / -1 !important;
-        margin-top: 0.15rem !important;
+        margin-top: 0.1rem !important;
     }
 
     .control-group {
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        gap: 3px !important;
         min-width: 0 !important;
     }
 
     .control-group label {
-        font-size: 0.78rem !important;
+        font-size: 0.72rem !important;
         font-weight: 700 !important;
         color: #475569 !important;
         white-space: nowrap !important;
@@ -11163,14 +11165,14 @@ span.desktop-only {
         text-overflow: ellipsis !important;
         display: flex !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 3px !important;
     }
 
     .rec-select {
         width: 100% !important;
-        padding: 9px 10px !important;
-        border-radius: 12px !important;
-        font-size: 0.85rem !important;
+        padding: 7px 22px 7px 8px !important;
+        border-radius: 10px !important;
+        font-size: 0.78rem !important;
         background: #F8FAFC !important;
         border: 1.5px solid #E2E8F0 !important;
         color: #0F172A !important;
@@ -11180,8 +11182,8 @@ span.desktop-only {
         appearance: none !important;
         background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") !important;
         background-repeat: no-repeat !important;
-        background-position: right 10px top 50% !important;
-        background-size: 8px auto !important;
+        background-position: right 8px top 50% !important;
+        background-size: 7px auto !important;
         box-sizing: border-box !important;
     }
 
@@ -11193,7 +11195,7 @@ span.desktop-only {
     .location-radius-row {
         display: flex !important;
         flex-direction: column !important;
-        gap: 8px !important;
+        gap: 6px !important;
         margin-top: 0 !important;
     }
 
@@ -11212,9 +11214,9 @@ span.desktop-only {
     .rec-input {
         flex: 1 !important;
         min-width: 0 !important;
-        padding: 9px 12px !important;
-        border-radius: 12px !important;
-        font-size: 0.85rem !important;
+        padding: 7px 10px !important;
+        border-radius: 10px !important;
+        font-size: 0.78rem !important;
         background: #F8FAFC !important;
         border: 1.5px solid #E2E8F0 !important;
         box-sizing: border-box !important;
@@ -11227,26 +11229,26 @@ span.desktop-only {
     }
 
     .rec-loc-btn {
-        padding: 9px 12px !important;
-        border-radius: 12px !important;
-        font-size: 0.8rem !important;
+        padding: 7px 10px !important;
+        border-radius: 10px !important;
+        font-size: 0.74rem !important;
         font-weight: 700 !important;
         flex-shrink: 0 !important;
         white-space: nowrap !important;
     }
 
     .rec-center-info {
-        font-size: 0.74rem !important;
+        font-size: 0.68rem !important;
         color: #94A3B8 !important;
-        margin: 2px 0 0 !important;
+        margin: 1px 0 0 !important;
         line-height: 1.35 !important;
     }
 
     .check-row-container {
         display: flex !important;
-        gap: 8px !important;
-        margin-top: 0.35rem !important;
-        padding-top: 0.65rem !important;
+        gap: 6px !important;
+        margin-top: 0.2rem !important;
+        padding-top: 0.5rem !important;
         border-top: 1px dashed #E2E8F0 !important;
     }
 
@@ -11254,84 +11256,85 @@ span.desktop-only {
         flex: 1 !important;
         background: #FFF5F6 !important;
         border: 1px solid #FFE2E5 !important;
-        border-radius: 12px !important;
-        padding: 8px 6px !important;
-        font-size: 0.78rem !important;
+        border-radius: 10px !important;
+        padding: 6px 4px !important;
+        font-size: 0.72rem !important;
         font-weight: 700 !important;
         color: var(--coral-main, #FF4757) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 6px !important;
+        gap: 5px !important;
         cursor: pointer !important;
         white-space: nowrap !important;
         transition: all 0.15s ease !important;
     }
 
     .toggle-checkbox-label .label-text {
-        font-size: 0.78rem !important;
+        font-size: 0.72rem !important;
         white-space: nowrap !important;
     }
 
     .spin-btn {
         width: 100% !important;
-        height: 50px !important;
-        margin-top: 0.5rem !important;
-        border-radius: 16px !important;
-        font-size: 1.05rem !important;
+        height: 44px !important;
+        margin-top: 0.35rem !important;
+        border-radius: 14px !important;
+        font-size: 0.92rem !important;
         font-weight: 800 !important;
-        box-shadow: 0 6px 18px rgba(255, 71, 87, 0.3) !important;
+        box-shadow: 0 4px 14px rgba(255, 71, 87, 0.28) !important;
     }
 
     .roulette-window {
-        height: 160px !important;
-        border-radius: 20px !important;
+        height: 140px !important;
+        border-radius: 18px !important;
         background: #FFFFFF !important;
         border: 2px solid #E2E8F0 !important;
     }
 
     .reel-item {
-        height: 160px !important;
-        padding: 0 1rem !important;
+        height: 140px !important;
+        padding: 0 0.8rem !important;
     }
 
     .reel-item.placeholder .placeholder-emoji {
-        font-size: 2.2rem !important;
-        margin-bottom: 0.35rem !important;
+        font-size: 1.9rem !important;
+        margin-bottom: 0.25rem !important;
     }
 
     .reel-item.placeholder .placeholder-text {
-        font-size: 0.85rem !important;
-        line-height: 1.4 !important;
+        font-size: 0.8rem !important;
+        line-height: 1.35 !important;
     }
 
     .reel-item .reel-name {
-        font-size: 1.25rem !important;
+        font-size: 1.15rem !important;
         font-weight: 800 !important;
-        margin-bottom: 0.3rem !important;
+        margin-bottom: 0.25rem !important;
     }
 
     .winner-result-container {
-        border-radius: 20px !important;
-        padding: 1.2rem 1rem 1rem !important;
+        border-radius: 18px !important;
+        padding: 1rem 0.85rem 0.85rem !important;
+        margin-bottom: 2.5rem !important;
     }
 
     .winner-ribbon {
-        font-size: 0.88rem !important;
-        padding: 4px 14px !important;
+        font-size: 0.82rem !important;
+        padding: 3px 12px !important;
     }
 
     .winner-actions {
         display: flex !important;
         gap: 8px !important;
-        margin-top: 1rem !important;
+        margin-top: 0.85rem !important;
     }
 
     .winner-actions button {
         flex: 1 !important;
-        padding: 12px 10px !important;
-        font-size: 0.85rem !important;
-        border-radius: 14px !important;
+        padding: 11px 8px !important;
+        font-size: 0.82rem !important;
+        border-radius: 12px !important;
         white-space: nowrap !important;
     }
 

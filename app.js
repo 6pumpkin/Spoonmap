@@ -1776,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.scrollTop = 0;
 
         document.body.classList.toggle('is-map-tab', targetTab === 'map');
-        document.body.classList.toggle('is-sommelier-tab', targetTab === 'sommelier' || targetTab === 'recommend');
+        document.body.classList.toggle('is-sommelier-tab', targetTab === 'sommelier');
 
         updateAuthProtectedViews();
 
@@ -1946,7 +1946,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Refresh Category Options (Canonical Sort)
-        catSelect.innerHTML = '<option value="all">전체 (All)</option>';
+        catSelect.innerHTML = '<option value="all">전체</option>';
         const sortedCats = Array.from(categories).sort((a, b) => {
             const idxA = DEFAULT_CATEGORIES.indexOf(a);
             const idxB = DEFAULT_CATEGORIES.indexOf(b);
@@ -1966,7 +1966,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Refresh Location Options
-        locSelect.innerHTML = '<option value="all">전체 (All)</option>';
+        locSelect.innerHTML = '<option value="all">전체</option>';
         Array.from(locations).sort().forEach(loc => {
             const opt = document.createElement('option');
             opt.value = loc;
@@ -2112,7 +2112,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (spinTextEl) spinTextEl.textContent = '🎲 맛집 추첨 중...';
 
             // Start animation
-            const targetY = (reelItems.length - 1) * 180;
+            const itemHeight = (reel.firstElementChild && reel.firstElementChild.offsetHeight) || 180;
+            const targetY = (reelItems.length - 1) * itemHeight;
             reel.style.transition = 'transform 2.6s cubic-bezier(0.12, 0.8, 0.25, 1)';
             reel.style.transform = `translateY(-${targetY}px)`;
 
@@ -2125,6 +2126,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 winnerContainer.style.display = 'block';
                 winnerBody.innerHTML = '';
                 winnerBody.appendChild(createCard(winner));
+
+                // Smooth scroll to winner container so bottom actions are never cut off
+                setTimeout(() => {
+                    winnerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
             }, 2700);
         }
 
