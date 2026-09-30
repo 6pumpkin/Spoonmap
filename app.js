@@ -1487,6 +1487,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardSel: '#friend-manage-modal .friend-modal-card',
                 overlaySel: '#friend-manage-modal',
                 closeFn: () => (typeof window.closeFriendManageModal === 'function' && window.closeFriendManageModal())
+            },
+            {
+                handleSel: '#profile-edit-modal .bottom-sheet-handle',
+                cardSel: '#profile-edit-modal .profile-modal-card',
+                overlaySel: '#profile-edit-modal',
+                closeFn: () => (typeof window.closeProfileEditModal === 'function' ? window.closeProfileEditModal() : null)
+            },
+            {
+                handleSel: '#share-link-modal .bottom-sheet-handle',
+                cardSel: '#share-link-modal .share-modal-card',
+                overlaySel: '#share-link-modal',
+                closeFn: () => (typeof window.closeShareLinkModal === 'function' ? window.closeShareLinkModal() : null)
+            },
+            {
+                handleSel: '#avatar-picker-modal .bottom-sheet-handle',
+                cardSel: '#avatar-picker-modal .avatar-picker-card',
+                overlaySel: '#avatar-picker-modal',
+                closeFn: () => (typeof window.closeAvatarPickerModal === 'function' ? window.closeAvatarPickerModal() : null)
+            },
+            {
+                handleSel: '#insight-modal .bottom-sheet-handle',
+                cardSel: '#insight-modal .insight-modal-card',
+                overlaySel: '#insight-modal',
+                closeFn: () => (typeof window.closeInsightModal === 'function' ? window.closeInsightModal() : null)
             }
         ];
 
@@ -13759,11 +13783,15 @@ window.openShareLinkModal = function(token) {
     if (toggle) toggle.checked = true;
 
     modal.style.display = 'flex';
+    modal.classList.add('open');
 };
 
 window.closeShareLinkModal = function() {
     const modal = document.getElementById('share-link-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('open');
+    }
 };
 
 window.copyCurrentShareLink = function() {
