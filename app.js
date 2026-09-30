@@ -8301,6 +8301,10 @@ window.resetSommelierChat = function() {
         window.sommelierContext.lastLocation = '';
         window.sommelierContext.lastCategoryDisplay = '';
         window.sommelierContext.lastPlaces = [];
+        window.sommelierContext.lastCourseIntent = null;
+        window.sommelierContext.lastMoodText = '';
+        window.sommelierContext.lastStep1Places = [];
+        window.sommelierContext.lastStep2Places = [];
         window.sommelierContext.lastQuery = '';
         window.sommelierContext.history = [];
     }
@@ -8937,6 +8941,10 @@ window.sommelierContext = {
     lastLocation: '',
     lastCategoryDisplay: '',
     lastPlaces: [],          // Place names previously recommended
+    lastCourseIntent: null,  // { isMultiCourse, cat1Display, cat2Display, step1Req, step2Req, totalReq }
+    lastMoodText: '',        // Contextual mood e.g. "비 오는 날 감성에 어울리는 로맨틱한 데이트 코스로 완벽한 "
+    lastStep1Places: [],     // Previous 1차 places objects
+    lastStep2Places: [],     // Previous 2차 places objects
     lastQuery: '',
     history: []
 };
@@ -9068,80 +9076,160 @@ function isPlaceMatchingCategory(place, targetCat) {
     return catName.includes(cleanCat) || pName.includes(cleanCat);
 }
 
+// ─── Sommelier Culinary Category Classifier (Actual Place Data First) ───
+function getPlaceCulinaryCategory(place, fallbackRole) {
+    const rawCat = (place.category_name || '').toLowerCase();
+    const rawName = (place.place_name || '').toLowerCase();
+    const combined = rawCat + ' ' + rawName;
+
+    // 1. Meat / BBQ / Grill / Tripe
+    if (/곱창|대창|막창|특양/.test(combined)) return 'gopchang';
+    if (/고기|삼겹|갈비|한우|구이|목살|정육|바베큐|차돌|양꼬치|숯불|화로|육류|불고기|제육|스테이크하우스/.test(combined)) return 'meat';
+
+    // 2. Cafe / Coffee / Dessert / Bakery
+    if (/카페|커피|디저트|베이커리|베이글|빙수|찻집|마카롱|케이크|도넛|구움과자|크로플|에스프레소|와플|다과/.test(combined)) return 'cafe';
+
+    // 3. Wine / Cocktail / Dining Bar
+    if (/와인|바\(bar\)|칵테일|위스키|비스트로|다이닝바|몰트|라운지/.test(combined)) return 'wine';
+
+    // 4. Pub / Izakaya / Beer / Pocha
+    if (/이자카야|주점|호프|맥주|펍|포차|요리주점|실내포장마차|야키토리|어묵바|술집|선술집/.test(combined)) return 'pub';
+
+    // 5. Western / Pasta / Pizza / Steak / Italian
+    if (/양식|파스타|피자|스테이크|이탈리안|프렌치|버거|뇨끼|리조또|브런치|라자냐/.test(combined)) return 'western';
+
+    // 6. Japanese / Sushi / Sashimi / Ramen / Katsu
+    if (/일식|초밥|스시|사시미|라멘|돈카츠|돈까스|소바|우동|카이센동|오마카세|가츠동|텐동|츠케멘/.test(combined)) return 'japanese';
+
+    // 7. Chinese / Dimsum / Mala
+    if (/중식|중국집|중화|짜장|짬뽕|탕수육|마라|딤섬|소룡포|꿔바로우|만두|양꼬치/.test(combined)) return 'chinese';
+
+    // 8. Seafood / Fish / Raw Fish / Shellfish
+    if (/해물|생선|횟집|조개|게장|아구|장어|조개구이|해산물|낙지|문어|쭈꾸미/.test(combined)) return 'seafood';
+
+    // 9. Korean Stew / Soup / Gukbap / Hansik
+    if (/한식|백반|국밥|설렁탕|곰탕|해장국|찌개|탕|순대국|갈비탕|보쌈|족발|전통|가정식|감자탕|칼국수|냉면|수제비/.test(combined)) return 'korean';
+
+    // 10. Asian / Mexican / Exotic
+    if (/멕시칸|타코|태국|베트남|쌀국수|아시안|인도|커리|남미/.test(combined)) return 'asian_exotic';
+
+    // 11. Role-based fallback ONLY if place category is completely unknown
+    if (fallbackRole) {
+        const f = fallbackRole.toLowerCase();
+        if (/고기|삼겹|한우|갈비/.test(f)) return 'meat';
+        if (/곱창|대창/.test(f)) return 'gopchang';
+        if (/카페|커피|디저트|베이커리/.test(f)) return 'cafe';
+        if (/와인/.test(f)) return 'wine';
+        if (/술집|맥주|이자카야|주점|호프/.test(f)) return 'pub';
+        if (/양식|파스타|스테이크|피자/.test(f)) return 'western';
+        if (/일식|초밥|스시|라멘/.test(f)) return 'japanese';
+        if (/중식|중국/.test(f)) return 'chinese';
+        if (/해물|회|횟집/.test(f)) return 'seafood';
+        if (/한식|국물|밥/.test(f)) return 'korean';
+    }
+
+    return 'general';
+}
+
 // ─── 3-Stage Dynamic Sommelier Culinary Description Engine ───
 function generateSmartSommelierDescription(place, role, moodText, locDisplay) {
     const pName = place.place_name || '';
-    const catName = (place.category_name || '').toLowerCase();
+    const hash = Math.abs(hashString(pName));
     const roleText = (role || '').toLowerCase();
+    const culCat = getPlaceCulinaryCategory(place, role);
 
     // 1. Signature Taste & Culinary Profile
     let tasteSentence = '';
-    const hash = Math.abs(hashString(pName));
+    const tasteProfiles = {
+        meat: [
+            '엄선된 상위 등급 원육을 최적의 온도로 숙성하여 깊은 육향과 풍부한 육즙의 진수를 맛볼 수 있는 프리미엄 육류 전문점입니다.',
+            '철저한 저온 숙성을 거쳐 부드러운 육질과 고소한 감칠맛이 일품이며, 정갈한 밑반찬과 특제 소스의 조화가 돋보입니다.',
+            '신선한 원육 본연의 풍미를 숯불 직화로 온전히 살려내어, 겉은 바삭하고 속은 촉촉한 완벽한 굽기를 자랑하는 직화 구이 명소입니다.'
+        ],
+        gopchang: [
+            '잡내 없이 깔끔하게 손질된 신선한 곱창을 뜨거운 돌판 위에서 노릇하게 구워내, 고소한 곱과 쫄깃한 식감이 일품인 곳입니다.',
+            '풍부한 육즙과 녹진하고 부드러운 대창 구이의 진수를 경험할 수 있으며, 새콤매콤한 부추무침과의 궁합이 환상적입니다.'
+        ],
+        cafe: [
+            '스페셜티 등급의 싱글 오리진 원두를 섬세하게 추출한 향긋한 커피와 매일 아침 구워내는 수제 구움과자의 밸런스가 뛰어난 공간입니다.',
+            '풍미 짙은 시그니처 크림 라떼와 달콤하고 부드러운 핸드메이드 디저트를 즐기며 여유로운 대화를 나누기 완벽한 감성 카페입니다.',
+            '감각적인 인테리어와 함께 제철 과일을 듬뿍 올린 프리미엄 타르트 및 페이스트리가 눈과 입을 동시에 사로잡는 디저트 명소입니다.'
+        ],
+        wine: [
+            '소믈리에가 엄선한 다채로운 컨벤셔널 및 내추럴 와인 셀렉션과 와인의 풍미를 돋워주는 섬세한 타파스 페어링이 매력적인 로맨틱 와인바입니다.',
+            '차분한 조도와 감각적인 오브제가 돋보이는 공간에서, 부드러운 바디감의 와인 한잔과 함께 깊이 있는 대화를 나누기 최적인 곳입니다.'
+        ],
+        pub: [
+            '신선한 제철 식재료로 정성스럽게 조리한 수준 높은 수제 안주와 시원한 생맥주·하이볼의 페어링이 돋보이는 감성 주점입니다.',
+            '은은한 불향이 배어있는 야키토리 꼬치구이와 따끈하고 깊은 맛의 나베 요리가 어우러져 한잔 기울이기 완벽한 밤의 온기를 전해줍니다.',
+            '국내외 크래프트 비어와 정갈한 핑거푸드가 준비된 트렌디한 공간으로, 가볍고 유쾌한 2차 분위기를 만끽하기에 안성맞춤입니다.'
+        ],
+        western: [
+            '알덴테로 삶아낸 생면 파스타에 신선한 식재료와 깊은 풍미의 소스가 빈틈없이 어우러지는 세련된 이탈리안 비스트로입니다.',
+            '참나무 장작 화덕에서 고온으로 빠르게 구워내 겉은 바삭하고 속은 쫄깃한 도우 위에 신선한 치즈와 토핑이 듬뿍 올라간 정통 피자입니다.',
+            '최상급 소고기를 완벽한 시어링으로 구워내 풍부한 육즙과 부드러운 식감이 돋보이는 프리미엄 스테이크를 경험할 수 있습니다.'
+        ],
+        japanese: [
+            '숙성회의 찰진 감칠맛과 고슬고슬하게 쥔 샤리의 온도가 완벽한 밸런스를 이루는 정통 스시 명소입니다.',
+            '장시간 푹 고아낸 깊고 진한 특제 육수와 쫄깃한 생면, 부드러운 차슈가 감탄을 자아내는 정통 라멘 전문점입니다.',
+            '두툼한 프리미엄 원육을 저온에서 튀겨내 겉은 바삭하고 속은 선홍빛 육즙이 가득한 정통 카츠의 진수를 맛볼 수 있습니다.'
+        ],
+        chinese: [
+            '불맛이 살아있는 정통 웍 요리와 겉은 바삭하고 속은 쫀득한 꿔바로우, 깊고 칼칼한 육수가 일품인 짬뽕을 즐길 수 있는 중식 명가입니다.',
+            '얇고 투명한 만두피 속에 육즙이 가득 찬 소룡포와 하가우 등 섬세하게 빚은 정통 딤섬의 매력을 만끽할 수 있는 곳입니다.'
+        ],
+        seafood: [
+            '당일 산지 직송된 신선한 활어회를 두툼하게 썰어내어 차진 식감과 바다 본연의 달큰한 감칠맛을 오롯이 느낄 수 있는 해산물 명소입니다.',
+            '신선한 제철 해산물과 시원 칼칼한 조개탕이 어우러져 한잔 곁들이기에도 속을 달래기에도 최적인 곳입니다.'
+        ],
+        korean: [
+            '정성 들여 고아낸 진한 육수와 푸짐한 건더기가 속을 든든하고 따뜻하게 채워주는 손맛 가득한 정통 한식당입니다.',
+            '신선한 제철 식재료로 정갈하게 차려낸 기본 찬과 감칠맛 넘치는 뚝배기 요리가 편안하고 기분 좋은 한 끼를 완성해 줍니다.'
+        ],
+        asian_exotic: [
+            '이국적인 향신료와 신선한 허브의 풍미가 어우러져 한입 가득 다채롭고 산뜻한 미식의 향연을 선사하는 이색 맛집입니다.'
+        ],
+        general: [
+            `${locDisplay}에서 검증된 정갈한 손맛과 신선한 재료로 호불호 없이 만족스러운 식사를 선사하는 인기 맛집입니다.`
+        ]
+    };
 
-    if (/카페|디저트|커피|베이커리/.test(catName) || /카페|디저트/.test(roleText)) {
-        const tastePool = [
-            '향긋하고 깊은 풍미의 스페셜티 커피와 갓 구워낸 수제 디저트의 밸런스가 뛰어난 공간입니다.',
-            '신선한 원두로 정성스레 추출한 드립 커피와 달콤하고 섬세한 디저트 플레이팅이 돋보입니다.',
-            '진한 에스프레소 베이스 음료와 시그니처 베이커리의 조화가 미식의 즐거움을 더해줍니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else if (/양식|파스타|피자|스테이크|이탈리안/.test(catName) || /양식/.test(roleText)) {
-        const tastePool = [
-            '정통 레시피로 반죽한 생면 파스타와 화덕에서 갓 구운 피자의 풍미가 입안 가득 감도는 곳입니다.',
-            '육즙이 살아있는 두툼한 스테이크와 정갈한 소스 가니쉬의 마리아주가 인상적인 다이닝입니다.',
-            '신선한 제철 식재료와 감각적인 시즈닝이 어우러져 세련되고 깊은 감칠맛을 선사합니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else if (/고기|삼겹살|소고기|갈비|한우|곱창/.test(catName) || /고기/.test(roleText)) {
-        const tastePool = [
-            '두툼하고 신선한 원육을 직화 숯불에 구워내 풍부한 육즙과 그윽한 불향을 온전히 즐길 수 있습니다.',
-            '철저한 저온 숙성을 거쳐 부드러운 육질과 고소한 풍미가 극대화된 프리미엄 육류 전문점입니다.',
-            '정갈한 밑반찬과 신선한 쌈 채소가 곁들여져 고기 본연의 깊은 맛을 풍성하게 만끽할 수 있습니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else if (/일식|초밥|스시|라멘|돈카츠|돈까스/.test(catName) || /일식/.test(roleText)) {
-        const tastePool = [
-            '매일 새벽 공수한 신선한 네타와 알맞은 산도의 샤리가 어우러진 정갈한 초밥을 맛볼 수 있습니다.',
-            '장시간 푹 고아낸 깊고 진한 특제 육수와 쫄깃한 면발의 조화가 감탄을 자아냅니다.',
-            '바삭한 튀김옷과 촉촉한 숙성 등심의 겉바속촉 식감이 일품인 정통 일식 명소입니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else if (/술집|주점|와인|이자카야|호프|맥주/.test(catName) || /술집|2차/.test(roleText)) {
-        const tastePool = [
-            '주류와 절묘하게 어울리는 특색 있는 페어링 요리와 다채로운 주류 라인업을 갖추고 있습니다.',
-            '신선한 재료로 정갈하게 조리한 시그니처 안주와 함께 술 한잔의 여유를 만끽하기 좋습니다.',
-            '깊은 풍미의 수제 요리와 엄선된 셀렉션이 어우러져 한잔 기울이기 완벽한 밤을 선물합니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else if (/한식|국물|해장|국밥|순대/.test(catName) || /한식|국물/.test(roleText)) {
-        const tastePool = [
-            '정성으로 끓여낸 맑고 깊은 사골 육수가 속을 든든하고 따뜻하게 달래주는 정통 맛집입니다.',
-            '손맛이 깃든 정갈한 기본 찬과 감칠맛 넘치는 뚝배기 요리가 편안한 한 끼를 완성해 줍니다.',
-            '신선한 제철 재료로 건강하게 차려낸 든든한 밥상으로 호불호 없이 만족스러운 식사를 보장합니다.'
-        ];
-        tasteSentence = tastePool[hash % tastePool.length];
-    } else {
-        tasteSentence = `${locDisplay}에서 검증된 정갈한 손맛과 신선한 재료로 호불호 없이 만족스러운 식사를 선사합니다.`;
-    }
+    const pool = tasteProfiles[culCat] || tasteProfiles.general;
+    tasteSentence = pool[hash % pool.length];
 
-    // 2. Ambiance & Lighting Profile
+    // 2. Ambiance & Mood Context
     let ambianceSentence = '';
-    if (moodText.includes('데이트') || /양식|와인|카페/.test(catName)) {
-        ambianceSentence = '은은하고 따뜻한 웜톤 조명과 감성적인 인테리어가 어우러져 아늑하고 로맨틱한 무드를 자아냅니다.';
-    } else if (moodText.includes('혼밥')) {
-        ambianceSentence = '주변 시선 부담 없이 오롯이 나만의 미식에 집중할 수 있는 편안한 좌석 구조가 마련되어 있습니다.';
-    } else if (moodText.includes('회식') || moodText.includes('모임')) {
-        ambianceSentence = '테이블 간격이 여유롭고 쾌적한 공간 배치가 돋보여 동행인들과 즐거운 대화를 나누기에 적합합니다.';
+    const isRainy = /비\s*오는|비오는|비올때|우천|비\s*내리는/i.test(moodText);
+    const isDate = /데이트|연인|커플|소개팅/i.test(moodText);
+    const isSolo = /혼밥|혼자/i.test(moodText);
+    const isParty = /회식|모임|단체|동기/i.test(moodText);
+
+    if (isRainy) {
+        if (culCat === 'meat' || culCat === 'gopchang') {
+            ambianceSentence = '창밖 빗소리와 함께 지글지글 피어오르는 숯불의 훈연향이 더해져 더욱 운치 있고 아늑한 분위기를 자아냅니다.';
+        } else if (culCat === 'cafe' || culCat === 'wine') {
+            ambianceSentence = '비 내리는 날씨 특유의 감성과 은은한 조명이 어우러져 창밖 풍경을 바라보며 깊은 여유를 즐기기 좋습니다.';
+        } else if (culCat === 'pub') {
+            ambianceSentence = '비 오는 날 시원한 한잔과 따뜻한 요리를 곁들이며 도란도란 이야기를 나누기에 더할 나위 없습니다.';
+        } else {
+            ambianceSentence = '비 오는 날 특유의 차분하고 운치 있는 무드가 더해져 머무는 시간 내내 편안한 힐링을 선사합니다.';
+        }
+    } else if (isDate) {
+        ambianceSentence = '은은하고 따뜻한 웜톤 조명과 감각적인 인테리어가 어우러져 동행인과 로맨틱한 분위기를 만끽하기에 완벽합니다.';
+    } else if (isSolo) {
+        ambianceSentence = '주변 시선 부담 없이 오롯이 나만의 미식에 집중할 수 있는 편안하고 아늑한 좌석 구조를 갖추고 있습니다.';
+    } else if (isParty) {
+        ambianceSentence = '테이블 간격이 여유롭고 쾌적한 공간 배치가 돋보여 소중한 분들과 편안한 대화를 나누며 모임을 가지기에 훌륭합니다.';
     } else {
         ambianceSentence = '깔끔하고 정돈된 내부 공간과 아늑한 좌석 배치로 편안하게 머무르실 수 있습니다.';
     }
 
-    // 3. Course Transit Flow Profile
+    // 3. Course Transit Flow
     let flowSentence = '';
     if (roleText.includes('1차')) {
-        flowSentence = `${locDisplay} 메인 상권 및 역세권과 인접하여 든든하게 식사를 마친 후 다음 코스로 이어가기 좋습니다.`;
+        flowSentence = '든든하게 메인 식사를 즐긴 후 인근 카페나 산책 코스로 가볍게 발걸음을 옮기기 편리한 동선입니다.';
     } else if (roleText.includes('2차')) {
-        flowSentence = '1차 식사를 마친 뒤 가볍게 도보로 이동하여 여유로운 대화와 함께 하루를 마무리하기에 안성맞춤입니다.';
+        flowSentence = '1차 식사 후 부담 없이 도보로 이동하여, 달콤한 디저트나 가벼운 한잔과 함께 하루를 완벽하게 마무리할 수 있습니다.';
     } else {
         flowSentence = '접근성이 뛰어나 인근 골목 산책이나 주변 카페 및 문화 공간으로의 동선 연계가 매우 훌륭합니다.';
     }
@@ -9300,17 +9388,44 @@ function processSommelierQuery(query, callback) {
     const isFeatures = /주차|발렛|룸|개별룸|방|예약|캐치테이블|웨이팅|대기/i.test(query);
     const isBudget = /예산|가성비|인당|만원|가격|고급|오마카세|파인다이닝/i.test(query);
 
+    // ─── Mood Detection ───
+    let moodKeywords = [];
+    if (/비\s*오는|비오는|비올때|우천|비\s*내리는/i.test(query)) moodKeywords.push('비 오는 날 운치에 어울리는');
+    if (/데이트|연인|커플|소개팅/i.test(query)) moodKeywords.push('로맨틱한 데이트 코스로 완벽한');
+    if (/회식|모임|단체|동기/i.test(query)) moodKeywords.push('즐거운 모임과 회식에 적합한');
+    if (/혼밥|혼자/i.test(query)) moodKeywords.push('편안하게 혼밥을 즐기기 좋은');
+    let moodText = moodKeywords.length > 0 ? (moodKeywords.join(' ') + ' ') : '';
+
+    if (!moodText && isExcludeReRec && window.sommelierContext.lastMoodText) {
+        moodText = window.sommelierContext.lastMoodText;
+    }
+    if (moodText) {
+        window.sommelierContext.lastMoodText = moodText;
+    }
+
     // ─── Unified Multi-Course & Multi-Category Extraction ───
-    const courseIntent = extractCourseIntent(query);
-    const isMultiCourse = courseIntent.isMultiCourse;
-    const cat1Display = courseIntent.cat1Display;
-    const cat2Display = courseIntent.cat2Display;
-    const step1Req = courseIntent.step1Req;
-    const step2Req = courseIntent.step2Req;
-    const totalReq = courseIntent.totalReq;
+    let courseIntent = extractCourseIntent(query);
+    let isMultiCourse = courseIntent.isMultiCourse;
+    let cat1Display = courseIntent.cat1Display;
+    let cat2Display = courseIntent.cat2Display;
+    let step1Req = courseIntent.step1Req;
+    let step2Req = courseIntent.step2Req;
+    let totalReq = courseIntent.totalReq;
 
     // ─── Location & Category Extraction (With Dynamic Extractor & Memory) ───
     let { targetLoc, targetLocDisplay, mainCat, mainCatDisplay, catDescFn } = extractLocationAndCategory(query);
+
+    // Inherit courseIntent if user asks follow-up (e.g. "여기말고 다른곳 추천해줘")
+    if (!isMultiCourse && !mainCat && (isExcludeReRec || isStep1Only || isStep2Only) && window.sommelierContext.lastCourseIntent && window.sommelierContext.lastCourseIntent.isMultiCourse) {
+        courseIntent = { ...window.sommelierContext.lastCourseIntent };
+        isMultiCourse = courseIntent.isMultiCourse;
+        cat1Display = courseIntent.cat1Display;
+        cat2Display = courseIntent.cat2Display;
+        step1Req = courseIntent.step1Req;
+        step2Req = courseIntent.step2Req;
+        totalReq = courseIntent.totalReq;
+        console.log(`[Spoonmap Multi-turn] Inheriting course structure: 1차 ${cat1Display} ${step1Req}곳 + 2차 ${cat2Display} ${step2Req}곳`);
+    }
 
     // Inherit previous location & category if user is asking a follow-up
     if (!targetLocDisplay && window.sommelierContext.lastLocation) {
@@ -9326,12 +9441,32 @@ function processSommelierQuery(query, callback) {
     const locSearch = targetLocDisplay || '';
     const locDisplay = targetLocDisplay || '요청하신 지역';
 
-    // Update Context Location & Category
+    // Update Context Location & Category & Course Intent
     if (targetLocDisplay) {
         window.sommelierContext.lastLocation = targetLocDisplay;
     }
-    if (mainCatDisplay || cat1Display) {
-        window.sommelierContext.lastCategoryDisplay = mainCatDisplay || cat1Display;
+    if (isMultiCourse) {
+        window.sommelierContext.lastCategoryDisplay = `${cat1Display} & ${cat2Display}`;
+        window.sommelierContext.lastCourseIntent = {
+            isMultiCourse: true,
+            cat1Display,
+            cat2Display,
+            step1Req,
+            step2Req,
+            totalReq
+        };
+    } else {
+        if (mainCatDisplay || cat1Display) {
+            window.sommelierContext.lastCategoryDisplay = mainCatDisplay || cat1Display;
+        }
+        window.sommelierContext.lastCourseIntent = {
+            isMultiCourse: false,
+            cat1Display: null,
+            cat2Display: null,
+            step1Req: null,
+            step2Req: null,
+            totalReq: totalReq || 2
+        };
     }
 
     // ─── Source Preference ───
@@ -9451,6 +9586,7 @@ function processSommelierQuery(query, callback) {
 
 추출된 정보:
 - 목표 지역: ${locDisplay} (이 지역 결과만 추천)
+- 분위기 및 상황: ${moodText || '일반 미식 큐레이션'}
 ${countInstruction}
 ${followUpPrompt}
 
@@ -9471,7 +9607,7 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 1. ❌ 가상의 상호명(예: "대전 봉명동 고깃집", "OO일대")이나 모호한 가짜 주소를 절대 지어내지 마세요 (Hallucination 엄격 금지).
 2. ✅ 반드시 위 [카카오 지도 실시간 실제 매장 데이터] 및 [내 방문 맛집 데이터]에 존재하는 '실제 상호명', '실제 도로명 주소', '실제 카카오맵 URL'을 100% 그대로 카드에 복사하여 출력하세요.
 3. 마크다운 기호(**, ##, #, *) 절대 사용 금지 (이모티콘 사용 가능)
-4. 각 식당 설명: 실제 상호명의 대표 시그니처 메뉴, 실제 방문자 리뷰 핵심 호평 포인트, 분위기, 모임/회식 적합성을 사실에 근거하여 2-3문장으로 전문성 있게 작성할 것.
+4. 각 식당 설명: 실제 상호명의 대표 시그니처 메뉴, 실제 방문자 리뷰 핵심 호평 포인트, 분위기, 추천 이유를 사실에 근거하여 2-3문장으로 전문성 있고 품격 있게 작성할 것. (식당 카테고리에 맞는 정확한 설명 필수, 카페가 아닌 일반 식당이나 고기집에 커피/디저트 설명을 적지 말 것)
 5. 반드시 아래 HTML 구조로만 출력:
 
 <div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장, 사용자의 요청 조건 완벽 반영 언급)</div>
@@ -9614,25 +9750,47 @@ function processSommelierFallbackOnly(query, callback) {
 
     // ─── Multi-turn Intent Detection ───
     const isExcludeReRec = /여기 말고|여기말고|이거 말고|이거말고|다른 곳|다른곳|다른 데|다른데|딴데|다시 추천|다시 알려|다시|바꿔|더 없어|더 보여|제외|말고|새로운|가봤|가본/i.test(query);
-
-    // ─── Unified Multi-Course & Multi-Category Extraction ───
-    const courseIntent = extractCourseIntent(query);
-    const isMultiCourse = courseIntent.isMultiCourse;
-    const cat1Display = courseIntent.cat1Display;
-    const cat2Display = courseIntent.cat2Display;
-    const step1Req = courseIntent.step1Req;
-    const step2Req = courseIntent.step2Req;
-    const totalReq = courseIntent.totalReq;
+    const isStep2Only = /2차만|술집만|카페만|디저트만/i.test(query);
+    const isStep1Only = /1차만|밥집만|식당만|고기집만|양식만/i.test(query);
 
     // ─── Mood Detection ───
-    let moodText = '';
-    if (q.includes('비 오는 날') || q.includes('비오는날') || q.includes('비오는')) moodText = '비 오는 날 감성에 어울리는 ';
-    else if (q.includes('데이트')) moodText = '로맨틱한 데이트 코스로 완벽한 ';
-    else if (q.includes('회식') || q.includes('모임')) moodText = '즐거운 모임과 회식에 적합한 ';
-    else if (q.includes('혼밥')) moodText = '편안하게 혼밥을 즐기기 좋은 ';
+    let moodKeywords = [];
+    if (/비\s*오는|비오는|비올때|우천|비\s*내리는/i.test(query)) moodKeywords.push('비 오는 날 운치에 어울리는');
+    if (/데이트|연인|커플|소개팅/i.test(query)) moodKeywords.push('로맨틱한 데이트 코스로 완벽한');
+    if (/회식|모임|단체|동기/i.test(query)) moodKeywords.push('즐거운 모임과 회식에 적합한');
+    if (/혼밥|혼자/i.test(query)) moodKeywords.push('편안하게 혼밥을 즐기기 좋은');
+    let moodText = moodKeywords.length > 0 ? (moodKeywords.join(' ') + ' ') : '';
+
+    if (!moodText && isExcludeReRec && window.sommelierContext.lastMoodText) {
+        moodText = window.sommelierContext.lastMoodText;
+    }
+    if (moodText) {
+        window.sommelierContext.lastMoodText = moodText;
+    }
+
+    // ─── Unified Multi-Course & Multi-Category Extraction ───
+    let courseIntent = extractCourseIntent(query);
+    let isMultiCourse = courseIntent.isMultiCourse;
+    let cat1Display = courseIntent.cat1Display;
+    let cat2Display = courseIntent.cat2Display;
+    let step1Req = courseIntent.step1Req;
+    let step2Req = courseIntent.step2Req;
+    let totalReq = courseIntent.totalReq;
 
     // ─── Use shared extraction function ───
     let { targetLocDisplay, mainCat, mainCatDisplay, catDescFn } = extractLocationAndCategory(query);
+
+    // Inherit courseIntent if user asks follow-up (e.g. "여기말고 다른곳 추천해줘")
+    if (!isMultiCourse && !mainCat && (isExcludeReRec || isStep1Only || isStep2Only) && window.sommelierContext.lastCourseIntent && window.sommelierContext.lastCourseIntent.isMultiCourse) {
+        courseIntent = { ...window.sommelierContext.lastCourseIntent };
+        isMultiCourse = courseIntent.isMultiCourse;
+        cat1Display = courseIntent.cat1Display;
+        cat2Display = courseIntent.cat2Display;
+        step1Req = courseIntent.step1Req;
+        step2Req = courseIntent.step2Req;
+        totalReq = courseIntent.totalReq;
+        console.log(`[Spoonmap Fallback Multi-turn] Inherited course structure: 1차 ${cat1Display} ${step1Req}곳 + 2차 ${cat2Display} ${step2Req}곳`);
+    }
 
     // 사전에 없는 지역도 커버: raw 패턴 추출
     if (!targetLocDisplay) {
@@ -9658,8 +9816,27 @@ function processSommelierFallbackOnly(query, callback) {
         primaryCatDisplay = window.sommelierContext.lastCategoryDisplay;
         console.log(`[Spoonmap Fallback Multi-turn] Inherited category: ${primaryCatDisplay}`);
     }
-    if (primaryCatDisplay) {
+
+    if (isMultiCourse) {
+        window.sommelierContext.lastCategoryDisplay = `${cat1Display} & ${cat2Display}`;
+        window.sommelierContext.lastCourseIntent = {
+            isMultiCourse: true,
+            cat1Display,
+            cat2Display,
+            step1Req,
+            step2Req,
+            totalReq
+        };
+    } else if (primaryCatDisplay) {
         window.sommelierContext.lastCategoryDisplay = primaryCatDisplay;
+        window.sommelierContext.lastCourseIntent = {
+            isMultiCourse: false,
+            cat1Display: null,
+            cat2Display: null,
+            step1Req: null,
+            step2Req: null,
+            totalReq: totalReq || 2
+        };
     }
 
     const primaryDescFn = catDescFn || ((loc) => `${loc}에서 정갈한 맛과 편안한 분위기로 만족스러운 시간을 보내기 최적인 추천 장소입니다.`);
@@ -9781,6 +9958,13 @@ function processSommelierFallbackOnly(query, callback) {
         }
         let list2 = candidatePlaces2.slice(0, count2);
 
+        if (isStep2Only && window.sommelierContext.lastStep1Places && window.sommelierContext.lastStep1Places.length > 0) {
+            list1 = window.sommelierContext.lastStep1Places;
+        }
+        if (isStep1Only && window.sommelierContext.lastStep2Places && window.sommelierContext.lastStep2Places.length > 0) {
+            list2 = window.sommelierContext.lastStep2Places;
+        }
+
         if (list1.length === 0 && list2.length === 0) {
             callback({
                 html: `<div class="sommelier-intro-p">
@@ -9793,16 +9977,18 @@ function processSommelierFallbackOnly(query, callback) {
 
         const newNames = [...list1.map(p => p.place_name), ...list2.map(p => p.place_name)];
         window.sommelierContext.lastPlaces = Array.from(new Set([...prevPlaces, ...newNames]));
+        window.sommelierContext.lastStep1Places = list1;
+        window.sommelierContext.lastStep2Places = list2;
 
         const cards1Html = list1.map((p) => {
             const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat1Display || '식사');
-            const desc = generateSmartSommelierDescription(p, '1차 식사', moodText, locDisplay);
+            const desc = generateSmartSommelierDescription(p, `1차 · ${cat1Display || '식사'}`, moodText, locDisplay);
             return renderCardStandard(`1차 · ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
         const cards2Html = list2.map((p) => {
-            const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat2Display || '카페');
-            const desc = generateSmartSommelierDescription(p, '2차 디저트 및 주점', moodText, locDisplay);
+            const cName = p.category_name ? p.category_name.split('>').pop().trim() : (cat2Display || '카페 및 술집');
+            const desc = generateSmartSommelierDescription(p, `2차 · ${cat2Display || '카페 및 술집'}`, moodText, locDisplay);
             return renderCardStandard(`2차 · ${cName}`, p.place_name, p.road_address_name || p.address_name, desc, p.place_url);
         }).join('');
 
