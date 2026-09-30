@@ -13275,7 +13275,7 @@ async function renderDiscoverUsersList(searchQuery = '') {
                     <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}">
                     <div>
                         <div class="discover-user-names">${u.name} <span>${u.handle}</span></div>
-                        <div class="discover-user-desc">${u.bio || '등록된 소개글이 없습니다.'} (맛집 ${u.count || 0}곳)</div>
+                        <div class="discover-user-desc">${u.bio || '등록된 소개글이 없습니다.'} · 맛집 ${u.count || 0}곳</div>
                     </div>
                 </div>
                 <button class="btn-toggle-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollowUser('${u.id}')">
