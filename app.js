@@ -1740,8 +1740,19 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtns.forEach(b => {
             if (b.dataset.tab === targetTab) {
                 b.classList.add('active');
+            } else if (b.classList.contains('mobile-bnav-btn') && b.dataset.tab === 'sommelier' && targetTab === 'recommend') {
+                b.classList.add('active');
             } else {
                 b.classList.remove('active');
+            }
+        });
+
+        // Update AI Sub-Segment buttons in mobile subbar
+        document.querySelectorAll('.ai-segment-btn').forEach(btn => {
+            if (btn.dataset.subtab === targetTab) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
             }
         });
 
@@ -1765,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.scrollTop = 0;
 
         document.body.classList.toggle('is-map-tab', targetTab === 'map');
-        document.body.classList.toggle('is-sommelier-tab', targetTab === 'sommelier');
+        document.body.classList.toggle('is-sommelier-tab', targetTab === 'sommelier' || targetTab === 'recommend');
 
         updateAuthProtectedViews();
 
@@ -1776,6 +1787,9 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { if (map && typeof map.relayout === 'function') map.relayout(); }, 200);
         } else if (targetTab === 'sommelier') {
             initSommelierTab();
+        } else if (targetTab === 'recommend') {
+            if (typeof initRecommendTab === 'function') initRecommendTab();
+            if (typeof populateRecommendCategories === 'function') populateRecommendCategories();
         } else if (targetTab === 'diary' && isUserLoggedIn()) {
             initDiaryTab();
         } else if (targetTab === 'list' && (isUserLoggedIn() || window.isSharedMapMode)) {
@@ -1784,6 +1798,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof renderProfileView === 'function') renderProfileView();
         }
     }
+
+    function switchAiSubTab(targetSubTab) {
+        if (targetSubTab !== 'sommelier' && targetSubTab !== 'recommend') targetSubTab = 'sommelier';
+        const targetHash = `#${targetSubTab}`;
+        if (window.location.hash !== targetHash) {
+            window.location.hash = targetHash;
+        } else {
+            switchTabUI(targetSubTab);
+        }
+    }
+    window.switchAiSubTab = switchAiSubTab;
 
     function navigateToProfileTab() {
         window.location.hash = '#profile';
