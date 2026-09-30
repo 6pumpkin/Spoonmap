@@ -8450,7 +8450,7 @@ window.showSommelierPromptsList = function() {
 
 function cleanMarkdownText(str) {
     if (!str) return '';
-    return str
+    let cleaned = str
         .replace(/```html/gi, '')
         .replace(/```/g, '')
         .replace(/\*\*/g, '')          // remove **
@@ -8460,6 +8460,15 @@ function cleanMarkdownText(str) {
         .replace(/#/g, '')            // remove #
         .replace(/---/g, '')          // remove ---
         .trim();
+
+    // Clean parentheses in rec-tag-pill (e.g. "추천 1 (고기집)" -> "추천 1 · 고기집")
+    cleaned = cleaned.replace(/<span class="rec-tag-pill">([\s\S]*?)<\/span>/g, (m, tagText) => {
+        let noParen = tagText.replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+        noParen = noParen.replace(/\s*:\s*/g, ' · ').replace(/\s*-\s*/g, ' · ');
+        return `<span class="rec-tag-pill">${noParen}</span>`;
+    });
+
+    return cleaned;
 }
 
 function findUserVisitCount(placeName) {
@@ -8565,7 +8574,7 @@ function handleSommelierSend() {
     typingDiv.id = 'ai-typing-indicator';
     typingDiv.innerHTML = `
         <div class="chat-avatar">🤖</div>
-        <div class="chat-bubble">🍷 요청 조건(개수·출처·코스) 정밀 분석 중...</div>
+        <div class="chat-bubble">🍷 취향 및 요청 조건 정밀 분석 중...</div>
     `;
     thread.appendChild(typingDiv);
     thread.scrollTop = thread.scrollHeight;
@@ -9249,24 +9258,54 @@ function hashString(str) {
 // ─── Sommelier Course Guide Tips Generator ───
 function generateSommelierTips(list1, list2, locDisplay, moodText, isMultiCourse) {
     const tips = [];
-    if (isMultiCourse && list1.length > 0 && list2.length > 0) {
-        tips.push('동선 안내: 1차 식사 장소에서 2차 매장까지 도보 5분에서 10분 내외로 여유롭게 이동하실 수 있는 최적의 동선입니다.');
-        tips.push('웨이팅 팁: 저녁 피크시간대인 18시부터 20시 사이에는 대기가 발생할 수 있으니 캐치테이블 원격 줄서기나 사전 유선 확인을 권장합니다.');
-        tips.push('코스 팁: 1차 매장에서 식사를 마치기 약 15분 전 2차 매장의 현장 여유 좌석을 미리 확인하시면 더욱 매끄러운 코스가 완성됩니다.');
+    const isRainy = /비\s*오는|비오는|비올때|우천|비\s*내리는/i.test(moodText);
+    const isDate = /데이트|연인|커플|소개팅/i.test(moodText);
+    const isParty = /회식|모임|단체|동기/i.test(moodText);
+    const isSolo = /혼밥|혼자/i.test(moodText);
+
+    if (isMultiCourse && list1 && list1.length > 0 && list2 && list2.length > 0) {
+        if (isRainy) {
+            tips.push('동선 안내: 1차 식사 장소에서 2차 매장까지 도보 5분에서 10분 내외로 비 오는 날에도 우산 쓰고 낭만 있게 걷기 최적의 코스입니다.');
+            tips.push('웨이팅 팁: 비 오는 날에는 매장 앞 대기 공간이 협소할 수 있으니 캐치테이블 원격 줄서기나 사전 유선 확인을 권장합니다.');
+            tips.push('코스 팁: 1차 식사를 마치기 약 15분 전 2차 매장의 현장 여유 좌석을 미리 확인하시면 비를 맞지 않고 매끄럽게 입장하실 수 있습니다.');
+        } else if (isDate) {
+            tips.push('동선 안내: 1차 식사 장소에서 2차 매장까지 도보 5분에서 10분 내외로 산책하며 대화 나누기 좋은 최적의 데이트 동선입니다.');
+            tips.push('예약 팁: 창가 자리나 분위기 좋은 2인석은 당일 조기 마감될 수 있으니 네이버 지도 예약 또는 캐치테이블을 활용해 보세요.');
+            tips.push('코스 팁: 1차 식사를 마치기 전 2차 매장의 잔여 좌석을 미리 확인하시면 흐름이 끊기지 않는 완벽한 데이트가 완성됩니다.');
+        } else if (isParty) {
+            tips.push('동선 안내: 1차 장소와 2차 매장이 동일 역세권 도보권에 인접하여 단체 인원 이동 시에도 부담이 없습니다.');
+            tips.push('좌석 팁: 단체 인원 방문 시 사전 전화 문의를 통해 테이블 연결 및 룸 배정 가능 여부를 미리 조율하시는 것을 추천합니다.');
+            tips.push('결제 팁: 분할 결제나 법인카드 영수증 처리가 필요하신 경우 주문 시 미리 말씀하시면 원활합니다.');
+        } else {
+            tips.push('동선 안내: 1차 식사 장소에서 2차 매장까지 도보 5분에서 10분 내외로 여유롭게 이동하실 수 있는 최적의 동선입니다.');
+            tips.push('웨이팅 팁: 피크시간대인 18시부터 20시 사이에는 대기가 발생할 수 있으니 캐치테이블 원격 줄서기나 사전 유선 확인을 권장합니다.');
+            tips.push('코스 팁: 1차 매장에서 식사를 마치기 약 15분 전 2차 매장의 현장 여유 좌석을 미리 확인하시면 더욱 매끄러운 코스가 완성됩니다.');
+        }
     } else {
-        if (moodText.includes('혼밥')) {
+        if (isSolo) {
             tips.push('혼밥 팁: 식사 피크시간인 12시에서 13시, 18시에서 19시를 살짝 피해 방문하시면 한층 더 여유롭고 조용한 식사를 즐기실 수 있습니다.');
             tips.push('주문 팁: 매장 앞 키오스크가 마련되어 있어 혼자서도 부담 없이 간편하게 주문이 가능합니다.');
+            tips.push('좌석 팁: 1인 바 테이블이 마련되어 있어 주변 시선 없이 편안하게 식사에 집중하실 수 있습니다.');
+        } else if (isRainy) {
+            tips.push('날씨 팁: 비 오는 날에는 대기 등록 후 인근 카페나 실내 대기 공간에서 순서를 기다리시는 것을 권장합니다.');
+            tips.push('방문 팁: 주말이나 우천 시 예약 손님이 많을 수 있으니 방문 전 네이버 지도 예약 가능 여부를 확인하시면 좋습니다.');
+            tips.push('주차 및 교통: 빗길 골목 주차가 혼잡할 수 있으니 가급적 대중교통 또는 인근 지하철역 공영주차장 이용을 추천합니다.');
+        } else if (isDate) {
+            tips.push('데이트 팁: 감성적인 인테리어와 조명이 매력적인 곳으로, 사전 예약 시 분위기 좋은 자리를 요청하시면 더욱 만족스럽습니다.');
+            tips.push('웨이팅 팁: 인기 매장의 경우 캐치테이블이나 테이블링을 통한 온라인 대기 등록이 가능합니다.');
+            tips.push('동선 팁: 식사 전후로 인근 골목의 개성 있는 쇼룸이나 산책로를 가볍게 둘러보기에 아주 좋습니다.');
         } else {
             tips.push('방문 팁: 주말 및 공휴일에는 예약 손님이 많을 수 있으니 방문 전 네이버 지도 예약 가능 여부를 확인하시면 좋습니다.');
             tips.push('주차 및 교통: 번화가 골목 특성상 인근 공영주차장 이용 또는 대중교통 이용을 추천해 드립니다.');
+            tips.push('주문 팁: 대표 시그니처 메뉴와 제철 시즌 메뉴를 조합하시면 만족스러운 한 상을 즐기실 수 있습니다.');
         }
     }
 
+    const titleText = isMultiCourse ? '💡 소믈리에 코스 가이드' : '💡 소믈리에 방문 가이드';
     const itemsHtml = tips.map(t => `<li>• ${escapeHtml(t)}</li>`).join('');
     return `
         <div class="sommelier-tips-box">
-            <div class="tips-title">💡 소믈리에 코스 가이드</div>
+            <div class="tips-title">${titleText}</div>
             <ul class="tips-list">
                 ${itemsHtml}
             </ul>
@@ -9612,13 +9651,23 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
 
 <div class="sommelier-intro-p">따뜻하고 친근한 소개 문구 (2-3문장, 사용자의 요청 조건 완벽 반영 언급)</div>
 
-각 장소마다 아래 카드 구조 사용:
+각 장소마다 아래 카드 구조 사용 (태그와 제목 등에 괄호 사용 금지):
 <div class="rec-card-standard">
-    <span class="rec-tag-pill">추천 번호 (카테고리 또는 1차/2차)</span>
+    <span class="rec-tag-pill">추천 번호 · 카테고리 (예: 1차 · 삼겹살구이 또는 추천 1 · 파스타)</span>
     <h4 class="rec-place-title">실제 매장 이름</h4>
     <div class="rec-place-meta">📍 <b>위치:</b> 실제 도로명 주소</div>
     <p class="rec-place-desc">대표 메뉴 맛, 실제 방문자 리뷰 핵심 포인트, 분위기, 추천 이유를 2-3문장으로 상세히 설명</p>
     <a href="실제카카오맵URL" target="_blank" class="rec-kakao-pill-btn">👈 카카오맵</a>
+</div>
+
+6. 카드 목록 출력 후, 맨 마지막에 방문객을 위한 소믈리에 가이드 박스를 아래 HTML 구조로 반드시 추가할 것 (모든 항목에서 괄호 절대 사용 금지):
+<div class="sommelier-tips-box">
+    <div class="tips-title">💡 ${isMultiCourse ? '소믈리에 코스 가이드' : '소믈리에 방문 가이드'}</div>
+    <ul class="tips-list">
+        <li>• 동선 안내: 1차 및 2차 이동 동선 또는 역세권 접근성 팁</li>
+        <li>• 웨이팅 팁: 예약 및 피크시간 대기 요령</li>
+        <li>• 추천 꿀팁: 상황 및 날씨에 어울리는 유용한 팁</li>
+    </ul>
 </div>`;
 
             const modelsToTry = [
@@ -9671,6 +9720,13 @@ ${JSON.stringify(localCandidates.map(c => ({ 이름: c.name, 주소: c.location_
                         let textRes = data.candidates[0].content.parts[0].text;
                         textRes = cleanMarkdownText(textRes);
                         textRes = injectNaverButtons(textRes);
+
+                        // Ensure Sommelier Guide tips box is always present in Gemini output
+                        if (!textRes.includes('sommelier-tips-box')) {
+                            const tipsHtml = generateSommelierTips(freshKakao1, freshKakao2, locDisplay, moodText, isMultiCourse);
+                            textRes += tipsHtml;
+                        }
+
                         console.log(`[Spoonmap] Success with model: ${model}`);
 
                         // Update Context Memory: Extract recommended place names
