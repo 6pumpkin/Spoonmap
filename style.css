@@ -4014,7 +4014,7 @@ main {
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 1000;
+    z-index: 10015 !important;
     display: flex;
     justify-content: flex-end;
     opacity: 0;
@@ -4733,7 +4733,7 @@ input[type="date"].drawer-input {
     background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 9999;
+    z-index: 10005 !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -7365,15 +7365,14 @@ span.desktop-only {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: #FFFFFF !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 20 !important;
+        background: transparent !important;
+        position: relative !important;
+        top: auto !important;
+        z-index: 5 !important;
         cursor: grab !important;
         touch-action: none !important;
         flex-shrink: 0 !important;
         box-sizing: border-box !important;
-        border-radius: 20px 20px 0 0 !important;
     }
 
     .bottom-sheet-handle:active {
@@ -7402,6 +7401,7 @@ span.desktop-only {
     .list-detail-modal-overlay {
         align-items: flex-end !important;
         padding: 0 !important;
+        z-index: 10005 !important;
         transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.28s !important;
     }
 
@@ -7715,6 +7715,7 @@ span.desktop-only {
     .diary-drawer-overlay {
         align-items: flex-end !important;
         padding: 0 !important;
+        z-index: 10015 !important;
         transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.28s !important;
     }
 
@@ -8512,10 +8513,10 @@ span.desktop-only {
         align-items: center !important;
         justify-content: center !important;
         cursor: pointer !important;
-        background: #FFFFFF !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 20 !important;
+        background: transparent !important;
+        position: relative !important;
+        top: auto !important;
+        z-index: 5 !important;
         border-radius: 28px 28px 0 0 !important;
     }
 
@@ -10169,10 +10170,9 @@ span.desktop-only {
         padding: 10px 12px !important;
     }
 
-    /* 하단 결과창 및 모달 상단 핸들 (슬림한 3.5px 캡슐 바 & 스티키 고정) */
+    /* 하단 결과창 및 모달 상단 핸들 */
     #map-sheet-handle,
-    #map-detail-sheet-handle,
-    .bottom-sheet-handle {
+    #map-detail-sheet-handle {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -10192,6 +10192,29 @@ span.desktop-only {
         box-sizing: border-box !important;
         border-radius: 20px 20px 0 0 !important;
         transition: background 0.15s ease !important;
+    }
+
+    .bottom-sheet-handle,
+    .list-detail-modal-card .bottom-sheet-handle,
+    .diary-add-drawer .bottom-sheet-handle,
+    .profile-modal-card .bottom-sheet-handle,
+    .insight-modal-card .bottom-sheet-handle,
+    .friend-modal-card .bottom-sheet-handle {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 22px !important;
+        padding: 6px 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        position: relative !important;
+        top: auto !important;
+        z-index: 5 !important;
+        cursor: grab !important;
+        touch-action: none !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
     }
     .bottom-sheet-handle:active,
     #map-sheet-handle:active,

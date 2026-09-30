@@ -2973,16 +2973,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let tagBadge = '';
             if (friendInfo) {
                 if (friendInfo.isCommon && friendInfo.isMultiFriend) {
-                    tagBadge = `<span class="saved-place-chip gold">🌟 나 & 다중 친구(${friendInfo.matchesCount}명) 공통</span>`;
+                    tagBadge = `<span class="saved-place-chip gold">🌟 나 & 다중 친구 · ${friendInfo.matchesCount}명 공통</span>`;
                 } else if (friendInfo.isMultiFriend) {
-                    tagBadge = `<span class="saved-place-chip" style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; font-weight:700;">🔥 다중 친구(${friendInfo.matchesCount}명) 추천</span>`;
+                    tagBadge = `<span class="saved-place-chip" style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE; font-weight:700;">🔥 다중 친구 · ${friendInfo.matchesCount}명 추천</span>`;
                 } else if (friendInfo.isCommon) {
                     tagBadge = `<span class="saved-place-chip gold">🌟 나 & ${friendInfo.friendName} 공통</span>`;
                 } else {
                     tagBadge = `<span class="saved-place-chip red" style="background:${friendInfo.color}15; color:${friendInfo.color}; border:1px solid ${friendInfo.color}44;">📺 ${friendInfo.friendName} 추천</span>`;
                 }
             } else if (isSaved) {
-                tagBadge = visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 (${visits}회)</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`;
+                tagBadge = visits >= 2 ? `<span class="saved-place-chip gold">🔥 또간집 · ${visits}회</span>` : `<span class="saved-place-chip red">📍 내 저장 맛집</span>`;
             } else if (isWishlist) {
                 tagBadge = `<span class="saved-place-chip yellow">⭐ 찜 식당</span>`;
             }
@@ -3298,7 +3298,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let visitHtml = '';
             if (visits >= 2) {
-                visitHtml = `<span class="capsule-badge-repeat">🔥 또간집 (${visits}회)</span>`;
+                visitHtml = `<span class="capsule-badge-repeat">🔥 또간집 · ${visits}회</span>`;
             } else {
                 visitHtml = `<span class="capsule-badge-visit">📍 1회 방문</span>`;
             }
@@ -3776,7 +3776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // If it's a saved item, show Spoon scores. If unvisited, fetch real Daum Blog review snippet!
         const ratingHtml = isSaved 
-            ? `<div class="info-label">맛집 등급 (나의 평점 & 또간집 횟수)</div>
+            ? `<div class="info-label">맛집 등급 · 나의 평점 및 또간집 횟수</div>
                <div class="info-val rating-val" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                    ${getSpoonBadgeHtml(item)}
                </div>`
@@ -4913,15 +4913,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
             const badgeTag = f.id === 'friend_ddoganzip'
-                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">(풍자 또간집 📺)</span>'
+                ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">풍자 또간집 📺</span>'
                 : (f.id === 'friend_meogeultende'
-                    ? '<span style="font-size:10px; color:#2563EB; font-weight:700; background:#EFF6FF; padding:1px 5px; border-radius:4px; border:1px solid #BFDBFE;">(성시경 추천 🍲)</span>'
+                    ? '<span style="font-size:10px; color:#2563EB; font-weight:700; background:#EFF6FF; padding:1px 5px; border-radius:4px; border:1px solid #BFDBFE;">성시경 추천 🍲</span>'
                     : (f.id === 'friend_jungyugwang'
-                        ? '<span style="font-size:10px; color:#059669; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(정육왕 추천 🥩)</span>'
+                        ? '<span style="font-size:10px; color:#059669; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">정육왕 추천 🥩</span>'
                         : (isDemo 
-                            ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">(추천 채널)</span>' 
+                            ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">추천 채널</span>' 
                             : (isFollowing 
-                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">(팔로잉 미식가 🥄)</span>' 
+                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">팔로잉 미식가 🥄</span>' 
                                 : ''))));
             return `
                 <div class="friend-modal-item">
@@ -7337,7 +7337,7 @@ function openRestaurantDetailModal(item) {
         if (totalCount >= 2) {
             let icon = '🔥';
             if (totalCount >= 10) icon = '👑';
-            badgeEl.innerHTML = `${icon} ${totalCount}회 방문 (또간집)`;
+            badgeEl.innerHTML = `${icon} ${totalCount}회 방문 · 또간집`;
             badgeEl.style.display = 'inline-flex';
         } else {
             badgeEl.style.display = 'none';
@@ -7347,7 +7347,7 @@ function openRestaurantDetailModal(item) {
     // 2. Spoon Rate
     const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
     if (rateEl) {
-        rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">(수저 평점 ${spoonCount}개)</span>`;
+        rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">수저 평점 ${spoonCount}개</span>`;
     }
 
     // 3. Notion-style Tags: Category
