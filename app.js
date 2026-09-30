@@ -8159,17 +8159,17 @@ function computeAndRenderFoodInsights() {
     
     const visitedPct = Math.round((reVisitedCount / totalCount) * 100);
     const visEl = document.getElementById('stat-visited-count');
-    if (visEl) visEl.textContent = `${reVisitedCount}곳 (${visitedPct}%)`;
+    if (visEl) visEl.textContent = `${reVisitedCount}곳 · ${visitedPct}%`;
 
     const topPlace = topVisitedItems[0];
     const topPlaceEl = document.getElementById('stat-top-place');
-    if (topPlaceEl) topPlaceEl.textContent = topPlace ? `${topPlace.name} (${topPlace.visit_count || 1}회)` : '-';
+    if (topPlaceEl) topPlaceEl.textContent = topPlace ? `${topPlace.name} · ${topPlace.visit_count || 1}회` : '-';
 
     // Top Category
     const sortedCats = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
     const topCat = sortedCats[0];
     const topCatEl = document.getElementById('stat-top-category');
-    if (topCatEl) topCatEl.textContent = topCat ? `${topCat[0]} (${topCat[1]}곳)` : '-';
+    if (topCatEl) topCatEl.textContent = topCat ? `${topCat[0]} · ${topCat[1]}곳` : '-';
 
     // 2. Region List (Clickable bar filters LIST tab!)
     const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]);
@@ -8186,7 +8186,7 @@ function computeAndRenderFoodInsights() {
                 <div class="bar-item clickable-insight-bar" onclick="filterByInsight('location_large', '${reg}')" title="클릭하면 LIST 탭에서 '${reg}' 맛집만 필터링합니다">
                     <div class="bar-label-row">
                         <span>📍 ${reg} <span class="insight-jump-hint">LIST로 이동 ➔</span></span>
-                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                        <span class="bar-count">${count}곳 · ${pct}%</span>
                     </div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width: ${pct}%;"></div>
@@ -8217,7 +8217,7 @@ function computeAndRenderFoodInsights() {
                             </span>
                             <span class="insight-jump-hint">LIST로 이동 ➔</span>
                         </span>
-                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                        <span class="bar-count">${count}곳 · ${pct}%</span>
                     </div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width: ${pct}%; background:${color.color};"></div>
@@ -8238,7 +8238,7 @@ function computeAndRenderFoodInsights() {
                 <div class="bar-item clickable-insight-bar" onclick="filterByInsight('rate', '${r}')" title="클릭하면 LIST 탭에서 평점 ${r}개 맛집만 필터링합니다">
                     <div class="bar-label-row">
                         <span>🥄 ${r}개 평점 <span class="insight-jump-hint">LIST로 이동 ➔</span></span>
-                        <span class="bar-count">${count}곳 (${pct}%)</span>
+                        <span class="bar-count">${count}곳 · ${pct}%</span>
                     </div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width: ${pct}%;"></div>
@@ -13502,7 +13502,7 @@ window.viewGourmetRestaurantList = async function(userId) {
     const banner = document.getElementById('gourmet-viewing-banner');
     const nameEl = document.getElementById('gourmet-viewing-name');
     if (banner) {
-        if (nameEl) nameEl.textContent = `${targetUser.name} (${targetUser.handle})`;
+        if (nameEl) nameEl.textContent = `${targetUser.name} · ${targetUser.handle}`;
         banner.style.display = 'flex';
     }
 
