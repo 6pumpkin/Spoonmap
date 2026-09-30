@@ -13750,24 +13750,24 @@ const STUDIO_FOOD_BADGES = [
 ];
 
 const STUDIO_NOTION_HAIRS = [
-    { id: 'variant01', name: '숏 가르마', icon: '👨' },
-    { id: 'variant05', name: '단정한 숏', icon: '👦' },
-    { id: 'variant10', name: '곱슬 펌', icon: '💇' },
-    { id: 'variant15', name: '보브 컷', icon: '👩' },
-    { id: 'variant20', name: '롱 스트레이트', icon: '👱‍♀️' },
-    { id: 'variant25', name: '포니테일', icon: '👧' },
-    { id: 'variant30', name: '올림머리 번', icon: '👱' },
-    { id: 'variant35', name: '샤기 컷', icon: '🧑' },
-    { id: 'variant40', name: '캡모자', icon: '🧢' },
-    { id: 'variant45', name: '베레모', icon: '🎩' }
+    { id: 'variant01', name: '단정한 가르마', icon: '👨' },
+    { id: 'variant03', name: '깔끔 크롭컷', icon: '👦' },
+    { id: 'variant05', name: '댄디 숏컷', icon: '🧑' },
+    { id: 'variant06', name: '뽀글이 펌', icon: '💇' },
+    { id: 'variant07', name: '내추럴 웨이브', icon: '💁' },
+    { id: 'variant10', name: '단발 보브', icon: '👩' },
+    { id: 'variant08', name: '롱 스트레이트', icon: '👩‍🦰' },
+    { id: 'variant20', name: '사이드 포니테일', icon: '👧' },
+    { id: 'variant26', name: '올림머리 번', icon: '👱‍♀️' },
+    { id: 'hat', name: '스타일 모자', icon: '🧢' }
 ];
 
 const STUDIO_NOTION_FACES = [
-    { id: 'nf_1', name: '온화한 미소', eyes: 'variant01', lips: 'variant01', icon: '😊' },
-    { id: 'nf_2', name: '행복한 눈', eyes: 'variant02', lips: 'variant03', icon: '🥰' },
-    { id: 'nf_3', name: '활짝 웃음', eyes: 'variant03', lips: 'variant05', icon: '😄' },
-    { id: 'nf_4', name: '시크 표정', eyes: 'variant04', lips: 'variant08', icon: '😐' },
-    { id: 'nf_5', name: '깜짝 표정', eyes: 'variant05', lips: 'variant12', icon: '😮' }
+    { id: 'nf_1', name: '반달 눈웃음', eyes: 'variant03', lips: 'variant03', icon: '😊' },
+    { id: 'nf_2', name: '함박 미소', eyes: 'variant03', lips: 'variant08', icon: '😄' },
+    { id: 'nf_3', name: '찡긋 윙크', eyes: 'variant04', lips: 'variant05', icon: '😉' },
+    { id: 'nf_4', name: '시크 차분', eyes: 'variant01', lips: 'variant04', icon: '😐' },
+    { id: 'nf_5', name: '놀란 동공지진', eyes: 'variant05', lips: 'variant12', icon: '😮' }
 ];
 
 const STUDIO_NOTION_GESTURES = [
@@ -13807,8 +13807,8 @@ let avatarStudioState = {
     clothesColor: '25557c',
     accessories: 'none',
     notionHair: 'variant01',
-    notionEyes: 'variant01',
-    notionLips: 'variant01',
+    notionEyes: 'variant03',
+    notionLips: 'variant03',
     notionGlasses: 'none',
     notionGesture: 'none',
     backgroundColor: 'FFE5E8',
