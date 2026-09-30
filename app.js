@@ -13138,8 +13138,13 @@ function saveUserFollowingList(list) {
 function updateProfileAvatarDisplay(url) {
     const contentEl = document.getElementById('profile-avatar-content');
     if (!contentEl) return;
+    const profile = getUserProfile();
+    const badge = profile && profile.avatarBadge ? profile.avatarBadge : '🥄';
     if (url) {
-        contentEl.innerHTML = `<img id="profile-avatar-img" src="${url}" alt="프로필 사진" class="profile-avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=fallback';">`;
+        contentEl.innerHTML = `
+            <img id="profile-avatar-img" src="${url}" alt="프로필 사진" class="profile-avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';">
+            <span class="profile-avatar-badge-tag">${badge}</span>
+        `;
     } else {
         contentEl.innerHTML = `<div class="profile-avatar-fallback">🥄</div>`;
     }
@@ -13637,52 +13642,719 @@ window.saveProfileFromModal = function() {
     showDiaryToast('✅ 프로필 정보가 성공적으로 수정되었습니다!');
 };
 
-// ─── Avatar Picker Modal Logic (기본 프로필 이미지 선택기) ───
-window.openAvatarPickerModal = function() {
-    const modal = document.getElementById('avatar-picker-modal');
-    const grid = document.getElementById('avatar-preset-grid');
-    if (!modal || !grid) return;
+// ─── Custom Avatar Studio: Config Data & Module ───
+const STUDIO_AVATAARS_HAIRS = [
+    { id: 'shortFlat', name: '숏 플랫', icon: '👦' },
+    { id: 'theCaesarAndSidePart', name: '가르마 펌', icon: '👨' },
+    { id: 'shortWaved', name: '웨이브 숏', icon: '🧑' },
+    { id: 'curly', name: '뽀글이 곱슬', icon: '💇‍♂️' },
+    { id: 'bob', name: '보브 단발', icon: '👩' },
+    { id: 'bun', name: '당고머리 번', icon: '👱‍♀️' },
+    { id: 'straight01', name: '긴 생머리', icon: '👩‍🦰' },
+    { id: 'longButNotTooLong', name: '포니테일', icon: '👱' },
+    { id: 'curvy', name: '풍성 롱헤어', icon: '👸' },
+    { id: 'winterHat02', name: '비니 모자', icon: '🧢' },
+    { id: 'hat', name: '베레모', icon: '🎩' },
+    { id: 'shavedSides', name: '페이드 컷', icon: '💈' }
+];
+
+const STUDIO_AVATAARS_FACES = [
+    { id: 'f_happy', name: '행복한 미소', eyes: 'happy', mouth: 'smile', icon: '😊' },
+    { id: 'f_wink', name: '찡긋 윙크', eyes: 'wink', mouth: 'smile', icon: '😉' },
+    { id: 'f_eating', name: '냠냠 맛있는', eyes: 'happy', mouth: 'eating', icon: '😋' },
+    { id: 'f_love', name: '사랑스런 눈', eyes: 'hearts', mouth: 'smile', icon: '😍' },
+    { id: 'f_tongue', name: '장난꾸러기', eyes: 'winkWacky', mouth: 'tongue', icon: '😜' },
+    { id: 'f_serious', name: '시크 미식가', eyes: 'default', mouth: 'serious', icon: '🧐' },
+    { id: 'f_cry', name: '감동의 눈물', eyes: 'cry', mouth: 'smile', icon: '🥹' },
+    { id: 'f_surprised', name: '동공지진', eyes: 'surprised', mouth: 'disbelief', icon: '😲' },
+    { id: 'f_twinkle', name: '반짝반짝', eyes: 'default', mouth: 'twinkle', icon: '✨' },
+    { id: 'f_dizzy', name: '배터짐 기절', eyes: 'xDizzy', mouth: 'eating', icon: '😵' }
+];
+
+const STUDIO_AVATAARS_CLOTHES = [
+    { id: 'blazerAndShirt', name: '셰프 수트', icon: '👔' },
+    { id: 'collarAndSweater', name: '셔츠 & 니트', icon: '🧶' },
+    { id: 'hoodie', name: '스트릿 후드', icon: '🧥' },
+    { id: 'overall', name: '빈티지 멜빵', icon: '👖' },
+    { id: 'graphicShirt', name: '그래픽 반팔', icon: '🍕' },
+    { id: 'shirtCrewNeck', name: '크루넥 티', icon: '👕' },
+    { id: 'shirtVNeck', name: '깔끔 V넥', icon: '🎽' },
+    { id: 'blazerAndSweater', name: '블레이저', icon: '🕴️' }
+];
+
+const STUDIO_HAIR_COLORS = [
+    { id: '2c1b18', name: '딥 블랙' },
+    { id: '4a312c', name: '다크 브라운' },
+    { id: '724133', name: '내추럴 브라운' },
+    { id: 'd6b370', name: '골든 블론드' },
+    { id: 'ecdcbf', name: '애쉬 블론드' },
+    { id: 'f59797', name: '파스텔 핑크' },
+    { id: 'c93305', name: '코퍼 레드' },
+    { id: 'e8e1e1', name: '실버 그레이' }
+];
+
+const STUDIO_SKIN_TONES = [
+    { id: 'ffdbb4', name: '라이트 톤', hex: 'ffdbb4' },
+    { id: 'edb98a', name: '내추럴 톤', hex: 'edb98a' },
+    { id: 'f8d25c', name: '웜 베이지', hex: 'f8d25c' },
+    { id: 'd08b5b', name: '구릿빛 탠', hex: 'd08b5b' },
+    { id: 'ae5d29', name: '딥 브라운', hex: 'ae5d29' },
+    { id: '614335', name: '다크 톤', hex: '614335' }
+];
+
+const STUDIO_CLOTHES_COLORS = [
+    { id: 'ffffff', name: '화이트' },
+    { id: 'ff5c5c', name: '코랄 레드' },
+    { id: '25557c', name: '딥 네이비' },
+    { id: '262e33', name: '젯 블랙' },
+    { id: 'a7ffc4', name: '세이지 민트' },
+    { id: 'ffffb1', name: '버터 옐로우' },
+    { id: 'b1e2ff', name: '스카이 블루' },
+    { id: 'ffafb9', name: '파스텔 핑크' },
+    { id: '929598', name: '차콜 그레이' },
+    { id: 'e6e6e6', name: '소프트 아이보리' }
+];
+
+const STUDIO_ACCESSORIES = [
+    { id: 'none', name: '안경 없음', icon: '🚫' },
+    { id: 'round', name: '둥근 뿔테', icon: '👓' },
+    { id: 'prescription02', name: '클래식 사각', icon: '🕶️' },
+    { id: 'sunglasses', name: '블랙 선글라스', icon: '😎' },
+    { id: 'wayfarers', name: '틴트 글래스', icon: '🥸' }
+];
+
+const STUDIO_BG_COLORS = [
+    { id: 'FFE5E8', name: '소프트 코랄' },
+    { id: 'FFE8D6', name: '피치 크림' },
+    { id: 'FEF3C7', name: '버터 옐로우' },
+    { id: 'D1FAE5', name: '민트 그린' },
+    { id: 'E2E8F0', name: '세이지 그레이' },
+    { id: 'E0F2FE', name: '스카이 블루' },
+    { id: 'EDE9FE', name: '라벤더' },
+    { id: 'FCE7F3', name: '체리 블라썸' },
+    { id: 'F8FAF5', name: '크림 베이지' },
+    { id: '334155', name: '다크 차콜' }
+];
+
+const STUDIO_FOOD_BADGES = [
+    { id: 'spoon', emoji: '🥄', name: '수저' },
+    { id: 'wine', emoji: '🍷', name: '와인' },
+    { id: 'ramen', emoji: '🍜', name: '라멘' },
+    { id: 'sushi', emoji: '🍣', name: '스시' },
+    { id: 'meat', emoji: '🥩', name: '고기' },
+    { id: 'pizza', emoji: '🍕', name: '피자' },
+    { id: 'croissant', emoji: '🥐', name: '크루아상' },
+    { id: 'coffee', emoji: '☕', name: '커피' },
+    { id: 'dessert', emoji: '🍰', name: '디저트' },
+    { id: 'crown', emoji: '👑', name: '왕관' }
+];
+
+const STUDIO_NOTION_HAIRS = [
+    { id: 'variant01', name: '숏 가르마', icon: '👨' },
+    { id: 'variant05', name: '단정한 숏', icon: '👦' },
+    { id: 'variant10', name: '곱슬 펌', icon: '💇' },
+    { id: 'variant15', name: '보브 컷', icon: '👩' },
+    { id: 'variant20', name: '롱 스트레이트', icon: '👱‍♀️' },
+    { id: 'variant25', name: '포니테일', icon: '👧' },
+    { id: 'variant30', name: '올림머리 번', icon: '👱' },
+    { id: 'variant35', name: '샤기 컷', icon: '🧑' },
+    { id: 'variant40', name: '캡모자', icon: '🧢' },
+    { id: 'variant45', name: '베레모', icon: '🎩' }
+];
+
+const STUDIO_NOTION_FACES = [
+    { id: 'nf_1', name: '온화한 미소', eyes: 'variant01', lips: 'variant01', icon: '😊' },
+    { id: 'nf_2', name: '행복한 눈', eyes: 'variant02', lips: 'variant03', icon: '🥰' },
+    { id: 'nf_3', name: '활짝 웃음', eyes: 'variant03', lips: 'variant05', icon: '😄' },
+    { id: 'nf_4', name: '시크 표정', eyes: 'variant04', lips: 'variant08', icon: '😐' },
+    { id: 'nf_5', name: '깜짝 표정', eyes: 'variant05', lips: 'variant12', icon: '😮' }
+];
+
+const STUDIO_NOTION_GESTURES = [
+    { id: 'none', name: '제스처 없음', icon: '🚫' },
+    { id: 'waveOkLongArms', name: '오케이 링', icon: '👌' },
+    { id: 'handPhone', name: '스마트폰', icon: '📱' },
+    { id: 'point', name: '손가락 가리킴', icon: '👉' },
+    { id: 'hand', name: '손인사', icon: '👋' }
+];
+
+const AVATAARS_TABS = [
+    { id: 'gender', name: '성별 베이스' },
+    { id: 'hair', name: '헤어 컬러' },
+    { id: 'face', name: '표정' },
+    { id: 'clothes', name: '의상 컬러' },
+    { id: 'accessories', name: '소품' },
+    { id: 'bg', name: '배경 뱃지' }
+];
+
+const NOTION_TABS = [
+    { id: 'hair', name: '헤어' },
+    { id: 'face', name: '눈 입 표정' },
+    { id: 'accessories', name: '제스처 소품' },
+    { id: 'bg', name: '배경 뱃지' }
+];
+
+let avatarStudioState = {
+    styleBase: 'avataaars',
+    activeTab: 'hair',
+    isKakaoPhoto: false,
+    top: 'shortFlat',
+    hairColor: '2c1b18',
+    skinColor: 'ffdbb4',
+    eyes: 'happy',
+    mouth: 'smile',
+    clothing: 'blazerAndShirt',
+    clothesColor: '25557c',
+    accessories: 'none',
+    notionHair: 'variant01',
+    notionEyes: 'variant01',
+    notionLips: 'variant01',
+    notionGlasses: 'none',
+    notionGesture: 'none',
+    backgroundColor: 'FFE5E8',
+    foodBadge: '🥄'
+};
+
+function buildStudioAvatarUrl() {
+    if (avatarStudioState.isKakaoPhoto) {
+        const u = getCurrentUser();
+        return (u && u.profileImage) || 'https://api.dicebear.com/7.x/bottts/svg?seed=kakao';
+    }
+    if (avatarStudioState.styleBase === 'avataaars') {
+        const params = [
+            `top=${encodeURIComponent(avatarStudioState.top)}`,
+            `hairColor=${encodeURIComponent(avatarStudioState.hairColor)}`,
+            `skinColor=${encodeURIComponent(avatarStudioState.skinColor)}`,
+            `eyes=${encodeURIComponent(avatarStudioState.eyes)}`,
+            `mouth=${encodeURIComponent(avatarStudioState.mouth)}`,
+            `clothing=${encodeURIComponent(avatarStudioState.clothing)}`,
+            `clothesColor=${encodeURIComponent(avatarStudioState.clothesColor)}`,
+            `backgroundColor=${encodeURIComponent(avatarStudioState.backgroundColor)}`
+        ];
+        if (avatarStudioState.accessories !== 'none') {
+            params.push(`accessories=${encodeURIComponent(avatarStudioState.accessories)}`);
+            params.push('accessoriesProbability=100');
+        } else {
+            params.push('accessoriesProbability=0');
+        }
+        params.push('facialHairProbability=0');
+        return `https://api.dicebear.com/7.x/avataaars/svg?${params.join('&')}`;
+    } else {
+        const params = [
+            `hair=${encodeURIComponent(avatarStudioState.notionHair)}`,
+            `eyes=${encodeURIComponent(avatarStudioState.notionEyes)}`,
+            `lips=${encodeURIComponent(avatarStudioState.notionLips)}`,
+            `backgroundColor=${encodeURIComponent(avatarStudioState.backgroundColor)}`
+        ];
+        if (avatarStudioState.notionGlasses !== 'none') {
+            params.push(`glasses=${encodeURIComponent(avatarStudioState.notionGlasses)}`);
+            params.push('glassesProbability=100');
+        } else {
+            params.push('glassesProbability=0');
+        }
+        if (avatarStudioState.notionGesture !== 'none') {
+            params.push(`gesture=${encodeURIComponent(avatarStudioState.notionGesture)}`);
+            params.push('gestureProbability=100');
+        } else {
+            params.push('gestureProbability=0');
+        }
+        return `https://api.dicebear.com/7.x/notionists/svg?${params.join('&')}`;
+    }
+}
+
+function updateStudioPreview() {
+    const img = document.getElementById('studio-avatar-preview-img');
+    const wrap = document.getElementById('studio-avatar-wrap');
+    const badge = document.getElementById('studio-food-badge-overlay');
+    if (img) img.src = buildStudioAvatarUrl();
+    if (wrap) wrap.style.backgroundColor = '#' + avatarStudioState.backgroundColor;
+    if (badge) badge.textContent = avatarStudioState.foodBadge;
+}
+
+function renderStudioTabBar() {
+    const tabBar = document.getElementById('studio-tab-bar');
+    if (!tabBar) return;
+    const tabs = avatarStudioState.styleBase === 'avataaars' ? AVATAARS_TABS : NOTION_TABS;
+    
+    if (!tabs.some(t => t.id === avatarStudioState.activeTab)) {
+        avatarStudioState.activeTab = tabs[0].id;
+    }
+
+    tabBar.innerHTML = tabs.map(t => `
+        <button type="button" class="studio-tab-btn ${t.id === avatarStudioState.activeTab ? 'active' : ''}" data-tab="${t.id}" onclick="switchStudioTab('${t.id}')">
+            ${t.name}
+        </button>
+    `).join('');
+}
+
+function renderStudioTabOptions(tabId) {
+    if (avatarStudioState.styleBase === 'avataaars') {
+        if (tabId === 'gender') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>추천 베이스 프리셋</span></div>
+                    <div class="studio-parts-grid">
+                        <div class="studio-part-card" onclick="setStudioGenderPreset('male')">
+                            <span class="studio-part-icon">👨</span>
+                            <span class="studio-part-name">남성형</span>
+                        </div>
+                        <div class="studio-part-card" onclick="setStudioGenderPreset('female')">
+                            <span class="studio-part-icon">👩</span>
+                            <span class="studio-part-name">여성형</span>
+                        </div>
+                        <div class="studio-part-card" onclick="setStudioGenderPreset('neutral')">
+                            <span class="studio-part-icon">🧑</span>
+                            <span class="studio-part-name">중성형</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>피부톤</span></div>
+                    <div class="studio-color-row">
+                        ${STUDIO_SKIN_TONES.map(s => `
+                            <div class="studio-color-chip ${avatarStudioState.skinColor === s.hex ? 'selected' : ''}" style="background-color: #${s.hex};" title="${s.name}" onclick="setStudioPart('skinColor', '${s.hex}', this)"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'hair') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>헤어스타일 · 12종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_AVATAARS_HAIRS.map(h => `
+                            <div class="studio-part-card ${avatarStudioState.top === h.id ? 'selected' : ''}" onclick="setStudioPart('top', '${h.id}', this)">
+                                <span class="studio-part-icon">${h.icon}</span>
+                                <span class="studio-part-name">${h.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>헤어 컬러 · 8종</span></div>
+                    <div class="studio-color-row">
+                        ${STUDIO_HAIR_COLORS.map(c => `
+                            <div class="studio-color-chip ${avatarStudioState.hairColor === c.id ? 'selected' : ''}" style="background-color: #${c.id};" title="${c.name}" onclick="setStudioPart('hairColor', '${c.id}', this)"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'face') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>표정 및 눈입 조합 · 10종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_AVATAARS_FACES.map(f => {
+                            const isSel = (f.eyes === avatarStudioState.eyes && f.mouth === avatarStudioState.mouth);
+                            return `
+                                <div class="studio-part-card ${isSel ? 'selected' : ''}" onclick="setStudioFace('${f.eyes}', '${f.mouth}', this)">
+                                    <span class="studio-part-icon">${f.icon}</span>
+                                    <span class="studio-part-name">${f.name}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'clothes') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>의상 스타일 · 8종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_AVATAARS_CLOTHES.map(c => `
+                            <div class="studio-part-card ${avatarStudioState.clothing === c.id ? 'selected' : ''}" onclick="setStudioPart('clothing', '${c.id}', this)">
+                                <span class="studio-part-icon">${c.icon}</span>
+                                <span class="studio-part-name">${c.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>의상 컬러 · 10종</span></div>
+                    <div class="studio-color-row">
+                        ${STUDIO_CLOTHES_COLORS.map(c => `
+                            <div class="studio-color-chip ${avatarStudioState.clothesColor === c.id ? 'selected' : ''}" style="background-color: #${c.id};" title="${c.name}" onclick="setStudioPart('clothesColor', '${c.id}', this)"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'accessories') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>안경 및 소품</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_ACCESSORIES.map(a => `
+                            <div class="studio-part-card ${avatarStudioState.accessories === a.id ? 'selected' : ''}" onclick="setStudioPart('accessories', '${a.id}', this)">
+                                <span class="studio-part-icon">${a.icon}</span>
+                                <span class="studio-part-name">${a.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'bg') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>시그니처 미식 뱃지 · 10종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_FOOD_BADGES.map(b => `
+                            <div class="studio-part-card ${avatarStudioState.foodBadge === b.emoji ? 'selected' : ''}" onclick="setStudioPart('foodBadge', '${b.emoji}', this)">
+                                <span class="studio-part-icon">${b.emoji}</span>
+                                <span class="studio-part-name">${b.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>배경 테마 컬러 · 10종</span></div>
+                    <div class="studio-color-row">
+                        ${STUDIO_BG_COLORS.map(bg => `
+                            <div class="studio-color-chip ${avatarStudioState.backgroundColor === bg.id ? 'selected' : ''}" style="background-color: #${bg.id};" title="${bg.name}" onclick="setStudioPart('backgroundColor', '${bg.id}', this)"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        if (tabId === 'hair') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>노션 헤어스타일 · 10종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_NOTION_HAIRS.map(h => `
+                            <div class="studio-part-card ${avatarStudioState.notionHair === h.id ? 'selected' : ''}" onclick="setStudioPart('notionHair', '${h.id}', this)">
+                                <span class="studio-part-icon">${h.icon}</span>
+                                <span class="studio-part-name">${h.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'face') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>노션 눈입 표정 · 5종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_NOTION_FACES.map(f => {
+                            const isSel = (f.eyes === avatarStudioState.notionEyes && f.lips === avatarStudioState.notionLips);
+                            return `
+                                <div class="studio-part-card ${isSel ? 'selected' : ''}" onclick="setStudioFace('${f.eyes}', '${f.lips}', this)">
+                                    <span class="studio-part-icon">${f.icon}</span>
+                                    <span class="studio-part-name">${f.name}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'accessories') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>손동작 제스처 · 5종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_NOTION_GESTURES.map(g => `
+                            <div class="studio-part-card ${avatarStudioState.notionGesture === g.id ? 'selected' : ''}" onclick="setStudioPart('notionGesture', '${g.id}', this)">
+                                <span class="studio-part-icon">${g.icon}</span>
+                                <span class="studio-part-name">${g.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>노션 안경</span></div>
+                    <div class="studio-parts-grid">
+                        <div class="studio-part-card ${avatarStudioState.notionGlasses === 'none' ? 'selected' : ''}" onclick="setStudioPart('notionGlasses', 'none', this)">
+                            <span class="studio-part-icon">🚫</span>
+                            <span class="studio-part-name">안경 없음</span>
+                        </div>
+                        <div class="studio-part-card ${avatarStudioState.notionGlasses === 'variant01' ? 'selected' : ''}" onclick="setStudioPart('notionGlasses', 'variant01', this)">
+                            <span class="studio-part-icon">👓</span>
+                            <span class="studio-part-name">모던 안경</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'bg') {
+            return `
+                <div>
+                    <div class="studio-section-title"><span>시그니처 미식 뱃지 · 10종</span></div>
+                    <div class="studio-parts-grid">
+                        ${STUDIO_FOOD_BADGES.map(b => `
+                            <div class="studio-part-card ${avatarStudioState.foodBadge === b.emoji ? 'selected' : ''}" onclick="setStudioPart('foodBadge', '${b.emoji}', this)">
+                                <span class="studio-part-icon">${b.emoji}</span>
+                                <span class="studio-part-name">${b.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <div class="studio-section-title"><span>배경 테마 컬러 · 10종</span></div>
+                    <div class="studio-color-row">
+                        ${STUDIO_BG_COLORS.map(bg => `
+                            <div class="studio-color-chip ${avatarStudioState.backgroundColor === bg.id ? 'selected' : ''}" style="background-color: #${bg.id};" title="${bg.name}" onclick="setStudioPart('backgroundColor', '${bg.id}', this)"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+    return '';
+}
+
+window.switchStudioTab = function(tabId) {
+    avatarStudioState.activeTab = tabId;
+    const tabBar = document.getElementById('studio-tab-bar');
+    if (tabBar) {
+        tabBar.querySelectorAll('.studio-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+    }
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(tabId);
+        container.scrollTop = 0;
+    }
+};
+
+window.switchStudioStyle = function(style) {
+    avatarStudioState.styleBase = style;
+    avatarStudioState.isKakaoPhoto = false;
+
+    const btnAvat = document.getElementById('btn-style-avataaars');
+    const btnNotion = document.getElementById('btn-style-notionists');
+    if (btnAvat) btnAvat.classList.toggle('active', style === 'avataaars');
+    if (btnNotion) btnNotion.classList.toggle('active', style === 'notionists');
+
+    renderStudioTabBar();
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(avatarStudioState.activeTab);
+        container.scrollTop = 0;
+    }
+    updateStudioPreview();
+};
+
+window.setStudioPart = function(partKey, value, el) {
+    avatarStudioState.isKakaoPhoto = false;
+    avatarStudioState[partKey] = value;
+    updateStudioPreview();
+
+    if (el) {
+        const parent = el.closest('.studio-parts-grid, .studio-color-row');
+        if (parent) {
+            parent.querySelectorAll('.selected').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    }
+};
+
+window.setStudioFace = function(eyes, mouth, el) {
+    avatarStudioState.isKakaoPhoto = false;
+    if (avatarStudioState.styleBase === 'avataaars') {
+        avatarStudioState.eyes = eyes;
+        avatarStudioState.mouth = mouth;
+    } else {
+        avatarStudioState.notionEyes = eyes;
+        avatarStudioState.notionLips = mouth;
+    }
+    updateStudioPreview();
+
+    if (el) {
+        const parent = el.closest('.studio-parts-grid');
+        if (parent) {
+            parent.querySelectorAll('.selected').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    }
+};
+
+window.setStudioGenderPreset = function(gender) {
+    avatarStudioState.isKakaoPhoto = false;
+    if (gender === 'male') {
+        avatarStudioState.top = 'theCaesarAndSidePart';
+        avatarStudioState.clothing = 'blazerAndShirt';
+        avatarStudioState.eyes = 'happy';
+        avatarStudioState.mouth = 'smile';
+        avatarStudioState.accessories = 'none';
+    } else if (gender === 'female') {
+        avatarStudioState.top = 'bob';
+        avatarStudioState.clothing = 'collarAndSweater';
+        avatarStudioState.eyes = 'happy';
+        avatarStudioState.mouth = 'smile';
+        avatarStudioState.accessories = 'none';
+    } else {
+        avatarStudioState.top = 'shortWaved';
+        avatarStudioState.clothing = 'hoodie';
+        avatarStudioState.eyes = 'happy';
+        avatarStudioState.mouth = 'smile';
+    }
+    updateStudioPreview();
+
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(avatarStudioState.activeTab);
+    }
+};
+
+window.shuffleStudioParts = function() {
+    avatarStudioState.isKakaoPhoto = false;
+    if (avatarStudioState.styleBase === 'avataaars') {
+        avatarStudioState.top = STUDIO_AVATAARS_HAIRS[Math.floor(Math.random() * STUDIO_AVATAARS_HAIRS.length)].id;
+        avatarStudioState.hairColor = STUDIO_HAIR_COLORS[Math.floor(Math.random() * STUDIO_HAIR_COLORS.length)].id;
+        avatarStudioState.skinColor = STUDIO_SKIN_TONES[Math.floor(Math.random() * STUDIO_SKIN_TONES.length)].id;
+        const face = STUDIO_AVATAARS_FACES[Math.floor(Math.random() * STUDIO_AVATAARS_FACES.length)];
+        avatarStudioState.eyes = face.eyes;
+        avatarStudioState.mouth = face.mouth;
+        avatarStudioState.clothing = STUDIO_AVATAARS_CLOTHES[Math.floor(Math.random() * STUDIO_AVATAARS_CLOTHES.length)].id;
+        avatarStudioState.clothesColor = STUDIO_CLOTHES_COLORS[Math.floor(Math.random() * STUDIO_CLOTHES_COLORS.length)].id;
+        avatarStudioState.accessories = STUDIO_ACCESSORIES[Math.floor(Math.random() * STUDIO_ACCESSORIES.length)].id;
+    } else {
+        avatarStudioState.notionHair = STUDIO_NOTION_HAIRS[Math.floor(Math.random() * STUDIO_NOTION_HAIRS.length)].id;
+        const nFace = STUDIO_NOTION_FACES[Math.floor(Math.random() * STUDIO_NOTION_FACES.length)];
+        avatarStudioState.notionEyes = nFace.eyes;
+        avatarStudioState.notionLips = nFace.lips;
+        avatarStudioState.notionGlasses = Math.random() > 0.5 ? 'variant01' : 'none';
+        avatarStudioState.notionGesture = STUDIO_NOTION_GESTURES[Math.floor(Math.random() * STUDIO_NOTION_GESTURES.length)].id;
+    }
+    avatarStudioState.backgroundColor = STUDIO_BG_COLORS[Math.floor(Math.random() * STUDIO_BG_COLORS.length)].id;
+    avatarStudioState.foodBadge = STUDIO_FOOD_BADGES[Math.floor(Math.random() * STUDIO_FOOD_BADGES.length)].emoji;
+
+    updateStudioPreview();
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(avatarStudioState.activeTab);
+    }
+};
+
+window.restoreKakaoProfilePhoto = function() {
+    const u = getCurrentUser();
+    if (!u || !u.profileImage) {
+        showDiaryToast('카카오 프로필 사진을 찾을 수 없습니다.');
+        return;
+    }
+    avatarStudioState.isKakaoPhoto = true;
+    updateStudioPreview();
+    showDiaryToast('카카오 원본 프로필 사진으로 설정되었습니다.');
+};
+
+window.openAvatarStudioModal = function() {
+    const modal = document.getElementById('avatar-studio-modal');
+    if (!modal) return;
 
     const profile = getUserProfile();
     const currentUser = getCurrentUser() || {};
-    const currentAvatar = profile.profileImage || '';
+    const currentAvatar = profile.profileImage || currentUser.profileImage || '';
 
-    grid.innerHTML = PRESET_AVATARS.map(preset => {
-        let displayUrl = preset.url;
-        if (preset.isKakao) {
-            displayUrl = currentUser.profileImage || 'https://api.dicebear.com/7.x/bottts/svg?seed=kakao';
-        }
-        const isSelected = (preset.isKakao && currentAvatar === currentUser.profileImage) || (currentAvatar === preset.url);
+    const kakaoBtn = document.getElementById('btn-studio-kakao-restore');
+    if (kakaoBtn) {
+        const hasKakaoPhoto = currentUser.profileImage && !currentUser.profileImage.includes('dicebear');
+        kakaoBtn.style.display = hasKakaoPhoto ? 'inline-flex' : 'none';
+    }
 
-        return `
-            <div class="avatar-preset-item ${isSelected ? 'selected' : ''}" onclick="selectPresetAvatar('${displayUrl}')">
-                <img src="${displayUrl}" alt="${preset.name}" class="avatar-preset-img">
-                <span class="avatar-preset-name">${preset.name}</span>
-            </div>
-        `;
-    }).join('');
+    avatarStudioState.isKakaoPhoto = false;
+    if (currentAvatar.includes('notionists')) {
+        avatarStudioState.styleBase = 'notionists';
+        try {
+            const urlObj = new URL(currentAvatar);
+            if (urlObj.searchParams.get('hair')) avatarStudioState.notionHair = urlObj.searchParams.get('hair');
+            if (urlObj.searchParams.get('eyes')) avatarStudioState.notionEyes = urlObj.searchParams.get('eyes');
+            if (urlObj.searchParams.get('lips')) avatarStudioState.notionLips = urlObj.searchParams.get('lips');
+            if (urlObj.searchParams.get('glasses')) avatarStudioState.notionGlasses = urlObj.searchParams.get('glasses');
+            if (urlObj.searchParams.get('gesture')) avatarStudioState.notionGesture = urlObj.searchParams.get('gesture');
+            if (urlObj.searchParams.get('backgroundColor')) avatarStudioState.backgroundColor = urlObj.searchParams.get('backgroundColor');
+        } catch (e) {}
+    } else if (currentAvatar.includes('avataaars')) {
+        avatarStudioState.styleBase = 'avataaars';
+        try {
+            const urlObj = new URL(currentAvatar);
+            if (urlObj.searchParams.get('top')) avatarStudioState.top = urlObj.searchParams.get('top');
+            if (urlObj.searchParams.get('hairColor')) avatarStudioState.hairColor = urlObj.searchParams.get('hairColor');
+            if (urlObj.searchParams.get('skinColor')) avatarStudioState.skinColor = urlObj.searchParams.get('skinColor');
+            if (urlObj.searchParams.get('eyes')) avatarStudioState.eyes = urlObj.searchParams.get('eyes');
+            if (urlObj.searchParams.get('mouth')) avatarStudioState.mouth = urlObj.searchParams.get('mouth');
+            if (urlObj.searchParams.get('clothing')) avatarStudioState.clothing = urlObj.searchParams.get('clothing');
+            if (urlObj.searchParams.get('clothesColor')) avatarStudioState.clothesColor = urlObj.searchParams.get('clothesColor');
+            if (urlObj.searchParams.get('accessories')) avatarStudioState.accessories = urlObj.searchParams.get('accessories');
+            if (urlObj.searchParams.get('backgroundColor')) avatarStudioState.backgroundColor = urlObj.searchParams.get('backgroundColor');
+        } catch (e) {}
+    } else if (currentUser.profileImage && !currentUser.profileImage.includes('dicebear')) {
+        avatarStudioState.isKakaoPhoto = true;
+    }
 
+    if (profile.avatarBadge) {
+        avatarStudioState.foodBadge = profile.avatarBadge;
+    }
+
+    const btnAvat = document.getElementById('btn-style-avataaars');
+    const btnNotion = document.getElementById('btn-style-notionists');
+    if (btnAvat) btnAvat.classList.toggle('active', avatarStudioState.styleBase === 'avataaars');
+    if (btnNotion) btnNotion.classList.toggle('active', avatarStudioState.styleBase === 'notionists');
+
+    renderStudioTabBar();
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(avatarStudioState.activeTab);
+        container.scrollTop = 0;
+    }
+
+    updateStudioPreview();
     modal.classList.add('open');
 };
 
-window.closeAvatarPickerModal = function() {
-    const modal = document.getElementById('avatar-picker-modal');
+window.closeAvatarStudioModal = function() {
+    const modal = document.getElementById('avatar-studio-modal');
     if (modal) modal.classList.remove('open');
 };
 
+window.saveCustomAvatar = function() {
+    const finalUrl = buildStudioAvatarUrl();
+    const profile = getUserProfile();
+    profile.profileImage = finalUrl;
+    profile.avatarBadge = avatarStudioState.foodBadge;
+    saveUserProfile(profile);
+
+    const u = getCurrentUser();
+    if (u) {
+        u.profileImage = finalUrl;
+        u.avatarBadge = avatarStudioState.foodBadge;
+        localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
+    }
+
+    closeAvatarStudioModal();
+    renderProfileView();
+    updateUserAuthUI();
+    showDiaryToast('✨ 프로필 아바타가 저장되었습니다!');
+};
+
+// Aliases for backwards compatibility
+window.openAvatarPickerModal = window.openAvatarStudioModal;
+window.closeAvatarPickerModal = window.closeAvatarStudioModal;
 window.selectPresetAvatar = function(url) {
     const profile = getUserProfile();
     profile.profileImage = url;
     saveUserProfile(profile);
-
-    // Update currentUser profileImage in session
     const u = getCurrentUser();
     if (u) {
         u.profileImage = url;
         localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
     }
-
-    closeAvatarPickerModal();
+    closeAvatarStudioModal();
     renderProfileView();
     updateUserAuthUI();
     showDiaryToast('✨ 프로필 아바타가 변경되었습니다!');
