@@ -7172,6 +7172,15 @@ span.desktop-only {
     .bottom-sheet-handle.mobile-only {
         display: flex !important;
     }
+    .btn-show-quick-prompts {
+        display: inline-flex !important;
+    }
+    .sommelier-prompts-guide {
+        display: block !important;
+    }
+    .sommelier-mobile-subbar {
+        display: flex !important;
+    }
 
     :root {
         --bg-canvas: #FAF8F5;
@@ -10833,12 +10842,17 @@ span.desktop-only {
         background: #F8FAFC !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 19px !important;
-        font-size: 16px !important; /* Prevents iOS Safari from auto-zooming and displacing touch hit-testing */
+        font-size: 13px !important;
         color: #1E293B !important;
         font-weight: 500 !important;
         outline: none !important;
         box-sizing: border-box !important;
         transition: border-color 0.15s ease, background 0.15s ease !important;
+    }
+
+    .chat-input-bar input::placeholder {
+        font-size: 12.5px !important;
+        color: #94A3B8 !important;
     }
 
     .chat-input-bar input:focus {
@@ -10946,7 +10960,7 @@ span.desktop-only {
 
     /* Guide prompts message styles */
     .btn-show-quick-prompts {
-        display: inline-flex;
+        display: inline-flex !important;
         align-items: center;
         gap: 4px;
         background: #FFF1F2;
@@ -10967,6 +10981,7 @@ span.desktop-only {
     }
 
     .sommelier-prompts-guide {
+        display: block !important;
         width: 100%;
         max-width: 320px;
     }

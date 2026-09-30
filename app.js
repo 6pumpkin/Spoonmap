@@ -8343,15 +8343,6 @@ function initSommelierTab() {
     else if (hour >= 17 && hour < 21) timeGreeting = '🥩 시원한 반주와 맛있는 저녁 시간대';
     else timeGreeting = '🍺 출출한 야식 & 술 한잔 시간대';
 
-    const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const mobilePromptBtnHtml = isMobileDevice ? `
-        <div class="mobile-only" style="margin-top: 10px;">
-            <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
-                💡 추천 질문 목록 보기
-            </button>
-        </div>
-    ` : '';
-
     thread.innerHTML = `
         <div class="chat-msg ai-msg">
             <div class="chat-avatar">🤖</div>
@@ -8359,7 +8350,11 @@ function initSommelierTab() {
                 안녕하세요! <b>AI 미식 소믈리에</b>입니다 🍷✨<br><br>
                 지금은 <b>${timeGreeting}</b>이네요!<br>
                 원하시는 <b>코스 및 카테고리</b>를 무엇이든 자유롭게 요구해 보세요!<br>
-                ${mobilePromptBtnHtml}
+                <div class="mobile-only" style="margin-top: 10px;">
+                    <button type="button" class="btn-show-quick-prompts" onclick="showSommelierPromptsList()">
+                        💡 추천 질문 목록 보기
+                    </button>
+                </div>
             </div>
         </div>
     `;
