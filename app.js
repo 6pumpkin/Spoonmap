@@ -15127,6 +15127,143 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPhotoDropzone(listDropzone, listFileInput, 'list', () => {
         return currentDetailModalItem?.name || '';
     });
+
+    // PWA & Smart Install Manager
+    initPwaManager();
 });
+
+// ─── PWA & Smart Install Manager ───
+let deferredPwaPrompt = null;
+
+function isPwaStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true ||
+           document.referrer.includes('android-app://');
+}
+
+function isIosDevice() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function initPwaManager() {
+    // 1. Register Service Worker with cache versioning
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then((reg) => {
+                    console.log('[PWA] Service Worker registered with scope:', reg.scope);
+                })
+                .catch((err) => {
+                    console.warn('[PWA] Service Worker registration failed:', err);
+                });
+        });
+    }
+
+    // 2. Hide install buttons if already in standalone app mode
+    const isStandalone = isPwaStandalone();
+    const profileRow = document.getElementById('profile-pwa-install-row');
+    if (profileRow) {
+        profileRow.style.display = isStandalone ? 'none' : 'flex';
+    }
+
+    if (isStandalone) {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = 'none';
+        return;
+    }
+
+    // 3. Android & Chromium beforeinstallprompt listener
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        checkAndShowPwaBanner();
+    });
+
+    // 4. iOS Safari initial check
+    if (isIosDevice()) {
+        checkAndShowPwaBanner();
+    }
+
+    // 5. App installed event listener
+    window.addEventListener('appinstalled', () => {
+        deferredPwaPrompt = null;
+        window.dismissPwaBanner(true);
+        if (typeof showToast === 'function') {
+            showToast('Spoonmap 앱이 홈 화면에 성공적으로 설치되었습니다!');
+        }
+    });
+}
+
+function checkAndShowPwaBanner() {
+    if (isPwaStandalone()) return;
+
+    // Check 7-day cooldown
+    const dismissedAt = localStorage.getItem('spoonmap_pwa_dismissed_at');
+    if (dismissedAt) {
+        const diffMs = Date.now() - parseInt(dismissedAt, 10);
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        if (diffMs < sevenDaysMs) {
+            return;
+        }
+    }
+
+    // Gentle delay after page load
+    setTimeout(() => {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner && !isPwaStandalone()) {
+            banner.style.display = 'flex';
+        }
+    }, 1800);
+}
+
+window.triggerPwaInstall = function() {
+    if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] User accepted installation');
+            }
+            deferredPwaPrompt = null;
+            window.dismissPwaBanner(true);
+        });
+    } else if (isIosDevice()) {
+        const modal = document.getElementById('pwa-ios-modal');
+        if (modal) modal.classList.add('active');
+    } else {
+        if (isPwaStandalone()) {
+            if (typeof showToast === 'function') {
+                showToast('이미 홈 화면 앱으로 실행 중입니다.');
+            }
+        } else {
+            const modal = document.getElementById('pwa-ios-modal');
+            if (modal) {
+                modal.classList.add('active');
+            } else if (typeof showToast === 'function') {
+                showToast('브라우저 메뉴에서 [홈 화면에 추가] 또는 [설치]를 눌러주세요.');
+            }
+        }
+    }
+};
+
+window.dismissPwaBanner = function(isPermanent) {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+        banner.style.display = 'none';
+    }
+    if (isPermanent) {
+        localStorage.setItem('spoonmap_pwa_dismissed_at', String(Date.now() + 365 * 24 * 60 * 60 * 1000));
+    } else {
+        localStorage.setItem('spoonmap_pwa_dismissed_at', String(Date.now()));
+    }
+};
+
+window.closeIosInstallModal = function() {
+    const modal = document.getElementById('pwa-ios-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+};
+
 
 

@@ -11,7 +11,18 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610010053">
+    <link rel="stylesheet" href="style.css?v=202610011541">
+
+    <!-- PWA & Mobile Web App Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF4757">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Spoonmap">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 </head>
 
 <body class="light-theme">
@@ -886,6 +897,18 @@
                             </div>
                         </div>
 
+                        <!-- Profile PWA Install Action Row -->
+                        <div id="profile-pwa-install-row" class="profile-pwa-install-row" onclick="window.triggerPwaInstall()">
+                            <div class="profile-pwa-left">
+                                <span class="profile-pwa-icon">📱</span>
+                                <div class="profile-pwa-info">
+                                    <span class="profile-pwa-title">홈 화면에 Spoonmap 앱 설치하기</span>
+                                    <span class="profile-pwa-sub">주소창 없이 앱처럼 더 빠르고 쾌적하게</span>
+                                </div>
+                            </div>
+                            <span class="profile-pwa-badge">앱 설치</span>
+                        </div>
+
                         <!-- Social Metrics -->
                         <div class="profile-stats-bar">
                             <div class="profile-stat-item">
@@ -1395,6 +1418,62 @@
             </div>
         </div>
     </div>
+    <!-- Smart PWA Install Floating Banner -->
+    <div id="pwa-install-banner" class="pwa-floating-banner" style="display: none;">
+        <div class="pwa-banner-left">
+            <div class="pwa-app-icon">🥄</div>
+            <div class="pwa-banner-text">
+                <div class="pwa-banner-title">Spoonmap 앱 설치하기</div>
+                <div class="pwa-banner-sub">주소창 없이 앱처럼 더 빠르고 쾌적하게</div>
+            </div>
+        </div>
+        <div class="pwa-banner-actions">
+            <button type="button" class="pwa-install-btn" onclick="window.triggerPwaInstall()">설치하기</button>
+            <button type="button" class="pwa-close-btn" onclick="window.dismissPwaBanner()" title="다음에 하기" aria-label="닫기">✕</button>
+        </div>
+    </div>
+
+    <!-- iOS Safari Install Guide Modal -->
+    <div id="pwa-ios-modal" class="pwa-ios-modal" onclick="window.closeIosInstallModal()">
+        <div class="pwa-ios-card" onclick="event.stopPropagation()">
+            <div class="pwa-ios-header">
+                <div class="pwa-ios-title">
+                    <span class="pwa-ios-icon">📱</span>
+                    <span>아이폰 홈 화면에 앱 추가하기</span>
+                </div>
+                <button type="button" class="pwa-close-btn" onclick="window.closeIosInstallModal()" aria-label="닫기">✕</button>
+            </div>
+
+            <div class="pwa-ios-steps">
+                <div class="pwa-ios-step">
+                    <div class="pwa-step-num">1</div>
+                    <div class="pwa-step-desc">
+                        사파리 하단 메뉴바의 <b>공유 버튼</b> 터치
+                    </div>
+                    <span class="pwa-step-icon">📤</span>
+                </div>
+
+                <div class="pwa-ios-step">
+                    <div class="pwa-step-num">2</div>
+                    <div class="pwa-step-desc">
+                        스크롤을 살짝 내려 <b>[홈 화면에 추가]</b> 선택
+                    </div>
+                    <span class="pwa-step-icon">➕</span>
+                </div>
+
+                <div class="pwa-ios-step">
+                    <div class="pwa-step-num">3</div>
+                    <div class="pwa-step-desc">
+                        오른쪽 상단 <b>[추가]</b>를 누르면 설치 완료!
+                    </div>
+                    <span class="pwa-step-icon">✨</span>
+                </div>
+            </div>
+
+            <button type="button" class="pwa-ios-confirm-btn" onclick="window.closeIosInstallModal()">알겠습니다</button>
+        </div>
+    </div>
+
     <!-- Mobile Bottom Navigation Bar (No icons, pure uppercase English: DIARY, LIST, MAP, AI, PROFILE) -->
     <nav id="mobile-bottom-nav" class="mobile-bottom-nav">
         <button type="button" class="mobile-bnav-btn active" data-tab="diary">DIARY</button>
@@ -1415,12 +1494,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202610010053"></script>
-    <script src="data.js?v=202610010053"></script>
-    <script src="ddoganzip_data.js?v=202610010053"></script>
-    <script src="meogeultende_data.js?v=202610010053"></script>
-    <script src="jungyugwang_data.js?v=202610010053"></script>
-    <script src="app.js?v=202610010053"></script>
+    <script src="regions.js?v=202610011541"></script>
+    <script src="data.js?v=202610011541"></script>
+    <script src="ddoganzip_data.js?v=202610011541"></script>
+    <script src="meogeultende_data.js?v=202610011541"></script>
+    <script src="jungyugwang_data.js?v=202610011541"></script>
+    <script src="app.js?v=202610011541"></script>
 </body>
 
 </html>
