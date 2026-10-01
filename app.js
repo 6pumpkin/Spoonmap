@@ -15147,12 +15147,6 @@ function isIosDevice() {
 }
 
 function initPwaManager() {
-    // 0. Dismiss splash screen smoothly when app assets are loaded
-    window.addEventListener('load', () => {
-        setTimeout(dismissSplashScreen, 450);
-    });
-    setTimeout(dismissSplashScreen, 1400);
-
     // 1. Register Service Worker with cache versioning
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -15175,7 +15169,7 @@ function initPwaManager() {
 
     if (isStandalone) {
         const banner = document.getElementById('pwa-install-banner');
-        if (banner) banner.style.display = 'none';
+        if (banner) banner.classList.remove('show');
         return;
     }
 
@@ -15204,6 +15198,11 @@ function initPwaManager() {
 function checkAndShowPwaBanner() {
     if (isPwaStandalone()) return;
 
+    // Strictly mobile only: Never show on PC desktop browsers
+    if (window.innerWidth > 768) {
+        return;
+    }
+
     // Check 7-day cooldown
     const dismissedAt = localStorage.getItem('spoonmap_pwa_dismissed_at');
     if (dismissedAt) {
@@ -15214,11 +15213,12 @@ function checkAndShowPwaBanner() {
         }
     }
 
-    // Gentle delay after page load
+    // Gentle delay after page load on mobile
     setTimeout(() => {
+        if (window.innerWidth > 768) return;
         const banner = document.getElementById('pwa-install-banner');
         if (banner && !isPwaStandalone()) {
-            banner.style.display = 'flex';
+            banner.classList.add('show');
         }
     }, 1800);
 }
@@ -15255,7 +15255,7 @@ window.triggerPwaInstall = function() {
 window.dismissPwaBanner = function(isPermanent) {
     const banner = document.getElementById('pwa-install-banner');
     if (banner) {
-        banner.style.display = 'none';
+        banner.classList.remove('show');
     }
     if (isPermanent) {
         localStorage.setItem('spoonmap_pwa_dismissed_at', String(Date.now() + 365 * 24 * 60 * 60 * 1000));
@@ -15270,18 +15270,6 @@ window.closeIosInstallModal = function() {
         modal.classList.remove('active');
     }
 };
-
-function dismissSplashScreen() {
-    const splash = document.getElementById('app-splash-screen');
-    if (splash && !splash.classList.contains('fade-out')) {
-        splash.classList.add('fade-out');
-        setTimeout(() => {
-            if (splash.parentNode) {
-                splash.parentNode.removeChild(splash);
-            }
-        }, 450);
-    }
-}
 
 
 

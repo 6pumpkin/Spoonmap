@@ -12532,17 +12532,13 @@ span.desktop-only {
 
 /* ─── PWA Smart Install Banner & Guide Styles ─── */
 .pwa-floating-banner {
+    display: none !important; /* Strictly hidden on PC */
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 380px;
-    max-width: calc(100vw - 32px);
     background: #FFFFFF;
     border-radius: 18px;
     padding: 12px 14px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1.5px solid #FFE5E8;
-    display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 1050;
@@ -12837,7 +12833,9 @@ span.desktop-only {
 }
 
 @media (max-width: 768px) {
-    .pwa-floating-banner {
+    .pwa-floating-banner.show {
+        display: flex !important;
+        position: fixed !important;
         width: auto !important;
         left: 12px !important;
         right: 12px !important;
@@ -12856,87 +12854,6 @@ span.desktop-only {
     border: 1px solid #EAE8E0;
 }
 
-/* ─── App Launch Splash Screen ─── */
-.app-splash-screen {
-    position: fixed;
-    inset: 0;
-    background-color: #F7F6F1;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
-}
-
-.app-splash-screen.fade-out {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.splash-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    animation: splashPulse 1.2s ease-in-out infinite alternate;
-}
-
-.splash-logo {
-    width: 130px;
-    height: 130px;
-    object-fit: contain;
-    margin-bottom: 12px;
-    filter: drop-shadow(0 8px 24px rgba(255, 94, 98, 0.18));
-}
-
-.splash-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.55rem;
-    font-weight: 900;
-    color: #1E293B;
-    letter-spacing: -0.5px;
-}
-
-.splash-tagline {
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: #8C7A70;
-    margin-top: 4px;
-}
-
-.splash-loader {
-    width: 28px;
-    height: 3.5px;
-    background: #FF5E62;
-    border-radius: 999px;
-    margin-top: 18px;
-    animation: splashBar 1s ease-in-out infinite;
-}
-
-@keyframes splashPulse {
-    from {
-        transform: scale(1);
-    }
-    to {
-        transform: scale(1.025);
-    }
-}
-
-@keyframes splashBar {
-    0% {
-        width: 14px;
-        opacity: 0.4;
-    }
-    50% {
-        width: 38px;
-        opacity: 1;
-    }
-    100% {
-        width: 14px;
-        opacity: 0.4;
-    }
-}
 
 
 
