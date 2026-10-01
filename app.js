@@ -2485,6 +2485,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                // My Location GPS Button Setup
+                const myLocBtn = document.getElementById('btn-my-location');
+                if (myLocBtn) {
+                    myLocBtn.addEventListener('click', () => {
+                        window.moveToUserLocation();
+                    });
+                }
+
                 kakao.maps.event.addListener(map, 'dragstart', () => {
                     if (window.currentHoverOverlay) {
                         window.currentHoverOverlay.setMap(null);
@@ -2529,6 +2537,81 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    window.moveToUserLocation = function() {
+        const myLocBtn = document.getElementById('btn-my-location');
+        if (!navigator.geolocation) {
+            alert('이 기기 또는 브라우저에서는 위치 서비스를 지원하지 않습니다.');
+            return;
+        }
+
+        if (myLocBtn) myLocBtn.classList.add('locating');
+
+        const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                if (myLocBtn) myLocBtn.classList.remove('locating');
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const locLatLng = new kakao.maps.LatLng(lat, lng);
+
+                if (map) {
+                    map.panTo(locLatLng);
+                    map.setLevel(4);
+
+                    if (!window.userLocationOverlay) {
+                        const dotEl = document.createElement('div');
+                        dotEl.className = 'current-loc-pulse-dot';
+                        dotEl.title = '내 위치';
+                        window.userLocationOverlay = new kakao.maps.CustomOverlay({
+                            position: locLatLng,
+                            content: dotEl,
+                            zIndex: 200
+                        });
+                        window.userLocationOverlay.setMap(map);
+                    } else {
+                        window.userLocationOverlay.setPosition(locLatLng);
+                        window.userLocationOverlay.setMap(map);
+                    }
+
+                    const researchBtn = document.getElementById('btn-research');
+                    if (researchBtn) researchBtn.style.display = 'none';
+
+                    if (typeof updateMapMarkers === 'function') {
+                        updateMapMarkers();
+                    }
+
+                    try {
+                        localStorage.setItem('spoonmap_last_gps', JSON.stringify({ lat, lng, time: Date.now() }));
+                    } catch (e) {}
+
+                    if (typeof showToast === 'function') {
+                        showToast('현재 위치로 이동했습니다 📍');
+                    }
+                }
+            },
+            (err) => {
+                if (myLocBtn) myLocBtn.classList.remove('locating');
+                console.warn('[GPS] Geolocation error:', err);
+
+                let msg = '위치를 가져올 수 없습니다.';
+                if (err.code === 1) {
+                    msg = '위치 권한이 차단되어 있습니다. 스마트폰 또는 브라우저 설정에서 위치 권한을 허용해주세요.';
+                } else if (err.code === 2) {
+                    msg = 'GPS 신호를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.';
+                } else if (err.code === 3) {
+                    msg = '위치 확인 시간이 초과되었습니다. 다시 시도해주세요.';
+                }
+                alert(msg);
+            },
+            geoOptions
+        );
+    };
 
     const categoryEmojis = {
         '음식점': '🍴',

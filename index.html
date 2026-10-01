@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610011605">
+    <link rel="stylesheet" href="style.css?v=202610011615">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -724,14 +724,22 @@
                     <div id="kakao-map" style="width:100%; height:100%;"></div>
                     <div class="map-action-chips">
                         <button id="btn-research" class="research-btn" type="button" title="현재 지도 위치에서 다시 검색">
-                            <span class="btn-icon">🔄</span>
-                            <span class="btn-text-pc">현 위치에서 재검색</span>
+                            <span class="btn-text-pc">재검색</span>
                             <span class="btn-text-mo">재검색</span>
                         </button> 
                         <button id="btn-global-toggle" class="global-search-btn" type="button" title="전체 지도에서 검색 토글">
-                            <span class="btn-icon">🌐</span>
-                            <span class="btn-text-pc">전체 지도에서 검색</span>
+                            <span class="btn-text-pc">전국검색</span>
                             <span class="btn-text-mo">전국검색</span>
+                        </button>
+                        <button id="btn-my-location" class="my-location-btn" type="button" title="내 위치로 이동" aria-label="내 위치">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="7"></circle>
+                                <line x1="12" y1="2" x2="12" y2="5"></line>
+                                <line x1="12" y1="19" x2="12" y2="22"></line>
+                                <line x1="2" y1="12" x2="5" y2="12"></line>
+                                <line x1="19" y1="12" x2="22" y2="12"></line>
+                                <circle cx="12" cy="12" r="2.2" fill="currentColor"></circle>
+                            </svg>
                         </button>
                     </div>
                     <ul id="category-menu">
@@ -1495,12 +1503,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202610011605"></script>
-    <script src="data.js?v=202610011605"></script>
-    <script src="ddoganzip_data.js?v=202610011605"></script>
-    <script src="meogeultende_data.js?v=202610011605"></script>
-    <script src="jungyugwang_data.js?v=202610011605"></script>
-    <script src="app.js?v=202610011605"></script>
+    <script src="regions.js?v=202610011615"></script>
+    <script src="data.js?v=202610011615"></script>
+    <script src="ddoganzip_data.js?v=202610011615"></script>
+    <script src="meogeultende_data.js?v=202610011615"></script>
+    <script src="jungyugwang_data.js?v=202610011615"></script>
+    <script src="app.js?v=202610011615"></script>
 </body>
 
 </html>
