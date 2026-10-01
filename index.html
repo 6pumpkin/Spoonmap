@@ -11,21 +11,32 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610011541">
+    <link rel="stylesheet" href="style.css?v=202610011557">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF4757">
+    <meta name="theme-color" content="#FF5E62">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Spoonmap">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-startup-image" href="icon-512.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 </head>
 
 <body class="light-theme">
+    <!-- App Launch Splash Screen -->
+    <div id="app-splash-screen" class="app-splash-screen">
+        <div class="splash-content">
+            <img src="LOGO2.png" alt="Spoonmap" class="splash-logo">
+            <div class="splash-title">Spoonmap</div>
+            <div class="splash-tagline">나의 식당 대사전</div>
+            <div class="splash-loader"></div>
+        </div>
+    </div>
+
     <div class="glass-bg"></div>
 
     <header>
@@ -1421,7 +1432,7 @@
     <!-- Smart PWA Install Floating Banner -->
     <div id="pwa-install-banner" class="pwa-floating-banner" style="display: none;">
         <div class="pwa-banner-left">
-            <div class="pwa-app-icon">🥄</div>
+            <img src="LOGO2.png" alt="Spoonmap" class="pwa-app-icon-img">
             <div class="pwa-banner-text">
                 <div class="pwa-banner-title">Spoonmap 앱 설치하기</div>
                 <div class="pwa-banner-sub">주소창 없이 앱처럼 더 빠르고 쾌적하게</div>
@@ -1494,12 +1505,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202610011541"></script>
-    <script src="data.js?v=202610011541"></script>
-    <script src="ddoganzip_data.js?v=202610011541"></script>
-    <script src="meogeultende_data.js?v=202610011541"></script>
-    <script src="jungyugwang_data.js?v=202610011541"></script>
-    <script src="app.js?v=202610011541"></script>
+    <script src="regions.js?v=202610011557"></script>
+    <script src="data.js?v=202610011557"></script>
+    <script src="ddoganzip_data.js?v=202610011557"></script>
+    <script src="meogeultende_data.js?v=202610011557"></script>
+    <script src="jungyugwang_data.js?v=202610011557"></script>
+    <script src="app.js?v=202610011557"></script>
 </body>
 
 </html>

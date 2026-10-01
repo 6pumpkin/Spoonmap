@@ -15147,6 +15147,12 @@ function isIosDevice() {
 }
 
 function initPwaManager() {
+    // 0. Dismiss splash screen smoothly when app assets are loaded
+    window.addEventListener('load', () => {
+        setTimeout(dismissSplashScreen, 450);
+    });
+    setTimeout(dismissSplashScreen, 1400);
+
     // 1. Register Service Worker with cache versioning
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -15264,6 +15270,19 @@ window.closeIosInstallModal = function() {
         modal.classList.remove('active');
     }
 };
+
+function dismissSplashScreen() {
+    const splash = document.getElementById('app-splash-screen');
+    if (splash && !splash.classList.contains('fade-out')) {
+        splash.classList.add('fade-out');
+        setTimeout(() => {
+            if (splash.parentNode) {
+                splash.parentNode.removeChild(splash);
+            }
+        }, 450);
+    }
+}
+
 
 
 
