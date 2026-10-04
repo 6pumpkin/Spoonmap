@@ -475,6 +475,11 @@ async function syncFromCloud() {
             if (profileKey && cloudData.profile && typeof cloudData.profile === 'object') {
                 localStorage.setItem(profileKey, JSON.stringify(cloudData.profile));
                 hasChanges = true;
+                const u = getCurrentUser();
+                if (u && cloudData.profile.profileImage && u.profileImage !== cloudData.profile.profileImage) {
+                    u.profileImage = cloudData.profile.profileImage;
+                    localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
+                }
             } else if (profileKey && localStorage.getItem(profileKey)) {
                 await saveToCloud('profile', JSON.parse(localStorage.getItem(profileKey)));
             }
@@ -530,6 +535,8 @@ async function syncFromCloud() {
         }
 
         // Re-render Views with latest synced data
+        if (typeof updateUserAuthUI === 'function') updateUserAuthUI();
+        if (typeof publishPublicProfile === 'function' && typeof getUserProfile === 'function') publishPublicProfile(getUserProfile());
         if (typeof window.renderApp === 'function') window.renderApp();
         if (typeof renderDiaryCalendar === 'function') renderDiaryCalendar();
         if (typeof computeAndRenderFoodInsights === 'function') computeAndRenderFoodInsights();
@@ -739,6 +746,9 @@ function initKakaoAuth() {
 
     updateUserAuthUI();
     if (isUserLoggedIn()) {
+        if (typeof publishPublicProfile === 'function' && typeof getUserProfile === 'function') {
+            publishPublicProfile(getUserProfile());
+        }
         syncFromCloud();
     }
 }
@@ -789,12 +799,22 @@ window.handleKakaoLogin = function() {
                                 localStorage.setItem('spoonmap_master_kakao_id', kakaoId);
                             }
 
+                            // Retain custom avatar if user already customized it
+                            let existingCustomAvatar = '';
+                            const profileKey = isMasterMatch ? 'spoonmap_master_profile' : `spoonmap_user_${kakaoId}_profile`;
+                            try {
+                                const savedProf = JSON.parse(localStorage.getItem(profileKey) || '{}');
+                                if (savedProf && savedProf.profileImage) {
+                                    existingCustomAvatar = savedProf.profileImage;
+                                }
+                            } catch (_) {}
+
                             const user = {
                                 id: kakaoId,
                                 nickname: nickname || '카카오 미식가',
                                 email: email,
                                 phone: phone,
-                                profileImage: profile.profile_image_url || profile.thumbnail_image_url || '',
+                                profileImage: existingCustomAvatar || profile.profile_image_url || profile.thumbnail_image_url || '',
                                 isMaster: isMasterMatch,
                                 connectedAt: res.connected_at || new Date().toISOString()
                             };
@@ -805,6 +825,9 @@ window.handleKakaoLogin = function() {
                             // Initialize & Sync from Cloud Firestore
                             initFirebase();
                             await syncFromCloud();
+                            if (typeof publishPublicProfile === 'function' && typeof getUserProfile === 'function') {
+                                publishPublicProfile(getUserProfile());
+                            }
 
                             const welcomeName = user.isMaster ? '👑 마스터님' : `${user.nickname}님`;
                             alert(`환영합니다, ${welcomeName}! Spoonmap에 로그인되었습니다 🥄✨`);
@@ -870,8 +893,28 @@ function updateUserAuthUI() {
 
     if (currentUser && currentUser.nickname) {
         const isOwner = isOwnerUser();
-        const avatarHtml = currentUser.profileImage
-            ? `<img src="${currentUser.profileImage}" alt="${currentUser.nickname}" class="user-avatar" onerror="this.outerHTML='<div class=\\'user-avatar-placeholder\\'>🥄</div>'">`
+        const userProfile = (typeof getUserProfile === 'function') ? getUserProfile() : null;
+
+        // Prioritize custom avatar in userProfile > currentUser.profileImage > Dicebear default
+        let avatarSrc = '';
+        if (userProfile && userProfile.profileImage) {
+            avatarSrc = userProfile.profileImage;
+        } else if (currentUser.profileImage) {
+            avatarSrc = currentUser.profileImage;
+        } else {
+            avatarSrc = isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : '';
+        }
+
+        // Keep currentUser.profileImage synced
+        if (avatarSrc && currentUser.profileImage !== avatarSrc) {
+            currentUser.profileImage = avatarSrc;
+            try {
+                localStorage.setItem('spoonmap_current_user', JSON.stringify(currentUser));
+            } catch (_) {}
+        }
+
+        const avatarHtml = avatarSrc
+            ? `<img src="${avatarSrc}" alt="${currentUser.nickname}" class="user-avatar" onerror="this.outerHTML='<div class=\\'user-avatar-placeholder\\'>🥄</div>'">`
             : `<div class="user-avatar-placeholder">🥄</div>`;
 
         const masterBadge = isOwner 
@@ -4565,7 +4608,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 realUserId: fid,
                 isFollowingUser: true,
                 name: name,
-                nickname: `${name} (팔로잉)`,
+                nickname: `${name} · 팔로잉`,
                 avatarText: name.slice(0, 1),
                 avatarEmoji: '🥄',
                 color: color,
@@ -13122,21 +13165,38 @@ async function publishPublicProfile(profile) {
             const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
             restCount = unified.length;
         } else {
-            restCount = getUserWishlist().length;
+            restCount = (typeof getUserWishlist === 'function') ? getUserWishlist().length : 0;
         }
 
+        const resolvedProfile = profile || ((typeof getUserProfile === 'function') ? getUserProfile() : {});
         const publicData = {
             id: String(u.id),
-            name: profile.nickname || u.nickname,
-            handle: profile.handle || `@user_${String(u.id).slice(-4)}`,
-            bio: profile.bio || '',
-            avatar: profile.profileImage || u.profileImage || '',
+            name: resolvedProfile.nickname || u.nickname,
+            handle: resolvedProfile.handle || (isOwner ? '@junho_spoon' : `@user_${String(u.id).slice(-4)}`),
+            bio: resolvedProfile.bio || (isOwner ? '서울 마포/용산 일식·고기 맛집 위주로 기록합니다. 직접 가보고 재방문한 찐 맛집만 남겨요 🥢' : '나만의 맛집을 기록하고 공유하는 미식가입니다 🥄'),
+            avatar: resolvedProfile.profileImage || u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : ''),
             isMaster: isOwner,
             count: restCount,
             updatedAt: new Date().toISOString()
         };
 
+        // Cache locally immediately so user sees own info or can share
+        try {
+            let cached = JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
+            const idx = cached.findIndex(item => String(item.id) === String(u.id));
+            if (idx > -1) cached[idx] = publicData;
+            else cached.push(publicData);
+            localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(cached));
+        } catch (_) {}
+
+        // 1. Publish with user's Kakao ID
         await db.collection('spoonmap_public_profiles').doc(String(u.id)).set(publicData, { merge: true });
+
+        // 2. If Master, also publish under 'master' doc for guaranteed indexing
+        if (isOwner) {
+            const masterDocData = { ...publicData, id: 'master' };
+            await db.collection('spoonmap_public_profiles').doc('master').set(masterDocData, { merge: true });
+        }
         console.log('[Spoonmap] Public profile published to Firestore ☁️');
     } catch (e) {
         console.warn('publishPublicProfile error:', e);
@@ -13152,33 +13212,55 @@ let cachedDiscoveredUsers = (function() {
 })();
 
 async function fetchDiscoveredUsersFromCloud() {
+    let localCached = [];
+    try {
+        localCached = JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
+    } catch (_) {}
+
     if (!isFirebaseReady || !db) {
-        try {
-            return JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
-        } catch (_) {
-            return [];
-        }
+        return localCached;
     }
     try {
         const snap = await db.collection('spoonmap_public_profiles').get();
+        window.spoonmapCloudStatus = 'ok';
         const users = [];
         const currentUserId = getCurrentUser() ? String(getCurrentUser().id) : null;
+        const isCurrentUserOwner = typeof isOwnerUser === 'function' ? isOwnerUser() : false;
+
         snap.forEach(doc => {
             const data = doc.data();
-            if (data && String(data.id) !== currentUserId) {
-                users.push(data);
+            if (!data) return;
+            const dataId = String(data.id || doc.id);
+            // Don't show current user to themselves in discover list
+            const isSelf = (currentUserId && dataId === currentUserId) || 
+                           (isCurrentUserOwner && (dataId === 'master' || data.isMaster === true));
+            if (!isSelf) {
+                users.push({ ...data, id: dataId });
             }
         });
-        cachedDiscoveredUsers = users;
-        localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(users));
-        return users;
+
+        // Deduplicate users by name or ID
+        const seen = new Set();
+        const dedupedUsers = [];
+        for (const u of users) {
+            const key = u.name || u.id;
+            if (!seen.has(key)) {
+                seen.add(key);
+                dedupedUsers.push(u);
+            }
+        }
+
+        cachedDiscoveredUsers = dedupedUsers;
+        localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(dedupedUsers));
+        return dedupedUsers;
     } catch (e) {
         console.warn('fetchDiscoveredUsersFromCloud error:', e);
-        try {
-            return JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
-        } catch (_) {
-            return [];
+        if (e && (e.code === 'permission-denied' || (e.message && e.message.includes('permission')))) {
+            window.spoonmapCloudStatus = 'permission-denied';
+        } else {
+            window.spoonmapCloudStatus = 'error';
         }
+        return localCached;
     }
 }
 
@@ -13309,10 +13391,13 @@ function renderProfileView() {
     if (followingStatEl) followingStatEl.textContent = followingList.length;
     if (badgeCountEl) badgeCountEl.textContent = `${followingList.length}명`;
 
-    // 3. Render Following Cards
+    // 3. Auto-publish latest profile to cloud
+    publishPublicProfile(profile);
+
+    // 4. Render Following Cards
     renderFollowingCards();
 
-    // 4. Render Discover Users List from Cloud
+    // 5. Render Discover Users List from Cloud
     renderDiscoverUsersList();
 }
 window.renderProfileView = renderProfileView;
@@ -13368,14 +13453,16 @@ async function renderDiscoverUsersList(searchQuery = '') {
     if (!listEl) return;
 
     const followingList = getUserFollowingList();
-    const q = searchQuery.toLowerCase().trim();
+    const rawQ = (searchQuery || '').trim();
+    const q = rawQ.toLowerCase();
+    const cleanQ = q.replace(/^@/, '');
 
     // Fetch from Firestore
     const cloudUsers = await fetchDiscoveredUsersFromCloud();
 
     // If any followed user was missing from cachedDiscoveredUsers, fetch individually
     const missingFids = followingList.filter(fid => !cachedDiscoveredUsers.some(cu => String(cu.id) === String(fid)));
-    if (missingFids.length > 0 && isFirebaseReady && db) {
+    if (missingFids.length > 0 && isFirebaseReady && db && window.spoonmapCloudStatus !== 'permission-denied') {
         await Promise.all(missingFids.map(async (fid) => {
             try {
                 const doc = await db.collection('spoonmap_public_profiles').doc(String(fid)).get();
@@ -13392,16 +13479,35 @@ async function renderDiscoverUsersList(searchQuery = '') {
 
     const filtered = cloudUsers.filter(u => {
         if (!q) return true;
-        return (u.name && u.name.toLowerCase().includes(q)) || 
-               (u.handle && u.handle.toLowerCase().includes(q)) || 
-               (u.bio && u.bio.toLowerCase().includes(q));
+        const nameMatch = u.name && u.name.toLowerCase().includes(q);
+        const handleMatch = u.handle && u.handle.toLowerCase().replace(/^@/, '').includes(cleanQ);
+        const bioMatch = u.bio && u.bio.toLowerCase().includes(q);
+        const idMatch = u.id && String(u.id).toLowerCase().includes(cleanQ);
+        return nameMatch || handleMatch || bioMatch || idMatch;
     });
+
+    let warningBanner = '';
+    if (window.spoonmapCloudStatus === 'permission-denied') {
+        warningBanner = `
+            <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:0.9rem 1rem; margin-bottom:1rem; font-size:0.8rem; color:#92400E; line-height:1.5;">
+                <div style="font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <span>⚠️</span> <span>Firebase 클라우드 권한 확인 안내</span>
+                </div>
+                Firebase Firestore 보안 규칙이 만료되어 실시간 사용자 목록 조회가 일시 제한되었습니다.<br>
+                Firebase 콘솔의 Firestore 규칙 탭에서 규칙을 갱신하시면 즉시 다른 미식가 검색이 정상화됩니다.
+            </div>
+        `;
+    }
 
     if (filtered.length === 0) {
         if (q) {
-            listEl.innerHTML = `<div style="text-align:center; padding: 1.5rem; color:#9CA3AF; font-size:0.82rem;">"${searchQuery}" 검색 결과가 없습니다.</div>`;
+            listEl.innerHTML = `
+                ${warningBanner}
+                <div style="text-align:center; padding: 1.5rem; color:#9CA3AF; font-size:0.82rem;">"${searchQuery}" 검색 결과가 없습니다.</div>
+            `;
         } else {
             listEl.innerHTML = `
+                ${warningBanner}
                 <div style="text-align:center; padding: 2rem 1rem; color:#9CA3AF; font-size:0.84rem; line-height: 1.6;">
                     아직 등록된 다른 미식가가 없습니다.<br>상단의 <b>[🔗 내 맛집 공유]</b> 링크를 친구에게 보내 함께 미식 지도를 만들어 보세요! 🥄
                 </div>
@@ -13410,14 +13516,15 @@ async function renderDiscoverUsersList(searchQuery = '') {
         return;
     }
 
-    listEl.innerHTML = filtered.map(u => {
+    listEl.innerHTML = warningBanner + filtered.map(u => {
         const isFollowing = followingList.includes(String(u.id));
+        const badge = u.isMaster ? '<span style="font-size:0.7rem; background:#FEF3C7; color:#92400E; padding:1px 5px; border-radius:4px; font-weight:700; margin-left:4px;">👑 마스터</span>' : '';
         return `
             <div class="discover-user-item">
                 <div class="discover-user-left">
                     <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}">
                     <div>
-                        <div class="discover-user-names">${u.name} <span>${u.handle}</span></div>
+                        <div class="discover-user-names">${u.name}${badge} <span>${u.handle || ''}</span></div>
                         <div class="discover-user-desc">${u.bio || '등록된 소개글이 없습니다.'} · 맛집 ${u.count || 0}곳</div>
                     </div>
                 </div>
