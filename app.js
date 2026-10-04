@@ -407,13 +407,16 @@ async function syncFromCloud() {
             let hasChanges = false;
 
             // Merge / Sync Diary (Combine local & cloud without loss)
+            // Merge / Sync Diary (Combine local & cloud without loss)
             if (cloudData.diary && Array.isArray(cloudData.diary)) {
                 const cloudDiaryMap = new Map();
                 cloudData.diary.forEach(e => cloudDiaryMap.set(String(e.id || e.name + '_' + e.date), e));
+                let localHasNewDiary = false;
                 localDiary.forEach(e => {
                     const k = String(e.id || e.name + '_' + e.date);
                     if (!cloudDiaryMap.has(k)) {
                         cloudDiaryMap.set(k, e);
+                        localHasNewDiary = true;
                     }
                 });
                 const mergedDiary = Array.from(cloudDiaryMap.values());
@@ -426,6 +429,9 @@ async function syncFromCloud() {
                 }
                 localStorage.setItem(diaryKey, JSON.stringify(mergedDiary));
                 hasChanges = true;
+                if (localHasNewDiary || mergedDiary.length > cloudData.diary.length) {
+                    await saveToCloud('diary', mergedDiary);
+                }
             } else if (localDiary.length > 0) {
                 await saveToCloud('diary', localDiary);
             }
@@ -434,11 +440,19 @@ async function syncFromCloud() {
             if (cloudData.wishlist && Array.isArray(cloudData.wishlist)) {
                 const cloudWishMap = new Map();
                 cloudData.wishlist.forEach(w => cloudWishMap.set(w.name, w));
+                let localHasNewWish = false;
                 localWishlist.forEach(w => {
-                    if (!cloudWishMap.has(w.name)) cloudWishMap.set(w.name, w);
+                    if (!cloudWishMap.has(w.name)) {
+                        cloudWishMap.set(w.name, w);
+                        localHasNewWish = true;
+                    }
                 });
-                localStorage.setItem(wishlistKey, JSON.stringify(Array.from(cloudWishMap.values())));
+                const mergedWishlist = Array.from(cloudWishMap.values());
+                localStorage.setItem(wishlistKey, JSON.stringify(mergedWishlist));
                 hasChanges = true;
+                if (localHasNewWish || mergedWishlist.length > cloudData.wishlist.length) {
+                    await saveToCloud('wishlist', mergedWishlist);
+                }
             } else if (localWishlist.length > 0) {
                 await saveToCloud('wishlist', localWishlist);
             }
@@ -457,6 +471,9 @@ async function syncFromCloud() {
                 }
                 localStorage.setItem(overridesKey, JSON.stringify(mergedOverrides));
                 hasChanges = true;
+                if (Object.keys(localOverrides).length > Object.keys(cloudData.overrides).length) {
+                    await saveToCloud('overrides', mergedOverrides);
+                }
             } else if (Object.keys(localOverrides).length > 0) {
                 await saveToCloud('overrides', localOverrides);
             }
@@ -472,16 +489,26 @@ async function syncFromCloud() {
 
             // Sync Profile
             const profileKey = typeof getUserProfileKey === 'function' ? getUserProfileKey() : null;
+            const localProfile = profileKey ? JSON.parse(localStorage.getItem(profileKey) || 'null') : null;
             if (profileKey && cloudData.profile && typeof cloudData.profile === 'object') {
-                localStorage.setItem(profileKey, JSON.stringify(cloudData.profile));
+                const mergedProfile = { ...cloudData.profile, ...(localProfile || {}) };
+                if (localProfile && localProfile.profileImage) {
+                    mergedProfile.profileImage = localProfile.profileImage;
+                } else if (cloudData.profile.profileImage) {
+                    mergedProfile.profileImage = cloudData.profile.profileImage;
+                }
+                localStorage.setItem(profileKey, JSON.stringify(mergedProfile));
                 hasChanges = true;
                 const u = getCurrentUser();
-                if (u && cloudData.profile.profileImage && u.profileImage !== cloudData.profile.profileImage) {
-                    u.profileImage = cloudData.profile.profileImage;
+                if (u && mergedProfile.profileImage && u.profileImage !== mergedProfile.profileImage) {
+                    u.profileImage = mergedProfile.profileImage;
                     localStorage.setItem('spoonmap_current_user', JSON.stringify(u));
                 }
-            } else if (profileKey && localStorage.getItem(profileKey)) {
-                await saveToCloud('profile', JSON.parse(localStorage.getItem(profileKey)));
+                if (localProfile && JSON.stringify(mergedProfile) !== JSON.stringify(cloudData.profile)) {
+                    await saveToCloud('profile', mergedProfile);
+                }
+            } else if (profileKey && localProfile) {
+                await saveToCloud('profile', localProfile);
             }
 
             // Sync Following
@@ -966,6 +993,9 @@ function saveUserWishlist(list) {
     localStorage.setItem(getUserWishlistKey(), JSON.stringify(list));
     if (typeof saveToCloud === 'function') {
         saveToCloud('wishlist', list);
+    }
+    if (typeof publishPublicProfile === 'function') {
+        publishPublicProfile();
     }
 }
 
@@ -12876,6 +12906,9 @@ function saveDiaryEntry() {
                 saveToCloud('diary', existing);
             }
         }
+        if (typeof publishPublicProfile === 'function') {
+            publishPublicProfile();
+        }
 
         closeDiaryDrawer();
         renderDiaryCalendar();
@@ -13019,6 +13052,9 @@ function saveDiaryEntry() {
     if (typeof saveToCloud === 'function') {
         saveToCloud('diary', existing);
         saveToCloud('overrides', overrides);
+    }
+    if (typeof publishPublicProfile === 'function') {
+        publishPublicProfile();
     }
 
     closeDiaryDrawer();
@@ -13165,7 +13201,14 @@ async function publishPublicProfile(profile) {
             const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
             restCount = unified.length;
         } else {
-            restCount = (typeof getUserWishlist === 'function') ? getUserWishlist().length : 0;
+            const diaryKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : null;
+            const wishKey = typeof getUserWishlistKey === 'function' ? getUserWishlistKey() : null;
+            const dList = diaryKey ? JSON.parse(localStorage.getItem(diaryKey) || '[]') : [];
+            const wList = wishKey ? JSON.parse(localStorage.getItem(wishKey) || '[]') : [];
+            const uniqueNames = new Set();
+            dList.forEach(e => { if (e && e.name) uniqueNames.add(e.name.trim().toLowerCase()); });
+            wList.forEach(w => { if (w && w.name) uniqueNames.add(w.name.trim().toLowerCase()); });
+            restCount = uniqueNames.size;
         }
 
         const resolvedProfile = profile || ((typeof getUserProfile === 'function') ? getUserProfile() : {});
@@ -13211,6 +13254,57 @@ let cachedDiscoveredUsers = (function() {
     }
 })();
 
+let publicProfilesUnsubscribe = null;
+function setupRealtimePublicProfilesListener() {
+    if (!isFirebaseReady || !db || publicProfilesUnsubscribe) return;
+    try {
+        publicProfilesUnsubscribe = db.collection('spoonmap_public_profiles')
+            .onSnapshot(snapshot => {
+                const users = [];
+                const currentUserId = getCurrentUser() ? String(getCurrentUser().id) : null;
+                const isCurrentUserOwner = typeof isOwnerUser === 'function' ? isOwnerUser() : false;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (!data) return;
+                    const dataId = String(data.id || doc.id);
+                    const isSelf = (currentUserId && dataId === currentUserId) || 
+                                   (isCurrentUserOwner && (dataId === 'master' || data.isMaster === true));
+                    if (!isSelf) {
+                        users.push({ ...data, id: dataId });
+                    }
+                });
+
+                const seen = new Set();
+                const deduped = [];
+                for (const u of users) {
+                    const key = u.name || u.id;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        deduped.push(u);
+                    }
+                }
+
+                cachedDiscoveredUsers = deduped;
+                try {
+                    localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(deduped));
+                } catch (_) {}
+
+                const profileTabEl = document.getElementById('view-profile');
+                if (profileTabEl && (profileTabEl.classList.contains('active') || profileTabEl.style.display !== 'none')) {
+                    const searchInput = document.getElementById('discover-user-search');
+                    if (typeof renderDiscoverUsersList === 'function') {
+                        renderDiscoverUsersList(searchInput ? searchInput.value : '');
+                    }
+                }
+            }, err => {
+                console.warn('[Spoonmap] Realtime public profiles listener error:', err);
+            });
+    } catch (e) {
+        console.warn('setupRealtimePublicProfilesListener error:', e);
+    }
+}
+
 async function fetchDiscoveredUsersFromCloud() {
     let localCached = [];
     try {
@@ -13220,6 +13314,9 @@ async function fetchDiscoveredUsersFromCloud() {
     if (!isFirebaseReady || !db) {
         return localCached;
     }
+
+    setupRealtimePublicProfilesListener();
+
     try {
         const snap = await db.collection('spoonmap_public_profiles').get();
         window.spoonmapCloudStatus = 'ok';
@@ -13249,6 +13346,59 @@ async function fetchDiscoveredUsersFromCloud() {
                 dedupedUsers.push(u);
             }
         }
+
+        // Also check spoonmap_users to guarantee no registered user is ever missed
+        try {
+            const usersSnap = await db.collection('spoonmap_users').get();
+            usersSnap.forEach(uDoc => {
+                const uData = uDoc.data();
+                if (!uData || uDoc.id === 'master_data') return;
+                const rawId = uDoc.id.replace(/^user_/, '');
+                if (currentUserId && rawId === currentUserId) return;
+                if (isCurrentUserOwner && (rawId === 'master' || uData.isMaster === true)) return;
+
+                const prof = uData.profile || {};
+                const uInfo = uData.user_info || {};
+                const resolvedName = prof.nickname || uInfo.nickname || `미식가 #${rawId.slice(-4)}`;
+                const resolvedAvatar = prof.profileImage || uInfo.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rawId}`;
+
+                // Count unique restaurants from diary and wishlist
+                const seenRests = new Set();
+                if (Array.isArray(uData.diary)) {
+                    uData.diary.forEach(d => { if (d && d.name) seenRests.add(d.name.trim().toLowerCase()); });
+                }
+                if (Array.isArray(uData.wishlist)) {
+                    uData.wishlist.forEach(w => { if (w && w.name) seenRests.add(w.name.trim().toLowerCase()); });
+                }
+                const totalRests = seenRests.size;
+
+                const existingIdx = dedupedUsers.findIndex(ex => String(ex.id) === String(rawId) || ex.name === resolvedName);
+                if (existingIdx === -1) {
+                    const recoveredUser = {
+                        id: rawId,
+                        name: resolvedName,
+                        handle: prof.handle || `@user_${rawId.slice(-4)}`,
+                        bio: prof.bio || '나만의 맛집을 기록하고 공유하는 미식가입니다 🥄',
+                        avatar: resolvedAvatar,
+                        count: totalRests,
+                        isMaster: false,
+                        updatedAt: uData.updated_at || new Date().toISOString()
+                    };
+                    dedupedUsers.push(recoveredUser);
+                    db.collection('spoonmap_public_profiles').doc(rawId).set(recoveredUser, { merge: true }).catch(() => {});
+                } else {
+                    if (totalRests > (dedupedUsers[existingIdx].count || 0)) {
+                        dedupedUsers[existingIdx].count = totalRests;
+                    }
+                    if (prof.profileImage && dedupedUsers[existingIdx].avatar !== prof.profileImage) {
+                        dedupedUsers[existingIdx].avatar = prof.profileImage;
+                    }
+                    if (prof.bio) {
+                        dedupedUsers[existingIdx].bio = prof.bio;
+                    }
+                }
+            });
+        } catch (_) {}
 
         cachedDiscoveredUsers = dedupedUsers;
         localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(dedupedUsers));
