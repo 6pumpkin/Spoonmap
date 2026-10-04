@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610041604">
+    <link rel="stylesheet" href="style.css?v=202610041656">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -100,6 +100,21 @@
                 </div>
 
                 <div class="sidebar-scroll-content">
+                    <!-- ⓪ 미식가 선택 (내 맛집 & 팔로잉 친구) -->
+                    <section class="filter-section gourmet-sheet-section" id="gourmet-filter-section">
+                        <div class="filter-section-title">
+                            <h3 class="desktop-only">미식가 선택</h3>
+                            <span class="mobile-only">👥 미식가 / 친구</span>
+                        </div>
+                        <div class="filter-group gourmet-options-grid" id="gourmet-filters">
+                            <button type="button" class="filter-btn active" data-filter="gourmet" data-value="me">👤 내 맛집</button>
+                            <button type="button" class="filter-btn" data-filter="gourmet" data-value="all">🌐 전체 (나+친구)</button>
+                            <button type="button" class="filter-btn" data-filter="gourmet" data-value="mock_minwoo_jeju">🌊 강민우</button>
+                            <button type="button" class="filter-btn" data-filter="gourmet" data-value="mock_seoyeon_cafe">☕ 이서연</button>
+                            <button type="button" class="filter-btn overlap-btn" data-filter="gourmet" data-value="overlap">🔥 겹치는 맛집</button>
+                        </div>
+                    </section>
+
                     <!-- ① 방문 기간 지정 (PC 1번 위치) -->
                     <section class="filter-section date-range-section">
                         <div class="filter-section-title">
@@ -262,6 +277,17 @@
                     </div>
                 </div>
 
+                <!-- Mobile Gourmet Chips Bar (Quick Switch between Me, Friends, All, Overlap) -->
+                <div class="mobile-gourmet-chips-bar" id="mobile-gourmet-chips-bar">
+                    <div class="mobile-gourmet-scroll" id="mobile-gourmet-scroll">
+                        <button type="button" class="mobile-gourmet-chip active" data-gourmet="me" onclick="handleMobileGourmetClick(this, 'me')">👤 내 맛집</button>
+                        <button type="button" class="mobile-gourmet-chip" data-gourmet="all" onclick="handleMobileGourmetClick(this, 'all')">🌐 전체</button>
+                        <button type="button" class="mobile-gourmet-chip" data-gourmet="mock_minwoo_jeju" onclick="handleMobileGourmetClick(this, 'mock_minwoo_jeju')">🌊 강민우</button>
+                        <button type="button" class="mobile-gourmet-chip" data-gourmet="mock_seoyeon_cafe" onclick="handleMobileGourmetClick(this, 'mock_seoyeon_cafe')">☕ 이서연</button>
+                        <button type="button" class="mobile-gourmet-chip chip-overlap" data-gourmet="overlap" onclick="handleMobileGourmetClick(this, 'overlap')">🔥 겹치는 맛집</button>
+                    </div>
+                </div>
+
                 <div class="list-header-controls">
                     <div class="result-count-info" id="result-count-info">Total <strong id="total-count-num">0</strong></div>
                     <div class="view-mode-toggle-group">
@@ -274,9 +300,17 @@
                 <div id="gourmet-viewing-banner" class="gourmet-viewing-banner" style="display:none;">
                     <div class="banner-content">
                         <span class="banner-avatar">🍽️</span>
-                        <span class="banner-text"><strong id="gourmet-viewing-name">미식가</strong> 님의 추천 맛집 목록을 둘러보고 있습니다.</span>
+                        <div class="banner-info">
+                            <div class="banner-title">
+                                <strong id="gourmet-viewing-name">미식가</strong>
+                                <span class="banner-badge">둘러보기</span>
+                            </div>
+                            <span class="banner-sub" id="gourmet-viewing-sub">추천 맛집 둘러보기 모드</span>
+                        </div>
                     </div>
-                    <button class="banner-return-btn" onclick="exitGourmetViewingMode()">내 맛집으로 돌아가기 ↺</button>
+                    <button type="button" class="banner-return-btn" onclick="exitGourmetViewingMode()">
+                        <span>내 목록 복귀</span> ✕
+                    </button>
                 </div>
 
                 <div class="restaurant-grid" id="restaurant-grid">
@@ -1509,12 +1543,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202610041604"></script>
-    <script src="data.js?v=202610041604"></script>
-    <script src="ddoganzip_data.js?v=202610041604"></script>
-    <script src="meogeultende_data.js?v=202610041604"></script>
-    <script src="jungyugwang_data.js?v=202610041604"></script>
-    <script src="app.js?v=202610041604"></script>
+    <script src="regions.js?v=202610041656"></script>
+    <script src="data.js?v=202610041656"></script>
+    <script src="ddoganzip_data.js?v=202610041656"></script>
+    <script src="meogeultende_data.js?v=202610041656"></script>
+    <script src="jungyugwang_data.js?v=202610041656"></script>
+    <script src="app.js?v=202610041656"></script>
 </body>
 
 </html>
