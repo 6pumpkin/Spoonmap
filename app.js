@@ -4539,182 +4539,106 @@ document.addEventListener('DOMContentLoaded', () => {
         btnShowWishlist.addEventListener('click', showWishlistPlacesOnMap);
     }
 
-    // ─── Show My Visited Places on Map - 내 식당 단독 보기 ───
-    async function showMyVisitedPlacesOnMap() {
+    // ─── Show My Visited Places on Map - 내 식당 지도 오버레이 ───
+    window.isMyRestaurantsActive = false;
+    window.activeMyRestaurantMarkers = [];
+
+    function renderMyRestaurantsOverlay() {
+        if (!map) return;
+
+        // 1. 기존 내 식당 마커 제거
+        if (Array.isArray(window.activeMyRestaurantMarkers)) {
+            window.activeMyRestaurantMarkers.forEach(m => m.setMap(null));
+        }
+        window.activeMyRestaurantMarkers = [];
+
+        if (!window.isMyRestaurantsActive) return;
+
         const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
         const myPlaces = allData.filter(r => (r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist);
 
-        const resultsList = document.getElementById('map-results-list');
-        const detailPanel = document.getElementById('map-place-detail');
-        const quickFilters = document.querySelector('.map-quick-filters');
+        const filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
 
-        if (detailPanel) detailPanel.style.display = 'none';
-        if (resultsList) resultsList.style.display = 'block';
-        if (quickFilters) quickFilters.style.display = 'none';
-
-        markers.forEach(m => m.setMap(null));
-        markers = [];
-        if (window.currentMapOverlay) {
-            window.currentMapOverlay.setMap(null);
-            window.currentMapOverlay = null;
-        }
-        if (window.currentHoverOverlay) {
-            window.currentHoverOverlay.setMap(null);
-            window.currentHoverOverlay = null;
-        }
-
-        if (!myPlaces || myPlaces.length === 0) {
-            if (resultsList) {
-                resultsList.innerHTML = `
-                    <div class="map-empty-state" style="text-align:center; padding:28px 16px;">
-                        <button class="btn-reset-map-search" onclick="resetMapSearchToInitial()">← 검색 초기화면으로</button>
-                        <div style="font-size:2rem; margin:14px 0 8px 0;">🍽️</div>
-                        <p style="font-size:1.02rem; font-weight:800; color:#1E293B; margin:0 0 6px 0;">등록된 내 식당이 아직 없습니다.</p>
-                        <p style="font-size:0.85rem; color:#64748B; margin:0; line-height:1.45;">다이어리나 식당 등록을 통해 방문한 식당을 기록해보세요.</p>
-                    </div>
-                `;
+        myPlaces.forEach(item => {
+            if (typeof isFriendRestaurantAllowedByFilters === 'function' && !isFriendRestaurantAllowedByFilters(item, filterSettings)) {
+                return;
             }
-            return;
-        }
 
-        resultsList.innerHTML = `
-            <div class="map-empty-state">
-                <p>⌛ 내 식당 ${myPlaces.length}곳을 지도에 불러오는 중...</p>
-            </div>
-        `;
+            const x = parseFloat(item.x || 0);
+            const y = parseFloat(item.y || 0);
+            if (!x || !y) return;
 
-        const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
-        const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
-        const bounds = new kakao.maps.LatLngBounds();
-        const allMyResults = [];
+            const coords = new kakao.maps.LatLng(y, x);
 
-        let geocodeCache = {};
-        try {
-            geocodeCache = JSON.parse(localStorage.getItem('spoonmap_geocoded_cache') || '{}');
-        } catch (_) {}
+            const place = {
+                place_name: item.name,
+                category_name: item.category || '음식점',
+                address_name: item.road_address || [item.location_large, item.location_small].filter(Boolean).join(' '),
+                road_address_name: item.road_address || '',
+                x: String(x),
+                y: String(y),
+                place_url: item.map_url || ''
+            };
 
-        const resolveItem = (item) => {
-            return new Promise((resolve) => {
-                if (item.x && item.y && parseFloat(item.x) > 0 && parseFloat(item.y) > 0) {
-                    const place = {
-                        place_name: item.name,
-                        x: item.x,
-                        y: item.y,
-                        address_name: item.road_address || [item.location_large, item.location_small].filter(Boolean).join(' '),
-                        road_address_name: item.road_address || '',
-                        category_name: item.category || '음식점',
-                        place_url: item.map_url || ''
-                    };
-                    renderSingleMarker(item, place, true, bounds, true, false);
-                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
-                    return resolve(true);
-                }
-
-                const cacheKey = `${item.name}_${item.location_large || ''}`;
-                if (geocodeCache[cacheKey]) {
-                    const cached = geocodeCache[cacheKey];
-                    const place = {
-                        place_name: item.name,
-                        x: cached.x,
-                        y: cached.y,
-                        address_name: cached.address || item.road_address || item.location_large || '',
-                        road_address_name: cached.road_address || '',
-                        category_name: item.category || '음식점',
-                        place_url: item.map_url || ''
-                    };
-                    renderSingleMarker(item, place, true, bounds, true, false);
-                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
-                    return resolve(true);
-                }
-
-                if (ps) {
-                    const searchKw = item.location_large ? `${item.name} ${item.location_large}` : item.name;
-                    ps.keywordSearch(searchKw, (data, status) => {
-                        if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                            const place = data.find(d => isSavedRestaurantMatch(item, d)) || data[0];
-                            geocodeCache[cacheKey] = { x: place.x, y: place.y, address: place.address_name, road_address: place.road_address_name };
-                            renderSingleMarker(item, place, true, bounds, true, false);
-                            allMyResults.push({ item, place, isSaved: true, isWishlist: false });
-                            return resolve(true);
-                        }
-
-                        if (geocoder && (item.road_address || item.location_large)) {
-                            const addrQuery = item.road_address || item.location_large;
-                            geocoder.addressSearch(addrQuery, (geoRes, geoStatus) => {
-                                if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
-                                    const place = {
-                                        place_name: item.name,
-                                        x: geoRes[0].x,
-                                        y: geoRes[0].y,
-                                        address_name: geoRes[0].address_name,
-                                        road_address_name: geoRes[0].road_address?.address_name || '',
-                                        category_name: item.category || '음식점',
-                                        place_url: item.map_url || ''
-                                    };
-                                    geocodeCache[cacheKey] = { x: place.x, y: place.y, address: place.address_name, road_address: place.road_address_name };
-                                    renderSingleMarker(item, place, true, bounds, true, false);
-                                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
-                                    return resolve(true);
-                                }
-                                return resolve(false);
-                            });
-                        } else {
-                            return resolve(false);
-                        }
-                    });
-                } else {
-                    return resolve(false);
-                }
-            });
-        };
-
-        const batchSize = 15;
-        for (let i = 0; i < myPlaces.length; i += batchSize) {
-            const batch = myPlaces.slice(i, i + batchSize);
-            await Promise.all(batch.map(resolveItem));
-            if (i + batchSize < myPlaces.length) {
-                await new Promise(r => setTimeout(r, 60));
+            const svgUri = getModernMarkerSvg('saved', item.category, false, null, null, item.name);
+            let markerImg = null;
+            if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
+                markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
             }
-        }
 
-        try {
-            localStorage.setItem('spoonmap_geocoded_cache', JSON.stringify(geocodeCache));
-        } catch (_) {}
+            const markerOptions = {
+                map: map,
+                position: coords,
+                zIndex: 115
+            };
+            if (markerImg) markerOptions.image = markerImg;
 
-        if (allMyResults.length > 0) {
-            renderPaginatedList(allMyResults, 1);
-            const backBtnEl = document.createElement('button');
-            backBtnEl.className = 'btn-reset-map-search';
-            backBtnEl.style.marginBottom = '12px';
-            backBtnEl.style.display = 'block';
-            backBtnEl.textContent = '← 검색 초기화면으로';
-            backBtnEl.onclick = () => resetMapSearchToInitial();
-            resultsList.insertBefore(backBtnEl, resultsList.firstChild);
+            const marker = new kakao.maps.Marker(markerOptions);
+            window.activeMyRestaurantMarkers.push(marker);
 
-            if (markers.length > 0 && !bounds.isEmpty()) {
-                map.setBounds(bounds);
-                if (markers.length === 1) map.setLevel(3);
-            }
-        } else {
-            resultsList.innerHTML = `
-                <div class="map-empty-state" style="text-align:center; padding:24px 16px;">
-                    <button class="btn-reset-map-search" onclick="resetMapSearchToInitial()">← 검색 초기화면으로</button>
-                    <p style="margin-top:12px; color:#64748B;">내 식당 위치 정보를 지도에서 불러오지 못했습니다.</p>
-                </div>
-            `;
+            attachMarkerEvents(marker, item, place, true, false, coords);
+        });
+    }
+    window.renderMyRestaurantsOverlay = renderMyRestaurantsOverlay;
+
+    function showMyVisitedPlacesOnMap() {
+        window.isMyRestaurantsActive = true;
+        renderMyRestaurantsOverlay();
+
+        const btnShowMy = document.getElementById('btn-show-my-restaurants');
+        if (btnShowMy) btnShowMy.classList.add('active');
+
+        const switchMy = document.getElementById('switch-my-restaurants-toggle');
+        if (switchMy) switchMy.checked = true;
+
+        if (typeof updateStarChipHighlight === 'function') {
+            updateStarChipHighlight();
         }
     }
     window.showMyVisitedPlacesOnMap = showMyVisitedPlacesOnMap;
 
+    function hideMyVisitedPlacesOnMap() {
+        window.isMyRestaurantsActive = false;
+        renderMyRestaurantsOverlay();
+
+        const btnShowMy = document.getElementById('btn-show-my-restaurants');
+        if (btnShowMy) btnShowMy.classList.remove('active');
+
+        const switchMy = document.getElementById('switch-my-restaurants-toggle');
+        if (switchMy) switchMy.checked = false;
+
+        if (typeof updateStarChipHighlight === 'function') {
+            updateStarChipHighlight();
+        }
+    }
+    window.hideMyVisitedPlacesOnMap = hideMyVisitedPlacesOnMap;
+
     const btnShowMyRestaurants = document.getElementById('btn-show-my-restaurants');
     if (btnShowMyRestaurants) {
         btnShowMyRestaurants.addEventListener('click', () => {
-            const isActive = btnShowMyRestaurants.classList.contains('active');
-            if (isActive) {
-                btnShowMyRestaurants.classList.remove('active');
-                updateMapMarkers();
+            if (window.isMyRestaurantsActive) {
+                hideMyVisitedPlacesOnMap();
             } else {
-                btnShowMyRestaurants.classList.add('active');
                 const btnWish = document.getElementById('btn-show-wishlist');
                 if (btnWish) btnWish.classList.remove('active');
                 showMyVisitedPlacesOnMap();
@@ -6267,6 +6191,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         if (typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
         }
+        if (typeof window.renderMyRestaurantsOverlay === 'function') {
+            window.renderMyRestaurantsOverlay();
+        }
     };
 
     window.toggleAllFriendCategories = function() {
@@ -6282,6 +6209,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         renderFriendFilterCategoryChips();
         if (typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
+        }
+        if (typeof window.renderMyRestaurantsOverlay === 'function') {
+            window.renderMyRestaurantsOverlay();
         }
     };
 
@@ -6329,6 +6259,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         if (typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
         }
+        if (typeof window.renderMyRestaurantsOverlay === 'function') {
+            window.renderMyRestaurantsOverlay();
+        }
     };
 
     window.toggleAllFriendSpoons = function() {
@@ -6343,6 +6276,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         renderFriendFilterSpoonChips();
         if (typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
+        }
+        if (typeof window.renderMyRestaurantsOverlay === 'function') {
+            window.renderMyRestaurantsOverlay();
         }
     };
 
@@ -6876,17 +6812,18 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     catChip.classList.add('cat-active');
                     const emojiMap = {
                         '한식': '🍚', '일식': '🍣', '중식': '🥢', '양식': '🍝',
-                        '고기': '🥩', '카페': '☕', '술집': '🍺', '분식': '🍢',
-                        '치킨': '🍗', '피자': '🍕', '패스트푸드': '🍔', '아시아음식': '🍜',
+                        '고기': '🥩', '해산물': '🐟', '카페': '☕', '술집': '🍺', '분식': '🍢',
+                        '치킨': '🍗', '피자': '🍕', '패스트푸드': '🍔', '아시안': '🍜', '아시아음식': '🍜',
                         '샐러드': '🥗', '기타': '🍽️'
                     };
                     const em = emojiMap[keyword] || '🍴';
                     if (catIcon) catIcon.innerText = em;
                     if (catText) {
-                        catText.innerText = keyword;
-                        catText.style.display = 'inline';
+                        catText.innerText = '';
+                        catText.style.display = 'none';
                     }
                     if (catClear) catClear.style.display = 'inline';
+                    catChip.setAttribute('title', keyword);
                 }
 
                 closeAllPopovers();
@@ -6951,7 +6888,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     if (switchWishlist) switchWishlist.checked = false;
                     showMyVisitedPlacesOnMap();
                 } else {
-                    updateMapMarkers();
+                    hideMyVisitedPlacesOnMap();
                 }
                 updateStarChipHighlight();
             });
