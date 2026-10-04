@@ -1865,12 +1865,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof populateRecommendCategories === 'function') populateRecommendCategories();
         } else if (targetTab === 'diary' && isUserLoggedIn()) {
             initDiaryTab();
-        } else if (targetTab === 'list' && (isUserLoggedIn() || window.isSharedMapMode)) {
+        } else if (targetTab === 'list' && (isUserLoggedIn() || window.isSharedMapMode || window.currentViewingGourmet)) {
             if (typeof render === 'function') render();
         } else if (targetTab === 'profile' && isUserLoggedIn()) {
             if (typeof renderProfileView === 'function') renderProfileView();
         }
     }
+    window.switchTabUI = switchTabUI;
 
     function switchAiSubTab(targetSubTab) {
         if (targetSubTab !== 'sommelier' && targetSubTab !== 'recommend') targetSubTab = 'sommelier';
@@ -14037,9 +14038,14 @@ async function fetchDiscoveredUsersFromCloud() {
             });
         } catch (_) {}
 
-        if (isCurrentUserOwner && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-            MASTER_MOCK_GOURMETS.forEach(mock => {
-                if (!dedupedUsers.some(u => String(u.id) === mock.id)) {
+        const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+            ? window.MASTER_MOCK_GOURMETS 
+            : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
+
+        if (isCurrentUserOwner && mockList.length > 0) {
+            mockList.forEach(mock => {
+                const ex = dedupedUsers.find(u => String(u.id) === mock.id);
+                if (!ex) {
                     dedupedUsers.push({
                         id: mock.id,
                         name: mock.name,
@@ -14047,8 +14053,17 @@ async function fetchDiscoveredUsersFromCloud() {
                         bio: mock.bio,
                         avatar: mock.avatar,
                         count: mock.count,
-                        isMasterMock: true
+                        isMasterMock: true,
+                        restaurants: mock.restaurants
                     });
+                } else {
+                    ex.isMasterMock = true;
+                    if (!ex.restaurants || !Array.isArray(ex.restaurants)) {
+                        ex.restaurants = mock.restaurants;
+                    }
+                    if (!ex.count || ex.count < 20) {
+                        ex.count = 20;
+                    }
                 }
             });
         }
@@ -14550,18 +14565,34 @@ window.getMasterRestaurantList = getMasterRestaurantList;
 
 // ─── Shared Gourmet Viewer Mode (팔로잉한 실제 유저의 식당 리스트 열람) ───
 window.viewGourmetRestaurantList = async function(userId) {
-    let targetUser = cachedDiscoveredUsers.find(u => String(u.id) === String(userId));
-    if (!targetUser && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-        targetUser = MASTER_MOCK_GOURMETS.find(m => m.id === String(userId));
+    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+        ? window.MASTER_MOCK_GOURMETS 
+        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
+
+    let targetUser = null;
+    let userRestaurants = [];
+
+    // 1. Check Master Mock Gourmets directly first!
+    const directMock = mockList.find(m => String(m.id) === String(userId));
+    if (directMock) {
+        targetUser = directMock;
+        userRestaurants = Array.isArray(directMock.restaurants) ? [...directMock.restaurants] : [];
+    } else {
+        targetUser = cachedDiscoveredUsers.find(u => String(u.id) === String(userId));
+        if (targetUser && (targetUser.isMasterMock || String(userId).startsWith('mock_'))) {
+            const foundMock = mockList.find(m => String(m.id) === String(userId));
+            if (foundMock && Array.isArray(foundMock.restaurants)) {
+                targetUser = foundMock;
+                userRestaurants = [...foundMock.restaurants];
+            }
+        }
     }
+
     if (!targetUser && isFirebaseReady && db) {
         try {
             const doc = await db.collection('spoonmap_public_profiles').doc(String(userId)).get();
             if (doc.exists) targetUser = doc.data();
         } catch (e) {}
-    }
-    if (!targetUser && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-        targetUser = MASTER_MOCK_GOURMETS.find(m => m.id === String(userId));
     }
 
     if (!targetUser) {
@@ -14573,6 +14604,7 @@ window.viewGourmetRestaurantList = async function(userId) {
                 handle: '@junho_spoon',
                 isMaster: true
             };
+            userRestaurants = getMasterRestaurantList();
         } else {
             alert('해당 미식가 정보를 찾을 수 없습니다.');
             return;
@@ -14581,13 +14613,8 @@ window.viewGourmetRestaurantList = async function(userId) {
 
     showDiaryToast(`🍽️ [${targetUser.name}] 님의 맛집 리스트를 불러오는 중...`);
 
-    let userRestaurants = [];
-
-    // 1. Is this a Master Mock Gourmet?
-    if (targetUser && targetUser.isMasterMock && Array.isArray(targetUser.restaurants)) {
-        userRestaurants = targetUser.restaurants;
-    } else {
-        // 2. Is this Master (박준호)?
+    // 2. Regular user from Firestore if not a mock gourmet and not Master
+    if (userRestaurants.length === 0 && !targetUser.isMasterMock) {
         const isMaster = targetUser.isMaster === true || 
                          targetUser.name === '박준호' || 
                          targetUser.handle === '@junho_spoon' || 
@@ -14597,55 +14624,54 @@ window.viewGourmetRestaurantList = async function(userId) {
         if (isMaster) {
             userRestaurants = getMasterRestaurantList();
         } else {
-            // 3. Regular user from Firestore
-        try {
-            if (db) {
-                let userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
-                if (!userDoc.exists) {
-                    userDoc = await db.collection('spoonmap_users').doc(String(userId)).get();
-                }
-                if (userDoc.exists) {
-                    const uData = userDoc.data();
-                    const seenNames = new Set();
-
-                    // From Wishlist
-                    if (uData.wishlist && Array.isArray(uData.wishlist)) {
-                        uData.wishlist.forEach(w => {
-                            if (!w || !w.name || seenNames.has(w.name)) return;
-                            seenNames.add(w.name);
-                            userRestaurants.push({
-                                name: w.name,
-                                category: w.category || '기타',
-                                location_large: w.location || '기타',
-                                location_small: w.location || '',
-                                rate: '🥄🥄🥄',
-                                map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
-                                visit_count: 1
-                            });
-                        });
+            try {
+                if (db) {
+                    let userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
+                    if (!userDoc.exists) {
+                        userDoc = await db.collection('spoonmap_users').doc(String(userId)).get();
                     }
+                    if (userDoc.exists) {
+                        const uData = userDoc.data();
+                        const seenNames = new Set();
 
-                    // From Diary
-                    if (uData.diary && Array.isArray(uData.diary)) {
-                        uData.diary.forEach(d => {
-                            if (!d || !d.name || seenNames.has(d.name)) return;
-                            seenNames.add(d.name);
-                            userRestaurants.push({
-                                name: d.name,
-                                category: d.category || '기타',
-                                location_large: d.location_large || '기타',
-                                location_small: d.location_small || '',
-                                rate: d.rate || '🥄🥄🥄',
-                                map_url: d.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(d.name)}`,
-                                visit_count: 1
+                        // From Wishlist
+                        if (uData.wishlist && Array.isArray(uData.wishlist)) {
+                            uData.wishlist.forEach(w => {
+                                if (!w || !w.name || seenNames.has(w.name)) return;
+                                seenNames.add(w.name);
+                                userRestaurants.push({
+                                    name: w.name,
+                                    category: w.category || '기타',
+                                    location_large: w.location || '기타',
+                                    location_small: w.location || '',
+                                    rate: '🥄🥄🥄',
+                                    map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
+                                    visit_count: 1
+                                });
                             });
-                        });
+                        }
+
+                        // From Diary
+                        if (uData.diary && Array.isArray(uData.diary)) {
+                            uData.diary.forEach(d => {
+                                if (!d || !d.name || seenNames.has(d.name)) return;
+                                seenNames.add(d.name);
+                                userRestaurants.push({
+                                    name: d.name,
+                                    category: d.category || '기타',
+                                    location_large: d.location_large || '기타',
+                                    location_small: d.location_small || '',
+                                    rate: d.rate || '🥄🥄🥄',
+                                    map_url: d.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(d.name)}`,
+                                    visit_count: 1
+                                });
+                            });
+                        }
                     }
                 }
+            } catch (e) {
+                console.warn('Error fetching user restaurants:', e);
             }
-        } catch (e) {
-            console.warn('Error fetching user restaurants:', e);
-        }
         }
     }
 
@@ -14661,9 +14687,16 @@ window.viewGourmetRestaurantList = async function(userId) {
         restaurants: userRestaurants
     };
 
-    // 1. Switch to LIST Tab
+    // 1. Switch to LIST Tab (Support both switchTabUI and DOM clicks)
     window.location.hash = '#list';
-    const listTabBtn = document.querySelector('.tab-btn[data-tab="list"]') || document.querySelector('.mobile-tab-btn[data-tab="list"]');
+    if (typeof switchTabUI === 'function') {
+        switchTabUI('list');
+    } else if (typeof window.switchTabUI === 'function') {
+        window.switchTabUI('list');
+    }
+    const listTabBtn = document.querySelector('.tab-btn[data-tab="list"]') || 
+                       document.querySelector('.mobile-tab-btn[data-tab="list"]') ||
+                       document.querySelector('.mobile-bnav-btn[data-tab="list"]');
     if (listTabBtn) listTabBtn.click();
 
     // 2. Show Viewing Banner
@@ -14674,12 +14707,25 @@ window.viewGourmetRestaurantList = async function(userId) {
         banner.style.display = 'flex';
     }
 
-    // 3. Re-render List
+    // 3. Clear existing list filters
+    const searchInput = document.getElementById('restaurant-search');
+    if (searchInput) searchInput.value = '';
+    if (typeof currentFilters !== 'undefined') {
+        currentFilters.searchQuery = '';
+        currentFilters.category = [];
+        currentFilters.location_large = [];
+        currentFilters.location_small = [];
+        currentFilters.rate = [];
+    }
+
+    // 4. Re-render List
     if (typeof window.renderApp === 'function') {
         window.renderApp();
     } else if (typeof render === 'function') {
         render();
     }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     showDiaryToast(`🍽️ [${targetUser.name}] 님의 추천 맛집 ${userRestaurants.length}곳을 둘러봅니다.`);
 };
