@@ -6709,9 +6709,21 @@ input[type="date"].drawer-input {
     justify-content: center;
 }
 
-.btn-view-gourmet-map:hover {
+@media (hover: hover) and (pointer: fine) {
+    .btn-view-gourmet-map:hover {
+        background: #4F46E5;
+        color: #ffffff;
+    }
+}
+.btn-view-gourmet-map:active {
     background: #4F46E5;
     color: #ffffff;
+    transform: scale(0.96);
+}
+.btn-view-gourmet-map:focus:not(:focus-visible) {
+    outline: none;
+    background: #EEF2FF;
+    color: #4F46E5;
 }
 
 .btn-view-gourmet-list {
@@ -6728,11 +6740,24 @@ input[type="date"].drawer-input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.btn-view-gourmet-list:hover {
+@media (hover: hover) and (pointer: fine) {
+    .btn-view-gourmet-list:hover {
+        background: #EA580C;
+        color: #ffffff;
+    }
+}
+.btn-view-gourmet-list:active {
     background: #EA580C;
     color: #ffffff;
+    transform: scale(0.96);
+}
+.btn-view-gourmet-list:focus:not(:focus-visible) {
+    outline: none;
+    background: #FFF7ED;
+    color: #EA580C;
 }
 
 /* Discover Users List */
@@ -7466,6 +7491,33 @@ input[type="date"].drawer-input {
     align-items: center;
     justify-content: space-between;
     white-space: nowrap;
+}
+
+.studio-gender-pill-toggle {
+    display: inline-flex;
+    background: #E2E8F0;
+    padding: 2px;
+    border-radius: 14px;
+    gap: 2px;
+}
+
+.studio-gender-pill-btn {
+    border: none;
+    background: transparent;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748B;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.2;
+}
+
+.studio-gender-pill-btn.active {
+    background: #FFFFFF;
+    color: #EA580C;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .studio-parts-grid {

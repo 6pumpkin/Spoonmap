@@ -15378,8 +15378,8 @@ function renderFollowingCards() {
                 <div class="following-card-bottom">
                     <span class="following-stats-text">맛집 <b>${u.count || 0}곳</b></span>
                     <div class="following-card-actions">
-                        <button type="button" class="btn-view-gourmet-map" onclick="viewGourmetMap('${u.id}')">지도</button>
-                        <button type="button" class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}')">식당 목록</button>
+                        <button type="button" class="btn-view-gourmet-map" onclick="viewGourmetMap('${u.id}', event)">지도</button>
+                        <button type="button" class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}', event)">식당 목록</button>
                     </div>
                 </div>
             </div>
@@ -15655,7 +15655,9 @@ function getMasterRestaurantList() {
 window.getMasterRestaurantList = getMasterRestaurantList;
 
 // ─── Shared Gourmet Viewer Mode (팔로잉한 실제 유저의 식당 리스트 열람) ───
-window.viewGourmetMap = async function(userId) {
+window.viewGourmetMap = async function(userId, evt) {
+    if (evt && evt.currentTarget && typeof evt.currentTarget.blur === 'function') evt.currentTarget.blur();
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
     const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
     let friend = friends.find(f => String(f.id) === String(userId) || String(f.realUserId) === String(userId) || String(f.id) === `following_${userId}`);
 
@@ -15735,7 +15737,9 @@ window.viewGourmetMap = async function(userId) {
     showDiaryToast(`🗺️ ${friend.nickname || friend.name} 님의 맛집 지도 보기`);
 };
 
-window.viewGourmetRestaurantList = async function(userId) {
+window.viewGourmetRestaurantList = async function(userId, evt) {
+    if (evt && evt.currentTarget && typeof evt.currentTarget.blur === 'function') evt.currentTarget.blur();
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
     const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
         ? window.MASTER_MOCK_GOURMETS 
         : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
@@ -15859,6 +15863,8 @@ window.viewGourmetRestaurantList = async function(userId) {
     }
 
     if (userRestaurants.length === 0) {
+        if (evt && evt.currentTarget && typeof evt.currentTarget.blur === 'function') evt.currentTarget.blur();
+        if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
         showDiaryToast(`ℹ️ ${targetUser.name} 님이 등록한 공개 맛집이 아직 없습니다.`);
         return;
     }
@@ -16061,20 +16067,36 @@ window.saveProfileFromModal = function() {
 };
 
 // ─── Custom Avatar Studio: Config Data & Module ───
-const STUDIO_AVATAARS_HAIRS = [
-    { id: 'shortFlat', name: '숏 플랫', icon: '👦' },
+const STUDIO_AVATAARS_HAIRS_MALE = [
+    { id: 'shortFlat', name: '숏 플랫 댄디', icon: '👦' },
     { id: 'theCaesarAndSidePart', name: '가르마 펌', icon: '👨' },
-    { id: 'shortWaved', name: '웨이브 숏', icon: '🧑' },
-    { id: 'curly', name: '뽀글이 곱슬', icon: '💇‍♂️' },
-    { id: 'bob', name: '보브 단발', icon: '👩' },
-    { id: 'bun', name: '당고머리 번', icon: '👱‍♀️' },
-    { id: 'straight01', name: '긴 생머리', icon: '👩‍🦰' },
-    { id: 'longButNotTooLong', name: '포니테일', icon: '👱' },
-    { id: 'curvy', name: '풍성 롱헤어', icon: '👸' },
-    { id: 'winterHat02', name: '비니 모자', icon: '🧢' },
-    { id: 'hat', name: '베레모', icon: '🎩' },
-    { id: 'shavedSides', name: '페이드 컷', icon: '💈' }
+    { id: 'theCaesar', name: '깔끔 리젠트', icon: '🧑' },
+    { id: 'shortWaved', name: '웨이브 숏', icon: '💇‍♂️' },
+    { id: 'shortCurly', name: '볼륨 베이비펌', icon: '🦱' },
+    { id: 'shavedSides', name: '투블럭 페이드', icon: '💈' },
+    { id: 'shaggyMullet', name: '트렌디 울프컷', icon: '🐺' },
+    { id: 'shortRound', name: '단정한 댄디볼륨', icon: '✂️' },
+    { id: 'sides', name: '포마드 클래식', icon: '👔' },
+    { id: 'winterHat02', name: '스트릿 비니', icon: '🧢' },
+    { id: 'hat', name: '클래식 페도라', icon: '🎩' }
 ];
+
+const STUDIO_AVATAARS_HAIRS_FEMALE = [
+    { id: 'bob', name: '세련된 태슬 단발', icon: '👩' },
+    { id: 'bun', name: '올림머리 당고 번', icon: '👱‍♀️' },
+    { id: 'straight01', name: '찰랑 긴 생머리', icon: '👩‍🦰' },
+    { id: 'curvy', name: '풍성 여신 웨이브', icon: '👸' },
+    { id: 'longButNotTooLong', name: '내추럴 미디움', icon: '👱' },
+    { id: 'miaWallace', name: '시크 처피뱅 단발', icon: '🖤' },
+    { id: 'curly', name: '러블리 히피펌', icon: '🦱' },
+    { id: 'straight02', name: '청순 레이어드 컷', icon: '✨' },
+    { id: 'straightAndStrand', name: '사이드 브릿지', icon: '💫' },
+    { id: 'bigHair', name: '글래머 볼륨 롱', icon: '💃' },
+    { id: 'froBand', name: '헤어밴드 컬', icon: '🎀' },
+    { id: 'winterHat02', name: '포근 니트 비니', icon: '🧶' }
+];
+
+const STUDIO_AVATAARS_HAIRS = [...STUDIO_AVATAARS_HAIRS_MALE, ...STUDIO_AVATAARS_HAIRS_FEMALE];
 
 const STUDIO_AVATAARS_FACES = [
     { id: 'f_happy', name: '행복한 미소', eyes: 'happy', mouth: 'smile', icon: '😊' },
@@ -16167,18 +16189,36 @@ const STUDIO_FOOD_BADGES = [
     { id: 'crown', emoji: '👑', name: '왕관' }
 ];
 
-const STUDIO_NOTION_HAIRS = [
-    { id: 'variant01', name: '단정한 가르마', icon: '👨' },
+const STUDIO_NOTION_HAIRS_MALE = [
+    { id: 'variant01', name: '클래식 가르마', icon: '👨' },
     { id: 'variant03', name: '깔끔 크롭컷', icon: '👦' },
     { id: 'variant05', name: '댄디 숏컷', icon: '🧑' },
-    { id: 'variant06', name: '뽀글이 펌', icon: '💇' },
-    { id: 'variant07', name: '내추럴 웨이브', icon: '💁' },
-    { id: 'variant10', name: '단발 보브', icon: '👩' },
-    { id: 'variant08', name: '롱 스트레이트', icon: '👩‍🦰' },
-    { id: 'variant20', name: '사이드 포니테일', icon: '👧' },
-    { id: 'variant26', name: '올림머리 번', icon: '👱‍♀️' },
-    { id: 'hat', name: '스타일 모자', icon: '🧢' }
+    { id: 'variant12', name: '바버샵 포마드', icon: '💈' },
+    { id: 'variant13', name: '내추럴 숏 가르마', icon: '💇‍♂️' },
+    { id: 'variant15', name: '소프트 리젠트', icon: '✨' },
+    { id: 'variant22', name: '댄디 투블럭', icon: '👔' },
+    { id: 'variant27', name: '캐주얼 텍스처 숏', icon: '💫' },
+    { id: 'variant33', name: '모던 사이드 스윕', icon: '🕶️' },
+    { id: 'variant53', name: '힙한 샤기 울프컷', icon: '🐺' },
+    { id: 'hat', name: '스트릿 비니 앤 캡', icon: '🧢' }
 ];
+
+const STUDIO_NOTION_HAIRS_FEMALE = [
+    { id: 'variant07', name: '내추럴 롱 웨이브', icon: '💁' },
+    { id: 'variant08', name: '찰랑 롱 스트레이트', icon: '👩‍🦰' },
+    { id: 'variant10', name: '시크 단발 태슬컷', icon: '👩' },
+    { id: 'variant02', name: '세련된 미디움 웨이브', icon: '💇‍♀️' },
+    { id: 'variant04', name: '러블리 C컬 단발', icon: '✨' },
+    { id: 'variant16', name: '풍성 여신 웨이브', icon: '👸' },
+    { id: 'variant20', name: '사이드 포니테일', icon: '👧' },
+    { id: 'variant24', name: '우아한 레이어드 컷', icon: '💫' },
+    { id: 'variant26', name: '러블리 당고머리 번', icon: '👱‍♀️' },
+    { id: 'variant28', name: '로맨틱 S컬 롱', icon: '💖' },
+    { id: 'variant30', name: '하이 포니테일', icon: '🎀' },
+    { id: 'variant36', name: '화려한 글램 롱헤어', icon: '💃' }
+];
+
+const STUDIO_NOTION_HAIRS = [...STUDIO_NOTION_HAIRS_MALE, ...STUDIO_NOTION_HAIRS_FEMALE];
 
 const STUDIO_NOTION_FACES = [
     { id: 'nf_1', name: '반달 눈웃음', eyes: 'variant03', lips: 'variant03', icon: '😊' },
@@ -16206,6 +16246,7 @@ const AVATAARS_TABS = [
 ];
 
 const NOTION_TABS = [
+    { id: 'gender', name: '성별 베이스' },
     { id: 'hair', name: '헤어' },
     { id: 'face', name: '눈 입 표정' },
     { id: 'accessories', name: '제스처 소품' },
@@ -16215,8 +16256,9 @@ const NOTION_TABS = [
 let avatarStudioState = {
     styleBase: 'avataaars',
     activeTab: 'hair',
+    gender: 'male',
     isKakaoPhoto: false,
-    top: 'shortFlat',
+    top: 'theCaesarAndSidePart',
     hairColor: '2c1b18',
     skinColor: 'ffdbb4',
     eyes: 'happy',
@@ -16224,6 +16266,7 @@ let avatarStudioState = {
     clothing: 'blazerAndShirt',
     clothesColor: '25557c',
     accessories: 'none',
+    notionGender: 'male',
     notionHair: 'variant01',
     notionEyes: 'variant03',
     notionLips: 'variant03',
@@ -16273,6 +16316,7 @@ function buildStudioAvatarUrl() {
         if (avatarStudioState.notionGesture !== 'none') {
             params.push(`gesture=${encodeURIComponent(avatarStudioState.notionGesture)}`);
             params.push('gestureProbability=100');
+            params.push('flip=true');
         } else {
             params.push('gestureProbability=0');
         }
@@ -16310,19 +16354,15 @@ function renderStudioTabOptions(tabId) {
         if (tabId === 'gender') {
             return `
                 <div>
-                    <div class="studio-section-title"><span>추천 베이스 프리셋</span></div>
+                    <div class="studio-section-title"><span>성별 베이스</span></div>
                     <div class="studio-parts-grid">
-                        <div class="studio-part-card" onclick="setStudioGenderPreset('male')">
+                        <div class="studio-part-card ${avatarStudioState.gender === 'male' ? 'selected' : ''}" onclick="setStudioGenderPreset('male')">
                             <span class="studio-part-icon">👨</span>
                             <span class="studio-part-name">남성형</span>
                         </div>
-                        <div class="studio-part-card" onclick="setStudioGenderPreset('female')">
+                        <div class="studio-part-card ${avatarStudioState.gender === 'female' ? 'selected' : ''}" onclick="setStudioGenderPreset('female')">
                             <span class="studio-part-icon">👩</span>
                             <span class="studio-part-name">여성형</span>
-                        </div>
-                        <div class="studio-part-card" onclick="setStudioGenderPreset('neutral')">
-                            <span class="studio-part-icon">🧑</span>
-                            <span class="studio-part-name">중성형</span>
                         </div>
                     </div>
                 </div>
@@ -16338,11 +16378,21 @@ function renderStudioTabOptions(tabId) {
         }
 
         if (tabId === 'hair') {
+            const currentGender = avatarStudioState.gender || 'male';
+            const hairs = currentGender === 'male' ? STUDIO_AVATAARS_HAIRS_MALE : STUDIO_AVATAARS_HAIRS_FEMALE;
+            const title = currentGender === 'male' ? `남성 헤어스타일 · ${hairs.length}종` : `여성 헤어스타일 · ${hairs.length}종`;
+
             return `
                 <div>
-                    <div class="studio-section-title"><span>헤어스타일 · 12종</span></div>
+                    <div class="studio-section-title">
+                        <span>${title}</span>
+                        <div class="studio-gender-pill-toggle">
+                            <button type="button" class="studio-gender-pill-btn ${currentGender === 'male' ? 'active' : ''}" onclick="setStudioGenderPreset('male')">남성</button>
+                            <button type="button" class="studio-gender-pill-btn ${currentGender === 'female' ? 'active' : ''}" onclick="setStudioGenderPreset('female')">여성</button>
+                        </div>
+                    </div>
                     <div class="studio-parts-grid">
-                        ${STUDIO_AVATAARS_HAIRS.map(h => `
+                        ${hairs.map(h => `
                             <div class="studio-part-card ${avatarStudioState.top === h.id ? 'selected' : ''}" onclick="setStudioPart('top', '${h.id}', this)">
                                 <span class="studio-part-icon">${h.icon}</span>
                                 <span class="studio-part-name">${h.name}</span>
@@ -16444,12 +16494,40 @@ function renderStudioTabOptions(tabId) {
             `;
         }
     } else {
-        if (tabId === 'hair') {
+        if (tabId === 'gender') {
             return `
                 <div>
-                    <div class="studio-section-title"><span>노션 헤어스타일 · 10종</span></div>
+                    <div class="studio-section-title"><span>성별 베이스</span></div>
                     <div class="studio-parts-grid">
-                        ${STUDIO_NOTION_HAIRS.map(h => `
+                        <div class="studio-part-card ${avatarStudioState.notionGender === 'male' ? 'selected' : ''}" onclick="setStudioNotionGenderPreset('male')">
+                            <span class="studio-part-icon">👨</span>
+                            <span class="studio-part-name">남성형</span>
+                        </div>
+                        <div class="studio-part-card ${avatarStudioState.notionGender === 'female' ? 'selected' : ''}" onclick="setStudioNotionGenderPreset('female')">
+                            <span class="studio-part-icon">👩</span>
+                            <span class="studio-part-name">여성형</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (tabId === 'hair') {
+            const currentGender = avatarStudioState.notionGender || 'male';
+            const hairs = currentGender === 'male' ? STUDIO_NOTION_HAIRS_MALE : STUDIO_NOTION_HAIRS_FEMALE;
+            const title = currentGender === 'male' ? `남성 노션 헤어 · ${hairs.length}종` : `여성 노션 헤어 · ${hairs.length}종`;
+
+            return `
+                <div>
+                    <div class="studio-section-title">
+                        <span>${title}</span>
+                        <div class="studio-gender-pill-toggle">
+                            <button type="button" class="studio-gender-pill-btn ${currentGender === 'male' ? 'active' : ''}" onclick="setStudioNotionGenderPreset('male')">남성</button>
+                            <button type="button" class="studio-gender-pill-btn ${currentGender === 'female' ? 'active' : ''}" onclick="setStudioNotionGenderPreset('female')">여성</button>
+                        </div>
+                    </div>
+                    <div class="studio-parts-grid">
+                        ${hairs.map(h => `
                             <div class="studio-part-card ${avatarStudioState.notionHair === h.id ? 'selected' : ''}" onclick="setStudioPart('notionHair', '${h.id}', this)">
                                 <span class="studio-part-icon">${h.icon}</span>
                                 <span class="studio-part-name">${h.name}</span>
@@ -16604,23 +16682,47 @@ window.setStudioFace = function(eyes, mouth, el) {
 
 window.setStudioGenderPreset = function(gender) {
     avatarStudioState.isKakaoPhoto = false;
+    avatarStudioState.gender = gender;
     if (gender === 'male') {
-        avatarStudioState.top = 'theCaesarAndSidePart';
+        if (!STUDIO_AVATAARS_HAIRS_MALE.some(h => h.id === avatarStudioState.top)) {
+            avatarStudioState.top = 'theCaesarAndSidePart';
+        }
         avatarStudioState.clothing = 'blazerAndShirt';
         avatarStudioState.eyes = 'happy';
         avatarStudioState.mouth = 'smile';
         avatarStudioState.accessories = 'none';
-    } else if (gender === 'female') {
-        avatarStudioState.top = 'bob';
+    } else {
+        if (!STUDIO_AVATAARS_HAIRS_FEMALE.some(h => h.id === avatarStudioState.top)) {
+            avatarStudioState.top = 'bob';
+        }
         avatarStudioState.clothing = 'collarAndSweater';
         avatarStudioState.eyes = 'happy';
         avatarStudioState.mouth = 'smile';
         avatarStudioState.accessories = 'none';
+    }
+    updateStudioPreview();
+
+    const container = document.getElementById('studio-options-content');
+    if (container) {
+        container.innerHTML = renderStudioTabOptions(avatarStudioState.activeTab);
+    }
+};
+
+window.setStudioNotionGenderPreset = function(gender) {
+    avatarStudioState.isKakaoPhoto = false;
+    avatarStudioState.notionGender = gender;
+    if (gender === 'male') {
+        if (!STUDIO_NOTION_HAIRS_MALE.some(h => h.id === avatarStudioState.notionHair)) {
+            avatarStudioState.notionHair = 'variant01';
+        }
+        avatarStudioState.notionEyes = 'variant03';
+        avatarStudioState.notionLips = 'variant03';
     } else {
-        avatarStudioState.top = 'shortWaved';
-        avatarStudioState.clothing = 'hoodie';
-        avatarStudioState.eyes = 'happy';
-        avatarStudioState.mouth = 'smile';
+        if (!STUDIO_NOTION_HAIRS_FEMALE.some(h => h.id === avatarStudioState.notionHair)) {
+            avatarStudioState.notionHair = 'variant07';
+        }
+        avatarStudioState.notionEyes = 'variant03';
+        avatarStudioState.notionLips = 'variant05';
     }
     updateStudioPreview();
 
@@ -16633,7 +16735,8 @@ window.setStudioGenderPreset = function(gender) {
 window.shuffleStudioParts = function() {
     avatarStudioState.isKakaoPhoto = false;
     if (avatarStudioState.styleBase === 'avataaars') {
-        avatarStudioState.top = STUDIO_AVATAARS_HAIRS[Math.floor(Math.random() * STUDIO_AVATAARS_HAIRS.length)].id;
+        const hairList = (avatarStudioState.gender === 'female') ? STUDIO_AVATAARS_HAIRS_FEMALE : STUDIO_AVATAARS_HAIRS_MALE;
+        avatarStudioState.top = hairList[Math.floor(Math.random() * hairList.length)].id;
         avatarStudioState.hairColor = STUDIO_HAIR_COLORS[Math.floor(Math.random() * STUDIO_HAIR_COLORS.length)].id;
         avatarStudioState.skinColor = STUDIO_SKIN_TONES[Math.floor(Math.random() * STUDIO_SKIN_TONES.length)].id;
         const face = STUDIO_AVATAARS_FACES[Math.floor(Math.random() * STUDIO_AVATAARS_FACES.length)];
@@ -16643,7 +16746,8 @@ window.shuffleStudioParts = function() {
         avatarStudioState.clothesColor = STUDIO_CLOTHES_COLORS[Math.floor(Math.random() * STUDIO_CLOTHES_COLORS.length)].id;
         avatarStudioState.accessories = STUDIO_ACCESSORIES[Math.floor(Math.random() * STUDIO_ACCESSORIES.length)].id;
     } else {
-        avatarStudioState.notionHair = STUDIO_NOTION_HAIRS[Math.floor(Math.random() * STUDIO_NOTION_HAIRS.length)].id;
+        const notionHairList = (avatarStudioState.notionGender === 'female') ? STUDIO_NOTION_HAIRS_FEMALE : STUDIO_NOTION_HAIRS_MALE;
+        avatarStudioState.notionHair = notionHairList[Math.floor(Math.random() * notionHairList.length)].id;
         const nFace = STUDIO_NOTION_FACES[Math.floor(Math.random() * STUDIO_NOTION_FACES.length)];
         avatarStudioState.notionEyes = nFace.eyes;
         avatarStudioState.notionLips = nFace.lips;
@@ -16690,7 +16794,14 @@ window.openAvatarStudioModal = function() {
         avatarStudioState.styleBase = 'notionists';
         try {
             const urlObj = new URL(currentAvatar);
-            if (urlObj.searchParams.get('hair')) avatarStudioState.notionHair = urlObj.searchParams.get('hair');
+            if (urlObj.searchParams.get('hair')) {
+                avatarStudioState.notionHair = urlObj.searchParams.get('hair');
+                if (STUDIO_NOTION_HAIRS_FEMALE.some(h => h.id === avatarStudioState.notionHair)) {
+                    avatarStudioState.notionGender = 'female';
+                } else if (STUDIO_NOTION_HAIRS_MALE.some(h => h.id === avatarStudioState.notionHair)) {
+                    avatarStudioState.notionGender = 'male';
+                }
+            }
             if (urlObj.searchParams.get('eyes')) avatarStudioState.notionEyes = urlObj.searchParams.get('eyes');
             if (urlObj.searchParams.get('lips')) avatarStudioState.notionLips = urlObj.searchParams.get('lips');
             if (urlObj.searchParams.get('glasses')) avatarStudioState.notionGlasses = urlObj.searchParams.get('glasses');
@@ -16701,7 +16812,14 @@ window.openAvatarStudioModal = function() {
         avatarStudioState.styleBase = 'avataaars';
         try {
             const urlObj = new URL(currentAvatar);
-            if (urlObj.searchParams.get('top')) avatarStudioState.top = urlObj.searchParams.get('top');
+            if (urlObj.searchParams.get('top')) {
+                avatarStudioState.top = urlObj.searchParams.get('top');
+                if (STUDIO_AVATAARS_HAIRS_FEMALE.some(h => h.id === avatarStudioState.top)) {
+                    avatarStudioState.gender = 'female';
+                } else if (STUDIO_AVATAARS_HAIRS_MALE.some(h => h.id === avatarStudioState.top)) {
+                    avatarStudioState.gender = 'male';
+                }
+            }
             if (urlObj.searchParams.get('hairColor')) avatarStudioState.hairColor = urlObj.searchParams.get('hairColor');
             if (urlObj.searchParams.get('skinColor')) avatarStudioState.skinColor = urlObj.searchParams.get('skinColor');
             if (urlObj.searchParams.get('eyes')) avatarStudioState.eyes = urlObj.searchParams.get('eyes');
