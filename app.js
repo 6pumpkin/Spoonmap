@@ -13503,7 +13503,17 @@ async function renderDiscoverUsersList(searchQuery = '') {
         if (q) {
             listEl.innerHTML = `
                 ${warningBanner}
-                <div style="text-align:center; padding: 1.5rem; color:#9CA3AF; font-size:0.82rem;">"${searchQuery}" 검색 결과가 없습니다.</div>
+                <div style="text-align:center; padding: 2.2rem 1rem; color:#6B7280; font-size:0.85rem; line-height: 1.6;">
+                    <div style="font-size:1.6rem; margin-bottom:6px;">🔍</div>
+                    <div style="font-weight:700; color:#374151; margin-bottom:4px;">"${searchQuery}" 미식가를 찾을 수 없습니다.</div>
+                    <div style="font-size:0.8rem; color:#9CA3AF; margin-bottom:12px;">
+                        Spoonmap에 카카오 로그인을 완료한 사용자만 검색할 수 있습니다.<br>
+                        아직 Spoonmap을 이용하지 않은 친구라면 초대 링크를 보내보세요!
+                    </div>
+                    <button type="button" onclick="handleShareMyMap()" style="background:#F59E0B; color:white; border:none; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.25);">
+                        <span>🔗</span> 내 맛집 초대 링크 공유하기
+                    </button>
+                </div>
             `;
         } else {
             listEl.innerHTML = `
