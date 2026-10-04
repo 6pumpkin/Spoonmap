@@ -1519,32 +1519,33 @@ main {
     line-height: 1.4;
 }
 
-/* Map Quick Filters (찜 가게 목록 등) */
+/* Map Quick Filters - 찜가게 등 */
 .map-quick-filters {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 12px;
     width: 100%;
     box-sizing: border-box;
 }
 
 .map-quick-filter-btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     background: #FFFBEB;
     border: 1.5px solid #F59E0B;
     color: #B45309;
-    padding: 8px 12px;
+    padding: 7px 4px;
     border-radius: 10px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
-    white-space: nowrap;
+    white-space: nowrap !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
 }
 
 .map-quick-filter-btn:hover {
@@ -2593,9 +2594,9 @@ main {
     border: 1px solid rgba(0,0,0,0.1);
     list-style: none;
     padding: 6px;
-    min-width: 140px;
+    min-width: 155px;
     z-index: 20;
-    max-height: 280px;
+    max-height: 320px;
     overflow-y: auto;
 }
 
@@ -2609,6 +2610,7 @@ main {
     color: #333333;
     border-radius: 8px;
     cursor: pointer;
+    white-space: nowrap !important;
 }
 
 .sub-menu li:hover, .sub-menu li.active {

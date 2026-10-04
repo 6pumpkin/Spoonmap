@@ -2800,7 +2800,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     categoryItems.forEach(li => li.classList.remove('active-on')); // Clear others
                     document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
                     this.classList.add('on');
-                    searchPlacesByCategory();
+                    updateMapMarkers();
                 }
             });
 
@@ -2808,9 +2808,9 @@ document.addEventListener('DOMContentLoaded', () => {
             subItems.forEach(sub => {
                 sub.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const keyword = sub.dataset.keyword;
+                    const keyword = sub.dataset.keyword || '';
                     window.currCategory = 'FD6';
-                    window.currSubKeyword = keyword === '음식점' ? '' : keyword;
+                    window.currSubKeyword = (!keyword || keyword === '음식점' || keyword === '전체') ? '' : keyword;
                     
                     document.querySelectorAll('#category-menu > li').forEach(li => li.classList.remove('on'));
                     document.querySelectorAll('.sub-menu li').forEach(li => li.classList.remove('active'));
@@ -2818,10 +2818,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     newItem.classList.add('on');
                     newItem.classList.remove('sub-open');
-                    
-                    searchPlacesByCategory();
+
+                    // Sync mobile catChip
+                    const catChip = document.getElementById('btn-cat-chip');
+                    const catIcon = document.getElementById('cat-chip-icon');
+                    const catText = document.getElementById('cat-chip-text');
+                    const catClear = document.getElementById('cat-chip-clear');
+                    if (catChip) {
+                        if (!window.currSubKeyword) {
+                            catChip.classList.remove('cat-active');
+                            if (catIcon) catIcon.innerText = '🍴';
+                            if (catText) { catText.innerText = '전체'; catText.style.display = 'inline'; }
+                            if (catClear) catClear.style.display = 'inline';
+                        } else {
+                            catChip.classList.add('cat-active');
+                            const emojiMap = {
+                                '한식': '🍚', '일식': '🍣', '중식': '🥢', '양식': '🍝',
+                                '고기': '🥩', '카페': '☕', '술집': '🍺', '분식': '🍢',
+                                '치킨': '🍗', '피자': '🍕', '패스트푸드': '🍔', '아시안': '🍜', '아시아음식': '🍜',
+                                '샐러드': '🥗', '기타': '🍽️'
+                            };
+                            if (catIcon) catIcon.innerText = emojiMap[window.currSubKeyword] || '🍴';
+                            if (catText) { catText.innerText = ''; catText.style.display = 'none'; }
+                            if (catClear) catClear.style.display = 'inline';
+                        }
+                    }
+
+                    const resultsList = document.getElementById('map-results-list');
+                    if (resultsList) {
+                        resultsList.style.display = 'block';
+                    }
+                    updateMapMarkers();
                 });
             });
+        });
+
+        // Close sub-menu dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#category-menu')) {
+                document.querySelectorAll('#category-menu > li.sub-open').forEach(li => {
+                    li.classList.remove('sub-open');
+                });
+            }
         });
 
         // Subdivision helper to break viewport bounds into 4 quadrants + center to overcome Kakao 45-limit
@@ -2894,8 +2932,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function executeUnifiedSearch(searchType, query, searchOptions) {
             const resultsList = document.getElementById('map-results-list');
+            const detailPanel = document.getElementById('map-place-detail');
+            const quickFilters = document.querySelector('.map-quick-filters');
+            if (detailPanel) detailPanel.style.display = 'none';
+            if (quickFilters) quickFilters.style.display = 'none';
             if (resultsList) {
-                resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 지도 화면 전체에서 대량의 맛집(10페이지 분량)을 수집 중...</p></div>`;
+                resultsList.style.display = 'block';
+                resultsList.scrollTop = 0;
+                resultsList.innerHTML = `<div class="map-empty-state"><p>🔍 지도 화면 전체에서 대량의 맛집 · 10페이지 분량을 수집 중...</p></div>`;
             }
             markers.forEach(m => m.setMap(null));
             markers = [];
@@ -2929,24 +2973,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const masterData = getUnifiedRestaurantData();
 
-            // Filter by Food-Related Places ONLY! (No hair salons, dental clinics, crossroads, subway exits, apartments, etc.)
-            let uniquePlaces = Array.from(uniquePlacesMap.values()).filter(p => isFoodRelatedPlace(p, masterData));
-
-            // Supplementary Search: If station/region query or few food places found, also fetch '[query] 맛집' to discover real restaurants!
+            // Supplementary Search: If station/region query, category query, or few food places found, also fetch '[query] 맛집' to discover real restaurants!
             const isStationOrArea = /(?:역|동|구|군|시|거리|길|로|\d+가)$/.test(query.trim()) || 
                 ['홍대', '신촌', '이태원', '강남', '건대', '대학로', '압구정', '여의도', '명동', '성수', '한남', '을지로', '문래', '연남', '망원', '혜화', '잠실', '판교', '서현', '정자'].includes(query.trim());
 
-            if (searchType === 'keyword' && (isStationOrArea || uniquePlaces.length < 15) && !query.includes('맛집')) {
+            if ((searchType === 'keyword' || searchType === 'category') && (isStationOrArea || uniquePlacesMap.size < 15) && query && query !== 'FD6' && !query.includes('맛집')) {
                 try {
                     const extraResults = await Promise.all(
-                        targetBoundsList.map(b => fetchPlacesForBounds(ps, searchType, `${query} 맛집`, b))
+                        targetBoundsList.map(b => fetchPlacesForBounds(ps, 'keyword', `${query} 맛집`, b))
                     );
                     const extraPlaces = extraResults.flat();
                     extraPlaces.forEach(p => {
                         const key = p.id || `${p.place_name}_${p.x}_${p.y}`;
                         if (!uniquePlacesMap.has(key) && isFoodRelatedPlace(p, masterData)) {
                             uniquePlacesMap.set(key, p);
-                            uniquePlaces.push(p);
                         }
                     });
                 } catch (err) {
@@ -2954,8 +2994,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Fallback Search: If 0 places found, search around map center
+            if (uniquePlacesMap.size === 0 && query) {
+                try {
+                    const center = map.getCenter();
+                    const queriesToTry = (query === 'FD6' || !query) ? [] : [query, `${query} 맛집`];
+                    for (const q of queriesToTry) {
+                        const fallbackPlaces = await new Promise(res => {
+                            ps.keywordSearch(q, (data, status) => {
+                                if (status === kakao.maps.services.Status.OK && data && data.length > 0) res(data);
+                                else res([]);
+                            }, { location: center, radius: 8000, sort: kakao.maps.services.SortBy.ACCURACY });
+                        });
+                        fallbackPlaces.forEach(p => {
+                            const key = p.id || `${p.place_name}_${p.x}_${p.y}`;
+                            if (!uniquePlacesMap.has(key) && isFoodRelatedPlace(p, masterData)) {
+                                uniquePlacesMap.set(key, p);
+                            }
+                        });
+                        if (uniquePlacesMap.size > 0) break;
+                    }
+                    if ((query === 'FD6' || !query || uniquePlacesMap.size === 0) && searchType === 'category') {
+                        const centerPlaces = await new Promise(res => {
+                            ps.categorySearch('FD6', (data, status) => {
+                                if (status === kakao.maps.services.Status.OK && data && data.length > 0) res(data);
+                                else res([]);
+                            }, { location: center, radius: 8000, sort: kakao.maps.services.SortBy.ACCURACY });
+                        });
+                        centerPlaces.forEach(p => {
+                            const key = p.id || `${p.place_name}_${p.x}_${p.y}`;
+                            if (!uniquePlacesMap.has(key) && isFoodRelatedPlace(p, masterData)) {
+                                uniquePlacesMap.set(key, p);
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error('Center fallback search error:', err);
+                }
+            }
+
+            // Filter by Food-Related Places ONLY! (No hair salons, dental clinics, crossroads, subway exits, apartments, etc.)
+            let uniquePlaces = Array.from(uniquePlacesMap.values()).filter(p => isFoodRelatedPlace(p, masterData));
+
             if (uniquePlaces.length === 0) {
-                if (resultsList) resultsList.innerHTML = `<div class="map-empty-state"><p>음식/식당 관련 검색 결과가 없습니다.</p></div>`;
+                if (resultsList) {
+                    resultsList.style.display = 'block';
+                    resultsList.innerHTML = `<div class="map-empty-state"><p>음식 · 식당 관련 검색 결과가 없습니다.</p></div>`;
+                }
                 return;
             }
 
@@ -3129,6 +3214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPaginatedList(allResults, currentPage) {
         const resultsList = document.getElementById('map-results-list');
         if (!resultsList) return;
+        resultsList.style.display = 'block';
 
         const pageSize = 15;
         const totalPages = Math.ceil(allResults.length / pageSize) || 1;
