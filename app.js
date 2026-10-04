@@ -5344,6 +5344,86 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         }
     }
 
+    // ─── Persistent Following User Profiles Cache & Resolver ───
+    const FOLLOWING_PROFILES_KEY = 'spoonmap_following_user_profiles';
+
+    function getFollowedUserProfilesCache() {
+        try {
+            return JSON.parse(localStorage.getItem(FOLLOWING_PROFILES_KEY) || '{}');
+        } catch (_) {
+            return {};
+        }
+    }
+    window.getFollowedUserProfilesCache = getFollowedUserProfilesCache;
+
+    function saveFollowedUserProfile(userObj) {
+        if (!userObj || !userObj.id) return;
+        try {
+            const cache = getFollowedUserProfilesCache();
+            const fid = String(userObj.id);
+            const currentEntry = cache[fid] || {};
+            cache[fid] = {
+                id: fid,
+                name: userObj.name || userObj.nickname || currentEntry.name || `미식가 #${fid.slice(-4)}`,
+                handle: userObj.handle || currentEntry.handle || `@user_${fid.slice(-4)}`,
+                avatar: userObj.avatar || userObj.profileImage || currentEntry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${fid}`,
+                bio: userObj.bio || currentEntry.bio || '맛집을 기록하고 공유하는 미식가입니다 🥄',
+                count: typeof userObj.count === 'number' ? userObj.count : (userObj.restaurants ? userObj.restaurants.length : (currentEntry.count || 0)),
+                privacySettings: userObj.privacySettings || currentEntry.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] },
+                updatedAt: userObj.updatedAt || new Date().toISOString()
+            };
+            localStorage.setItem(FOLLOWING_PROFILES_KEY, JSON.stringify(cache));
+        } catch (_) {}
+    }
+    window.saveFollowedUserProfile = saveFollowedUserProfile;
+
+    function getResolvedFollowedUser(fid) {
+        const strFid = String(fid);
+
+        // 1. Cached Discovered Users in memory
+        if (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers)) {
+            const u = cachedDiscoveredUsers.find(cu => String(cu.id) === strFid);
+            if (u) {
+                saveFollowedUserProfile(u);
+                return u;
+            }
+        }
+
+        // 2. Master Mock Gourmets
+        if (typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+            const mock = MASTER_MOCK_GOURMETS.find(m => String(m.id) === strFid);
+            if (mock) return mock;
+        }
+
+        // 3. Persistent LocalStorage Following Profiles Cache (Guarantees no name flickering)
+        const persistentCache = getFollowedUserProfilesCache();
+        if (persistentCache[strFid]) {
+            return persistentCache[strFid];
+        }
+
+        // 4. spoonmap_cached_public_users in LocalStorage
+        try {
+            const rawPublic = JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]');
+            const pub = rawPublic.find(p => String(p.id) === strFid);
+            if (pub) {
+                saveFollowedUserProfile(pub);
+                return pub;
+            }
+        } catch (_) {}
+
+        // 5. Safe Fallback
+        return {
+            id: strFid,
+            name: `미식가 #${strFid.slice(-4)}`,
+            handle: `@user_${strFid.slice(-4)}`,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${strFid}`,
+            bio: '맛집을 기록하고 공유하는 미식가입니다 🥄',
+            count: 0,
+            privacySettings: { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] }
+        };
+    }
+    window.getResolvedFollowedUser = getResolvedFollowedUser;
+
     // Cache for followed users' restaurants
     window.followingRestaurantsCache = window.followingRestaurantsCache || new Map();
 
@@ -5422,13 +5502,23 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'];
 
         return followingIds.map((fid, idx) => {
-            let u = cachedUsers.find(cu => String(cu.id) === String(fid));
-            if (!u && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-                u = MASTER_MOCK_GOURMETS.find(m => m.id === String(fid));
-            }
+            const u = (typeof getResolvedFollowedUser === 'function') ? getResolvedFollowedUser(fid) : (cachedUsers.find(cu => String(cu.id) === String(fid)) || null);
             const name = u ? u.name : `미식가 #${String(fid).slice(-4)}`;
             const color = colors[idx % colors.length];
-            const cachedRests = (u && Array.isArray(u.restaurants)) ? u.restaurants : (window.followingRestaurantsCache.get(String(fid)) || []);
+            const priv = u?.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
+            let cachedRests = (u && Array.isArray(u.restaurants)) ? u.restaurants : (window.followingRestaurantsCache.get(String(fid)) || []);
+
+            // Apply privacy filter: allowed spoons
+            if (Array.isArray(priv.allowedSpoons)) {
+                cachedRests = cachedRests.filter(r => {
+                    const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 3) || 1;
+                    return priv.allowedSpoons.includes(spoonCount);
+                });
+            }
+            // Apply privacy filter: visit date
+            if (priv.showVisitDate === false) {
+                cachedRests = cachedRests.map(r => ({ ...r, date: '' }));
+            }
 
             return {
                 id: `following_${fid}`,
@@ -6849,7 +6939,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         followingList.forEach(fid => {
             if (fid === 'mock_minwoo_jeju' || fid === 'mock_seoyeon_cafe') return;
-            const u = cachedUsers.find(cu => String(cu.id) === String(fid));
+            const u = (typeof getResolvedFollowedUser === 'function') ? getResolvedFollowedUser(fid) : cachedUsers.find(cu => String(cu.id) === String(fid));
             const name = u ? u.name : `미식가 #${String(fid).slice(-4)}`;
             gourmetItems.push({
                 id: String(fid),
@@ -14308,6 +14398,7 @@ async function publishPublicProfile(profile) {
         }
 
         const resolvedProfile = profile || ((typeof getUserProfile === 'function') ? getUserProfile() : {});
+        const privSettings = resolvedProfile.privacySettings || ((typeof getUserPrivacySettings === 'function') ? getUserPrivacySettings() : { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] });
         const publicData = {
             id: String(u.id),
             name: resolvedProfile.nickname || u.nickname,
@@ -14316,6 +14407,7 @@ async function publishPublicProfile(profile) {
             avatar: resolvedProfile.profileImage || u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : ''),
             isMaster: isOwner,
             count: restCount,
+            privacySettings: privSettings,
             updatedAt: new Date().toISOString()
         };
 
@@ -14528,6 +14620,16 @@ async function fetchDiscoveredUsersFromCloud() {
 
         cachedDiscoveredUsers = dedupedUsers;
         localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(dedupedUsers));
+
+        // Update persistent followed profiles cache for any followed users
+        const currentFollowing = (typeof getUserFollowingList === 'function') ? getUserFollowingList() : [];
+        currentFollowing.forEach(fid => {
+            const matched = dedupedUsers.find(cu => String(cu.id) === String(fid));
+            if (matched && typeof saveFollowedUserProfile === 'function') {
+                saveFollowedUserProfile(matched);
+            }
+        });
+
         return dedupedUsers;
     } catch (e) {
         console.warn('fetchDiscoveredUsersFromCloud error:', e);
@@ -14633,11 +14735,24 @@ function toggleFollowUser(targetId) {
             unfollowedMocks = unfollowedMocks.filter(id => id !== String(targetId));
             localStorage.setItem('spoonmap_master_unfollowed_mocks', JSON.stringify(unfollowedMocks));
         }
+        // Cache user profile immediately to prevent flickering
+        let targetUserObj = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
+            ? cachedDiscoveredUsers.find(cu => String(cu.id) === String(targetId))
+            : null;
+        if (!targetUserObj && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+            targetUserObj = MASTER_MOCK_GOURMETS.find(m => String(m.id) === String(targetId));
+        }
+        if (targetUserObj && typeof saveFollowedUserProfile === 'function') {
+            saveFollowedUserProfile(targetUserObj);
+        }
         showDiaryToast(`⭐ 팔로우했습니다!`);
     }
 
     saveUserFollowingList(list);
     renderProfileView();
+    if (typeof refreshSidebarFilters === 'function') {
+        refreshSidebarFilters();
+    }
 }
 window.toggleFollowUser = toggleFollowUser;
 
@@ -14728,20 +14843,14 @@ function renderFollowingCards() {
     }
 
     followingGrid.innerHTML = followingList.map(fid => {
-        let u = cachedDiscoveredUsers.find(cu => String(cu.id) === String(fid));
-        if (!u && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-            u = MASTER_MOCK_GOURMETS.find(m => m.id === String(fid));
-        }
-        if (!u) {
-            u = {
-                id: fid,
-                name: `미식가 #${String(fid).slice(-4)}`,
-                handle: `@user_${String(fid).slice(-4)}`,
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${fid}`,
-                bio: '맛집을 기록하고 공유하는 미식가입니다 🥄',
-                count: 0
-            };
-        }
+        const u = (typeof getResolvedFollowedUser === 'function') ? getResolvedFollowedUser(fid) : {
+            id: fid,
+            name: `미식가 #${String(fid).slice(-4)}`,
+            handle: `@user_${String(fid).slice(-4)}`,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${fid}`,
+            bio: '맛집을 기록하고 공유하는 미식가입니다 🥄',
+            count: 0
+        };
         return `
             <div class="following-user-card">
                 <div class="following-card-top">
@@ -14770,10 +14879,10 @@ function toggleRecommendUsers() {
     if (btn) {
         if (isRecommendUsersOpen) {
             btn.classList.add('active');
-            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천 미식가 닫기</span>`;
+            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천 닫기</span>`;
         } else {
             btn.classList.remove('active');
-            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천 미식가 보기</span>`;
+            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천</span>`;
         }
     }
     const searchInput = document.getElementById('discover-user-search');
@@ -14800,15 +14909,22 @@ async function renderDiscoverUsersList(searchQuery = '') {
             try {
                 const doc = await db.collection('spoonmap_public_profiles').doc(String(fid)).get();
                 if (doc.exists && doc.data()) {
-                    cachedDiscoveredUsers.push(doc.data());
+                    const uData = doc.data();
+                    cachedDiscoveredUsers.push(uData);
+                    if (typeof saveFollowedUserProfile === 'function') {
+                        saveFollowedUserProfile(uData);
+                    }
                 }
             } catch (e) {}
         }));
         localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(cachedDiscoveredUsers));
     }
 
-    // Refresh following cards with resolved user names & avatars!
+    // Refresh following cards and sidebar/mobile filters with resolved user names & avatars!
     renderFollowingCards();
+    if (typeof refreshSidebarFilters === 'function') {
+        refreshSidebarFilters();
+    }
 
     let warningBanner = '';
     if (window.spoonmapCloudStatus === 'permission-denied') {
@@ -15133,6 +15249,18 @@ window.viewGourmetRestaurantList = async function(userId) {
         }
     }
 
+    // Apply privacy settings of target gourmet
+    const targetPriv = targetUser.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
+    if (Array.isArray(targetPriv.allowedSpoons)) {
+        userRestaurants = userRestaurants.filter(r => {
+            const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 3) || 1;
+            return targetPriv.allowedSpoons.includes(spoonCount);
+        });
+    }
+    if (targetPriv.showVisitDate === false) {
+        userRestaurants = userRestaurants.map(r => ({ ...r, date: '' }));
+    }
+
     if (userRestaurants.length === 0) {
         showDiaryToast(`ℹ️ [${targetUser.name}] 님이 등록한 공개 맛집이 아직 없습니다.`);
         return;
@@ -15181,6 +15309,95 @@ window.exitGourmetViewingMode = function() {
     showDiaryToast(`🏠 내 맛집 목록으로 돌아왔습니다.`);
 };
 
+// ─── Privacy Settings for Gourmet List Sharing ───
+window.getUserPrivacySettings = function() {
+    try {
+        const prof = (typeof getUserProfile === 'function') ? getUserProfile() : null;
+        if (prof && prof.privacySettings) {
+            return {
+                showVisitDate: prof.privacySettings.showVisitDate !== false,
+                allowedSpoons: Array.isArray(prof.privacySettings.allowedSpoons) && prof.privacySettings.allowedSpoons.length > 0
+                    ? prof.privacySettings.allowedSpoons
+                    : [1, 2, 3, 4, 5]
+            };
+        }
+        const saved = localStorage.getItem('spoonmap_privacy_settings');
+        if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
+};
+
+window.saveUserPrivacySettings = function(settings) {
+    try {
+        localStorage.setItem('spoonmap_privacy_settings', JSON.stringify(settings));
+        const prof = getUserProfile();
+        prof.privacySettings = settings;
+        saveUserProfile(prof);
+    } catch (e) {
+        console.warn('saveUserPrivacySettings error:', e);
+    }
+};
+
+window.toggleProfilePrivacyPanel = function() {
+    const panel = document.getElementById('profile-privacy-panel');
+    const btn = document.getElementById('btn-profile-privacy-toggle');
+    if (!panel || !btn) return;
+    const isHidden = panel.style.display === 'none' || !panel.style.display;
+    panel.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+};
+
+let currentModalPrivacyAllowedSpoons = [1, 2, 3, 4, 5];
+
+window.togglePrivacySpoonChip = function(spoonNum) {
+    const num = parseInt(spoonNum, 10);
+    const chip = document.querySelector(`.privacy-spoon-chip[data-spoon="${num}"]`);
+    if (!chip) return;
+
+    if (currentModalPrivacyAllowedSpoons.includes(num)) {
+        if (currentModalPrivacyAllowedSpoons.length === 1) {
+            showDiaryToast('최소 한 개 이상의 수저 등급을 선택해야 합니다.');
+            return;
+        }
+        currentModalPrivacyAllowedSpoons = currentModalPrivacyAllowedSpoons.filter(s => s !== num);
+        chip.classList.remove('active');
+        const stateEl = chip.querySelector('.chip-state');
+        if (stateEl) stateEl.textContent = 'OFF';
+    } else {
+        currentModalPrivacyAllowedSpoons.push(num);
+        currentModalPrivacyAllowedSpoons.sort((a, b) => a - b);
+        chip.classList.add('active');
+        const stateEl = chip.querySelector('.chip-state');
+        if (stateEl) stateEl.textContent = 'ON';
+    }
+    updatePrivacySettingSummaryBadge();
+};
+
+function updatePrivacySettingSummaryBadge() {
+    const summaryEl = document.getElementById('privacy-setting-summary');
+    const dateToggle = document.getElementById('privacy-toggle-date');
+    if (!summaryEl) return;
+
+    const isDateOn = dateToggle ? dateToggle.checked : true;
+    const spoons = currentModalPrivacyAllowedSpoons;
+
+    let spoonText = '';
+    if (spoons.length === 5) {
+        spoonText = '수저 1~5';
+    } else if (spoons.length === 0) {
+        spoonText = '수저 없음';
+    } else {
+        spoonText = `수저 ${spoons.join(', ')}`;
+    }
+
+    const dateText = isDateOn ? '방문일자 공개' : '방문일자 숨김';
+    summaryEl.textContent = `${spoonText} · ${dateText}`;
+}
+
 // ─── Profile Edit Modal ───
 window.openProfileEditModal = function() {
     const profile = getUserProfile();
@@ -15192,6 +15409,36 @@ window.openProfileEditModal = function() {
     if (nameInput) nameInput.value = profile.nickname || '';
     if (handleInput) handleInput.value = profile.handle || '';
     if (bioInput) bioInput.value = profile.bio || '';
+
+    // Privacy Settings UI Initialization
+    const privacy = (profile && profile.privacySettings) ? profile.privacySettings : getUserPrivacySettings();
+    const dateToggle = document.getElementById('privacy-toggle-date');
+    if (dateToggle) {
+        dateToggle.checked = privacy.showVisitDate !== false;
+        dateToggle.onchange = updatePrivacySettingSummaryBadge;
+    }
+
+    currentModalPrivacyAllowedSpoons = Array.isArray(privacy.allowedSpoons) && privacy.allowedSpoons.length > 0 
+        ? [...privacy.allowedSpoons] 
+        : [1, 2, 3, 4, 5];
+
+    [1, 2, 3, 4, 5].forEach(num => {
+        const chip = document.querySelector(`.privacy-spoon-chip[data-spoon="${num}"]`);
+        if (chip) {
+            const isActive = currentModalPrivacyAllowedSpoons.includes(num);
+            if (isActive) chip.classList.add('active');
+            else chip.classList.remove('active');
+            const stateEl = chip.querySelector('.chip-state');
+            if (stateEl) stateEl.textContent = isActive ? 'ON' : 'OFF';
+        }
+    });
+
+    const panel = document.getElementById('profile-privacy-panel');
+    const btn = document.getElementById('btn-profile-privacy-toggle');
+    if (panel) panel.style.display = 'none';
+    if (btn) btn.classList.remove('active');
+
+    updatePrivacySettingSummaryBadge();
 
     if (modal) modal.classList.add('open');
 };
@@ -15205,10 +15452,13 @@ window.saveProfileFromModal = function() {
     const nameInput = document.getElementById('edit-profile-name');
     const handleInput = document.getElementById('edit-profile-handle');
     const bioInput = document.getElementById('edit-profile-bio');
+    const dateToggle = document.getElementById('privacy-toggle-date');
 
     const name = nameInput ? nameInput.value.trim() : '';
     let handle = handleInput ? handleInput.value.trim() : '';
     const bio = bioInput ? bioInput.value.trim() : '';
+    const showVisitDate = dateToggle ? dateToggle.checked : true;
+    const allowedSpoons = currentModalPrivacyAllowedSpoons.length > 0 ? [...currentModalPrivacyAllowedSpoons] : [1, 2, 3, 4, 5];
 
     if (!name) {
         alert('닉네임을 입력해 주세요.');
@@ -15224,13 +15474,20 @@ window.saveProfileFromModal = function() {
         ...current,
         nickname: name,
         handle: handle || current.handle,
-        bio: bio
+        bio: bio,
+        privacySettings: {
+            showVisitDate: showVisitDate,
+            allowedSpoons: allowedSpoons
+        }
     };
 
     saveUserProfile(updated);
+    try {
+        localStorage.setItem('spoonmap_privacy_settings', JSON.stringify(updated.privacySettings));
+    } catch (_) {}
     closeProfileEditModal();
     renderProfileView();
-    showDiaryToast('✅ 프로필 정보가 성공적으로 수정되었습니다!');
+    showDiaryToast('✅ 프로필 정보 및 공유 범위 설정이 저장되었습니다!');
 };
 
 // ─── Custom Avatar Studio: Config Data & Module ───
@@ -15980,8 +16237,9 @@ async function publishSharedMap(forceNew = false) {
     const profile = getUserProfile();
     const rawRestaurants = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
     
-    // Privacy filter: Sanitize restaurants for public sharing (exclude private diary notes)
-    const sanitizedRestaurants = rawRestaurants.map(r => ({
+    // Privacy filter: Sanitize restaurants for public sharing (exclude private diary notes & apply privacy settings)
+    const privacy = (profile && profile.privacySettings) ? profile.privacySettings : ((typeof getUserPrivacySettings === 'function') ? getUserPrivacySettings() : { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] });
+    let sanitizedRestaurants = rawRestaurants.map(r => ({
         name: r.name,
         category: r.category || '기타',
         location_large: r.location_large || '',
@@ -15994,9 +16252,16 @@ async function publishSharedMap(forceNew = false) {
         road_address: r.road_address || '',
         x: r.x || '',
         y: r.y || '',
-        date: r.date || '',
+        date: (privacy.showVisitDate !== false) ? (r.date || '') : '',
         isWishlist: !!r.isWishlist
     }));
+
+    if (Array.isArray(privacy.allowedSpoons)) {
+        sanitizedRestaurants = sanitizedRestaurants.filter(r => {
+            const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 1) || 1;
+            return privacy.allowedSpoons.includes(spoonCount);
+        });
+    }
 
     const rawWishlist = (typeof getUserWishlist === 'function') ? getUserWishlist() : [];
     const sanitizedWishlist = rawWishlist.map(w => ({

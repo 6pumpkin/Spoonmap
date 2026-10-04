@@ -6317,25 +6317,34 @@ input[type="date"].drawer-input {
     border-radius: 12px;
 }
 
-.profile-section-desc {
-    font-size: 0.82rem;
-    color: #6B7280;
-    margin: 4px 0 0;
+.profile-section-header.with-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
-.profile-search-actions {
+.profile-section-top-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    width: 100%;
+}
+
+.profile-section-top-row .profile-section-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
 }
 
 .btn-recommend-toggle {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
     font-size: 0.8rem;
     font-weight: 700;
     color: #92400E;
@@ -6344,6 +6353,7 @@ input[type="date"].drawer-input {
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .btn-recommend-toggle:hover {
@@ -6360,23 +6370,31 @@ input[type="date"].drawer-input {
 }
 
 .btn-recommend-toggle .recommend-icon {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+}
+
+.profile-section-desc {
+    font-size: 0.82rem;
+    color: #6B7280;
+    margin: 0;
 }
 
 .profile-search-wrap {
     position: relative;
-    width: 240px;
+    width: 100%;
 }
 
 .profile-search-input {
     width: 100%;
-    padding: 8px 32px 8px 12px;
+    height: 40px;
+    padding: 0 36px 0 14px;
     border-radius: 12px;
     border: 1.5px solid #E5E7EB;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     outline: none;
     background: #F9FAFB;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background-color 0.2s;
+    box-sizing: border-box;
 }
 
 .profile-search-input:focus {
@@ -6386,7 +6404,7 @@ input[type="date"].drawer-input {
 
 .profile-search-wrap .search-icon {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 0.85rem;
@@ -6748,6 +6766,203 @@ input[type="date"].drawer-input {
 .profile-modal-body .modal-textarea:focus {
     border-color: var(--coral-main, #FF4757);
     background: #ffffff;
+}
+
+/* ─── Profile Privacy Settings in Edit Modal ─── */
+.profile-privacy-field {
+    margin-top: 4px;
+}
+
+.btn-profile-privacy-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 14px;
+    background: #F8FAFC;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1E293B;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btn-profile-privacy-toggle:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+.btn-profile-privacy-toggle.active {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+    color: #1D4ED8;
+}
+
+.privacy-btn-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.privacy-btn-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #2563EB;
+    background: #DBEAFE;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.privacy-btn-arrow {
+    font-size: 0.7rem;
+    color: #64748B;
+    transition: transform 0.2s ease;
+}
+
+.btn-profile-privacy-toggle.active .privacy-btn-arrow {
+    transform: rotate(180deg);
+}
+
+.profile-privacy-panel {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.privacy-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.privacy-setting-row.privacy-setting-col {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    border-top: 1px dashed #E2E8F0;
+    padding-top: 10px;
+}
+
+.privacy-setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.privacy-setting-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #1E293B;
+}
+
+.privacy-setting-desc {
+    font-size: 0.74rem;
+    color: #64748B;
+    line-height: 1.35;
+}
+
+.privacy-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.privacy-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.privacy-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #CBD5E1;
+    transition: .25s;
+    border-radius: 24px;
+}
+
+.privacy-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .25s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.privacy-switch input:checked + .privacy-slider {
+    background-color: #10B981;
+}
+
+.privacy-switch input:checked + .privacy-slider:before {
+    transform: translateX(20px);
+}
+
+.privacy-spoon-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+}
+
+.privacy-spoon-chip {
+    flex: 1 1 calc(20% - 6px);
+    min-width: 54px;
+    height: 36px;
+    padding: 0 4px;
+    border-radius: 10px;
+    border: 1.5px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #64748B;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+}
+
+.privacy-spoon-chip .chip-state {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 3px;
+    border-radius: 4px;
+    background: #E2E8F0;
+    color: #94A3B8;
+}
+
+.privacy-spoon-chip.active {
+    border-color: #FF4757;
+    background: #FFF1F2;
+    color: #E11D48;
+    box-shadow: 0 1px 4px rgba(244, 63, 94, 0.15);
+}
+
+.privacy-spoon-chip.active .chip-state {
+    background: #FFE4E6;
+    color: #E11D48;
 }
 
 .profile-modal-footer {
@@ -12403,46 +12618,57 @@ span.desktop-only {
         gap: 6px !important;
     }
 
-    .profile-section-title {
-        font-size: 0.98rem !important;
+    .profile-section-header.with-search {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+
+    .profile-section-top-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .profile-section-top-row .profile-section-title {
+        font-size: 0.94rem !important;
         font-weight: 800 !important;
-        white-space: nowrap !important;
+        margin: 0 !important;
+        flex: 1 !important;
+    }
+
+    .profile-section-top-row .btn-recommend-toggle {
+        flex-shrink: 0 !important;
+        height: 32px !important;
+        padding: 0 10px !important;
+        font-size: 0.78rem !important;
+        border-radius: 9px !important;
     }
 
     .profile-section-desc {
         font-size: 0.74rem !important;
         color: #64748B !important;
-        margin: 2px 0 0 !important;
+        margin: 0 0 4px 0 !important;
+        line-height: 1.35 !important;
     }
 
-    .profile-search-actions {
+    .profile-search-wrap {
         width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 6px !important;
-        margin-top: 6px !important;
-    }
-
-    .profile-search-actions .btn-recommend-toggle {
-        flex-shrink: 0 !important;
-        height: 38px !important;
-        padding: 0 10px !important;
-        font-size: 0.75rem !important;
-    }
-
-    .profile-search-actions .profile-search-wrap {
-        flex: 1 !important;
-        width: auto !important;
-        margin-top: 0 !important;
+        margin-top: 4px !important;
+        position: relative !important;
     }
 
     .profile-search-input {
+        width: 100% !important;
         height: 38px !important;
         padding: 0 34px 0 12px !important;
         border-radius: 12px !important;
         font-size: 0.8rem !important;
         background: #F1F5F9 !important;
         border: 1px solid #E2E8F0 !important;
+        box-sizing: border-box !important;
     }
 
     .following-grid {

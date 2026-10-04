@@ -990,19 +990,17 @@
                     <!-- 3. Discover & Follow Section - 새로운 미식가 찾기 -->
                     <div class="profile-section-card">
                         <div class="profile-section-header with-search">
-                            <div>
+                            <div class="profile-section-top-row">
                                 <h3 class="profile-section-title">🔍 새로운 미식가 찾기 & 추천</h3>
-                                <p class="profile-section-desc">내 입맛 취향과 맞는 다른 유저를 팔로우하고 맛집 지도를 교환하세요.</p>
-                            </div>
-                            <div class="profile-search-actions">
-                                <button type="button" id="btn-toggle-recommend-users" class="btn-recommend-toggle" onclick="toggleRecommendUsers()" title="추천 미식가 보기">
+                                <button type="button" id="btn-toggle-recommend-users" class="btn-recommend-toggle" onclick="toggleRecommendUsers()" title="추천">
                                     <span class="recommend-icon">✨</span>
-                                    <span class="recommend-text">추천 미식가 보기</span>
+                                    <span class="recommend-text">추천</span>
                                 </button>
-                                <div class="profile-search-wrap">
-                                    <input type="text" id="discover-user-search" class="profile-search-input" placeholder="닉네임 또는 @핸들 검색...">
-                                    <span class="search-icon">🔍</span>
-                                </div>
+                            </div>
+                            <p class="profile-section-desc">내 입맛 취향과 맞는 다른 유저를 팔로우하고 맛집 지도를 교환하세요.</p>
+                            <div class="profile-search-wrap">
+                                <input type="text" id="discover-user-search" class="profile-search-input" placeholder="닉네임 또는 @핸들 검색...">
+                                <span class="search-icon">🔍</span>
                             </div>
                         </div>
                         <div class="discover-users-list" id="discover-users-list">
@@ -1248,6 +1246,39 @@
                 <div class="modal-field">
                     <label>한 줄 소개 · Bio</label>
                     <textarea id="edit-profile-bio" class="modal-textarea" rows="3" placeholder="나의 미식 취향을 자유롭게 소개해 보세요..." maxlength="120"></textarea>
+                </div>
+                <div class="modal-field profile-privacy-field">
+                    <label>친구 맛집 공유 범위 설정</label>
+                    <button type="button" class="btn-profile-privacy-toggle" id="btn-profile-privacy-toggle" onclick="toggleProfilePrivacyPanel()">
+                        <span class="privacy-btn-left">🔒 친구 맛집 공개 범위 설정</span>
+                        <span class="privacy-btn-badge" id="privacy-setting-summary">모두 공개 · 수저 1~5</span>
+                        <span class="privacy-btn-arrow" id="privacy-toggle-arrow">▼</span>
+                    </button>
+                    <div id="profile-privacy-panel" class="profile-privacy-panel" style="display:none;">
+                        <div class="privacy-setting-row">
+                            <div class="privacy-setting-info">
+                                <span class="privacy-setting-title">식당 방문 일자 공개</span>
+                                <span class="privacy-setting-desc">친구들이 내 맛집을 볼 때 방문 날짜 공개 여부를 설정합니다.</span>
+                            </div>
+                            <label class="privacy-switch">
+                                <input type="checkbox" id="privacy-toggle-date" checked>
+                                <span class="privacy-slider"></span>
+                            </label>
+                        </div>
+                        <div class="privacy-setting-row privacy-setting-col">
+                            <div class="privacy-setting-info">
+                                <span class="privacy-setting-title">공유할 수저 등급 선택</span>
+                                <span class="privacy-setting-desc">선택된 수저의 맛집만 친구들에게 공유됩니다. 찐 맛집만 공유하려면 낮은 수저를 꺼두세요.</span>
+                            </div>
+                            <div class="privacy-spoon-chips" id="privacy-spoon-chips">
+                                <button type="button" class="privacy-spoon-chip active" data-spoon="1" onclick="togglePrivacySpoonChip(1)">🥄 1개 <span class="chip-state">ON</span></button>
+                                <button type="button" class="privacy-spoon-chip active" data-spoon="2" onclick="togglePrivacySpoonChip(2)">🥄 2개 <span class="chip-state">ON</span></button>
+                                <button type="button" class="privacy-spoon-chip active" data-spoon="3" onclick="togglePrivacySpoonChip(3)">🥄 3개 <span class="chip-state">ON</span></button>
+                                <button type="button" class="privacy-spoon-chip active" data-spoon="4" onclick="togglePrivacySpoonChip(4)">🥄 4개 <span class="chip-state">ON</span></button>
+                                <button type="button" class="privacy-spoon-chip active" data-spoon="5" onclick="togglePrivacySpoonChip(5)">🥄 5개 <span class="chip-state">ON</span></button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="profile-modal-footer">
