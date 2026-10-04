@@ -4519,21 +4519,25 @@ input[type="date"].drawer-input {
 /* ── Toast ── */
 .diary-toast {
     position: fixed;
-    bottom: 2rem;
+    bottom: 5.2rem;
     left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: var(--text-primary);
-    color: var(--surface-card);
-    padding: 0.7rem 1.4rem;
-    border-radius: 30px;
-    font-size: 0.88rem;
+    background: #0F172A;
+    color: #FFFFFF;
+    padding: 0.55rem 1.1rem;
+    border-radius: 24px;
+    font-size: 0.78rem;
     font-weight: 700;
     z-index: 2000;
     opacity: 0;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
     pointer-events: none;
     white-space: nowrap;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    max-width: calc(100vw - 36px);
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
 }
 .diary-toast.show {
     transform: translateX(-50%) translateY(0);

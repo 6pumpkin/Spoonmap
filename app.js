@@ -15599,7 +15599,7 @@ window.viewGourmetRestaurantList = async function(userId) {
         }
     }
 
-    showDiaryToast(`🍽️ [${targetUser.name}] 님의 맛집 리스트를 불러오는 중...`);
+    showDiaryToast(`🍽️ ${targetUser.name} 님의 맛집 목록을 불러오는 중...`);
 
     // 2. Regular user from Firestore if not a mock gourmet and not Master
     if (userRestaurants.length === 0 && !targetUser.isMasterMock) {
@@ -15676,7 +15676,7 @@ window.viewGourmetRestaurantList = async function(userId) {
     }
 
     if (userRestaurants.length === 0) {
-        showDiaryToast(`ℹ️ [${targetUser.name}] 님이 등록한 공개 맛집이 아직 없습니다.`);
+        showDiaryToast(`ℹ️ ${targetUser.name} 님이 등록한 공개 맛집이 아직 없습니다.`);
         return;
     }
 
@@ -15711,7 +15711,7 @@ window.viewGourmetRestaurantList = async function(userId) {
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showDiaryToast(`🍽️ [${targetUser.name}] 님의 추천 맛집 둘러보기 모드로 전환되었습니다.`);
+    showDiaryToast(`🍽️ ${targetUser.name} 님의 추천 맛집 둘러보기`);
 };
 
 window.exitGourmetViewingMode = function() {
