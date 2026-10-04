@@ -2239,10 +2239,155 @@ main {
     align-items: center;
 }
 
+/* Friend Search Bar */
+.friend-search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+.friend-search-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 13px;
+    color: #94A3B8;
+    pointer-events: none;
+}
+.friend-search-input {
+    width: 100%;
+    padding: 8px 30px 8px 32px;
+    font-size: 0.85rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    outline: none;
+    background: #FFFFFF;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+.friend-search-input:focus {
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+}
+.friend-search-clear-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+/* Quick Action Buttons */
+.btn-friend-quick-all {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.btn-friend-quick-all:hover {
+    background: #F1F5F9;
+    color: #1E293B;
+}
+
+/* Friend Modal List Scroll & Empty */
 .friend-modal-list {
+    max-height: 160px;
+    overflow-y: auto;
+    padding-right: 2px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+.friend-search-empty {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 0.85rem;
+    color: #94A3B8;
+}
+
+/* Category Filter Chips */
+.friend-section-subdesc {
+    font-size: 0.78rem;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.35;
+}
+.friend-filter-chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 2px 1px;
+}
+.friend-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+.friend-cat-chip.active {
+    background: #FAF5FF;
+    color: #7C3AED;
+    border: 1.5px solid #7C3AED;
+    font-weight: 800;
+    box-shadow: 0 1px 3px rgba(124, 58, 237, 0.15);
+}
+
+/* Spoon Filter Chips - STRICT 1 LINE */
+.friend-spoon-chips-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    margin-top: 8px;
+    box-sizing: border-box;
+}
+.friend-spoon-chip {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 2px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 8px;
+    border: 1.5px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #64748B;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+}
+.friend-spoon-chip.active {
+    background: #FFF7ED;
+    border-color: #EA580C;
+    color: #EA580C;
+    font-weight: 800;
+    box-shadow: 0 1px 3px rgba(234, 88, 12, 0.15);
 }
 
 .friend-modal-item {
@@ -10902,6 +11047,12 @@ span.desktop-only {
         border-radius: 50% !important;
         background: rgba(255, 71, 87, 0.12) !important;
     }
+    .modern-chip-btn.my-active {
+        background: #FFF7ED !important;
+        border-color: #EA580C !important;
+        color: #EA580C !important;
+        box-shadow: 0 2px 10px rgba(234, 88, 12, 0.2) !important;
+    }
     .modern-chip-btn.star-active {
         background: #FFFBEB !important;
         border-color: #F59E0B !important;
@@ -11147,6 +11298,14 @@ span.desktop-only {
         margin: 0 -14px 6px -14px !important;
         width: calc(100% + 28px) !important;
         border-radius: 24px 24px 0 0 !important;
+    }
+    .friend-spoon-chip {
+        font-size: 0.76rem !important;
+        padding: 8px 1px !important;
+    }
+    .friend-cat-chip {
+        font-size: 0.76rem !important;
+        padding: 5px 8px !important;
     }
     .pop-footer-link {
         padding-top: 2px !important;

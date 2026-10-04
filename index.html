@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610042115">
+    <link rel="stylesheet" href="style.css?v=202610042210">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -822,7 +822,8 @@
                             <span class="caret">▼</span>
                         </button>
 
-                        <!-- 데스크톱용 기존 버튼 -->
+                        <!-- 데스크톱용 버튼 -->
+                        <button id="btn-show-my-restaurants" class="map-quick-filter-btn desktop-only-btn" type="button">🍽️ 내 식당</button>
                         <button id="btn-show-wishlist" class="map-quick-filter-btn desktop-only-btn" type="button">⭐ 찜 가게 목록</button>
                         <button id="btn-toggle-friends-panel" class="map-quick-filter-btn friend-toggle-btn desktop-only-btn" type="button">👥 친구 지도</button>
                     </div>
@@ -849,8 +850,19 @@
                         <div class="pop-cat-item" data-keyword="기타"><span>🍽️ 기타</span></div>
                     </div>
 
-                    <!-- 2. 별표 (찜 & 친구) 미니 팝오버 -->
+                    <!-- 2. 별표 - 내 식당, 찜, 친구 - 미니 팝오버 -->
                     <div id="popover-star-menu" class="popover-star-menu">
+                        <div class="pop-section-row" id="pop-row-my-restaurants">
+                            <div class="pop-row-left">
+                                <span>🍽️</span>
+                                <span>내 식당</span>
+                            </div>
+                            <label class="toggle-switch-sm">
+                                <input type="checkbox" id="switch-my-restaurants-toggle">
+                                <span class="toggle-slider-sm"></span>
+                            </label>
+                        </div>
+                        <div class="pop-divider"></div>
                         <div class="pop-section-row" id="pop-row-wishlist">
                             <div class="pop-row-left">
                                 <span>⭐</span>
@@ -872,7 +884,7 @@
                         <div id="pop-friends-sub-list" class="friends-sub-list"></div>
                         <div class="pop-divider"></div>
                         <div class="pop-footer-link">
-                            <button type="button" onclick="window.openFriendManageModal()">⚙️ 친구 관리 ➔</button>
+                            <button type="button" onclick="window.openFriendManageModal()">⚙️ 친구 설정 & 관리 ➔</button>
                         </div>
                     </div>
 
@@ -1470,25 +1482,60 @@
         </div>
     </div>
 
-    <!-- ─── Friend Management & Add Friend Modal ─── -->
+    <!-- ─── Friend Management & Overlay Filter Modal ─── -->
     <div id="friend-manage-modal" class="list-detail-modal-overlay" style="display:none;" onclick="if(event.target===this)window.closeFriendManageModal()">
         <div class="list-detail-modal-card friend-modal-card">
             <!-- Mobile Slide Down Handlebar -->
-            <div id="friend-manage-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="친구 관리 창 닫기/접기"><div class="handle-bar"></div></div>
+            <div id="friend-manage-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="친구 관리 창 닫기"><div class="handle-bar"></div></div>
             <button class="list-detail-close-btn" onclick="window.closeFriendManageModal()" title="닫기">&times;</button>
             <div class="modal-header">
-                <h2>👥 친구 지도 & 맛집 관리</h2>
+                <h2>👥 친구 지도 설정 & 관리</h2>
             </div>
             
             <div class="friend-modal-body">
-                <!-- Section 1: My Friends List -->
-                <div class="friend-modal-section" style="margin-bottom:0;">
-                    <div class="section-title-row">
-                        <h3>등록된 친구 목록</h3>
-                        <span id="friend-modal-count" class="friend-badge-count">4명</span>
+                <!-- Section 1: Friend Search & Display Toggles -->
+                <div class="friend-modal-section">
+                    <div class="section-title-row" style="margin-bottom:8px; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <h3 style="font-size:0.95rem; font-weight:800; color:#1E293B;">친구 검색 & 표시 설정</h3>
+                            <span id="friend-modal-count" class="friend-badge-count">0명</span>
+                        </div>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button type="button" class="btn-friend-quick-all" onclick="window.toggleAllFriendsOverlay(true)">전체 켜기</button>
+                            <button type="button" class="btn-friend-quick-all" onclick="window.toggleAllFriendsOverlay(false)">전체 끄기</button>
+                        </div>
+                    </div>
+                    <div class="friend-search-input-wrap">
+                        <span class="friend-search-icon">🔍</span>
+                        <input type="text" id="friend-search-input" class="friend-search-input" placeholder="친구 또는 추천 미식가 이름 검색..." autocomplete="off">
+                        <button type="button" id="btn-clear-friend-search" class="friend-search-clear-btn" style="display:none;" onclick="window.clearFriendSearch()">✕</button>
                     </div>
                     <div id="friend-modal-list" class="friend-modal-list">
                         <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Section 2: Friend Restaurant Category Filter -->
+                <div class="friend-modal-section">
+                    <div class="section-title-row" style="margin-bottom:4px; justify-content:space-between;">
+                        <h3 style="font-size:0.95rem; font-weight:800; color:#1E293B;">친구 맛집 음식 종류 필터</h3>
+                        <button type="button" class="btn-friend-quick-all" id="btn-toggle-all-friend-cats" onclick="window.toggleAllFriendCategories()">전체 선택</button>
+                    </div>
+                    <p class="friend-section-subdesc">지도에 표시할 친구 맛집의 음식 종류를 선택하세요.</p>
+                    <div id="friend-category-chips-wrap" class="friend-filter-chips-row">
+                        <!-- Category chips dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Section 3: Friend Restaurant Spoon Rating Filter -->
+                <div class="friend-modal-section" style="margin-bottom:0;">
+                    <div class="section-title-row" style="margin-bottom:4px; justify-content:space-between;">
+                        <h3 style="font-size:0.95rem; font-weight:800; color:#1E293B;">친구 맛집 수저 평점 필터</h3>
+                        <button type="button" class="btn-friend-quick-all" id="btn-toggle-all-friend-spoons" onclick="window.toggleAllFriendSpoons()">전체 선택</button>
+                    </div>
+                    <p class="friend-section-subdesc">지도에 표시할 친구 맛집의 수저 등급을 선택하세요.</p>
+                    <div id="friend-spoon-chips-wrap" class="friend-spoon-chips-row">
+                        <!-- 5 spoon buttons strictly 1 line -->
                     </div>
                 </div>
             </div>
@@ -1574,12 +1621,12 @@
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7d1898e936717ce9a0b768bc21807a99&libraries=services"></script>
     
     <!-- Korea Regions Database -->
-    <script src="regions.js?v=202610042115"></script>
-    <script src="data.js?v=202610042115"></script>
-    <script src="ddoganzip_data.js?v=202610042115"></script>
-    <script src="meogeultende_data.js?v=202610042115"></script>
-    <script src="jungyugwang_data.js?v=202610042115"></script>
-    <script src="app.js?v=202610042115"></script>
+    <script src="regions.js?v=202610042210"></script>
+    <script src="data.js?v=202610042210"></script>
+    <script src="ddoganzip_data.js?v=202610042210"></script>
+    <script src="meogeultende_data.js?v=202610042210"></script>
+    <script src="jungyugwang_data.js?v=202610042210"></script>
+    <script src="app.js?v=202610042210"></script>
 </body>
 
 </html>

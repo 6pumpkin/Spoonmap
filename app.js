@@ -4539,6 +4539,189 @@ document.addEventListener('DOMContentLoaded', () => {
         btnShowWishlist.addEventListener('click', showWishlistPlacesOnMap);
     }
 
+    // ─── Show My Visited Places on Map - 내 식당 단독 보기 ───
+    async function showMyVisitedPlacesOnMap() {
+        const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+        const myPlaces = allData.filter(r => (r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist);
+
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        const quickFilters = document.querySelector('.map-quick-filters');
+
+        if (detailPanel) detailPanel.style.display = 'none';
+        if (resultsList) resultsList.style.display = 'block';
+        if (quickFilters) quickFilters.style.display = 'none';
+
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+        if (window.currentHoverOverlay) {
+            window.currentHoverOverlay.setMap(null);
+            window.currentHoverOverlay = null;
+        }
+
+        if (!myPlaces || myPlaces.length === 0) {
+            if (resultsList) {
+                resultsList.innerHTML = `
+                    <div class="map-empty-state" style="text-align:center; padding:28px 16px;">
+                        <button class="btn-reset-map-search" onclick="resetMapSearchToInitial()">← 검색 초기화면으로</button>
+                        <div style="font-size:2rem; margin:14px 0 8px 0;">🍽️</div>
+                        <p style="font-size:1.02rem; font-weight:800; color:#1E293B; margin:0 0 6px 0;">등록된 내 식당이 아직 없습니다.</p>
+                        <p style="font-size:0.85rem; color:#64748B; margin:0; line-height:1.45;">다이어리나 식당 등록을 통해 방문한 식당을 기록해보세요.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        resultsList.innerHTML = `
+            <div class="map-empty-state">
+                <p>⌛ 내 식당 ${myPlaces.length}곳을 지도에 불러오는 중...</p>
+            </div>
+        `;
+
+        const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
+        const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
+        const bounds = new kakao.maps.LatLngBounds();
+        const allMyResults = [];
+
+        let geocodeCache = {};
+        try {
+            geocodeCache = JSON.parse(localStorage.getItem('spoonmap_geocoded_cache') || '{}');
+        } catch (_) {}
+
+        const resolveItem = (item) => {
+            return new Promise((resolve) => {
+                if (item.x && item.y && parseFloat(item.x) > 0 && parseFloat(item.y) > 0) {
+                    const place = {
+                        place_name: item.name,
+                        x: item.x,
+                        y: item.y,
+                        address_name: item.road_address || [item.location_large, item.location_small].filter(Boolean).join(' '),
+                        road_address_name: item.road_address || '',
+                        category_name: item.category || '음식점',
+                        place_url: item.map_url || ''
+                    };
+                    renderSingleMarker(item, place, true, bounds, true, false);
+                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
+                    return resolve(true);
+                }
+
+                const cacheKey = `${item.name}_${item.location_large || ''}`;
+                if (geocodeCache[cacheKey]) {
+                    const cached = geocodeCache[cacheKey];
+                    const place = {
+                        place_name: item.name,
+                        x: cached.x,
+                        y: cached.y,
+                        address_name: cached.address || item.road_address || item.location_large || '',
+                        road_address_name: cached.road_address || '',
+                        category_name: item.category || '음식점',
+                        place_url: item.map_url || ''
+                    };
+                    renderSingleMarker(item, place, true, bounds, true, false);
+                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
+                    return resolve(true);
+                }
+
+                if (ps) {
+                    const searchKw = item.location_large ? `${item.name} ${item.location_large}` : item.name;
+                    ps.keywordSearch(searchKw, (data, status) => {
+                        if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                            const place = data.find(d => isSavedRestaurantMatch(item, d)) || data[0];
+                            geocodeCache[cacheKey] = { x: place.x, y: place.y, address: place.address_name, road_address: place.road_address_name };
+                            renderSingleMarker(item, place, true, bounds, true, false);
+                            allMyResults.push({ item, place, isSaved: true, isWishlist: false });
+                            return resolve(true);
+                        }
+
+                        if (geocoder && (item.road_address || item.location_large)) {
+                            const addrQuery = item.road_address || item.location_large;
+                            geocoder.addressSearch(addrQuery, (geoRes, geoStatus) => {
+                                if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
+                                    const place = {
+                                        place_name: item.name,
+                                        x: geoRes[0].x,
+                                        y: geoRes[0].y,
+                                        address_name: geoRes[0].address_name,
+                                        road_address_name: geoRes[0].road_address?.address_name || '',
+                                        category_name: item.category || '음식점',
+                                        place_url: item.map_url || ''
+                                    };
+                                    geocodeCache[cacheKey] = { x: place.x, y: place.y, address: place.address_name, road_address: place.road_address_name };
+                                    renderSingleMarker(item, place, true, bounds, true, false);
+                                    allMyResults.push({ item, place, isSaved: true, isWishlist: false });
+                                    return resolve(true);
+                                }
+                                return resolve(false);
+                            });
+                        } else {
+                            return resolve(false);
+                        }
+                    });
+                } else {
+                    return resolve(false);
+                }
+            });
+        };
+
+        const batchSize = 15;
+        for (let i = 0; i < myPlaces.length; i += batchSize) {
+            const batch = myPlaces.slice(i, i + batchSize);
+            await Promise.all(batch.map(resolveItem));
+            if (i + batchSize < myPlaces.length) {
+                await new Promise(r => setTimeout(r, 60));
+            }
+        }
+
+        try {
+            localStorage.setItem('spoonmap_geocoded_cache', JSON.stringify(geocodeCache));
+        } catch (_) {}
+
+        if (allMyResults.length > 0) {
+            renderPaginatedList(allMyResults, 1);
+            const backBtnEl = document.createElement('button');
+            backBtnEl.className = 'btn-reset-map-search';
+            backBtnEl.style.marginBottom = '12px';
+            backBtnEl.style.display = 'block';
+            backBtnEl.textContent = '← 검색 초기화면으로';
+            backBtnEl.onclick = () => resetMapSearchToInitial();
+            resultsList.insertBefore(backBtnEl, resultsList.firstChild);
+
+            if (markers.length > 0 && !bounds.isEmpty()) {
+                map.setBounds(bounds);
+                if (markers.length === 1) map.setLevel(3);
+            }
+        } else {
+            resultsList.innerHTML = `
+                <div class="map-empty-state" style="text-align:center; padding:24px 16px;">
+                    <button class="btn-reset-map-search" onclick="resetMapSearchToInitial()">← 검색 초기화면으로</button>
+                    <p style="margin-top:12px; color:#64748B;">내 식당 위치 정보를 지도에서 불러오지 못했습니다.</p>
+                </div>
+            `;
+        }
+    }
+    window.showMyVisitedPlacesOnMap = showMyVisitedPlacesOnMap;
+
+    const btnShowMyRestaurants = document.getElementById('btn-show-my-restaurants');
+    if (btnShowMyRestaurants) {
+        btnShowMyRestaurants.addEventListener('click', () => {
+            const isActive = btnShowMyRestaurants.classList.contains('active');
+            if (isActive) {
+                btnShowMyRestaurants.classList.remove('active');
+                updateMapMarkers();
+            } else {
+                btnShowMyRestaurants.classList.add('active');
+                const btnWish = document.getElementById('btn-show-wishlist');
+                if (btnWish) btnWish.classList.remove('active');
+                showMyVisitedPlacesOnMap();
+            }
+        });
+    }
+
     // =========================================================================
     // Friend Restaurant & Social Map Overlay System
     // =========================================================================
@@ -4561,7 +4744,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "제주 제주",
                                 "location_small": "탑동",
                                 "road_address": "제주특별자치도 제주시 탑동로 11",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "고기국수",
                                         "비빔국수",
@@ -4580,7 +4763,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "제주 서귀포",
                                 "location_small": "대정읍",
                                 "road_address": "제주특별자치도 서귀포시 대정읍 하모항구로 44",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄",
                                 "menu": [
                                         "고등어회",
                                         "갈치조림",
@@ -4618,7 +4801,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "제주 제주",
                                 "location_small": "구좌읍",
                                 "road_address": "제주특별자치도 제주시 구좌읍 해맞이해안로 1282",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "솥밥",
                                         "회",
@@ -4637,7 +4820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "제주 서귀포",
                                 "location_small": "색달동",
                                 "road_address": "제주특별자치도 서귀포시 중문관광로 27",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "갈치조림",
                                         "갈치구이",
@@ -4656,7 +4839,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "강원 속초",
                                 "location_small": "조양동",
                                 "road_address": "강원특별자치도 속초시 엑스포로 12-36",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "물회",
                                         "비빔밥",
@@ -4675,7 +4858,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "강원 강릉",
                                 "location_small": "교동",
                                 "road_address": "강원특별자치도 강릉시 경포로 33-1",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄",
                                 "menu": [
                                         "간장게장",
                                         "꽃게탕",
@@ -4713,7 +4896,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "부산 동구",
                                 "location_small": "초량동",
                                 "road_address": "부산광역시 동구 중앙대로 225",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "밀면",
                                         "만두",
@@ -4732,7 +4915,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "부산 기장군",
                                 "location_small": "연화리",
                                 "road_address": "부산광역시 기장군 기장읍 연화1길 184",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "회",
                                         "죽",
@@ -4751,7 +4934,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "부산 중구",
                                 "location_small": "남포동",
                                 "road_address": "부산광역시 중구 자갈치로23번길 6",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "곱창",
                                         "볶음밥",
@@ -4770,7 +4953,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전남 여수",
                                 "location_small": "문수동",
                                 "road_address": "전라남도 여수시 봉산2로 36",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄",
                                 "menu": [
                                         "간장게장",
                                         "꽃게탕",
@@ -4789,7 +4972,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전남 여수",
                                 "location_small": "중앙동",
                                 "road_address": "전라남도 여수시 이순신광장로 159",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄",
                                 "menu": [
                                         "회",
                                         "회덮밥",
@@ -4808,7 +4991,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경남 통영",
                                 "location_small": "중앙동",
                                 "road_address": "경상남도 통영시 통영해안로 325",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "김밥",
                                         "분식"
@@ -4826,7 +5009,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경남 통영",
                                 "location_small": "무전동",
                                 "road_address": "경상남도 통영시 무전5길 12-5",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "술집",
                                         "회",
@@ -4845,7 +5028,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전남 목포",
                                 "location_small": "유달동",
                                 "road_address": "전라남도 목포시 번화로 42-1",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "회",
                                         "전",
@@ -4864,7 +5047,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전북 군산",
                                 "location_small": "월명동",
                                 "road_address": "전북특별자치도 군산시 구영3길 63",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄",
                                 "menu": [
                                         "국밥",
                                         "육회비빔밥",
@@ -4883,7 +5066,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전북 군산",
                                 "location_small": "월명동",
                                 "road_address": "전북특별자치도 군산시 월명로 382",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄",
                                 "menu": [
                                         "짬뽕",
                                         "짜장면",
@@ -4902,7 +5085,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "충남 태안",
                                 "location_small": "원북면",
                                 "road_address": "충청남도 태안군 원북면 원이로 841-1",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "낙지",
                                         "칼국수",
@@ -4921,7 +5104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전남 순천",
                                 "location_small": "중앙동",
                                 "road_address": "전라남도 순천시 장평로 65",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "국밥",
                                         "순대",
@@ -4951,7 +5134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "서울 성동구",
                                 "location_small": "성수동",
                                 "road_address": "서울특별시 성동구 서울숲2길 28-11",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "커피",
                                         "카페",
@@ -4970,7 +5153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "서울 성동구",
                                 "location_small": "성수동",
                                 "road_address": "서울특별시 성동구 아차산로9길 8",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄",
                                 "menu": [
                                         "빵",
                                         "디저트",
@@ -5008,7 +5191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "서울 용산구",
                                 "location_small": "한남동",
                                 "road_address": "서울특별시 용산구 이태원로 229",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "빵",
                                         "디저트"
@@ -5026,7 +5209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "서울 종로구",
                                 "location_small": "서촌",
                                 "road_address": "서울특별시 종로구 자하문로 35",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "파스타",
                                         "샐러드",
@@ -5045,7 +5228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경기 파주",
                                 "location_small": "출판도시",
                                 "road_address": "경기도 파주시 지목로 114",
-                                "rate": "🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "햄버거",
                                         "브런치",
@@ -5083,7 +5266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경기 남양주",
                                 "location_small": "화도읍",
                                 "road_address": "경기도 남양주시 조안면 북한강로 914",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄",
                                 "menu": [
                                         "커피",
                                         "디저트",
@@ -5102,7 +5285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경기 수원",
                                 "location_small": "행궁동",
                                 "road_address": "경기도 수원시 팔달구 정조로905번길 13",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "커피",
                                         "카페",
@@ -5140,7 +5323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "제주 제주",
                                 "location_small": "동문시장",
                                 "road_address": "제주특별자치도 제주시 동문로6길 4",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "빵",
                                         "도넛",
@@ -5197,7 +5380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "경북 경주",
                                 "location_small": "황리단길",
                                 "road_address": "경상북도 경주시 포석로 1099",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "샐러드",
                                         "샌드위치",
@@ -5216,7 +5399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "부산 영도구",
                                 "location_small": "봉래동",
                                 "road_address": "부산광역시 영도구 봉래나루로 160",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "커피",
                                         "휘낭시에",
@@ -5235,7 +5418,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "부산 부산진구",
                                 "location_small": "전포동",
                                 "road_address": "부산광역시 부산진구 서전로58번길 115",
-                                "rate": "🥄🥄",
+                                "rate": "🥄",
                                 "menu": [
                                         "커피",
                                         "디저트",
@@ -5273,7 +5456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "광주 동구",
                                 "location_small": "동명동",
                                 "road_address": "광주광역시 동구 동계천로 143-6",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄",
                                 "menu": [
                                         "파스타",
                                         "브런치",
@@ -5292,7 +5475,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "전남 담양",
                                 "location_small": "봉산면",
                                 "road_address": "전라남도 담양군 봉산면 유산길 63",
-                                "rate": "🥄🥄",
+                                "rate": "🥄🥄🥄🥄",
                                 "menu": [
                                         "차",
                                         "디저트",
@@ -5311,7 +5494,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "location_large": "강원 강릉",
                                 "location_small": "포남동",
                                 "road_address": "강원특별자치도 강릉시 구정면 현천길 7",
-                                "rate": "🥄🥄🥄",
+                                "rate": "🥄🥄🥄🥄🥄",
                                 "menu": [
                                         "커피",
                                         "케이크",
@@ -5525,11 +5708,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 realUserId: fid,
                 isFollowingUser: true,
                 name: name,
-                nickname: `${name} · 팔로잉`,
+                nickname: name,
                 avatarText: name.slice(0, 1),
                 avatarEmoji: '🥄',
                 color: color,
-                comment: u?.bio || 'Spoonmap 팔로잉 미식가',
+                comment: u?.bio || 'Spoonmap 미식가',
                 restaurants: cachedRests
             };
         });
@@ -5769,6 +5952,71 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         }
     };
 
+    // ─── Friend Map Overlay Filtering Settings ───
+    const FRIEND_FILTER_KEY = 'spoonmap_friend_overlay_filters';
+
+    function getFriendFilterSettings() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(FRIEND_FILTER_KEY));
+            if (saved && typeof saved === 'object') {
+                return {
+                    categories: Array.isArray(saved.categories) ? saved.categories : [],
+                    spoons: Array.isArray(saved.spoons) ? saved.spoons : [1, 2, 3, 4, 5]
+                };
+            }
+        } catch (_) {}
+        return {
+            categories: [],
+            spoons: [1, 2, 3, 4, 5]
+        };
+    }
+    window.getFriendFilterSettings = getFriendFilterSettings;
+
+    function saveFriendFilterSettings(settings) {
+        try {
+            localStorage.setItem(FRIEND_FILTER_KEY, JSON.stringify(settings));
+        } catch (_) {}
+    }
+    window.saveFriendFilterSettings = saveFriendFilterSettings;
+
+    function isFriendRestaurantAllowedByFilters(r, filterSettings) {
+        if (!r) return false;
+        if (!filterSettings) return true;
+
+        if (Array.isArray(filterSettings.categories) && filterSettings.categories.length > 0) {
+            if (filterSettings.categories.includes('__none__')) return false;
+            const cat = r.category || '';
+            const match = filterSettings.categories.some(c => {
+                if (!c) return false;
+                if (c === '한식') return cat.includes('한식');
+                if (c === '일식') return cat.includes('일식') || cat.includes('초밥') || cat.includes('라멘');
+                if (c === '중식') return cat.includes('중식') || cat.includes('짜장');
+                if (c === '양식') return cat.includes('양식') || cat.includes('파스타') || cat.includes('스테이크');
+                if (c === '고기') return cat.includes('고기') || cat.includes('구이') || cat.includes('삼겹');
+                if (c === '해산물') return cat.includes('해산물') || cat.includes('생선') || cat.includes('회') || cat.includes('조개');
+                if (c === '카페') return cat.includes('카페') || cat.includes('디저트') || cat.includes('베이커리');
+                if (c === '술집') return cat.includes('술집') || cat.includes('주점') || cat.includes('포차') || cat.includes('맥주');
+                if (c === '분식') return cat.includes('분식') || cat.includes('떡볶이');
+                if (c === '치킨') return cat.includes('치킨') || cat.includes('닭강정');
+                if (c === '피자') return cat.includes('피자') || cat.includes('버거');
+                if (c === '패스트푸드') return cat.includes('패스트푸드') || cat.includes('버거');
+                if (c === '아시안') return cat.includes('아시안') || cat.includes('아시아') || cat.includes('베트남') || cat.includes('태국');
+                if (c === '샐러드') return cat.includes('샐러드') || cat.includes('포케');
+                if (c === '기타') return cat.includes('기타') || !cat;
+                return cat.includes(c);
+            });
+            if (!match) return false;
+        }
+
+        if (Array.isArray(filterSettings.spoons)) {
+            if (filterSettings.spoons.length === 0) return false;
+            const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 3) || 1;
+            if (!filterSettings.spoons.includes(spoonCount)) return false;
+        }
+
+        return true;
+    }
+
     window.renderAllActiveFriendOverlays = function(zoomFriendId = null) {
         if (!map) return;
 
@@ -5796,9 +6044,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         // Group restaurants across active friends to detect intersections
         const groupedMap = new Map();
 
+        const filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
         activeFriends.forEach(friend => {
             if (!friend.restaurants || !Array.isArray(friend.restaurants)) return;
             friend.restaurants.forEach(r => {
+                if (typeof isFriendRestaurantAllowedByFilters === 'function' && !isFriendRestaurantAllowedByFilters(r, filterSettings)) return;
                 const normName = normalizePlaceName(r.name);
                 if (!normName) return;
 
@@ -5953,36 +6203,196 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         renderAllActiveFriendOverlays();
     }
 
-    // Modal logic for Friend Management
-    window.openFriendManageModal = function() {
-        const modal = document.getElementById('friend-manage-modal');
-        if (!modal) return;
-        renderFriendModalList();
-        modal.style.display = 'flex';
-        void modal.offsetHeight; // trigger reflow
-        modal.classList.add('open');
-    };
+    // ─── Friend Modal & Settings Management ───
+    const FRIEND_CATEGORIES = [
+        { key: '한식', label: '🍚 한식' },
+        { key: '일식', label: '🍣 일식' },
+        { key: '중식', label: '🥢 중식' },
+        { key: '양식', label: '🍝 양식' },
+        { key: '고기', label: '🥩 고기' },
+        { key: '해산물', label: '🐟 해산물' },
+        { key: '카페', label: '☕ 카페' },
+        { key: '술집', label: '🍺 술집' },
+        { key: '분식', label: '🍢 분식' },
+        { key: '치킨', label: '🍗 치킨' },
+        { key: '피자', label: '🍕 피자·버거' },
+        { key: '패스트푸드', label: '🍔 패스트푸드' },
+        { key: '아시안', label: '🍜 아시안' },
+        { key: '샐러드', label: '🥗 샐러드' },
+        { key: '기타', label: '🍽️ 기타' }
+    ];
 
-    window.closeFriendManageModal = function() {
-        const modal = document.getElementById('friend-manage-modal');
-        if (!modal) return;
-        modal.classList.remove('open');
-        setTimeout(() => {
-            if (!modal.classList.contains('open')) {
-                modal.style.display = 'none';
+    function renderFriendFilterCategoryChips() {
+        const wrap = document.getElementById('friend-category-chips-wrap');
+        const btnAll = document.getElementById('btn-toggle-all-friend-cats');
+        if (!wrap) return;
+        const filterSettings = getFriendFilterSettings();
+        const cats = filterSettings.categories || [];
+        const isAllSelected = cats.length === 0 || cats.length === FRIEND_CATEGORIES.length;
+        if (btnAll) {
+            btnAll.textContent = isAllSelected ? '전체 해제' : '전체 선택';
+        }
+
+        wrap.innerHTML = FRIEND_CATEGORIES.map(cat => {
+            const isActive = isAllSelected || cats.includes(cat.key);
+            return `
+                <button type="button" class="friend-cat-chip ${isActive ? 'active' : ''}" data-cat="${cat.key}" onclick="window.toggleFriendCategoryFilter('${cat.key}')">
+                    ${cat.label}
+                </button>
+            `;
+        }).join('');
+    }
+    window.renderFriendFilterCategoryChips = renderFriendFilterCategoryChips;
+
+    window.toggleFriendCategoryFilter = function(catKey) {
+        const filterSettings = getFriendFilterSettings();
+        let current = filterSettings.categories || [];
+        if (current.length === 0) {
+            current = FRIEND_CATEGORIES.map(c => c.key).filter(k => k !== catKey);
+        } else if (current.includes(catKey)) {
+            current = current.filter(k => k !== catKey);
+            if (current.length === 0) {
+                current = ['__none__'];
             }
-        }, 250);
+        } else {
+            current = current.filter(k => k !== '__none__');
+            current.push(catKey);
+            if (current.length === FRIEND_CATEGORIES.length) {
+                current = [];
+            }
+        }
+        filterSettings.categories = current;
+        saveFriendFilterSettings(filterSettings);
+        renderFriendFilterCategoryChips();
+        if (typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
+        }
     };
 
-    function renderFriendModalList() {
+    window.toggleAllFriendCategories = function() {
+        const filterSettings = getFriendFilterSettings();
+        const cats = filterSettings.categories || [];
+        const isAll = cats.length === 0 || cats.length === FRIEND_CATEGORIES.length;
+        if (isAll) {
+            filterSettings.categories = ['__none__'];
+        } else {
+            filterSettings.categories = [];
+        }
+        saveFriendFilterSettings(filterSettings);
+        renderFriendFilterCategoryChips();
+        if (typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
+        }
+    };
+
+    function renderFriendFilterSpoonChips() {
+        const wrap = document.getElementById('friend-spoon-chips-wrap');
+        const btnAll = document.getElementById('btn-toggle-all-friend-spoons');
+        if (!wrap) return;
+        const filterSettings = getFriendFilterSettings();
+        const spoons = filterSettings.spoons || [1, 2, 3, 4, 5];
+        const isAll = spoons.length === 5;
+        if (btnAll) {
+            btnAll.textContent = isAll ? '전체 해제' : '전체 선택';
+        }
+
+        const spoonItems = [
+            { count: 1, label: '🥄 1개' },
+            { count: 2, label: '🥄 2개' },
+            { count: 3, label: '🥄 3개' },
+            { count: 4, label: '🥄 4개' },
+            { count: 5, label: '🥄 5개' }
+        ];
+
+        wrap.innerHTML = spoonItems.map(item => {
+            const isActive = spoons.includes(item.count);
+            return `
+                <button type="button" class="friend-spoon-chip ${isActive ? 'active' : ''}" data-spoon="${item.count}" onclick="window.toggleFriendSpoonFilter(${item.count})">
+                    ${item.label}
+                </button>
+            `;
+        }).join('');
+    }
+    window.renderFriendFilterSpoonChips = renderFriendFilterSpoonChips;
+
+    window.toggleFriendSpoonFilter = function(spoonCount) {
+        const filterSettings = getFriendFilterSettings();
+        let spoons = filterSettings.spoons || [1, 2, 3, 4, 5];
+        if (spoons.includes(spoonCount)) {
+            spoons = spoons.filter(s => s !== spoonCount);
+        } else {
+            spoons = [...spoons, spoonCount].sort((a, b) => a - b);
+        }
+        filterSettings.spoons = spoons;
+        saveFriendFilterSettings(filterSettings);
+        renderFriendFilterSpoonChips();
+        if (typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
+        }
+    };
+
+    window.toggleAllFriendSpoons = function() {
+        const filterSettings = getFriendFilterSettings();
+        const spoons = filterSettings.spoons || [1, 2, 3, 4, 5];
+        if (spoons.length === 5) {
+            filterSettings.spoons = [];
+        } else {
+            filterSettings.spoons = [1, 2, 3, 4, 5];
+        }
+        saveFriendFilterSettings(filterSettings);
+        renderFriendFilterSpoonChips();
+        if (typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
+        }
+    };
+
+    window.toggleAllFriendsOverlay = function(enable) {
+        const friends = getFriendsList();
+        if (enable) {
+            const allIds = friends.map(f => f.id);
+            saveActiveFriendIds(allIds);
+        } else {
+            saveActiveFriendIds([]);
+        }
+        if (typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
+        }
+        if (typeof renderFriendChips === 'function') {
+            renderFriendChips();
+        }
+        const searchInput = document.getElementById('friend-search-input');
+        renderFriendModalList(searchInput ? searchInput.value.trim() : '');
+        if (typeof renderMobileFriendsListInPopover === 'function') {
+            renderMobileFriendsListInPopover();
+        }
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
+        }
+    };
+
+    function renderFriendModalList(query = '') {
         const listEl = document.getElementById('friend-modal-list');
         const countEl = document.getElementById('friend-modal-count');
         if (!listEl) return;
         const friends = getFriendsList();
         const activeIds = getActiveFriendIds();
-        if (countEl) countEl.textContent = `${friends.length}명`;
 
-        listEl.innerHTML = friends.map(f => {
+        const q = (typeof query === 'string') ? query.trim().toLowerCase() : '';
+        const filteredFriends = q ? friends.filter(f => {
+            const name = (f.name || '').toLowerCase();
+            const nick = (f.nickname || '').toLowerCase();
+            const comment = (f.comment || '').toLowerCase();
+            return name.includes(q) || nick.includes(q) || comment.includes(q);
+        }) : friends;
+
+        if (countEl) countEl.textContent = `${activeIds.length}명 켜짐 · 총 ${friends.length}명`;
+
+        if (filteredFriends.length === 0) {
+            listEl.innerHTML = `<div class="friend-search-empty">일치하는 친구가 없습니다.</div>`;
+            return;
+        }
+
+        listEl.innerHTML = filteredFriends.map(f => {
             const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang';
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
@@ -5995,12 +6405,12 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         : (isDemo 
                             ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">추천 채널</span>' 
                             : (isFollowing 
-                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">팔로잉 미식가 🥄</span>' 
+                                ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">미식가 🥄</span>' 
                                 : ''))));
             return `
                 <div class="friend-modal-item">
                     <div class="friend-item-left">
-                        <span class="friend-chip-avatar" style="background:${f.color}; width:32px; height:32px; font-size:13px; font-weight:800; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">${f.avatarText}</span>
+                        <span class="friend-chip-avatar" style="background:${f.color || '#6366F1'}; width:32px; height:32px; font-size:13px; font-weight:800; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">${f.avatarText || '👤'}</span>
                         <div class="friend-item-info">
                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                 <strong style="font-size:0.92rem; font-weight:800; color:#1E293B;">${f.nickname || f.name}</strong>
@@ -6024,6 +6434,53 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             `;
         }).join('');
     }
+    window.renderFriendModalList = renderFriendModalList;
+
+    window.clearFriendSearch = function() {
+        const searchInput = document.getElementById('friend-search-input');
+        const clearBtn = document.getElementById('btn-clear-friend-search');
+        if (searchInput) searchInput.value = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        renderFriendModalList('');
+    };
+
+    window.openFriendManageModal = function() {
+        const modal = document.getElementById('friend-manage-modal');
+        if (!modal) return;
+        renderFriendFilterCategoryChips();
+        renderFriendFilterSpoonChips();
+
+        const searchInput = document.getElementById('friend-search-input');
+        const clearBtn = document.getElementById('btn-clear-friend-search');
+        if (searchInput) {
+            searchInput.value = '';
+            if (!searchInput.dataset.hasListener) {
+                searchInput.dataset.hasListener = 'true';
+                searchInput.addEventListener('input', (e) => {
+                    const val = e.target.value.trim();
+                    if (clearBtn) clearBtn.style.display = val ? 'inline-block' : 'none';
+                    renderFriendModalList(val);
+                });
+            }
+        }
+        if (clearBtn) clearBtn.style.display = 'none';
+
+        renderFriendModalList('');
+        modal.style.display = 'flex';
+        void modal.offsetHeight;
+        modal.classList.add('open');
+    };
+
+    window.closeFriendManageModal = function() {
+        const modal = document.getElementById('friend-manage-modal');
+        if (!modal) return;
+        modal.classList.remove('open');
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.style.display = 'none';
+            }
+        }, 250);
+    };
 
     window.handleDeleteFriend = function(friendId) {
         if (!confirm('이 친구를 삭제하시겠습니까?')) return;
@@ -6486,15 +6943,30 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
         });
 
+        // My Restaurants Toggle
+        const switchMyRestaurants = document.getElementById('switch-my-restaurants-toggle');
+        if (switchMyRestaurants) {
+            switchMyRestaurants.addEventListener('change', () => {
+                if (switchMyRestaurants.checked) {
+                    if (switchWishlist) switchWishlist.checked = false;
+                    showMyVisitedPlacesOnMap();
+                } else {
+                    updateMapMarkers();
+                }
+                updateStarChipHighlight();
+            });
+        }
+
         // Wishlist Toggle
         if (switchWishlist) {
             switchWishlist.addEventListener('change', () => {
-                updateStarChipHighlight();
                 if (switchWishlist.checked) {
+                    if (switchMyRestaurants) switchMyRestaurants.checked = false;
                     showWishlistPlacesOnMap();
                 } else {
                     updateMapMarkers();
                 }
+                updateStarChipHighlight();
             });
         }
 
@@ -6532,12 +7004,17 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         }
 
         function updateStarChipHighlight() {
-            starChip.classList.remove('star-active', 'friend-active', 'both-active');
+            starChip.classList.remove('star-active', 'friend-active', 'both-active', 'my-active');
+            const myOn = switchMyRestaurants && switchMyRestaurants.checked;
             const wishOn = switchWishlist && switchWishlist.checked;
             const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
             const friendOn = activeIds.length > 0;
 
-            if (wishOn && friendOn) {
+            if (myOn && friendOn) {
+                starChip.classList.add('both-active');
+            } else if (myOn) {
+                starChip.classList.add('my-active');
+            } else if (wishOn && friendOn) {
                 starChip.classList.add('both-active');
             } else if (wishOn) {
                 starChip.classList.add('star-active');
@@ -8076,166 +8553,166 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             });
         });
 
-        let activeGourmetList = [];
-        if (Array.isArray(currentFilters && currentFilters.gourmet)) {
-            activeGourmetList = currentFilters.gourmet;
-        } else if (currentFilters && currentFilters.gourmet) {
-            activeGourmetList = [String(currentFilters.gourmet)];
-        } else {
-            activeGourmetList = ['me'];
-        }
-
-        // 1. Overlapping restaurants only
-        if (activeGourmetList.includes('overlap')) {
-            return unified.filter(item => item.isOverlapping);
-        }
-
-        // 2. All - Me + All friends
-        if (activeGourmetList.includes('all')) {
-            const combined = [...unified];
-            friendsRestaurantsMap.forEach(fInfo => {
-                (fInfo.restaurants || []).forEach(fItem => {
-                    const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
-                    if (!masterNormMap.has(fNorm)) {
-                        combined.push(fItem);
-                    }
-                });
-            });
-            return combined;
-        }
-
-        // 3. Multi-selection of users - Me and/or friends
-        const selectedGourmetSet = new Set(activeGourmetList);
-        const result = [];
-        const includedNorms = new Set();
-
-        if (selectedGourmetSet.has('me')) {
-            unified.forEach(item => {
-                const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(item.name) : item.name.replace(/\s+/g, '').toLowerCase();
-                if (!item.sourceUserName) item.sourceUserName = '나';
-                result.push(item);
-                includedNorms.add(norm);
-            });
-        }
-
-        selectedGourmetSet.forEach(gid => {
-            if (gid === 'me') return;
-            const fInfo = friendsRestaurantsMap.get(String(gid));
-            if (fInfo && Array.isArray(fInfo.restaurants)) {
-                fInfo.restaurants.forEach(fItem => {
-                    const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
-                    if (!includedNorms.has(norm)) {
-                        result.push(fItem);
-                        includedNorms.add(norm);
-                    }
-                });
-            }
-        });
-
-        return result;
-    }
-
+        let activeGourmetList = [];
+        if (Array.isArray(currentFilters && currentFilters.gourmet)) {
+            activeGourmetList = currentFilters.gourmet;
+        } else if (currentFilters && currentFilters.gourmet) {
+            activeGourmetList = [String(currentFilters.gourmet)];
+        } else {
+            activeGourmetList = ['me'];
+        }
+
+        // 1. Overlapping restaurants only
+        if (activeGourmetList.includes('overlap')) {
+            return unified.filter(item => item.isOverlapping);
+        }
+
+        // 2. All - Me + All friends
+        if (activeGourmetList.includes('all')) {
+            const combined = [...unified];
+            friendsRestaurantsMap.forEach(fInfo => {
+                (fInfo.restaurants || []).forEach(fItem => {
+                    const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
+                    if (!masterNormMap.has(fNorm)) {
+                        combined.push(fItem);
+                    }
+                });
+            });
+            return combined;
+        }
+
+        // 3. Multi-selection of users - Me and/or friends
+        const selectedGourmetSet = new Set(activeGourmetList);
+        const result = [];
+        const includedNorms = new Set();
+
+        if (selectedGourmetSet.has('me')) {
+            unified.forEach(item => {
+                const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(item.name) : item.name.replace(/\s+/g, '').toLowerCase();
+                if (!item.sourceUserName) item.sourceUserName = '나';
+                result.push(item);
+                includedNorms.add(norm);
+            });
+        }
+
+        selectedGourmetSet.forEach(gid => {
+            if (gid === 'me') return;
+            const fInfo = friendsRestaurantsMap.get(String(gid));
+            if (fInfo && Array.isArray(fInfo.restaurants)) {
+                fInfo.restaurants.forEach(fItem => {
+                    const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
+                    if (!includedNorms.has(norm)) {
+                        result.push(fItem);
+                        includedNorms.add(norm);
+                    }
+                });
+            }
+        });
+
+        return result;
+    }
+
     window.getUnifiedRestaurantData = getUnifiedRestaurantData;
 
 
     // ── Gourmet Filter Controller (내 맛집 / 친구 / 전체 / 겹치는 맛집) ──
-    function setGourmetFilter(value) {
-        if (!currentFilters) return;
-        if (!Array.isArray(currentFilters.gourmet)) {
-            currentFilters.gourmet = currentFilters.gourmet ? [String(currentFilters.gourmet)] : ['me'];
-        }
-
-        const v = String(value || 'me');
-
-        if (v === 'all') {
-            currentFilters.gourmet = ['all'];
-        } else if (v === 'overlap') {
-            currentFilters.gourmet = ['overlap'];
-        } else {
-            // If currently in all or overlap mode, replace with the clicked user
-            if (currentFilters.gourmet.includes('all') || currentFilters.gourmet.includes('overlap')) {
-                currentFilters.gourmet = [v];
-            } else {
-                const idx = currentFilters.gourmet.indexOf(v);
-                if (idx > -1) {
-                    if (currentFilters.gourmet.length > 1) {
-                        currentFilters.gourmet.splice(idx, 1);
-                    } else {
-                        currentFilters.gourmet = ['me'];
-                    }
-                } else {
-                    currentFilters.gourmet.push(v);
-                }
-            }
-        }
-
-        // 1. Sync PC Sidebar filter buttons
-        const sGroup = document.getElementById('gourmet-filters');
-        if (sGroup) {
-            sGroup.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.value));
-            });
-        }
-
-        // 2. Sync Mobile Chip buttons
-        const mGroup = document.getElementById('mobile-gourmet-chips-bar');
-        if (mGroup) {
-            mGroup.querySelectorAll('.mobile-gourmet-chip').forEach(b => {
-                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.gourmet));
-            });
-        }
-
-        // 3. Update or hide the Top Viewing Banner
-        const banner = document.getElementById('gourmet-viewing-banner');
-        const nameEl = document.getElementById('gourmet-viewing-name');
-        const subEl = document.getElementById('gourmet-viewing-sub');
-
-        if (banner) {
-            if (currentFilters.gourmet.length === 1 && currentFilters.gourmet[0] === 'me') {
-                banner.style.display = 'none';
-                window.currentViewingGourmet = null;
-            } else {
-                banner.style.display = 'flex';
-                if (currentFilters.gourmet.includes('all')) {
-                    if (nameEl) nameEl.textContent = '모든 미식가';
-                    if (subEl) subEl.textContent = '나와 팔로잉 친구들의 맛집 전체 보기';
-                    window.currentViewingGourmet = { id: 'all', name: '모든 미식가' };
-                } else if (currentFilters.gourmet.includes('overlap')) {
-                    if (nameEl) nameEl.textContent = '함께 등록한 맛집';
-                    if (subEl) subEl.textContent = '나와 친구들이 공통으로 추천하는 맛집 모음';
-                    window.currentViewingGourmet = { id: 'overlap', name: '함께 등록한 맛집' };
-                } else {
-                    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
-                        ? window.MASTER_MOCK_GOURMETS 
-                        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
-                    const cachedUsers = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
-                        ? cachedDiscoveredUsers
-                        : (JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]'));
-
-                    const names = currentFilters.gourmet.map(gid => {
-                        if (gid === 'me') return '나';
-                        const m = mockList.find(x => String(x.id) === String(gid));
-                        if (m) return m.name;
-                        const u = cachedUsers.find(x => String(x.id) === String(gid));
-                        if (u) return u.name;
-                        return '미식가';
-                    });
-
-                    if (nameEl) nameEl.textContent = names.join(' · ');
-                    if (subEl) {
-                        subEl.textContent = currentFilters.gourmet.length > 1
-                            ? '선택한 미식가들의 맛집 모아보기'
-                            : '추천 맛집 둘러보기 모드';
-                    }
-                    window.currentViewingGourmet = { id: currentFilters.gourmet.join(','), name: names.join(' · ') };
-                }
-            }
-        }
-
-        listDisplayCount = 50;
-        render();
-    }
-
+    function setGourmetFilter(value) {
+        if (!currentFilters) return;
+        if (!Array.isArray(currentFilters.gourmet)) {
+            currentFilters.gourmet = currentFilters.gourmet ? [String(currentFilters.gourmet)] : ['me'];
+        }
+
+        const v = String(value || 'me');
+
+        if (v === 'all') {
+            currentFilters.gourmet = ['all'];
+        } else if (v === 'overlap') {
+            currentFilters.gourmet = ['overlap'];
+        } else {
+            // If currently in all or overlap mode, replace with the clicked user
+            if (currentFilters.gourmet.includes('all') || currentFilters.gourmet.includes('overlap')) {
+                currentFilters.gourmet = [v];
+            } else {
+                const idx = currentFilters.gourmet.indexOf(v);
+                if (idx > -1) {
+                    if (currentFilters.gourmet.length > 1) {
+                        currentFilters.gourmet.splice(idx, 1);
+                    } else {
+                        currentFilters.gourmet = ['me'];
+                    }
+                } else {
+                    currentFilters.gourmet.push(v);
+                }
+            }
+        }
+
+        // 1. Sync PC Sidebar filter buttons
+        const sGroup = document.getElementById('gourmet-filters');
+        if (sGroup) {
+            sGroup.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.value));
+            });
+        }
+
+        // 2. Sync Mobile Chip buttons
+        const mGroup = document.getElementById('mobile-gourmet-chips-bar');
+        if (mGroup) {
+            mGroup.querySelectorAll('.mobile-gourmet-chip').forEach(b => {
+                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.gourmet));
+            });
+        }
+
+        // 3. Update or hide the Top Viewing Banner
+        const banner = document.getElementById('gourmet-viewing-banner');
+        const nameEl = document.getElementById('gourmet-viewing-name');
+        const subEl = document.getElementById('gourmet-viewing-sub');
+
+        if (banner) {
+            if (currentFilters.gourmet.length === 1 && currentFilters.gourmet[0] === 'me') {
+                banner.style.display = 'none';
+                window.currentViewingGourmet = null;
+            } else {
+                banner.style.display = 'flex';
+                if (currentFilters.gourmet.includes('all')) {
+                    if (nameEl) nameEl.textContent = '모든 미식가';
+                    if (subEl) subEl.textContent = '나와 팔로잉 친구들의 맛집 전체 보기';
+                    window.currentViewingGourmet = { id: 'all', name: '모든 미식가' };
+                } else if (currentFilters.gourmet.includes('overlap')) {
+                    if (nameEl) nameEl.textContent = '함께 등록한 맛집';
+                    if (subEl) subEl.textContent = '나와 친구들이 공통으로 추천하는 맛집 모음';
+                    window.currentViewingGourmet = { id: 'overlap', name: '함께 등록한 맛집' };
+                } else {
+                    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+                        ? window.MASTER_MOCK_GOURMETS 
+                        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
+                    const cachedUsers = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
+                        ? cachedDiscoveredUsers
+                        : (JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]'));
+
+                    const names = currentFilters.gourmet.map(gid => {
+                        if (gid === 'me') return '나';
+                        const m = mockList.find(x => String(x.id) === String(gid));
+                        if (m) return m.name;
+                        const u = cachedUsers.find(x => String(x.id) === String(gid));
+                        if (u) return u.name;
+                        return '미식가';
+                    });
+
+                    if (nameEl) nameEl.textContent = names.join(' · ');
+                    if (subEl) {
+                        subEl.textContent = currentFilters.gourmet.length > 1
+                            ? '선택한 미식가들의 맛집 모아보기'
+                            : '추천 맛집 둘러보기 모드';
+                    }
+                    window.currentViewingGourmet = { id: currentFilters.gourmet.join(','), name: names.join(' · ') };
+                }
+            }
+        }
+
+        listDisplayCount = 50;
+        render();
+    }
+
     window.setGourmetFilter = setGourmetFilter;
     window.handleMobileGourmetClick = function(btn, value) {
         setGourmetFilter(value);
