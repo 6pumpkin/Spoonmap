@@ -6912,7 +6912,7 @@ input[type="date"].drawer-input {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 6px !important;
+    gap: 4px !important;
     width: 100% !important;
     box-sizing: border-box !important;
 }
@@ -6921,21 +6921,23 @@ input[type="date"].drawer-input {
     flex: 1 1 0 !important;
     min-width: 0 !important;
     height: 38px !important;
-    padding: 0 4px !important;
-    border-radius: 10px !important;
+    padding: 0 2px !important;
+    border-radius: 9px !important;
     border: 1.5px solid #E2E8F0 !important;
     background: #F8FAFC !important;
     color: #94A3B8 !important;
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
+    font-size: clamp(0.72rem, 2.5vw, 0.82rem) !important;
+    font-weight: 700 !important;
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     white-space: nowrap !important;
+    word-break: keep-all !important;
     transition: all 0.18s ease !important;
     box-sizing: border-box !important;
     user-select: none !important;
+    overflow: hidden !important;
 }
 
 .privacy-spoon-chip.active {
@@ -12849,6 +12851,27 @@ span.desktop-only {
         font-size: 0.84rem !important;
         padding: 10px 12px !important;
         line-height: 1.45 !important;
+    }
+
+    .privacy-spoon-chips {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .privacy-spoon-chip {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        height: 38px !important;
+        padding: 0 2px !important;
+        border-radius: 9px !important;
+        font-size: clamp(0.7rem, 2.5vw, 0.82rem) !important;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        box-sizing: border-box !important;
     }
 
     .profile-modal-footer {
