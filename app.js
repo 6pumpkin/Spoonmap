@@ -8638,8 +8638,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     window.getUnifiedRestaurantData = getUnifiedRestaurantData;
 
 
-    // ── Gourmet Filter Controller (내 맛집 / 친구 / 전체 / 겹치는 맛집) ──
-    function setGourmetFilter(value) {
+    // ── Gourmet Filter Controller - 내 맛집 · 친구 · 전체 · 겹치는 맛집 ──
+    function setGourmetFilter(value, isReplace = false) {
         if (!currentFilters) return;
         if (!Array.isArray(currentFilters.gourmet)) {
             currentFilters.gourmet = currentFilters.gourmet ? [String(currentFilters.gourmet)] : ['me'];
@@ -8647,10 +8647,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         const v = String(value || 'me');
 
-        if (v === 'all') {
-            currentFilters.gourmet = ['all'];
-        } else if (v === 'overlap') {
-            currentFilters.gourmet = ['overlap'];
+        if (isReplace || v === 'all' || v === 'overlap') {
+            currentFilters.gourmet = [v];
         } else {
             // If currently in all or overlap mode, replace with the clicked user
             if (currentFilters.gourmet.includes('all') || currentFilters.gourmet.includes('overlap')) {
@@ -8985,6 +8983,22 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         currentFilters.location_large = [];
         currentFilters.location_small = [];
         currentFilters.searchQuery = '';
+        currentFilters.gourmet = ['me'];
+        const banner = document.getElementById('gourmet-viewing-banner');
+        if (banner) banner.style.display = 'none';
+        window.currentViewingGourmet = null;
+        const mGroup = document.getElementById('mobile-gourmet-chips-bar');
+        if (mGroup) {
+            mGroup.querySelectorAll('.mobile-gourmet-chip').forEach(b => {
+                b.classList.toggle('active', b.dataset.gourmet === 'me');
+            });
+        }
+        const sGroup = document.getElementById('gourmet-filters');
+        if (sGroup) {
+            sGroup.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.value === 'me');
+            });
+        }
         if (typeof dateRangeFilter !== 'undefined') {
             dateRangeFilter.startDate = null;
             dateRangeFilter.endDate = null;
@@ -15363,7 +15377,10 @@ function renderFollowingCards() {
                 <p class="following-user-bio">${u.bio || '등록된 소개글이 없습니다.'}</p>
                 <div class="following-card-bottom">
                     <span class="following-stats-text">맛집 <b>${u.count || 0}곳</b></span>
-                    <button class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}')">식당 목록 보기 🍽️</button>
+                    <div class="following-card-actions">
+                        <button type="button" class="btn-view-gourmet-map" onclick="viewGourmetMap('${u.id}')">지도</button>
+                        <button type="button" class="btn-view-gourmet-list" onclick="viewGourmetRestaurantList('${u.id}')">식당 목록</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -15638,6 +15655,86 @@ function getMasterRestaurantList() {
 window.getMasterRestaurantList = getMasterRestaurantList;
 
 // ─── Shared Gourmet Viewer Mode (팔로잉한 실제 유저의 식당 리스트 열람) ───
+window.viewGourmetMap = async function(userId) {
+    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+    let friend = friends.find(f => String(f.id) === String(userId) || String(f.realUserId) === String(userId) || String(f.id) === `following_${userId}`);
+
+    if (!friend) {
+        const u = (typeof getResolvedFollowedUser === 'function') ? getResolvedFollowedUser(userId) : null;
+        if (u) {
+            const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) ? window.MASTER_MOCK_GOURMETS : [];
+            const directMock = mockList.find(m => String(m.id) === String(userId));
+            const rests = directMock && Array.isArray(directMock.restaurants) ? directMock.restaurants : (u.restaurants || []);
+            friend = {
+                id: `following_${userId}`,
+                realUserId: userId,
+                name: u.name,
+                nickname: u.name,
+                avatarText: u.name.slice(0, 1),
+                color: '#FF6B6B',
+                restaurants: rests
+            };
+        }
+    }
+
+    if (!friend) {
+        showDiaryToast('미식가 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    if (friend.isFollowingUser && (!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
+        showDiaryToast(`⏳ ${friend.name} 님의 맛집 지도를 불러오는 중...`);
+        const fetched = await fetchFollowingUserRestaurants(friend.realUserId || userId);
+        friend.restaurants = fetched;
+    }
+
+    // 1. Activate ONLY this friend on map overlay
+    const targetFriendId = friend.id;
+    if (typeof saveActiveFriendIds === 'function') {
+        saveActiveFriendIds([targetFriendId]);
+    } else {
+        localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify([targetFriendId]));
+    }
+
+    // 2. Hide user's visited and wishlist overlays to view ONLY friend's map
+    if (typeof hideMyVisitedPlacesOnMap === 'function') {
+        hideMyVisitedPlacesOnMap();
+    }
+    const btnWish = document.getElementById('btn-show-wishlist');
+    if (btnWish) btnWish.classList.remove('active');
+    const switchWish = document.getElementById('switch-wishlist-toggle');
+    if (switchWish) switchWish.checked = false;
+    const switchMy = document.getElementById('switch-my-restaurants-toggle');
+    if (switchMy) switchMy.checked = false;
+
+    // 3. Switch to MAP Tab
+    window.location.hash = '#map';
+    if (typeof switchTabUI === 'function') switchTabUI('map');
+    else if (typeof window.switchTabUI === 'function') window.switchTabUI('map');
+    const mapTabBtn = document.querySelector('.tab-btn[data-tab="map"]') || 
+                      document.querySelector('.mobile-tab-btn[data-tab="map"]') ||
+                      document.querySelector('.mobile-bnav-btn[data-tab="map"]');
+    if (mapTabBtn) mapTabBtn.click();
+
+    // 4. Render friend markers and zoom to friend bounds
+    setTimeout(() => {
+        if (typeof renderAllActiveFriendOverlays === 'function') {
+            renderAllActiveFriendOverlays(targetFriendId);
+        }
+        if (typeof renderFriendChips === 'function') {
+            renderFriendChips();
+        }
+        if (typeof window.renderMobileFriendsListInPopover === 'function') {
+            window.renderMobileFriendsListInPopover();
+        }
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
+        }
+    }, 150);
+
+    showDiaryToast(`🗺️ ${friend.nickname || friend.name} 님의 맛집 지도 보기`);
+};
+
 window.viewGourmetRestaurantList = async function(userId) {
     const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
         ? window.MASTER_MOCK_GOURMETS 
@@ -15789,11 +15886,11 @@ window.viewGourmetRestaurantList = async function(userId) {
         currentFilters.searchQuery = '';
     }
 
-    // 3. Set Gourmet Filter directly
+    // 3. Set Gourmet Filter directly - replace all to show only target friend
     if (typeof setGourmetFilter === 'function') {
-        setGourmetFilter(String(userId));
+        setGourmetFilter(String(userId), true);
     } else if (typeof window.setGourmetFilter === 'function') {
-        window.setGourmetFilter(String(userId));
+        window.setGourmetFilter(String(userId), true);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -15802,9 +15899,9 @@ window.viewGourmetRestaurantList = async function(userId) {
 
 window.exitGourmetViewingMode = function() {
     if (typeof setGourmetFilter === 'function') {
-        setGourmetFilter('me');
+        setGourmetFilter('me', true);
     } else if (typeof window.setGourmetFilter === 'function') {
-        window.setGourmetFilter('me');
+        window.setGourmetFilter('me', true);
     }
     showDiaryToast(`🏠 내 맛집 목록으로 돌아왔습니다.`);
 };
