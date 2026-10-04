@@ -6778,7 +6778,7 @@ input[type="date"].drawer-input {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 10px 14px;
+    padding: 11px 14px;
     background: #F8FAFC;
     border: 1.5px solid #E2E8F0;
     border-radius: 12px;
@@ -6786,6 +6786,7 @@ input[type="date"].drawer-input {
     font-weight: 700;
     color: #1E293B;
     cursor: pointer;
+    white-space: nowrap !important;
     transition: all 0.2s ease;
     box-sizing: border-box;
 }
@@ -6805,17 +6806,7 @@ input[type="date"].drawer-input {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-
-.privacy-btn-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #2563EB;
-    background: #DBEAFE;
-    padding: 2px 8px;
-    border-radius: 9999px;
-    margin-left: auto;
-    margin-right: 8px;
+    white-space: nowrap !important;
 }
 
 .privacy-btn-arrow {
@@ -6918,51 +6909,41 @@ input[type="date"].drawer-input {
 }
 
 .privacy-spoon-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    width: 100%;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .privacy-spoon-chip {
-    flex: 1 1 calc(20% - 6px);
-    min-width: 54px;
-    height: 36px;
-    padding: 0 4px;
-    border-radius: 10px;
-    border: 1.5px solid #CBD5E1;
-    background: #FFFFFF;
-    color: #64748B;
-    font-size: 0.76rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.15s ease;
-    box-sizing: border-box;
-}
-
-.privacy-spoon-chip .chip-state {
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 1px 3px;
-    border-radius: 4px;
-    background: #E2E8F0;
-    color: #94A3B8;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    height: 38px !important;
+    padding: 0 4px !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #E2E8F0 !important;
+    background: #F8FAFC !important;
+    color: #94A3B8 !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    transition: all 0.18s ease !important;
+    box-sizing: border-box !important;
+    user-select: none !important;
 }
 
 .privacy-spoon-chip.active {
-    border-color: #FF4757;
-    background: #FFF1F2;
-    color: #E11D48;
-    box-shadow: 0 1px 4px rgba(244, 63, 94, 0.15);
-}
-
-.privacy-spoon-chip.active .chip-state {
-    background: #FFE4E6;
-    color: #E11D48;
+    border-color: #FF4757 !important;
+    background: #FFF1F2 !important;
+    color: #E11D48 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.18) !important;
 }
 
 .profile-modal-footer {

@@ -15365,37 +15365,15 @@ window.togglePrivacySpoonChip = function(spoonNum) {
         }
         currentModalPrivacyAllowedSpoons = currentModalPrivacyAllowedSpoons.filter(s => s !== num);
         chip.classList.remove('active');
-        const stateEl = chip.querySelector('.chip-state');
-        if (stateEl) stateEl.textContent = 'OFF';
     } else {
         currentModalPrivacyAllowedSpoons.push(num);
         currentModalPrivacyAllowedSpoons.sort((a, b) => a - b);
         chip.classList.add('active');
-        const stateEl = chip.querySelector('.chip-state');
-        if (stateEl) stateEl.textContent = 'ON';
     }
-    updatePrivacySettingSummaryBadge();
 };
 
 function updatePrivacySettingSummaryBadge() {
-    const summaryEl = document.getElementById('privacy-setting-summary');
-    const dateToggle = document.getElementById('privacy-toggle-date');
-    if (!summaryEl) return;
-
-    const isDateOn = dateToggle ? dateToggle.checked : true;
-    const spoons = currentModalPrivacyAllowedSpoons;
-
-    let spoonText = '';
-    if (spoons.length === 5) {
-        spoonText = '수저 1~5';
-    } else if (spoons.length === 0) {
-        spoonText = '수저 없음';
-    } else {
-        spoonText = `수저 ${spoons.join(', ')}`;
-    }
-
-    const dateText = isDateOn ? '방문일자 공개' : '방문일자 숨김';
-    summaryEl.textContent = `${spoonText} · ${dateText}`;
+    // Summary text removed from button as requested
 }
 
 // ─── Profile Edit Modal ───
@@ -15415,7 +15393,6 @@ window.openProfileEditModal = function() {
     const dateToggle = document.getElementById('privacy-toggle-date');
     if (dateToggle) {
         dateToggle.checked = privacy.showVisitDate !== false;
-        dateToggle.onchange = updatePrivacySettingSummaryBadge;
     }
 
     currentModalPrivacyAllowedSpoons = Array.isArray(privacy.allowedSpoons) && privacy.allowedSpoons.length > 0 
@@ -15428,8 +15405,6 @@ window.openProfileEditModal = function() {
             const isActive = currentModalPrivacyAllowedSpoons.includes(num);
             if (isActive) chip.classList.add('active');
             else chip.classList.remove('active');
-            const stateEl = chip.querySelector('.chip-state');
-            if (stateEl) stateEl.textContent = isActive ? 'ON' : 'OFF';
         }
     });
 
@@ -15437,8 +15412,6 @@ window.openProfileEditModal = function() {
     const btn = document.getElementById('btn-profile-privacy-toggle');
     if (panel) panel.style.display = 'none';
     if (btn) btn.classList.remove('active');
-
-    updatePrivacySettingSummaryBadge();
 
     if (modal) modal.classList.add('open');
 };
