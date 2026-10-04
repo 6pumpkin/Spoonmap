@@ -1498,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initKakaoAuth();
     initSharedMapRoute();
     let currentFilters = {
-        gourmet: 'me',
+        gourmet: ['me'],
         category: [],
         location_large: [],
         location_small: [],
@@ -6718,7 +6718,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         // Expose global full filter reset
         window.resetMainAppFilters = function() {
-            currentFilters.gourmet = 'me';
+            currentFilters.gourmet = ['me'];
             currentFilters.category = [];
             currentFilters.rate = [];
             currentFilters.location_large = [];
@@ -6833,7 +6833,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         const gourmetItems = [
             { id: 'me', label: '👤 내 맛집', mobileLabel: '👤 내 맛집' },
-            { id: 'all', label: '🌐 전체 (나+친구)', mobileLabel: '🌐 전체' }
+            { id: 'all', label: '🌐 전체', mobileLabel: '🌐 전체' }
         ];
 
         if (isOwner) {
@@ -6862,7 +6862,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         if (gourmetGroup) {
             gourmetGroup.innerHTML = gourmetItems.map(item => `
-                <button type="button" class="filter-btn ${item.isOverlap ? 'overlap-btn' : ''} ${currentFilters.gourmet === item.id ? 'active' : ''}" 
+                <button type="button" class="filter-btn ${item.isOverlap ? 'overlap-btn' : ''} ${(Array.isArray(currentFilters.gourmet) ? currentFilters.gourmet.includes(item.id) : currentFilters.gourmet === item.id) ? 'active' : ''}" 
                         data-filter="gourmet" data-value="${item.id}">
                     ${item.label}
                 </button>
@@ -6875,7 +6875,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         if (mobileGourmetScroll) {
             mobileGourmetScroll.innerHTML = gourmetItems.map(item => `
-                <button type="button" class="mobile-gourmet-chip ${item.isOverlap ? 'chip-overlap' : ''} ${currentFilters.gourmet === item.id ? 'active' : ''}" 
+                <button type="button" class="mobile-gourmet-chip ${item.isOverlap ? 'chip-overlap' : ''} ${(Array.isArray(currentFilters.gourmet) ? currentFilters.gourmet.includes(item.id) : currentFilters.gourmet === item.id) ? 'active' : ''}" 
                         data-gourmet="${item.id}" onclick="handleMobileGourmetClick(this, '${item.id}')">
                     ${item.mobileLabel}
                 </button>
@@ -7986,104 +7986,166 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             });
         });
 
-        const activeGourmet = (currentFilters && currentFilters.gourmet) ? currentFilters.gourmet : 'me';
-
-        // 1. Single friend selected (e.g. 'mock_minwoo_jeju' or 'mock_seoyeon_cafe')
-        if (activeGourmet !== 'me' && activeGourmet !== 'all' && activeGourmet !== 'overlap') {
-            const foundF = friendsRestaurantsMap.get(String(activeGourmet));
-            if (foundF && Array.isArray(foundF.restaurants)) {
-                return foundF.restaurants;
-            }
-            if (window.currentViewingGourmet && Array.isArray(window.currentViewingGourmet.restaurants)) {
-                return window.currentViewingGourmet.restaurants;
-            }
-            return [];
-        }
-
-        // 2. Overlapping restaurants only
-        if (activeGourmet === 'overlap') {
-            const overlapList = unified.filter(item => item.isOverlapping);
-            return overlapList;
-        }
-
-        // 3. Combined list (All: Me + Friends)
-        if (activeGourmet === 'all') {
-            const combined = [...unified];
-            friendsRestaurantsMap.forEach(fInfo => {
-                (fInfo.restaurants || []).forEach(fItem => {
-                    const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
-                    if (!masterNormMap.has(fNorm)) {
-                        combined.push(fItem);
-                    }
-                });
-            });
-            return combined;
-        }
-
-        // 4. Default: 'me' (My restaurants only)
-        return unified;
-    }
+        let activeGourmetList = [];
+        if (Array.isArray(currentFilters && currentFilters.gourmet)) {
+            activeGourmetList = currentFilters.gourmet;
+        } else if (currentFilters && currentFilters.gourmet) {
+            activeGourmetList = [String(currentFilters.gourmet)];
+        } else {
+            activeGourmetList = ['me'];
+        }
+
+        // 1. Overlapping restaurants only
+        if (activeGourmetList.includes('overlap')) {
+            return unified.filter(item => item.isOverlapping);
+        }
+
+        // 2. All - Me + All friends
+        if (activeGourmetList.includes('all')) {
+            const combined = [...unified];
+            friendsRestaurantsMap.forEach(fInfo => {
+                (fInfo.restaurants || []).forEach(fItem => {
+                    const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
+                    if (!masterNormMap.has(fNorm)) {
+                        combined.push(fItem);
+                    }
+                });
+            });
+            return combined;
+        }
+
+        // 3. Multi-selection of users - Me and/or friends
+        const selectedGourmetSet = new Set(activeGourmetList);
+        const result = [];
+        const includedNorms = new Set();
+
+        if (selectedGourmetSet.has('me')) {
+            unified.forEach(item => {
+                const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(item.name) : item.name.replace(/\s+/g, '').toLowerCase();
+                if (!item.sourceUserName) item.sourceUserName = '나';
+                result.push(item);
+                includedNorms.add(norm);
+            });
+        }
+
+        selectedGourmetSet.forEach(gid => {
+            if (gid === 'me') return;
+            const fInfo = friendsRestaurantsMap.get(String(gid));
+            if (fInfo && Array.isArray(fInfo.restaurants)) {
+                fInfo.restaurants.forEach(fItem => {
+                    const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
+                    if (!includedNorms.has(norm)) {
+                        result.push(fItem);
+                        includedNorms.add(norm);
+                    }
+                });
+            }
+        });
+
+        return result;
+    }
+
     window.getUnifiedRestaurantData = getUnifiedRestaurantData;
 
 
     // ── Gourmet Filter Controller (내 맛집 / 친구 / 전체 / 겹치는 맛집) ──
-    function setGourmetFilter(value) {
-        if (!currentFilters) return;
-        currentFilters.gourmet = value || 'me';
-
-        // 1. Sync PC Sidebar filter buttons
-        const sGroup = document.getElementById('gourmet-filters');
-        if (sGroup) {
-            sGroup.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.value === currentFilters.gourmet);
-            });
-        }
-
-        // 2. Sync Mobile Chip buttons
-        const mGroup = document.getElementById('mobile-gourmet-chips-bar');
-        if (mGroup) {
-            mGroup.querySelectorAll('.mobile-gourmet-chip').forEach(b => {
-                b.classList.toggle('active', b.dataset.gourmet === currentFilters.gourmet);
-            });
-        }
-
-        // 3. Update or hide the Top Viewing Banner
-        const banner = document.getElementById('gourmet-viewing-banner');
-        const nameEl = document.getElementById('gourmet-viewing-name');
-        const subEl = document.getElementById('gourmet-viewing-sub');
-
-        if (banner) {
-            if (currentFilters.gourmet === 'me') {
-                banner.style.display = 'none';
-                window.currentViewingGourmet = null;
-            } else {
-                banner.style.display = 'flex';
-                if (currentFilters.gourmet === 'all') {
-                    if (nameEl) nameEl.textContent = '모든 미식가';
-                    if (subEl) subEl.textContent = '나와 팔로잉 친구들의 맛집 전체 보기';
-                    window.currentViewingGourmet = { id: 'all', name: '모든 미식가' };
-                } else if (currentFilters.gourmet === 'overlap') {
-                    if (nameEl) nameEl.textContent = '함께 등록한 맛집';
-                    if (subEl) subEl.textContent = '나와 친구들이 공통으로 추천하는 맛집 모음';
-                    window.currentViewingGourmet = { id: 'overlap', name: '겹치는 맛집' };
-                } else {
-                    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
-                        ? window.MASTER_MOCK_GOURMETS 
-                        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
-                    const targetU = mockList.find(m => String(m.id) === String(currentFilters.gourmet)) ||
-                                    (typeof cachedDiscoveredUsers !== 'undefined' ? cachedDiscoveredUsers.find(u => String(u.id) === String(currentFilters.gourmet)) : null);
-                    if (targetU) {
-                        if (nameEl) nameEl.textContent = targetU.name;
-                        if (subEl) subEl.textContent = `${targetU.handle || ''} 님의 추천 맛집 둘러보기`;
-                        window.currentViewingGourmet = targetU;
-                    }
-                }
-            }
-        }
-
-        listDisplayCount = 50;
-        render();
-    }
+    function setGourmetFilter(value) {
+        if (!currentFilters) return;
+        if (!Array.isArray(currentFilters.gourmet)) {
+            currentFilters.gourmet = currentFilters.gourmet ? [String(currentFilters.gourmet)] : ['me'];
+        }
+
+        const v = String(value || 'me');
+
+        if (v === 'all') {
+            currentFilters.gourmet = ['all'];
+        } else if (v === 'overlap') {
+            currentFilters.gourmet = ['overlap'];
+        } else {
+            // If currently in all or overlap mode, replace with the clicked user
+            if (currentFilters.gourmet.includes('all') || currentFilters.gourmet.includes('overlap')) {
+                currentFilters.gourmet = [v];
+            } else {
+                const idx = currentFilters.gourmet.indexOf(v);
+                if (idx > -1) {
+                    if (currentFilters.gourmet.length > 1) {
+                        currentFilters.gourmet.splice(idx, 1);
+                    } else {
+                        currentFilters.gourmet = ['me'];
+                    }
+                } else {
+                    currentFilters.gourmet.push(v);
+                }
+            }
+        }
+
+        // 1. Sync PC Sidebar filter buttons
+        const sGroup = document.getElementById('gourmet-filters');
+        if (sGroup) {
+            sGroup.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.value));
+            });
+        }
+
+        // 2. Sync Mobile Chip buttons
+        const mGroup = document.getElementById('mobile-gourmet-chips-bar');
+        if (mGroup) {
+            mGroup.querySelectorAll('.mobile-gourmet-chip').forEach(b => {
+                b.classList.toggle('active', currentFilters.gourmet.includes(b.dataset.gourmet));
+            });
+        }
+
+        // 3. Update or hide the Top Viewing Banner
+        const banner = document.getElementById('gourmet-viewing-banner');
+        const nameEl = document.getElementById('gourmet-viewing-name');
+        const subEl = document.getElementById('gourmet-viewing-sub');
+
+        if (banner) {
+            if (currentFilters.gourmet.length === 1 && currentFilters.gourmet[0] === 'me') {
+                banner.style.display = 'none';
+                window.currentViewingGourmet = null;
+            } else {
+                banner.style.display = 'flex';
+                if (currentFilters.gourmet.includes('all')) {
+                    if (nameEl) nameEl.textContent = '모든 미식가';
+                    if (subEl) subEl.textContent = '나와 팔로잉 친구들의 맛집 전체 보기';
+                    window.currentViewingGourmet = { id: 'all', name: '모든 미식가' };
+                } else if (currentFilters.gourmet.includes('overlap')) {
+                    if (nameEl) nameEl.textContent = '함께 등록한 맛집';
+                    if (subEl) subEl.textContent = '나와 친구들이 공통으로 추천하는 맛집 모음';
+                    window.currentViewingGourmet = { id: 'overlap', name: '함께 등록한 맛집' };
+                } else {
+                    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+                        ? window.MASTER_MOCK_GOURMETS 
+                        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
+                    const cachedUsers = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
+                        ? cachedDiscoveredUsers
+                        : (JSON.parse(localStorage.getItem('spoonmap_cached_public_users') || '[]'));
+
+                    const names = currentFilters.gourmet.map(gid => {
+                        if (gid === 'me') return '나';
+                        const m = mockList.find(x => String(x.id) === String(gid));
+                        if (m) return m.name;
+                        const u = cachedUsers.find(x => String(x.id) === String(gid));
+                        if (u) return u.name;
+                        return '미식가';
+                    });
+
+                    if (nameEl) nameEl.textContent = names.join(' · ');
+                    if (subEl) {
+                        subEl.textContent = currentFilters.gourmet.length > 1
+                            ? '선택한 미식가들의 맛집 모아보기'
+                            : '추천 맛집 둘러보기 모드';
+                    }
+                    window.currentViewingGourmet = { id: currentFilters.gourmet.join(','), name: names.join(' · ') };
+                }
+            }
+        }
+
+        listDisplayCount = 50;
+        render();
+    }
+
     window.setGourmetFilter = setGourmetFilter;
     window.handleMobileGourmetClick = function(btn, value) {
         setGourmetFilter(value);
@@ -8423,8 +8485,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
             let compactGourmetBadge = '';
             if (item.isOverlapping) {
-                compactGourmetBadge = ` <span class="compact-visit-badge is-frequent" style="font-size:0.68rem; padding:1px 5px;" title="${(item.overlappingUsers || []).join(', ')} 함께 등록">🔥 함께</span>`;
-            } else if (currentFilters.gourmet === 'all' && item.sourceUserName) {
+                compactGourmetBadge = ` <span class="compact-visit-badge is-frequent" style="font-size:0.68rem; padding:1px 5px;" title="${(item.overlappingUsers || []).join(' · ')}">🔥 ${(item.overlappingUsers || []).join(' · ')}</span>`;
+            } else if ((Array.isArray(currentFilters.gourmet) ? (currentFilters.gourmet.includes('all') || currentFilters.gourmet.length > 1) : currentFilters.gourmet === 'all') && item.sourceUserName) {
                 compactGourmetBadge = ` <span class="compact-visit-badge" style="font-size:0.68rem; padding:1px 5px;">👤 ${item.sourceUserName}</span>`;
             }
 
@@ -8464,8 +8526,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
             let gourmetBadgeHtml = '';
             if (item.isOverlapping && Array.isArray(item.overlappingUsers) && item.overlappingUsers.length > 1) {
-                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap">🔥 ${item.overlappingUsers.join(' · ')} 함께 등록</span>`;
-            } else if (currentFilters.gourmet === 'all' && item.sourceUserName) {
+                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap">🔥 ${item.overlappingUsers.join(' · ')}</span>`;
+            } else if ((Array.isArray(currentFilters.gourmet) ? (currentFilters.gourmet.includes('all') || currentFilters.gourmet.length > 1) : currentFilters.gourmet === 'all') && item.sourceUserName) {
                 gourmetBadgeHtml = `<span class="card-gourmet-badge">👤 ${item.sourceUserName}</span>`;
             } else if (item.sourceUserId && item.sourceUserId !== 'me' && item.isOverlapping) {
                 gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap">🔥 나도 등록한 맛집!</span>`;
