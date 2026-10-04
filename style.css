@@ -6156,6 +6156,46 @@ input[type="date"].drawer-input {
     margin: 4px 0 0;
 }
 
+.profile-search-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-recommend-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1px solid #FDE68A;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-recommend-toggle:hover {
+    background: #FDE68A;
+    border-color: #FCD34D;
+    transform: translateY(-1px);
+}
+
+.btn-recommend-toggle.active {
+    background: #EA580C;
+    color: #ffffff;
+    border-color: #EA580C;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+.btn-recommend-toggle .recommend-icon {
+    font-size: 0.9rem;
+}
+
 .profile-search-wrap {
     position: relative;
     width: 240px;
@@ -6376,6 +6416,81 @@ input[type="date"].drawer-input {
 .btn-toggle-follow:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+}
+
+/* Discover Guide & Recommendation Styles */
+.discover-initial-guide {
+    text-align: center;
+    padding: 2.2rem 1.2rem;
+    background: #FAF9F6;
+    border: 1.5px dashed #E5E7EB;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.discover-initial-icon {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+}
+
+.discover-initial-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1F2937;
+    margin-bottom: 4px;
+}
+
+.discover-initial-desc {
+    font-size: 0.82rem;
+    color: #6B7280;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    max-width: 380px;
+}
+
+.btn-recommend-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1.5px solid #FDE68A;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    transition: all 0.2s ease;
+}
+
+.btn-recommend-open:hover {
+    background: #FDE68A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.discover-recommend-badge-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px 10px;
+    border-bottom: 1px solid #F3F4F6;
+    margin-bottom: 4px;
+}
+
+.recommend-badge-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #D97706;
+}
+
+.recommend-badge-sub {
+    font-size: 0.74rem;
+    color: #9CA3AF;
 }
 
 /* Profile Edit Modal */
@@ -12109,9 +12224,25 @@ span.desktop-only {
         margin: 2px 0 0 !important;
     }
 
-    .profile-search-wrap {
+    .profile-search-actions {
         width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 6px !important;
         margin-top: 6px !important;
+    }
+
+    .profile-search-actions .btn-recommend-toggle {
+        flex-shrink: 0 !important;
+        height: 38px !important;
+        padding: 0 10px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .profile-search-actions .profile-search-wrap {
+        flex: 1 !important;
+        width: auto !important;
+        margin-top: 0 !important;
     }
 
     .profile-search-input {

@@ -4542,6 +4542,633 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     const DEFAULT_DEMO_FRIENDS = [];
 
+    // Master-only Mock Gourmets for social feature testing & preview
+    const MASTER_MOCK_GOURMETS = [
+        {
+            id: 'mock_minwoo_jeju',
+            name: '강민우',
+            handle: '@minwoo_jeju',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=minwoo_jeju',
+            bio: '제주와 남해안 일주 · 숨은 노포와 해산물 국밥 탐방러 🌊',
+            count: 20,
+            isMasterMock: true,
+            restaurants: [
+                {
+                    name: '자매국수',
+                    category: '국수/면류',
+                    location_large: '제주',
+                    location_small: '제주시',
+                    road_address: '제주특별자치도 제주시 탑동로 11',
+                    rate: '🥄🥄🥄',
+                    menu: ['고기국수', '비빔국수', '돔베고기'],
+                    map_url: 'https://map.kakao.com/link/search/제주+자매국수',
+                    x: '126.5268',
+                    y: '33.5184',
+                    comment: '진한 사골 육수에 쫄깃한 면발과 야들야들한 돔베고기가 어우러진 제주 대표 명소',
+                    visit_count: 3,
+                    date: '2026-08-10'
+                },
+                {
+                    name: '만선식당',
+                    category: '해산물/회',
+                    location_large: '제주',
+                    location_small: '서귀포시',
+                    road_address: '제주특별자치도 서귀포시 대정읍 하모항구로 44',
+                    rate: '🥄🥄🥄',
+                    menu: ['고등어회', '갈치조림', '고등어구이'],
+                    map_url: 'https://map.kakao.com/link/search/모슬포+만선식당',
+                    x: '126.2505',
+                    y: '33.2173',
+                    comment: '비린내 하나 없이 고소함이 폭발하는 모슬포항 원조 고등어회 노포',
+                    visit_count: 2,
+                    date: '2026-08-12'
+                },
+                {
+                    name: '숙성도 노형본점',
+                    category: '돼지고기구이',
+                    location_large: '제주',
+                    location_small: '제주시',
+                    road_address: '제주특별자치도 제주시 원노형로 41',
+                    rate: '🥄🥄🥄',
+                    menu: ['숙성 흑돼지 삼겹살', '교차숙성 흑돼지 목살', '갈치속젓볶음밥'],
+                    map_url: 'https://map.kakao.com/link/search/숙성도+노형본점',
+                    x: '126.4839',
+                    y: '33.4852',
+                    comment: '진한 육향과 환상적인 육즙을 자랑하는 숙성 흑돼지의 정점',
+                    visit_count: 4,
+                    date: '2026-08-15'
+                },
+                {
+                    name: '명진전복',
+                    category: '전복/해산물',
+                    location_large: '제주',
+                    location_small: '제주시',
+                    road_address: '제주특별자치도 제주시 구좌읍 해맞이해안로 1282',
+                    rate: '🥄🥄🥄',
+                    menu: ['전복돌솥밥', '전복구이', '전복회'],
+                    map_url: 'https://map.kakao.com/link/search/구좌+명진전복',
+                    x: '126.8536',
+                    y: '33.5351',
+                    comment: '고소한 전복내장밥 위에 얇게 썬 전복이 듬뿍 올라간 구좌 해안도로 맛집',
+                    visit_count: 2,
+                    date: '2026-07-28'
+                },
+                {
+                    name: '덕승식당',
+                    category: '갈치조림/향토',
+                    location_large: '제주',
+                    location_small: '서귀포시',
+                    road_address: '제주특별자치도 서귀포시 대정읍 하모항구로 66',
+                    rate: '🥄🥄',
+                    menu: ['갈치조림', '물회', '우럭매운탕'],
+                    map_url: 'https://map.kakao.com/link/search/모슬포+덕승식당',
+                    x: '126.2526',
+                    y: '33.2171',
+                    comment: '직접 잡은 활어와 생갈치로 끓여내는 칼칼하고 달큰한 갈치조림',
+                    visit_count: 1,
+                    date: '2026-07-25'
+                },
+                {
+                    name: '속초 청초수물회',
+                    category: '물회/해산물',
+                    location_large: '강원',
+                    location_small: '속초시',
+                    road_address: '강원특별자치도 속초시 엑스포로 12-36',
+                    rate: '🥄🥄🥄',
+                    menu: ['해전물회', '성게알비빔밥', '섭국'],
+                    map_url: 'https://map.kakao.com/link/search/속초+청초수물회',
+                    x: '128.5835',
+                    y: '38.1925',
+                    comment: '신선한 해삼과 활전복 살얼음 육수가 끝내주는 대한민국 물회 명가',
+                    visit_count: 3,
+                    date: '2026-06-20'
+                },
+                {
+                    name: '강릉 동해일미',
+                    category: '간장게장/해산물',
+                    location_large: '강원',
+                    location_small: '강릉시',
+                    road_address: '강원특별자치도 강릉시 경포로 33-1',
+                    rate: '🥄🥄🥄',
+                    menu: ['암꽃게 간장게장', '꽃게탕'],
+                    map_url: 'https://map.kakao.com/link/search/강릉+동해일미',
+                    x: '128.8953',
+                    y: '37.7812',
+                    comment: '짜지 않고 은은한 비법 간장에 알이 꽉 찬 동해 암꽃게 정식',
+                    visit_count: 2,
+                    date: '2026-06-21'
+                },
+                {
+                    name: '주문진 바우네 생선구이',
+                    category: '생선구이/향토',
+                    location_large: '강원',
+                    location_small: '강릉시',
+                    road_address: '강원특별자치도 강릉시 주문진읍 해안로 1651',
+                    rate: '🥄🥄',
+                    menu: ['생선구이 모둠정식', '도루묵찌개', '이면수구이'],
+                    map_url: 'https://map.kakao.com/link/search/주문진+생선구이',
+                    x: '128.8267',
+                    y: '37.8682',
+                    comment: '연탄불에 노릇하게 구워 겉바속촉 육즙이 가득한 주문진 생선구이',
+                    visit_count: 1,
+                    date: '2026-06-22'
+                },
+                {
+                    name: '부산 쌍둥이돼지국밥',
+                    category: '돼지국밥',
+                    location_large: '부산',
+                    location_small: '남구',
+                    road_address: '부산광역시 남구 유엔평화로 35-1',
+                    rate: '🥄🥄🥄',
+                    menu: ['돼지국밥', '수육백반', '순대국밥'],
+                    map_url: 'https://map.kakao.com/link/search/대연동+쌍둥이돼지국밥',
+                    x: '129.0911',
+                    y: '35.1328',
+                    comment: '야들야들한 항정살 수육과 맑고 깊은 사골 국물의 부산 대표 국밥집',
+                    visit_count: 3,
+                    date: '2026-05-18'
+                },
+                {
+                    name: '부산 기장 연화리 해녀촌',
+                    category: '해산물/회',
+                    location_large: '부산',
+                    location_small: '기장군',
+                    road_address: '부산광역시 기장군 기장읍 연화1길 184',
+                    rate: '🥄🥄🥄',
+                    menu: ['모둠 해산물', '전복죽', '낙지탕탕이'],
+                    map_url: 'https://map.kakao.com/link/search/기장+연화리+해녀촌',
+                    x: '129.2241',
+                    y: '35.2215',
+                    comment: '바다 바로 앞에서 갓 잡은 신선한 해산물과 가마솥 전복죽을 즐기는 명소',
+                    visit_count: 2,
+                    date: '2026-05-19'
+                },
+                {
+                    name: '부산 백화양곱창',
+                    category: '양곱창/구이',
+                    location_large: '부산',
+                    location_small: '중구',
+                    road_address: '부산광역시 중구 자갈치로23번길 6',
+                    rate: '🥄🥄🥄',
+                    menu: ['모듬양곱창 소금구이', '모듬양곱창 양념구이', '볶음밥'],
+                    map_url: 'https://map.kakao.com/link/search/자갈치+백화양곱창',
+                    x: '129.0276',
+                    y: '35.0975',
+                    comment: '연탄불 위에서 이모님이 구워주는 자갈치 시장의 전설적인 양곱창 성지',
+                    visit_count: 2,
+                    date: '2026-05-20'
+                },
+                {
+                    name: '여수 꽃돌게장1번가',
+                    category: '간장게장/해산물',
+                    location_large: '전남',
+                    location_small: '여수시',
+                    road_address: '전라남도 여수시 봉산2로 36',
+                    rate: '🥄🥄🥄',
+                    menu: ['꽃게정식', '돌게장정식', '꽃게탕'],
+                    map_url: 'https://map.kakao.com/link/search/여수+꽃돌게장1번가',
+                    x: '127.7289',
+                    y: '34.7351',
+                    comment: '정갈하고 깊은 감칠맛의 꽃게장과 푸짐한 셀프바가 매력적인 여수 필수 코스',
+                    visit_count: 2,
+                    date: '2026-04-14'
+                },
+                {
+                    name: '여수 삼학집',
+                    category: '서대회/해산물',
+                    location_large: '전남',
+                    location_small: '여수시',
+                    road_address: '전라남도 여수시 이순신광장로 159',
+                    rate: '🥄🥄',
+                    menu: ['서대회무침', '갈치구이'],
+                    map_url: 'https://map.kakao.com/link/search/여수+삼학집',
+                    x: '127.7423',
+                    y: '34.7402',
+                    comment: '막걸리 식초로 새콤달콤하게 무쳐낸 부드러운 서대회를 밥에 비벼 먹는 별미',
+                    visit_count: 1,
+                    date: '2026-04-15'
+                },
+                {
+                    name: '통영 뚱보할매김밥집',
+                    category: '충무김밥/향토',
+                    location_large: '경남',
+                    location_small: '통영시',
+                    road_address: '경상남도 통영시 통영해안로 325',
+                    rate: '🥄🥄',
+                    menu: ['충무김밥'],
+                    map_url: 'https://map.kakao.com/link/search/통영+뚱보할매김밥집',
+                    x: '128.4239',
+                    y: '34.8447',
+                    comment: '매콤달콤한 오징어어묵무침과 아삭한 섞박지가 중독적인 원조 충무김밥',
+                    visit_count: 1,
+                    date: '2026-03-10'
+                },
+                {
+                    name: '통영 울도다찌',
+                    category: '다찌/해산물코스',
+                    location_large: '경남',
+                    location_small: '통영시',
+                    road_address: '경상남도 통영시 무전5길 12-5',
+                    rate: '🥄🥄🥄',
+                    menu: ['다찌 기본상', '해물 뚝배기', '생선회'],
+                    map_url: 'https://map.kakao.com/link/search/통영+다찌',
+                    x: '128.4285',
+                    y: '34.8584',
+                    comment: '술을 주문할 때마다 끊임없이 쏟아져 나오는 통영 제철 해산물 한 상 차림',
+                    visit_count: 2,
+                    date: '2026-03-11'
+                },
+                {
+                    name: '목포 영란횟집',
+                    category: '민어회/해산물',
+                    location_large: '전남',
+                    location_small: '목포시',
+                    road_address: '전라남도 목포시 번화로 42-1',
+                    rate: '🥄🥄🥄',
+                    menu: ['민어회', '민어전', '민어매운탕'],
+                    map_url: 'https://map.kakao.com/link/search/목포+영란횟집',
+                    x: '126.3842',
+                    y: '34.7865',
+                    comment: '두툼한 민어 살과 부레 껍질까지 완벽하게 즐기는 반세기 전통 목포 노포',
+                    visit_count: 2,
+                    date: '2026-02-18'
+                },
+                {
+                    name: '군산 한일옥',
+                    category: '소고기무국/한식',
+                    location_large: '전북',
+                    location_small: '군산시',
+                    road_address: '전북특별자치도 군산시 구영3길 63',
+                    rate: '🥄🥄🥄',
+                    menu: ['무우국', '육회비빔밥', '김치찌개'],
+                    map_url: 'https://map.kakao.com/link/search/군산+한일옥',
+                    x: '126.7051',
+                    y: '35.9839',
+                    comment: '맑은 국물에서 뿜어져 나오는 깊고 진한 한우 소고기 무국의 정수',
+                    visit_count: 3,
+                    date: '2026-01-15'
+                },
+                {
+                    name: '군산 복성루',
+                    category: '해물짬뽕/중식',
+                    location_large: '전북',
+                    location_small: '군산시',
+                    road_address: '전북특별자치도 군산시 월명로 382',
+                    rate: '🥄🥄',
+                    menu: ['짬뽕', '물짜장', '잡채밥'],
+                    map_url: 'https://map.kakao.com/link/search/군산+복성루',
+                    x: '126.7214',
+                    y: '35.9806',
+                    comment: '돼지고기 고명과 꼬막 조개가 산더미처럼 쌓여 칼칼하고 묵직한 짬뽕',
+                    visit_count: 1,
+                    date: '2026-01-16'
+                },
+                {
+                    name: '태안 원풍식당',
+                    category: '낙지탕/향토',
+                    location_large: '충남',
+                    location_small: '태안군',
+                    road_address: '충청남도 태안군 원북면 원이로 841-1',
+                    rate: '🥄🥄',
+                    menu: ['박속밀국낙지탕', '낙지볶음', '우럭젓국'],
+                    map_url: 'https://map.kakao.com/link/search/태안+원풍식당',
+                    x: '126.2575',
+                    y: '36.8532',
+                    comment: '시원한 박속 육수에 산낙지를 살짝 데쳐 먹고 칼국수로 마무리하는 태안 별미',
+                    visit_count: 1,
+                    date: '2025-11-20'
+                },
+                {
+                    name: '순천 건봉국밥',
+                    category: '순대국밥/수육',
+                    location_large: '전남',
+                    location_small: '순천시',
+                    road_address: '전라남도 순천시 장평로 65',
+                    rate: '🥄🥄',
+                    menu: ['머리국밥', '순대랑수육', '모듬국밥'],
+                    map_url: 'https://map.kakao.com/link/search/순천+건봉국밥',
+                    x: '127.4938',
+                    y: '34.9458',
+                    comment: '잡내 없이 깔끔하게 우려낸 국물에 푸짐한 머릿고기가 가득 찬 아랫장 노포',
+                    visit_count: 1,
+                    date: '2025-12-05'
+                }
+            ]
+        },
+        {
+            id: 'mock_seoyeon_cafe',
+            name: '이서연',
+            handle: '@seoyeon_cafe',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=seoyeon_cafe',
+            bio: '전국 스페셜티 커피와 감성 베이커리 브런치 큐레이터 ☕🥖',
+            count: 20,
+            isMasterMock: true,
+            restaurants: [
+                {
+                    name: '성수 센터커피',
+                    category: '스페셜티커피',
+                    location_large: '서울',
+                    location_small: '성동구',
+                    road_address: '서울특별시 성동구 서울숲2길 28-11',
+                    rate: '🥄🥄🥄',
+                    menu: ['게이샤 드립커피', '아메리카노', '바닐라라떼'],
+                    map_url: 'https://map.kakao.com/link/search/성수동+센터커피',
+                    x: '127.0422',
+                    y: '37.5458',
+                    comment: '영국 바리스타 챔피언 박상호 로스터의 섬세한 싱글오리진 필터커피',
+                    visit_count: 4,
+                    date: '2026-09-01'
+                },
+                {
+                    name: '성수 어니언',
+                    category: '베이커리카페',
+                    location_large: '서울',
+                    location_small: '성동구',
+                    road_address: '서울특별시 성동구 아차산로9길 8',
+                    rate: '🥄🥄🥄',
+                    menu: ['팡도르', '앙버터', '플랫화이트'],
+                    map_url: 'https://map.kakao.com/link/search/성수동+어니언',
+                    x: '127.0583',
+                    y: '37.5445',
+                    comment: '인더스트리얼 감성의 빈티지 공간에서 즐기는 눈 덮인 시그니처 팡도르',
+                    visit_count: 3,
+                    date: '2026-08-25'
+                },
+                {
+                    name: '연남 테일러커피',
+                    category: '스페셜티커피',
+                    location_large: '서울',
+                    location_small: '마포구',
+                    road_address: '서울특별시 마포구 성미산로 189',
+                    rate: '🥄🥄🥄',
+                    menu: ['크림모카', '블루지', '골든에이드'],
+                    map_url: 'https://map.kakao.com/link/search/연남동+테일러커피',
+                    x: '126.9248',
+                    y: '37.5619',
+                    comment: '부드럽고 묵직한 수제 크림이 에스프레소와 어우러진 인생 크림모카',
+                    visit_count: 3,
+                    date: '2026-08-28'
+                },
+                {
+                    name: '한남 오월의종',
+                    category: '천연발효빵/베이커리',
+                    location_large: '서울',
+                    location_small: '용산구',
+                    road_address: '서울특별시 용산구 이태원로 229',
+                    rate: '🥄🥄🥄',
+                    menu: ['무화과호밀빵', '크랜베리바게트', '호두깜빠뉴'],
+                    map_url: 'https://map.kakao.com/link/search/한남동+오월의종',
+                    x: '127.0008',
+                    y: '37.5367',
+                    comment: '톡톡 터지는 건무화과가 빵 안에 가득 차 있는 천연 발효 하드계열 빵의 성지',
+                    visit_count: 2,
+                    date: '2026-07-15'
+                },
+                {
+                    name: '서촌 부안애서',
+                    category: '브런치/양식',
+                    location_large: '서울',
+                    location_small: '종로구',
+                    road_address: '서울특별시 종로구 자하문로 35',
+                    rate: '🥄🥄',
+                    menu: ['트러플 크림 파스타', '프렌치토스트', '리코타 샐러드'],
+                    map_url: 'https://map.kakao.com/link/search/서촌+부안애서',
+                    x: '126.9719',
+                    y: '37.5802',
+                    comment: '고즈넉한 한옥 골목 사이에서 여유롭게 즐기는 감성 브런치 다이닝',
+                    visit_count: 1,
+                    date: '2026-07-20'
+                },
+                {
+                    name: '파주 더티트렁크',
+                    category: '대형베이커리카페',
+                    location_large: '경기',
+                    location_small: '파주시',
+                    road_address: '경기도 파주시 지목로 114',
+                    rate: '🥄🥄',
+                    menu: ['내슈빌 치킨버거', '클래식 브런치', '더티 모카'],
+                    map_url: 'https://map.kakao.com/link/search/파주+더티트렁크',
+                    x: '126.7225',
+                    y: '37.7188',
+                    comment: '압도적인 층고와 미국 창고형 인테리어가 돋보이는 복합 문화 베이커리',
+                    visit_count: 2,
+                    date: '2026-06-15'
+                },
+                {
+                    name: '양평 하우스베이커리',
+                    category: '한옥베이커리카페',
+                    location_large: '경기',
+                    location_small: '양평군',
+                    road_address: '경기도 양평군 서종면 문호리 338-1',
+                    rate: '🥄🥄',
+                    menu: ['리얼망고스무디', '마늘바게트', '크로와상'],
+                    map_url: 'https://map.kakao.com/link/search/양평+하우스베이커리',
+                    x: '127.3592',
+                    y: '37.5873',
+                    comment: '넓은 잔디 마당과 전통 한옥이 어우러져 피크닉 기분을 내기 좋은 곳',
+                    visit_count: 1,
+                    date: '2026-06-18'
+                },
+                {
+                    name: '남양주 나인블럭 북한강점',
+                    category: '리버뷰카페',
+                    location_large: '경기',
+                    location_small: '남양주시',
+                    road_address: '경기도 남양주시 조안면 북한강로 914',
+                    rate: '🥄🥄',
+                    menu: ['콜드브루', '초코슈크림', '바닐라슈'],
+                    map_url: 'https://map.kakao.com/link/search/남양주+나인블럭+북한강점',
+                    x: '127.3325',
+                    y: '37.5812',
+                    comment: '북한강 물결이 한눈에 내려다보이는 시원한 통창 뷰와 진한 원두',
+                    visit_count: 1,
+                    date: '2026-05-30'
+                },
+                {
+                    name: '수원 정지영커피로스터즈 행궁본점',
+                    category: '로스터리카페',
+                    location_large: '경기',
+                    location_small: '수원시',
+                    road_address: '경기도 수원시 팔달구 정조로905번길 13',
+                    rate: '🥄🥄🥄',
+                    menu: ['플랫화이트', '코코넛커피', '런던포그'],
+                    map_url: 'https://map.kakao.com/link/search/수원+정지영커피로스터즈',
+                    x: '127.0145',
+                    y: '37.2848',
+                    comment: '수원 화성 성곽길을 조망하며 즐기는 화성행궁 로스터리 커피의 대명사',
+                    visit_count: 2,
+                    date: '2026-05-12'
+                },
+                {
+                    name: '대전 성심당 본점',
+                    category: '명품베이커리',
+                    location_large: '대전',
+                    location_small: '중구',
+                    road_address: '대전광역시 중구 대종로480번길 15',
+                    rate: '🥄🥄🥄',
+                    menu: ['튀김소보로', '부추빵', '명란바게트'],
+                    map_url: 'https://map.kakao.com/link/search/대전+성심당+본점',
+                    x: '127.4276',
+                    y: '36.3276',
+                    comment: '가성비와 완성도 모두 국내 최고를 자랑하는 대전의 자부심 베이커리',
+                    visit_count: 5,
+                    date: '2026-04-20'
+                },
+                {
+                    name: '세종 클래식에스프레소',
+                    category: '에스프레소바',
+                    location_large: '세종',
+                    location_small: '나성동',
+                    road_address: '세종특별자치시 한누리대로 288',
+                    rate: '🥄🥄',
+                    menu: ['카페 콘파냐', '스트라파짜토', '아란치아'],
+                    map_url: 'https://map.kakao.com/link/search/세종+에스프레소바',
+                    x: '127.2608',
+                    y: '36.4862',
+                    comment: '부담 없는 가격에 정통 이탈리안 에스프레소를 스탠딩으로 즐기는 곳',
+                    visit_count: 1,
+                    date: '2026-04-22'
+                },
+                {
+                    name: '대구 딥커피로스터스',
+                    category: '에스프레소바',
+                    location_large: '대구',
+                    location_small: '중구',
+                    road_address: '대구광역시 중구 봉산문화2길 41',
+                    rate: '🥄🥄🥄',
+                    menu: ['바치오', '아라냐', '티라미수'],
+                    map_url: 'https://map.kakao.com/link/search/대구+봉산동+딥커피로스터스',
+                    x: '128.5992',
+                    y: '35.8624',
+                    comment: '대구 봉산동 카페 골목에서 감미로운 크림과 카카오 토핑 에스프레소의 매력',
+                    visit_count: 2,
+                    date: '2026-03-25'
+                },
+                {
+                    name: '경주 노르딕',
+                    category: '오픈샌드위치/브런치',
+                    location_large: '경북',
+                    location_small: '경주시',
+                    road_address: '경상북도 경주시 포석로 1099',
+                    rate: '🥄🥄',
+                    menu: ['노르딕 샐러드', '오픈 샌드위치', '사과 케일 착즙주스'],
+                    map_url: 'https://map.kakao.com/link/search/황리단길+노르딕',
+                    x: '129.2098',
+                    y: '35.8361',
+                    comment: '신선한 아보카도와 계란 훈제연어가 듬뿍 올라간 황리단길 대표 브런치',
+                    visit_count: 1,
+                    date: '2026-03-28'
+                },
+                {
+                    name: '부산 모모스 로스터리&커피바 영도',
+                    category: '월드챔피언커피',
+                    location_large: '부산',
+                    location_small: '영도구',
+                    road_address: '부산광역시 영도구 봉래나루로 160',
+                    rate: '🥄🥄🥄',
+                    menu: ['시그니처 필터커피', '맛사탕 에스프레소', '휘낭시에'],
+                    map_url: 'https://map.kakao.com/link/search/영도+모모스커피',
+                    x: '129.0435',
+                    y: '35.0934',
+                    comment: '영도 부둣가 물류창고를 개조해 바다 풍경과 함께 최정상 스페셜티를 즐기는 곳',
+                    visit_count: 3,
+                    date: '2026-02-15'
+                },
+                {
+                    name: '부산 베르크로스터스',
+                    category: '감성로스터리',
+                    location_large: '부산',
+                    location_small: '부산진구',
+                    road_address: '부산광역시 부산진구 서전로58번길 115',
+                    rate: '🥄🥄',
+                    menu: ['베이비 라떼', '에티오피아 드립', '초코쿠키'],
+                    map_url: 'https://map.kakao.com/link/search/전포+베르크로스터스',
+                    x: '129.0664',
+                    y: '35.1558',
+                    comment: '교회 의자와 독특한 지하 쇼룸에서 전포 카페거리만의 힙한 문화를 만끽',
+                    visit_count: 2,
+                    date: '2026-02-16'
+                },
+                {
+                    name: '전주 평화와평화',
+                    category: '필터커피/디저트',
+                    location_large: '전북',
+                    location_small: '전주시',
+                    road_address: '전북특별자치도 전주시 완산구 전주객사4길 73-20',
+                    rate: '🥄🥄',
+                    menu: ['휘낭시에 모둠', '드립커피', '보이차'],
+                    map_url: 'https://map.kakao.com/link/search/전주+객사+평화와평화',
+                    x: '127.1428',
+                    y: '35.8183',
+                    comment: '조용하고 차분한 공간에서 정성스럽게 내린 커피와 문장을 함께 건네는 공간',
+                    visit_count: 1,
+                    date: '2026-01-22'
+                },
+                {
+                    name: '광주 아티티 동명점',
+                    category: '브런치/파스타',
+                    location_large: '광주',
+                    location_small: '동구',
+                    road_address: '광주광역시 동구 동계천로 143-6',
+                    rate: '🥄🥄',
+                    menu: ['쉬림프 오일 파스타', '에그인헬', '잠봉뵈르'],
+                    map_url: 'https://map.kakao.com/link/search/동명동+아티티',
+                    x: '126.9284',
+                    y: '35.1492',
+                    comment: '유럽 시골 감성의 따뜻한 채광 속에서 즐기는 동명동 브런치 맛집',
+                    visit_count: 1,
+                    date: '2025-12-18'
+                },
+                {
+                    name: '담양 담화헌',
+                    category: '도자기카페/차',
+                    location_large: '전남',
+                    location_small: '담양군',
+                    road_address: '전라남도 담양군 봉산면 유산길 63',
+                    rate: '🥄🥄',
+                    menu: ['대추차', '오미자 에이드', '가래떡구이'],
+                    map_url: 'https://map.kakao.com/link/search/담양+담화헌',
+                    x: '126.9691',
+                    y: '35.2974',
+                    comment: '옹기 굽는 도예 공방에서 차분하게 대나무 숲 바람을 느끼며 마시는 전통차',
+                    visit_count: 1,
+                    date: '2025-12-19'
+                },
+                {
+                    name: '춘천 산토리니',
+                    category: '이탈리안브런치',
+                    location_large: '강원',
+                    location_small: '춘천시',
+                    road_address: '강원특별자치도 춘천시 동면 순환대로 1154-97',
+                    rate: '🥄🥄',
+                    menu: ['고르곤졸라 피자', '스테이크 샐러드', '젤라또'],
+                    map_url: 'https://map.kakao.com/link/search/구봉산+산토리니',
+                    x: '127.7712',
+                    y: '37.8835',
+                    comment: '구봉산 전망대에서 춘천 시내를 360도로 내려다보는 이국적인 소원의 종탑',
+                    visit_count: 2,
+                    date: '2025-11-05'
+                },
+                {
+                    name: '강릉 테라로사 커피공장 본점',
+                    category: '스페셜티커피/베이커리',
+                    location_large: '강원',
+                    location_small: '강릉시',
+                    road_address: '강원특별자치도 강릉시 구정면 현천길 7',
+                    rate: '🥄🥄🥄',
+                    menu: ['핸드드립 하우스블렌드', '티라미수', '레몬치즈케이크'],
+                    map_url: 'https://map.kakao.com/link/search/강릉+테라로사+본점',
+                    x: '128.8872',
+                    y: '37.7118',
+                    comment: '솔향 가득한 강릉에서 한국 스페셜티 커피의 시초를 만나는 붉은 벽돌의 성지',
+                    visit_count: 3,
+                    date: '2025-11-06'
+                }
+            ]
+        }
+    ];
+    window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
+
     function getCustomFriends() {
         try {
             return JSON.parse(localStorage.getItem('spoonmap_custom_friends') || '[]');
@@ -4563,6 +5190,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchFollowingUserRestaurants(userId) {
         if (window.followingRestaurantsCache.has(String(userId))) {
             return window.followingRestaurantsCache.get(String(userId));
+        }
+        if (typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+            const mockG = MASTER_MOCK_GOURMETS.find(m => m.id === String(userId));
+            if (mockG && Array.isArray(mockG.restaurants)) {
+                window.followingRestaurantsCache.set(String(userId), mockG.restaurants);
+                return mockG.restaurants;
+            }
         }
         let list = [];
         try {
@@ -4629,9 +5263,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return followingIds.map((fid, idx) => {
             let u = cachedUsers.find(cu => String(cu.id) === String(fid));
+            if (!u && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+                u = MASTER_MOCK_GOURMETS.find(m => m.id === String(fid));
+            }
             const name = u ? u.name : `미식가 #${String(fid).slice(-4)}`;
             const color = colors[idx % colors.length];
-            const cachedRests = window.followingRestaurantsCache.get(String(fid)) || [];
+            const cachedRests = (u && Array.isArray(u.restaurants)) ? u.restaurants : (window.followingRestaurantsCache.get(String(fid)) || []);
 
             return {
                 id: `following_${fid}`,
@@ -13400,6 +14037,22 @@ async function fetchDiscoveredUsersFromCloud() {
             });
         } catch (_) {}
 
+        if (isCurrentUserOwner && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+            MASTER_MOCK_GOURMETS.forEach(mock => {
+                if (!dedupedUsers.some(u => String(u.id) === mock.id)) {
+                    dedupedUsers.push({
+                        id: mock.id,
+                        name: mock.name,
+                        handle: mock.handle,
+                        bio: mock.bio,
+                        avatar: mock.avatar,
+                        count: mock.count,
+                        isMasterMock: true
+                    });
+                }
+            });
+        }
+
         cachedDiscoveredUsers = dedupedUsers;
         localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(dedupedUsers));
         return dedupedUsers;
@@ -13422,6 +14075,7 @@ function getUserFollowingKey() {
 
 function getUserFollowingList() {
     const key = getUserFollowingKey();
+    const isOwner = typeof isOwnerUser === 'function' ? isOwnerUser() : false;
     try {
         const saved = localStorage.getItem(key);
         if (saved) {
@@ -13429,17 +14083,34 @@ function getUserFollowingList() {
             if (Array.isArray(list)) {
                 // Filter out any legacy mock ids!
                 const legacyMockIds = ['master', 'seongsu_foodie', 'wine_lover', 'gukbap_master', 'bakery_zoe', 'yeonnam_chef'];
-                const cleaned = list.filter(id => !legacyMockIds.includes(String(id)));
+                let cleaned = list.filter(id => !legacyMockIds.includes(String(id)));
+
+                if (isOwner) {
+                    const masterMockIds = ['mock_minwoo_jeju', 'mock_seoyeon_cafe'];
+                    const unfollowedMocks = JSON.parse(localStorage.getItem('spoonmap_master_unfollowed_mocks') || '[]');
+                    masterMockIds.forEach(mid => {
+                        if (!unfollowedMocks.includes(mid) && !cleaned.includes(mid)) {
+                            cleaned.push(mid);
+                        }
+                    });
+                } else {
+                    cleaned = cleaned.filter(id => !String(id).startsWith('mock_'));
+                }
+
                 if (cleaned.length !== list.length) {
                     saveUserFollowingList(cleaned);
                 }
                 return cleaned;
             }
+        } else if (isOwner) {
+            const initialMasterList = ['mock_minwoo_jeju', 'mock_seoyeon_cafe'];
+            saveUserFollowingList(initialMasterList);
+            return initialMasterList;
         }
     } catch (e) {
         console.warn('Failed to parse following list', e);
     }
-    return [];
+    return isOwner ? ['mock_minwoo_jeju', 'mock_seoyeon_cafe'] : [];
 }
 
 function saveUserFollowingList(list) {
@@ -13473,10 +14144,22 @@ function toggleFollowUser(targetId) {
     if (idx > -1) {
         list.splice(idx, 1);
         isNowFollowing = false;
+        if (String(targetId).startsWith('mock_')) {
+            const unfollowedMocks = JSON.parse(localStorage.getItem('spoonmap_master_unfollowed_mocks') || '[]');
+            if (!unfollowedMocks.includes(String(targetId))) {
+                unfollowedMocks.push(String(targetId));
+                localStorage.setItem('spoonmap_master_unfollowed_mocks', JSON.stringify(unfollowedMocks));
+            }
+        }
         showDiaryToast(`언팔로우했습니다.`);
     } else {
         list.push(String(targetId));
         isNowFollowing = true;
+        if (String(targetId).startsWith('mock_')) {
+            let unfollowedMocks = JSON.parse(localStorage.getItem('spoonmap_master_unfollowed_mocks') || '[]');
+            unfollowedMocks = unfollowedMocks.filter(id => id !== String(targetId));
+            localStorage.setItem('spoonmap_master_unfollowed_mocks', JSON.stringify(unfollowedMocks));
+        }
         showDiaryToast(`⭐ 팔로우했습니다!`);
     }
 
@@ -13537,7 +14220,12 @@ function renderProfileView() {
 
     if (restStatEl) restStatEl.textContent = totalRestaurants.toLocaleString();
     if (visitStatEl) visitStatEl.textContent = totalVisits.toLocaleString();
-    if (followerStatEl) followerStatEl.textContent = profile.followersCount || 0;
+
+    let totalFollowers = profile.followersCount || 0;
+    if (isOwner) {
+        totalFollowers = Math.max(2, totalFollowers + 2);
+    }
+    if (followerStatEl) followerStatEl.textContent = totalFollowers;
     if (followingStatEl) followingStatEl.textContent = followingList.length;
     if (badgeCountEl) badgeCountEl.textContent = `${followingList.length}명`;
 
@@ -13568,6 +14256,9 @@ function renderFollowingCards() {
 
     followingGrid.innerHTML = followingList.map(fid => {
         let u = cachedDiscoveredUsers.find(cu => String(cu.id) === String(fid));
+        if (!u && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+            u = MASTER_MOCK_GOURMETS.find(m => m.id === String(fid));
+        }
         if (!u) {
             u = {
                 id: fid,
@@ -13598,6 +14289,25 @@ function renderFollowingCards() {
 }
 window.renderFollowingCards = renderFollowingCards;
 
+let isRecommendUsersOpen = false;
+
+function toggleRecommendUsers() {
+    isRecommendUsersOpen = !isRecommendUsersOpen;
+    const btn = document.getElementById('btn-toggle-recommend-users');
+    if (btn) {
+        if (isRecommendUsersOpen) {
+            btn.classList.add('active');
+            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천 미식가 닫기</span>`;
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = `<span class="recommend-icon">✨</span><span class="recommend-text">추천 미식가 보기</span>`;
+        }
+    }
+    const searchInput = document.getElementById('discover-user-search');
+    renderDiscoverUsersList(searchInput ? searchInput.value : '');
+}
+window.toggleRecommendUsers = toggleRecommendUsers;
+
 async function renderDiscoverUsersList(searchQuery = '') {
     const listEl = document.getElementById('discover-users-list');
     if (!listEl) return;
@@ -13611,7 +14321,7 @@ async function renderDiscoverUsersList(searchQuery = '') {
     const cloudUsers = await fetchDiscoveredUsersFromCloud();
 
     // If any followed user was missing from cachedDiscoveredUsers, fetch individually
-    const missingFids = followingList.filter(fid => !cachedDiscoveredUsers.some(cu => String(cu.id) === String(fid)));
+    const missingFids = followingList.filter(fid => !String(fid).startsWith('mock_') && !cachedDiscoveredUsers.some(cu => String(cu.id) === String(fid)));
     if (missingFids.length > 0 && isFirebaseReady && db && window.spoonmapCloudStatus !== 'permission-denied') {
         await Promise.all(missingFids.map(async (fid) => {
             try {
@@ -13627,15 +14337,6 @@ async function renderDiscoverUsersList(searchQuery = '') {
     // Refresh following cards with resolved user names & avatars!
     renderFollowingCards();
 
-    const filtered = cloudUsers.filter(u => {
-        if (!q) return true;
-        const nameMatch = u.name && u.name.toLowerCase().includes(q);
-        const handleMatch = u.handle && u.handle.toLowerCase().replace(/^@/, '').includes(cleanQ);
-        const bioMatch = u.bio && u.bio.toLowerCase().includes(q);
-        const idMatch = u.id && String(u.id).toLowerCase().includes(cleanQ);
-        return nameMatch || handleMatch || bioMatch || idMatch;
-    });
-
     let warningBanner = '';
     if (window.spoonmapCloudStatus === 'permission-denied') {
         warningBanner = `
@@ -13649,8 +14350,17 @@ async function renderDiscoverUsersList(searchQuery = '') {
         `;
     }
 
-    if (filtered.length === 0) {
-        if (q) {
+    // 1. Search Query active: Real-time search across all users
+    if (q) {
+        const searched = cloudUsers.filter(u => {
+            const nameMatch = u.name && u.name.toLowerCase().includes(q);
+            const handleMatch = u.handle && u.handle.toLowerCase().replace(/^@/, '').includes(cleanQ);
+            const bioMatch = u.bio && u.bio.toLowerCase().includes(q);
+            const idMatch = u.id && String(u.id).toLowerCase().includes(cleanQ);
+            return nameMatch || handleMatch || bioMatch || idMatch;
+        });
+
+        if (searched.length === 0) {
             listEl.innerHTML = `
                 ${warningBanner}
                 <div style="text-align:center; padding: 2.2rem 1rem; color:#6B7280; font-size:0.85rem; line-height: 1.6;">
@@ -13665,35 +14375,72 @@ async function renderDiscoverUsersList(searchQuery = '') {
                     </button>
                 </div>
             `;
-        } else {
-            listEl.innerHTML = `
-                ${warningBanner}
-                <div style="text-align:center; padding: 2rem 1rem; color:#9CA3AF; font-size:0.84rem; line-height: 1.6;">
-                    아직 등록된 다른 미식가가 없습니다.<br>상단의 <b>[🔗 내 맛집 공유]</b> 링크를 친구에게 보내 함께 미식 지도를 만들어 보세요! 🥄
-                </div>
-            `;
+            return;
         }
+
+        listEl.innerHTML = warningBanner + searched.map(u => renderDiscoverUserItemHtml(u, followingList)).join('');
         return;
     }
 
-    listEl.innerHTML = warningBanner + filtered.map(u => {
-        const isFollowing = followingList.includes(String(u.id));
-        const badge = u.isMaster ? '<span style="font-size:0.7rem; background:#FEF3C7; color:#92400E; padding:1px 5px; border-radius:4px; font-weight:700; margin-left:4px;">👑 마스터</span>' : '';
-        return `
-            <div class="discover-user-item">
-                <div class="discover-user-left">
-                    <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}">
-                    <div>
-                        <div class="discover-user-names">${u.name}${badge} <span>${u.handle || ''}</span></div>
-                        <div class="discover-user-desc">${u.bio || '등록된 소개글이 없습니다.'} · 맛집 ${u.count || 0}곳</div>
-                    </div>
-                </div>
-                <button class="btn-toggle-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollowUser('${u.id}')">
-                    ${isFollowing ? '팔로잉 ✓' : '+ 팔로우'}
+    // 2. Initial State: If search is empty and recommendations are NOT open
+    if (!isRecommendUsersOpen) {
+        listEl.innerHTML = `
+            ${warningBanner}
+            <div class="discover-initial-guide">
+                <div class="discover-initial-icon">✨</div>
+                <div class="discover-initial-title">나와 취향이 맞는 미식가를 찾아보세요</div>
+                <div class="discover-initial-desc">닉네임이나 @핸들로 직접 검색하거나, 추천 버튼을 눌러 추천 미식가를 둘러보세요.</div>
+                <button type="button" class="btn-recommend-open" onclick="toggleRecommendUsers()">
+                    <span>✨</span>
+                    <span>추천 미식가 보기</span>
                 </button>
             </div>
         `;
-    }).join('');
+        return;
+    }
+
+    // 3. Recommendations Active: Render up to 5 recommended users
+    const recommended = cloudUsers.slice(0, 5);
+
+    if (recommended.length === 0) {
+        listEl.innerHTML = `
+            ${warningBanner}
+            <div style="text-align:center; padding: 2rem 1rem; color:#9CA3AF; font-size:0.84rem; line-height: 1.6;">
+                아직 등록된 다른 미식가가 없습니다.<br>상단의 <b>[🔗 내 맛집 공유]</b> 링크를 친구에게 보내 함께 미식 지도를 만들어 보세요! 🥄
+            </div>
+        `;
+        return;
+    }
+
+    const recHeader = `
+        <div class="discover-recommend-badge-header">
+            <span class="recommend-badge-title">✨ 추천 미식가 5인</span>
+            <span class="recommend-badge-sub">취향에 맞는 미식가를 팔로우해 보세요</span>
+        </div>
+    `;
+
+    listEl.innerHTML = warningBanner + recHeader + recommended.map(u => renderDiscoverUserItemHtml(u, followingList)).join('');
+}
+
+function renderDiscoverUserItemHtml(u, followingList) {
+    const isFollowing = followingList.includes(String(u.id));
+    const badge = u.isMaster 
+        ? '<span style="font-size:0.7rem; background:#FEF3C7; color:#92400E; padding:1px 5px; border-radius:4px; font-weight:700; margin-left:4px;">👑 마스터</span>' 
+        : (u.isMasterMock ? '<span style="font-size:0.7rem; background:#EFF6FF; color:#1D4ED8; padding:1px 5px; border-radius:4px; font-weight:700; margin-left:4px;">🥄 큐레이터</span>' : '');
+    return `
+        <div class="discover-user-item">
+            <div class="discover-user-left">
+                <img src="${u.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.id}" alt="${u.name}">
+                <div>
+                    <div class="discover-user-names">${u.name}${badge} <span>${u.handle || ''}</span></div>
+                    <div class="discover-user-desc">${u.bio || '등록된 소개글이 없습니다.'} · 맛집 ${u.count || 0}곳</div>
+                </div>
+            </div>
+            <button class="btn-toggle-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollowUser('${u.id}')">
+                ${isFollowing ? '팔로잉 ✓' : '+ 팔로우'}
+            </button>
+        </div>
+    `;
 }
 
 // ─── Discover Search Listener ───
@@ -13804,11 +14551,17 @@ window.getMasterRestaurantList = getMasterRestaurantList;
 // ─── Shared Gourmet Viewer Mode (팔로잉한 실제 유저의 식당 리스트 열람) ───
 window.viewGourmetRestaurantList = async function(userId) {
     let targetUser = cachedDiscoveredUsers.find(u => String(u.id) === String(userId));
+    if (!targetUser && typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+        targetUser = MASTER_MOCK_GOURMETS.find(m => m.id === String(userId));
+    }
     if (!targetUser && isFirebaseReady && db) {
         try {
             const doc = await db.collection('spoonmap_public_profiles').doc(String(userId)).get();
             if (doc.exists) targetUser = doc.data();
         } catch (e) {}
+    }
+    if (!targetUser && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
+        targetUser = MASTER_MOCK_GOURMETS.find(m => m.id === String(userId));
     }
 
     if (!targetUser) {
@@ -13830,17 +14583,21 @@ window.viewGourmetRestaurantList = async function(userId) {
 
     let userRestaurants = [];
 
-    // 1. Is this Master (박준호)?
-    const isMaster = targetUser.isMaster === true || 
-                     targetUser.name === '박준호' || 
-                     targetUser.handle === '@junho_spoon' || 
-                     String(userId) === 'master' || 
-                     String(targetUser.id) === 'master';
-
-    if (isMaster) {
-        userRestaurants = getMasterRestaurantList();
+    // 1. Is this a Master Mock Gourmet?
+    if (targetUser && targetUser.isMasterMock && Array.isArray(targetUser.restaurants)) {
+        userRestaurants = targetUser.restaurants;
     } else {
-        // 2. Regular user from Firestore
+        // 2. Is this Master (박준호)?
+        const isMaster = targetUser.isMaster === true || 
+                         targetUser.name === '박준호' || 
+                         targetUser.handle === '@junho_spoon' || 
+                         String(userId) === 'master' || 
+                         String(targetUser.id) === 'master';
+
+        if (isMaster) {
+            userRestaurants = getMasterRestaurantList();
+        } else {
+            // 3. Regular user from Firestore
         try {
             if (db) {
                 let userDoc = await db.collection('spoonmap_users').doc(`user_${userId}`).get();
@@ -13888,6 +14645,7 @@ window.viewGourmetRestaurantList = async function(userId) {
             }
         } catch (e) {
             console.warn('Error fetching user restaurants:', e);
+        }
         }
     }
 
