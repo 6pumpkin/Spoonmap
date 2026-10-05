@@ -5620,92 +5620,136 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     // Cache for followed users' restaurants
     window.followingRestaurantsCache = window.followingRestaurantsCache || new Map();
 
-    async function fetchFollowingUserRestaurants(userId) {
-        const cleanId = String(userId || '').replace(/^following_/, '').replace(/^user_/, '');
-        if (window.followingRestaurantsCache.has(cleanId)) {
-            return window.followingRestaurantsCache.get(cleanId);
+    function normalizeFollowedRestaurant(item, fallbackComment, isWish = false) {
+        if (!item) return null;
+        const name = (item.name || item.place_name || item.title || item.restaurant_name || '').trim();
+        if (!name) return null;
+        let rateStr = '🥄🥄🥄';
+        if (typeof item.rate === 'string' && item.rate) {
+            rateStr = item.rate;
+        } else if (typeof item.rate === 'number') {
+            rateStr = '🥄'.repeat(Math.max(1, Math.min(5, Math.round(item.rate))));
+        } else if (isWish) {
+            rateStr = '🥄🥄🥄';
         }
-        if (window.followingRestaurantsCache.has(String(userId))) {
-            return window.followingRestaurantsCache.get(String(userId));
+        const mapUrl = item.map_url || item.place_url || item.url || `https://map.kakao.com/link/search/${encodeURIComponent(name)}`;
+        return {
+            name: name,
+            category: item.category || '기타',
+            location_large: item.location_large || item.location || '기타',
+            location_small: item.location_small || item.location || '',
+            road_address: item.road_address || item.address || item.location || '',
+            address: item.address || item.road_address || '',
+            menu: Array.isArray(item.menu) ? item.menu : (typeof item.menu === 'string' ? item.menu.split(',').map(m => m.trim()).filter(Boolean) : []),
+            rate: rateStr,
+            comment: item.comment || item.review || item.memo || fallbackComment || '미식가의 추천 맛집',
+            map_url: mapUrl,
+            x: item.x || '126.9780',
+            y: item.y || '37.5665',
+            visit_count: item.visit_count || (isWish ? 0 : 1),
+            date: item.date || '',
+            isWishlist: isWish
+        };
+    }
+    window.normalizeFollowedRestaurant = normalizeFollowedRestaurant;
+
+    async function fetchFollowingUserRestaurants(userId) {
+        const rawId = String(userId || '');
+        const cleanId = rawId.replace(/^following_/, '').replace(/^user_/, '');
+        const candidateKeys = [cleanId, rawId, `user_${cleanId}`, `following_${cleanId}`, `user_${rawId}`];
+
+        for (const k of candidateKeys) {
+            if (window.followingRestaurantsCache.has(k) && Array.isArray(window.followingRestaurantsCache.get(k)) && window.followingRestaurantsCache.get(k).length > 0) {
+                return window.followingRestaurantsCache.get(k);
+            }
+        }
+
+        // Check cachedDiscoveredUsers in memory
+        if (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers)) {
+            const foundU = cachedDiscoveredUsers.find(u => {
+                const uClean = String(u.id || '').replace(/^user_/, '');
+                return uClean === cleanId || String(u.id) === rawId || String(u.id) === String(userId);
+            });
+            if (foundU && Array.isArray(foundU.restaurants) && foundU.restaurants.length > 0) {
+                candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, foundU.restaurants));
+                return foundU.restaurants;
+            }
         }
 
         // 1. Master Check - Full 728 restaurants from getMasterRestaurantList
         const isMaster = cleanId === 'master' || 
-                         (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers) && cachedDiscoveredUsers.some(u => String(u.id) === cleanId && (u.isMaster || u.name === '박준호')));
+                         (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers) && cachedDiscoveredUsers.some(u => String(u.id).replace(/^user_/, '') === cleanId && (u.isMaster || u.name === '박준호')));
         if (isMaster) {
             const masterList = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
-            window.followingRestaurantsCache.set(String(userId), masterList);
-            window.followingRestaurantsCache.set(cleanId, masterList);
-            window.followingRestaurantsCache.set(`following_${cleanId}`, masterList);
+            candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, masterList));
             return masterList;
         }
 
         // 2. Mock Gourmet Check
-        if (typeof isOwnerUser === 'function' && isOwnerUser() && typeof MASTER_MOCK_GOURMETS !== 'undefined') {
-            const mockG = MASTER_MOCK_GOURMETS.find(m => String(m.id) === cleanId || String(m.id) === String(userId));
-            if (mockG && Array.isArray(mockG.restaurants)) {
-                window.followingRestaurantsCache.set(String(userId), mockG.restaurants);
-                window.followingRestaurantsCache.set(cleanId, mockG.restaurants);
-                window.followingRestaurantsCache.set(`following_${cleanId}`, mockG.restaurants);
-                return mockG.restaurants;
-            }
+        const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+            ? window.MASTER_MOCK_GOURMETS 
+            : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
+        const mockG = mockList.find(m => String(m.id) === cleanId || String(m.id) === rawId);
+        if (mockG && Array.isArray(mockG.restaurants) && mockG.restaurants.length > 0) {
+            candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, mockG.restaurants));
+            return mockG.restaurants;
         }
 
         let list = [];
         try {
             if (typeof db !== 'undefined' && db) {
-                let userDoc = null;
-                const docKeys = [`user_${cleanId}`, cleanId, `user_${userId}`, String(userId)];
+                let userDocData = null;
+                const docKeys = [`user_${cleanId}`, cleanId, `user_${rawId}`, rawId];
+
+                // 1) Try spoonmap_users
                 for (const dk of docKeys) {
-                    if (!userDoc || !userDoc.exists) {
+                    if (!userDocData) {
                         try {
                             const dSnap = await db.collection('spoonmap_users').doc(dk).get();
-                            if (dSnap.exists) userDoc = dSnap;
+                            if (dSnap.exists) userDocData = dSnap.data();
                         } catch (_) {}
                     }
                 }
-                if (userDoc && userDoc.exists) {
-                    const uData = userDoc.data();
+
+                // 2) Fallback to spoonmap_public_profiles
+                if (!userDocData) {
+                    for (const dk of [cleanId, rawId, `user_${cleanId}`]) {
+                        if (!userDocData) {
+                            try {
+                                const pSnap = await db.collection('spoonmap_public_profiles').doc(dk).get();
+                                if (pSnap.exists) userDocData = pSnap.data();
+                            } catch (_) {}
+                        }
+                    }
+                }
+
+                if (userDocData) {
                     const seenNames = new Set();
-                    if (uData.wishlist && Array.isArray(uData.wishlist)) {
-                        uData.wishlist.forEach(w => {
-                            if (!w || !w.name || seenNames.has(w.name)) return;
-                            seenNames.add(w.name);
-                            list.push({
-                                name: w.name,
-                                category: w.category || '기타',
-                                location_large: w.location_large || w.location || '기타',
-                                location_small: w.location_small || w.location || '',
-                                road_address: w.road_address || w.location || '',
-                                menu: Array.isArray(w.menu) ? w.menu : [],
-                                rate: w.rate || '🥄🥄🥄',
-                                comment: w.comment || '친구가 찜한 맛집',
-                                map_url: w.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(w.name)}`,
-                                x: w.x || '126.9780',
-                                y: w.y || '37.5665',
-                                visit_count: 1
-                            });
+                    if (Array.isArray(userDocData.restaurants) && userDocData.restaurants.length > 0) {
+                        userDocData.restaurants.forEach(r => {
+                            const item = normalizeFollowedRestaurant(r, '친구가 등록한 맛집', !!r.isWishlist);
+                            if (item && !seenNames.has(item.name.toLowerCase())) {
+                                seenNames.add(item.name.toLowerCase());
+                                list.push(item);
+                            }
                         });
                     }
-                    if (uData.diary && Array.isArray(uData.diary)) {
-                        uData.diary.forEach(d => {
-                            if (!d || !d.name || seenNames.has(d.name)) return;
-                            seenNames.add(d.name);
-                            list.push({
-                                name: d.name,
-                                category: d.category || '기타',
-                                location_large: d.location_large || d.location || '기타',
-                                location_small: d.location_small || '',
-                                road_address: d.road_address || d.location_large || '',
-                                menu: Array.isArray(d.menu) ? d.menu : (typeof d.menu === 'string' ? d.menu.split(',').map(m => m.trim()).filter(Boolean) : []),
-                                rate: d.rate || '🥄🥄🥄',
-                                comment: d.review || d.comment || '친구의 방문 기록 맛집',
-                                map_url: d.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(d.name)}`,
-                                x: d.x || '126.9780',
-                                y: d.y || '37.5665',
-                                visit_count: d.visit_count || 1,
-                                date: d.date || ''
-                            });
+                    if (Array.isArray(userDocData.wishlist) && userDocData.wishlist.length > 0) {
+                        userDocData.wishlist.forEach(w => {
+                            const item = normalizeFollowedRestaurant(w, '친구가 찜한 맛집', true);
+                            if (item && !seenNames.has(item.name.toLowerCase())) {
+                                seenNames.add(item.name.toLowerCase());
+                                list.push(item);
+                            }
+                        });
+                    }
+                    if (Array.isArray(userDocData.diary) && userDocData.diary.length > 0) {
+                        userDocData.diary.forEach(d => {
+                            const item = normalizeFollowedRestaurant(d, '친구의 방문 기록 맛집', false);
+                            if (item && !seenNames.has(item.name.toLowerCase())) {
+                                seenNames.add(item.name.toLowerCase());
+                                list.push(item);
+                            }
                         });
                     }
                 }
@@ -5713,9 +5757,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         } catch (e) {
             console.warn('Error fetching following user restaurants:', e);
         }
-        window.followingRestaurantsCache.set(String(userId), list);
-        window.followingRestaurantsCache.set(cleanId, list);
-        window.followingRestaurantsCache.set(`following_${cleanId}`, list);
+
+        candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, list));
         return list;
     }
 
@@ -5736,18 +5779,21 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             const priv = u?.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
             let cachedRests = (u && Array.isArray(u.restaurants) && u.restaurants.length > 0)
                 ? u.restaurants
-                : (window.followingRestaurantsCache.get(String(fid)) || window.followingRestaurantsCache.get(`following_${fid}`) || []);
+                : (window.followingRestaurantsCache.get(String(fid)) || window.followingRestaurantsCache.get(`user_${fid}`) || window.followingRestaurantsCache.get(`following_${fid}`) || []);
 
             // If Master, attach master restaurants
             if ((!cachedRests || cachedRests.length === 0) && (String(fid) === 'master' || u?.isMaster || u?.name === '박준호')) {
                 cachedRests = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
             }
 
-            // Apply privacy filter: allowed spoons
-            if (Array.isArray(priv.allowedSpoons)) {
+            // Apply privacy filter: allowed spoons safely
+            if (Array.isArray(priv.allowedSpoons) && priv.allowedSpoons.length > 0) {
                 cachedRests = cachedRests.filter(r => {
-                    const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 3) || 1;
-                    return priv.allowedSpoons.includes(spoonCount);
+                    if (r.isWishlist) return true;
+                    const spoonStr = typeof r.rate === 'string' ? r.rate : '';
+                    const match = spoonStr.match(/🥄/g);
+                    const spoonCount = match ? match.length : (typeof r.rate === 'number' ? Math.round(r.rate) : 3);
+                    return priv.allowedSpoons.includes(spoonCount || 1);
                 });
             }
             // Apply privacy filter: visit date
@@ -8591,18 +8637,23 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         followingFriends.forEach(ff => {
             const fid = String(ff.realUserId || ff.id);
             const cleanFid = fid.replace(/^following_/, '');
+            const pureFid = cleanFid.replace(/^user_/, '');
             let rests = (Array.isArray(ff.restaurants) && ff.restaurants.length > 0)
                 ? ff.restaurants
-                : (window.followingRestaurantsCache?.get(fid) || window.followingRestaurantsCache?.get(cleanFid) || window.followingRestaurantsCache?.get(`following_${cleanFid}`) || []);
+                : (window.followingRestaurantsCache?.get(fid) || 
+                   window.followingRestaurantsCache?.get(cleanFid) || 
+                   window.followingRestaurantsCache?.get(pureFid) ||
+                   window.followingRestaurantsCache?.get(`user_${pureFid}`) ||
+                   window.followingRestaurantsCache?.get(`following_${cleanFid}`) || []);
 
             // If this friend is Master, ensure Master's restaurants are attached
-            if ((!rests || rests.length === 0) && (cleanFid === 'master' || ff.id === 'master' || ff.name === '박준호' || ff.isMaster)) {
+            if ((!rests || rests.length === 0) && (cleanFid === 'master' || pureFid === 'master' || ff.id === 'master' || ff.name === '박준호' || ff.isMaster)) {
                 rests = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
             }
 
             // If currentViewingGourmet matches this user, attach restaurants
             if ((!rests || rests.length === 0) && window.currentViewingGourmet && 
-                (String(window.currentViewingGourmet.id).replace(/^following_/, '') === cleanFid) &&
+                (String(window.currentViewingGourmet.id).replace(/^following_/, '').replace(/^user_/, '') === pureFid) &&
                 Array.isArray(window.currentViewingGourmet.restaurants)) {
                 rests = window.currentViewingGourmet.restaurants;
             }
@@ -8615,7 +8666,10 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             };
             friendsRestaurantsMap.set(fid, fEntry);
             friendsRestaurantsMap.set(cleanFid, fEntry);
+            friendsRestaurantsMap.set(pureFid, fEntry);
+            friendsRestaurantsMap.set(`user_${pureFid}`, fEntry);
             friendsRestaurantsMap.set(`following_${cleanFid}`, fEntry);
+            friendsRestaurantsMap.set(`following_${pureFid}`, fEntry);
         });
 
         // Cross-check overlaps between master and friends
@@ -8648,8 +8702,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         // Fast path: If specifically viewing a single gourmet with attached restaurants
         if (window.currentViewingGourmet && Array.isArray(window.currentViewingGourmet.restaurants) && window.currentViewingGourmet.restaurants.length > 0) {
             if (activeGourmetList.length === 1 && !activeGourmetList.includes('me') && !activeGourmetList.includes('all') && !activeGourmetList.includes('overlap')) {
-                const targetGid = String(activeGourmetList[0]).replace(/^following_/, '');
-                const viewGid = String(window.currentViewingGourmet.id).replace(/^following_/, '');
+                const targetGid = String(activeGourmetList[0]).replace(/^following_/, '').replace(/^user_/, '');
+                const viewGid = String(window.currentViewingGourmet.id).replace(/^following_/, '').replace(/^user_/, '');
                 if (targetGid === viewGid || String(activeGourmetList[0]) === String(window.currentViewingGourmet.id)) {
                     return window.currentViewingGourmet.restaurants;
                 }
@@ -8692,7 +8746,13 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         selectedGourmetSet.forEach(gid => {
             if (gid === 'me') return;
             const cleanGid = String(gid).replace(/^following_/, '');
-            const fInfo = friendsRestaurantsMap.get(String(gid)) || friendsRestaurantsMap.get(cleanGid) || friendsRestaurantsMap.get(`following_${cleanGid}`);
+            const pureGid = cleanGid.replace(/^user_/, '');
+            const fInfo = friendsRestaurantsMap.get(String(gid)) || 
+                          friendsRestaurantsMap.get(cleanGid) || 
+                          friendsRestaurantsMap.get(pureGid) ||
+                          friendsRestaurantsMap.get(`user_${pureGid}`) ||
+                          friendsRestaurantsMap.get(`following_${cleanGid}`) ||
+                          friendsRestaurantsMap.get(`following_${pureGid}`);
             if (fInfo && Array.isArray(fInfo.restaurants)) {
                 fInfo.restaurants.forEach(fItem => {
                     const norm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
@@ -8786,7 +8846,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         if (gid === 'me') return '나';
                         const m = mockList.find(x => String(x.id) === String(gid));
                         if (m) return m.name;
-                        const u = cachedUsers.find(x => String(x.id) === String(gid));
+                        const u = cachedUsers.find(x => String(x.id) === String(gid) || String(x.id).replace(/^user_/, '') === String(gid).replace(/^following_/, '').replace(/^user_/, ''));
                         if (u) return u.name;
                         return '미식가';
                     });
@@ -8799,18 +8859,29 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     }
                     const curGid = currentFilters.gourmet.length === 1 ? currentFilters.gourmet[0] : null;
                     const cleanCurGid = curGid ? String(curGid).replace(/^following_/, '') : null;
+                    const pureCurGid = cleanCurGid ? cleanCurGid.replace(/^user_/, '') : null;
                     let existingRests = null;
                     if (window.currentViewingGourmet && Array.isArray(window.currentViewingGourmet.restaurants)) {
-                        const viewClean = String(window.currentViewingGourmet.id).replace(/^following_/, '');
-                        if (cleanCurGid === viewClean || window.currentViewingGourmet.id === currentFilters.gourmet.join(',')) {
+                        const viewClean = String(window.currentViewingGourmet.id).replace(/^following_/, '').replace(/^user_/, '');
+                        if (pureCurGid === viewClean || cleanCurGid === viewClean || window.currentViewingGourmet.id === currentFilters.gourmet.join(',')) {
                             existingRests = window.currentViewingGourmet.restaurants;
                         }
                     }
                     if (!existingRests && cleanCurGid && window.followingRestaurantsCache) {
-                        existingRests = window.followingRestaurantsCache.get(cleanCurGid) || window.followingRestaurantsCache.get(curGid) || window.followingRestaurantsCache.get(`following_${cleanCurGid}`);
+                        existingRests = window.followingRestaurantsCache.get(cleanCurGid) || 
+                                        window.followingRestaurantsCache.get(pureCurGid) || 
+                                        window.followingRestaurantsCache.get(`user_${pureCurGid}`) ||
+                                        window.followingRestaurantsCache.get(curGid) || 
+                                        window.followingRestaurantsCache.get(`following_${cleanCurGid}`);
                     }
-                    if (!existingRests && cleanCurGid === 'master') {
+                    if (!existingRests && (cleanCurGid === 'master' || pureCurGid === 'master')) {
                         existingRests = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : null;
+                    }
+                    if (!existingRests && pureCurGid && typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers)) {
+                        const foundU = cachedDiscoveredUsers.find(u => String(u.id).replace(/^user_/, '') === pureCurGid);
+                        if (foundU && Array.isArray(foundU.restaurants) && foundU.restaurants.length > 0) {
+                            existingRests = foundU.restaurants;
+                        }
                     }
                     window.currentViewingGourmet = {
                         id: currentFilters.gourmet.join(','),
@@ -14988,18 +15059,34 @@ async function publishPublicProfile(profile) {
     try {
         const isOwner = isOwnerUser();
         let restCount = 0;
+        let userPublicRests = [];
+
         if (isOwner) {
             const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
             restCount = unified.length;
+            userPublicRests = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
         } else {
             const diaryKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : null;
             const wishKey = typeof getUserWishlistKey === 'function' ? getUserWishlistKey() : null;
             const dList = diaryKey ? JSON.parse(localStorage.getItem(diaryKey) || '[]') : [];
             const wList = wishKey ? JSON.parse(localStorage.getItem(wishKey) || '[]') : [];
-            const uniqueNames = new Set();
-            dList.forEach(e => { if (e && e.name) uniqueNames.add(e.name.trim().toLowerCase()); });
-            wList.forEach(w => { if (w && w.name) uniqueNames.add(w.name.trim().toLowerCase()); });
-            restCount = uniqueNames.size;
+            const seenPubNames = new Set();
+
+            wList.forEach(w => {
+                const item = (typeof normalizeFollowedRestaurant === 'function') ? normalizeFollowedRestaurant(w, '친구가 찜한 맛집', true) : w;
+                if (item && item.name && !seenPubNames.has(item.name.toLowerCase())) {
+                    seenPubNames.add(item.name.toLowerCase());
+                    userPublicRests.push(item);
+                }
+            });
+            dList.forEach(d => {
+                const item = (typeof normalizeFollowedRestaurant === 'function') ? normalizeFollowedRestaurant(d, '친구의 방문 기록 맛집', false) : d;
+                if (item && item.name && !seenPubNames.has(item.name.toLowerCase())) {
+                    seenPubNames.add(item.name.toLowerCase());
+                    userPublicRests.push(item);
+                }
+            });
+            restCount = seenPubNames.size;
         }
 
         const resolvedProfile = profile || ((typeof getUserProfile === 'function') ? getUserProfile() : {});
@@ -15012,6 +15099,7 @@ async function publishPublicProfile(profile) {
             avatar: resolvedProfile.profileImage || u.profileImage || (isOwner ? 'https://api.dicebear.com/7.x/bottts/svg?seed=junho' : ''),
             isMaster: isOwner,
             count: restCount,
+            restaurants: userPublicRests,
             privacySettings: privSettings,
             updatedAt: new Date().toISOString()
         };
@@ -15024,6 +15112,12 @@ async function publishPublicProfile(profile) {
             else cached.push(publicData);
             localStorage.setItem('spoonmap_cached_public_users', JSON.stringify(cached));
         } catch (_) {}
+
+        if (window.followingRestaurantsCache) {
+            window.followingRestaurantsCache.set(String(u.id), userPublicRests);
+            window.followingRestaurantsCache.set(`user_${u.id}`, userPublicRests);
+            window.followingRestaurantsCache.set(`following_${u.id}`, userPublicRests);
+        }
 
         // 1. Publish with user's Kakao ID
         await db.collection('spoonmap_public_profiles').doc(String(u.id)).set(publicData, { merge: true });
@@ -15048,15 +15142,16 @@ let cachedDiscoveredUsers = (function() {
 })();
 
 let publicProfilesUnsubscribe = null;
+
 function setupRealtimePublicProfilesListener() {
     if (!isFirebaseReady || !db || publicProfilesUnsubscribe) return;
     try {
+        const currentUserId = getCurrentUser() ? String(getCurrentUser().id) : null;
+        const isCurrentUserOwner = typeof isOwnerUser === 'function' ? isOwnerUser() : false;
+
         publicProfilesUnsubscribe = db.collection('spoonmap_public_profiles')
             .onSnapshot(snapshot => {
                 const users = [];
-                const currentUserId = getCurrentUser() ? String(getCurrentUser().id) : null;
-                const isCurrentUserOwner = typeof isOwnerUser === 'function' ? isOwnerUser() : false;
-
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (!data) return;
@@ -15065,6 +15160,11 @@ function setupRealtimePublicProfilesListener() {
                                    (isCurrentUserOwner && (dataId === 'master' || data.isMaster === true));
                     if (!isSelf) {
                         users.push({ ...data, id: dataId });
+                        if (Array.isArray(data.restaurants) && data.restaurants.length > 0 && window.followingRestaurantsCache) {
+                            window.followingRestaurantsCache.set(dataId, data.restaurants);
+                            window.followingRestaurantsCache.set(`user_${dataId}`, data.restaurants);
+                            window.followingRestaurantsCache.set(`following_${dataId}`, data.restaurants);
+                        }
                     }
                 });
 
@@ -15126,6 +15226,11 @@ async function fetchDiscoveredUsersFromCloud() {
                            (isCurrentUserOwner && (dataId === 'master' || data.isMaster === true));
             if (!isSelf) {
                 users.push({ ...data, id: dataId });
+                if (Array.isArray(data.restaurants) && data.restaurants.length > 0 && window.followingRestaurantsCache) {
+                    window.followingRestaurantsCache.set(dataId, data.restaurants);
+                    window.followingRestaurantsCache.set(`user_${dataId}`, data.restaurants);
+                    window.followingRestaurantsCache.set(`following_${dataId}`, data.restaurants);
+                }
             }
         });
 
@@ -15155,15 +15260,44 @@ async function fetchDiscoveredUsersFromCloud() {
                 const resolvedName = prof.nickname || uInfo.nickname || `미식가 #${rawId.slice(-4)}`;
                 const resolvedAvatar = prof.profileImage || uInfo.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rawId}`;
 
-                // Count unique restaurants from diary and wishlist
-                const seenRests = new Set();
-                if (Array.isArray(uData.diary)) {
-                    uData.diary.forEach(d => { if (d && d.name) seenRests.add(d.name.trim().toLowerCase()); });
+                // Build restaurant list for this user from wishlist, diary, and restaurants
+                const userRests = [];
+                const seenRNames = new Set();
+                if (Array.isArray(uData.restaurants)) {
+                    uData.restaurants.forEach(r => {
+                        const item = (typeof normalizeFollowedRestaurant === 'function') ? normalizeFollowedRestaurant(r, '친구가 등록한 맛집', !!r.isWishlist) : r;
+                        if (item && item.name && !seenRNames.has(item.name.toLowerCase())) {
+                            seenRNames.add(item.name.toLowerCase());
+                            userRests.push(item);
+                        }
+                    });
                 }
                 if (Array.isArray(uData.wishlist)) {
-                    uData.wishlist.forEach(w => { if (w && w.name) seenRests.add(w.name.trim().toLowerCase()); });
+                    uData.wishlist.forEach(w => {
+                        const item = (typeof normalizeFollowedRestaurant === 'function') ? normalizeFollowedRestaurant(w, '친구가 찜한 맛집', true) : w;
+                        if (item && item.name && !seenRNames.has(item.name.toLowerCase())) {
+                            seenRNames.add(item.name.toLowerCase());
+                            userRests.push(item);
+                        }
+                    });
                 }
-                const totalRests = seenRests.size;
+                if (Array.isArray(uData.diary)) {
+                    uData.diary.forEach(d => {
+                        const item = (typeof normalizeFollowedRestaurant === 'function') ? normalizeFollowedRestaurant(d, '친구의 방문 기록 맛집', false) : d;
+                        if (item && item.name && !seenRNames.has(item.name.toLowerCase())) {
+                            seenRNames.add(item.name.toLowerCase());
+                            userRests.push(item);
+                        }
+                    });
+                }
+                const totalRests = userRests.length;
+
+                // Cache in memory
+                if (window.followingRestaurantsCache) {
+                    window.followingRestaurantsCache.set(rawId, userRests);
+                    window.followingRestaurantsCache.set(`user_${rawId}`, userRests);
+                    window.followingRestaurantsCache.set(`following_${rawId}`, userRests);
+                }
 
                 const existingIdx = dedupedUsers.findIndex(ex => String(ex.id) === String(rawId) || ex.name === resolvedName);
                 if (existingIdx === -1) {
@@ -15174,14 +15308,16 @@ async function fetchDiscoveredUsersFromCloud() {
                         bio: prof.bio || '나만의 맛집을 기록하고 공유하는 미식가입니다 🥄',
                         avatar: resolvedAvatar,
                         count: totalRests,
+                        restaurants: userRests,
                         isMaster: false,
                         updatedAt: uData.updated_at || new Date().toISOString()
                     };
                     dedupedUsers.push(recoveredUser);
                     db.collection('spoonmap_public_profiles').doc(rawId).set(recoveredUser, { merge: true }).catch(() => {});
                 } else {
-                    if (totalRests > (dedupedUsers[existingIdx].count || 0)) {
-                        dedupedUsers[existingIdx].count = totalRests;
+                    dedupedUsers[existingIdx].count = Math.max(totalRests, dedupedUsers[existingIdx].count || 0);
+                    if (userRests.length > 0) {
+                        dedupedUsers[existingIdx].restaurants = userRests;
                     }
                     if (prof.profileImage && dedupedUsers[existingIdx].avatar !== prof.profileImage) {
                         dedupedUsers[existingIdx].avatar = prof.profileImage;
@@ -15193,9 +15329,6 @@ async function fetchDiscoveredUsersFromCloud() {
             });
         } catch (_) {}
 
-        const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
-            ? window.MASTER_MOCK_GOURMETS 
-            : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
 
         if (isCurrentUserOwner && mockList.length > 0) {
             mockList.forEach(mock => {
@@ -15765,7 +15898,8 @@ window.viewGourmetMap = async function(userId, evt) {
                 nickname: u.name,
                 avatarText: u.name.slice(0, 1),
                 color: '#FF6B6B',
-                restaurants: rests
+                restaurants: rests,
+                isFollowingUser: true
             };
         }
     }
@@ -15775,7 +15909,7 @@ window.viewGourmetMap = async function(userId, evt) {
         return;
     }
 
-    if (friend.isFollowingUser && (!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
+    if ((!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
         showDiaryToast(`⏳ ${friend.name} 님의 맛집 지도를 불러오는 중...`);
         const fetched = await fetchFollowingUserRestaurants(friend.realUserId || userId);
         friend.restaurants = fetched;
@@ -15826,8 +15960,8 @@ window.viewGourmetMap = async function(userId, evt) {
     }, 150);
 
     showDiaryToast(`🗺️ ${friend.nickname || friend.name} 님의 맛집 지도 보기`);
-};
-
+};
+
 window.viewGourmetRestaurantList = async function(userId, evt) {
     if (evt && evt.currentTarget && typeof evt.currentTarget.blur === 'function') evt.currentTarget.blur();
     if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
@@ -15835,31 +15969,39 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
         ? window.MASTER_MOCK_GOURMETS 
         : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
 
-    const cleanId = String(userId || '').replace(/^following_/, '');
+    const rawId = String(userId || '').replace(/^following_/, '');
+    const cleanId = rawId.replace(/^user_/, '');
     let targetUser = null;
     let userRestaurants = [];
 
-    // 1. Check Master Mock Gourmets directly first!
-    const directMock = mockList.find(m => String(m.id) === String(userId) || String(m.id) === cleanId);
+    // 1. Check Master Mock Gourmets directly first
+    const directMock = mockList.find(m => String(m.id) === String(userId) || String(m.id) === rawId || String(m.id) === cleanId);
     if (directMock) {
         targetUser = directMock;
         userRestaurants = Array.isArray(directMock.restaurants) ? [...directMock.restaurants] : [];
     } else {
-        targetUser = cachedDiscoveredUsers.find(u => String(u.id) === String(userId) || String(u.id) === cleanId);
-        if (targetUser && (targetUser.isMasterMock || String(userId).startsWith('mock_'))) {
-            const foundMock = mockList.find(m => String(m.id) === String(userId) || String(m.id) === cleanId);
-            if (foundMock && Array.isArray(foundMock.restaurants)) {
-                targetUser = foundMock;
-                userRestaurants = [...foundMock.restaurants];
-            }
+        targetUser = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
+            ? cachedDiscoveredUsers.find(u => {
+                const uClean = String(u.id || '').replace(/^user_/, '');
+                return uClean === cleanId || String(u.id) === rawId || String(u.id) === String(userId);
+            })
+            : null;
+        if (targetUser && Array.isArray(targetUser.restaurants) && targetUser.restaurants.length > 0) {
+            userRestaurants = [...targetUser.restaurants];
         }
     }
 
     if (!targetUser && isFirebaseReady && db) {
         try {
             let doc = await db.collection('spoonmap_public_profiles').doc(cleanId).get();
+            if (!doc.exists) doc = await db.collection('spoonmap_public_profiles').doc(rawId).get();
             if (!doc.exists) doc = await db.collection('spoonmap_public_profiles').doc(String(userId)).get();
-            if (doc.exists) targetUser = doc.data();
+            if (doc.exists) {
+                targetUser = doc.data();
+                if (targetUser && Array.isArray(targetUser.restaurants) && targetUser.restaurants.length > 0) {
+                    userRestaurants = [...targetUser.restaurants];
+                }
+            }
         } catch (e) {}
     }
 
@@ -15892,16 +16034,19 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
         if (isMaster) {
             userRestaurants = getMasterRestaurantList();
         } else {
-            userRestaurants = await fetchFollowingUserRestaurants(cleanId);
+            userRestaurants = await fetchFollowingUserRestaurants(cleanId || rawId);
         }
     }
 
-    // Apply privacy settings of target gourmet
+    // Apply privacy settings of target gourmet safely
     const targetPriv = targetUser.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
-    if (Array.isArray(targetPriv.allowedSpoons)) {
+    if (Array.isArray(targetPriv.allowedSpoons) && targetPriv.allowedSpoons.length > 0) {
         userRestaurants = userRestaurants.filter(r => {
-            const spoonCount = (r.rate ? (r.rate.match(/🥄/g) || []).length : 3) || 1;
-            return targetPriv.allowedSpoons.includes(spoonCount);
+            if (r.isWishlist) return true;
+            const spoonStr = typeof r.rate === 'string' ? r.rate : '';
+            const match = spoonStr.match(/🥄/g);
+            const spoonCount = match ? match.length : (typeof r.rate === 'number' ? Math.round(r.rate) : 3);
+            return targetPriv.allowedSpoons.includes(spoonCount || 1);
         });
     }
     if (targetPriv.showVisitDate === false) {
@@ -15918,7 +16063,9 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
     // Cache the restaurants in followingRestaurantsCache and targetUser
     if (window.followingRestaurantsCache) {
         window.followingRestaurantsCache.set(String(userId), userRestaurants);
+        window.followingRestaurantsCache.set(rawId, userRestaurants);
         window.followingRestaurantsCache.set(cleanId, userRestaurants);
+        window.followingRestaurantsCache.set(`user_${cleanId}`, userRestaurants);
         window.followingRestaurantsCache.set(`following_${cleanId}`, userRestaurants);
     }
     targetUser.restaurants = userRestaurants;
@@ -15939,13 +16086,28 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
                        document.querySelector('.mobile-bnav-btn[data-tab="list"]');
     if (listTabBtn) listTabBtn.click();
 
-    // 2. Clear existing search and category filter so friend's restaurants show completely
-    const searchInput = document.getElementById('restaurant-search');
-    if (searchInput) searchInput.value = '';
+    // 2. Completely reset existing search, category, location, rate, date filters so friend's restaurants show 100%
     if (typeof currentFilters !== 'undefined') {
         currentFilters.searchQuery = '';
         currentFilters.category = [];
+        currentFilters.location_large = [];
+        currentFilters.location_small = [];
+        currentFilters.rate = [];
     }
+    if (typeof dateRangeFilter !== 'undefined') {
+        dateRangeFilter.startDate = null;
+        dateRangeFilter.endDate = null;
+    }
+    const searchInput = document.getElementById('restaurant-search');
+    if (searchInput) searchInput.value = '';
+    const startDateInput = document.getElementById('filter-start-date');
+    const endDateInput = document.getElementById('filter-end-date');
+    if (startDateInput) { startDateInput.value = ''; startDateInput.dataset.hasValue = 'false'; }
+    if (endDateInput) { endDateInput.value = ''; endDateInput.dataset.hasValue = 'false'; }
+    if (typeof refreshSidebarFilters === 'function') refreshSidebarFilters();
+    if (typeof syncMobileCatChips === 'function') syncMobileCatChips();
+    if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
+    if (typeof syncRegionUI === 'function') syncRegionUI();
 
     // 3. Set Gourmet Filter directly - replace all to show only target friend
     if (typeof setGourmetFilter === 'function') {
@@ -15957,6 +16119,8 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showDiaryToast(`🍽️ ${targetUser.name} 님의 추천 맛집 둘러보기`);
 };
+
+
 window.exitGourmetViewingMode = function() {
     if (typeof setGourmetFilter === 'function') {
         setGourmetFilter('me', true);
