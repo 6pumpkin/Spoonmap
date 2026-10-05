@@ -1093,90 +1093,143 @@ function getPlaceMapUrls(item, placeData = null) {
 }
 window.getPlaceMapUrls = getPlaceMapUrls;
 
-function isSavedRestaurantMatch(r, place) {
-    if (!r || !place) return false;
+function extractBranchToken(name) {
+    if (!name || typeof name !== 'string') return '';
+    const clean = name.trim();
+    const mParen = clean.match(/[\(\[](.*?)[\)\]]/);
+    if (mParen) return mParen[1].replace(/\s+/g, '');
+    const mBranch = clean.match(/([가-힣0-9a-zA-Z]+(?:점|호점|본점|직영점))$/);
+    if (mBranch) return mBranch[1].replace(/\s+/g, '');
+    const mSpecial = clean.match(/(더현대[가-힣]*|스타필드[가-힣]*|롯데[가-힣]*|신세계[가-힣]*)/);
+    if (mSpecial) return mSpecial[1].replace(/\s+/g, '');
+    return '';
+}
+window.extractBranchToken = extractBranchToken;
 
-    // ── Tier 1: Kakao Place ID Verification ──
-    const rPlaceId = extractKakaoPlaceId(r.map_url);
-    const pPlaceId = place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url);
+function isSameRestaurant(a, b) {
+    if (!a || !b) return false;
 
-    if (rPlaceId && pPlaceId) {
-        // If both have Kakao Place IDs, they MATCH only if the IDs are identical!
-        // If IDs are different, it is 100% NOT the same restaurant (even if names match).
-        return rPlaceId === pPlaceId;
+    // ── Tier 1: Kakao Place ID Verification (Absolute ground truth) ──
+    const idA = (a.id && String(a.id).trim()) || 
+                (typeof extractKakaoPlaceId === 'function' ? extractKakaoPlaceId(a.map_url || a.kakao_url || a.place_url) : null);
+    const idB = (b.id && String(b.id).trim()) || 
+                (typeof extractKakaoPlaceId === 'function' ? extractKakaoPlaceId(b.map_url || b.kakao_url || b.place_url) : null);
+
+    if (idA && idB) {
+        return idA === idB;
     }
 
-    // ── Tier 2: Name Verification ──
-    const rn = (r.name || '').replace(/\s/g, '').toLowerCase();
-    const pn = (place.place_name || '').replace(/\s/g, '').toLowerCase();
-    if (!rn || !pn) return false;
+    // ── Tier 2: Base Name Verification ──
+    const rawA = (a.place_name || a.name || '').trim();
+    const rawB = (b.place_name || b.name || '').trim();
+    if (!rawA || !rawB) return false;
 
-    const isExactName = (rn === pn);
-    const isNameIncluded = (pn.includes(rn) || rn.includes(pn));
-    if (!isExactName && !isNameIncluded) return false;
+    const normA = (typeof normalizePlaceName === 'function') ? normalizePlaceName(rawA) : rawA.replace(/\s+/g, '').toLowerCase();
+    const normB = (typeof normalizePlaceName === 'function') ? normalizePlaceName(rawB) : rawB.replace(/\s+/g, '').toLowerCase();
 
-    // ── Tier 3: Location / Address Compatibility ──
-    const placeAddr = (place.address_name || '').trim();
-    const placeRoadAddr = (place.road_address_name || '').trim();
-    const fullPlaceAddr = `${placeAddr} ${placeRoadAddr}`.replace(/\s+/g, ' ').toLowerCase();
+    const isExactName = (normA === normB);
+    const isSubName = (normA.length >= 2 && normB.length >= 2 && (normA.includes(normB) || normB.includes(normA)));
 
-    const locLarge = (r.location_large || '').trim().toLowerCase();
-    const locSmall = (r.location_small || '').trim().toLowerCase();
-
-    // If no location info exists at all on the saved restaurant, fallback to exact name
-    if (!locLarge && !locSmall) {
-        return isExactName;
+    if (!isExactName && !isSubName) {
+        return false;
     }
 
-    // Check district (구/군/시) conflict:
-    // If saved restaurant specifies a district (e.g. "용산구", "양천구", "강남구")
-    const rDistricts = locLarge.match(/([가-힣]+(?:구|군|시))/g) || [];
-    const pDistricts = fullPlaceAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
-
-    const rGu = rDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
-    if (rGu) {
-        const pGus = pDistricts.filter(d => d.endsWith('구') || d.endsWith('군'));
-        if (pGus.length > 0) {
-            const guMatch = pGus.some(pg => pg === rGu || rGu.includes(pg) || pg.includes(rGu));
-            if (!guMatch) {
-                // District mismatch (e.g. saved in "용산구", but place is in "양천구" / "강남구" / "종로구")
-                return false;
-            }
-        }
+    // Explicit branch tokens check (e.g. "문래본점" vs "연남점", "더현대서울" vs "스타필드")
+    const branchA = extractBranchToken(rawA);
+    const branchB = extractBranchToken(rawB);
+    if (branchA && branchB && branchA !== branchB) {
+        return false;
     }
 
-    // Check province (서울, 경기, 인천, 부산, 제주, etc.)
-    const rSidoMatch = locLarge.match(/^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주)/);
-    if (rSidoMatch) {
-        const sido = rSidoMatch[1];
-        if (fullPlaceAddr.length > 0 && !fullPlaceAddr.includes(sido)) {
+    // ── Tier 3: Coordinate Distance Check (GPS Proximity) ──
+    const xA = parseFloat(a.x || 0);
+    const yA = parseFloat(a.y || 0);
+    const xB = parseFloat(b.x || 0);
+    const yB = parseFloat(b.y || 0);
+
+    if (xA > 0 && yA > 0 && xB > 0 && yB > 0) {
+        const dx = (xA - xB) * 88000;
+        const dy = (yA - yB) * 111000;
+        const distMeters = Math.sqrt(dx * dx + dy * dy);
+
+        // Different branches are typically kilometers apart.
+        if (distMeters > 600) {
             return false;
         }
-    }
 
-    // Clean text comparison
-    const cleanPa = fullPlaceAddr.replace(/\s/g, '');
-    const cleanRa = (locLarge + ' ' + locSmall).replace(/\s/g, '');
-    if (cleanPa.includes(cleanRa) || cleanRa.includes(cleanPa)) return true;
-
-    const cleanLarge = locLarge.replace(/\s/g, '');
-    if (cleanLarge && cleanPa.includes(cleanLarge)) return true;
-
-    if (rGu && cleanPa.includes(rGu)) {
-        if (!locSmall) return true;
-        const cleanSmall = locSmall.replace(/\s/g, '');
-        if (cleanPa.includes(cleanSmall) || cleanSmall.includes(cleanPa)) return true;
-        if (isExactName) return true;
-    }
-
-    if (locSmall) {
-        const cleanSmall = locSmall.replace(/\s/g, '');
-        if (cleanSmall && (cleanPa.includes(cleanSmall) || cleanSmall.includes(cleanPa))) {
+        // Close proximity with name match = definite match
+        if (distMeters <= 300) {
             return true;
         }
     }
 
-    return false;
+    // ── Tier 4: Location & Address Verification ──
+    const addrA = `${a.road_address_name || a.road_address || ''} ${a.address_name || a.address || ''} ${a.location_large || ''} ${a.location_small || ''}`.trim().toLowerCase();
+    const addrB = `${b.road_address_name || b.road_address || ''} ${b.address_name || b.address || ''} ${b.location_large || ''} ${b.location_small || ''}`.trim().toLowerCase();
+
+    if (addrA && addrB) {
+        // 4a. Province mismatch
+        const sidoA = addrA.match(/^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주)/);
+        const sidoB = addrB.match(/^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주)/);
+        if (sidoA && sidoB && sidoA[1] !== sidoB[1]) {
+            return false;
+        }
+
+        // 4b. District mismatch (구/군)
+        const distsA = (addrA.match(/([가-힣]+(?:구|군))/g) || []);
+        const distsB = (addrB.match(/([가-힣]+(?:구|군))/g) || []);
+        const guA = distsA[0] || null;
+        const guB = distsB[0] || null;
+
+        if (guA && guB && guA !== guB && !guA.includes(guB) && !guB.includes(guA)) {
+            return false;
+        }
+
+        // 4c. Dong / Eup / Myeon mismatch
+        const dongsA = (addrA.match(/([가-힣0-9]+(?:동|읍|면|가))\b/g) || []);
+        const dongsB = (addrB.match(/([가-힣0-9]+(?:동|읍|면|가))\b/g) || []);
+        const dongA = dongsA[0] || null;
+        const dongB = dongsB[0] || null;
+        if (dongA && dongB && dongA !== dongB && !dongA.includes(dongB) && !dongB.includes(dongA)) {
+            return false;
+        }
+
+        // 4d. Branch token validation against target address
+        if (branchA && !branchB) {
+            const coreA = branchA.replace(/(?:점|호점|본점|직영점)$/, '');
+            if (coreA.length >= 2 && !addrB.includes(coreA)) {
+                return false;
+            }
+        }
+        if (branchB && !branchA) {
+            const coreB = branchB.replace(/(?:점|호점|본점|직영점)$/, '');
+            if (coreB.length >= 2 && !addrA.includes(coreB)) {
+                return false;
+            }
+        }
+
+        if (guA && guB && (guA === guB || guA.includes(guB) || guB.includes(guA))) {
+            return true;
+        }
+
+        const cleanA = addrA.replace(/\s+/g, '');
+        const cleanB = addrB.replace(/\s+/g, '');
+        if (cleanA.includes(cleanB) || cleanB.includes(cleanA)) {
+            return true;
+        }
+    }
+
+    // ── Tier 5: Fallback ──
+    if (branchA || branchB) {
+        return false;
+    }
+
+    return isExactName;
+}
+window.isSameRestaurant = isSameRestaurant;
+
+function isSavedRestaurantMatch(r, place) {
+    return isSameRestaurant(r, place);
 }
 window.isSavedRestaurantMatch = isSavedRestaurantMatch;
 
@@ -6017,11 +6070,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const rawTargetName = (placeData?.place_name || item?.name || '').trim();
         if (!rawTargetName) return null;
 
-        const normTarget = normalizePlaceName(rawTargetName);
-        const targetAddr = (placeData?.road_address_name || placeData?.address_name || item?.location_large || item?.road_address || '').trim().toLowerCase();
-        const targetX = parseFloat(placeData?.x || item?.x || 0);
-        const targetY = parseFloat(placeData?.y || item?.y || 0);
-        const targetDistricts = targetAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
+        const targetObj = placeData || item;
 
         const masterRestaurants = (typeof getMasterRestaurantList === 'function') 
             ? getMasterRestaurantList() 
@@ -6029,16 +6078,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         let savedMatchRef = null;
         const isSaved = isSavedParam || (Array.isArray(masterRestaurants) && masterRestaurants.some(m => {
-            if (typeof isSavedRestaurantMatch === 'function' && placeData) {
-                if (isSavedRestaurantMatch(m, placeData)) {
-                    savedMatchRef = m;
-                    return true;
-                }
+            if (typeof isSameRestaurant === 'function' ? isSameRestaurant(m, targetObj) : isSavedRestaurantMatch(m, targetObj)) {
+                savedMatchRef = m;
+                return true;
             }
-            const normM = normalizePlaceName(m.name);
-            const isMatch = (normM === normTarget) || (normM.length >= 2 && normTarget.length >= 2 && (normM.includes(normTarget) || normTarget.includes(normM)));
-            if (isMatch) savedMatchRef = m;
-            return isMatch;
+            return false;
         }));
 
         if (savedMatchRef && item) {
@@ -6063,36 +6107,14 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             if (!friend.restaurants || !Array.isArray(friend.restaurants)) continue;
 
             for (const r of friend.restaurants) {
-                const rawRName = (r.name || '').trim();
-                if (!rawRName) continue;
-
-                const normR = normalizePlaceName(rawRName);
-                const isExact = (normTarget === normR);
-                const isSub = (normTarget.length >= 2 && normR.length >= 2 && 
-                              (normTarget.includes(normR) || normR.includes(normTarget)));
-
-                if (!isExact && !isSub) continue;
-
-                // District compatibility check if both addresses are present
-                const rAddr = (r.road_address || r.location_large || '').trim().toLowerCase();
-                if (rAddr && targetAddr) {
-                    const rDistricts = rAddr.match(/([가-힣]+(?:구|군|시))/g) || [];
-                    const rGu = rDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
-                    const targetGu = targetDistricts.find(d => d.endsWith('구') || d.endsWith('군'));
-                    if (rGu && targetGu && rGu !== targetGu && !rGu.includes(targetGu) && !targetGu.includes(rGu)) {
-                        continue;
-                    }
-                }
-
-                // Coordinate proximity check (if both have GPS coords)
-                const rX = parseFloat(r.x || 0);
-                const rY = parseFloat(r.y || 0);
-                if (targetX > 0 && targetY > 0 && rX > 0 && rY > 0) {
-                    const dx = Math.abs(targetX - rX);
-                    const dy = Math.abs(targetY - rY);
-                    if (dx > 0.1 || dy > 0.1) {
-                        if (!isExact) continue;
-                    }
+                if (typeof isSameRestaurant === 'function') {
+                    if (!isSameRestaurant(r, targetObj)) continue;
+                } else {
+                    const rawRName = (r.name || '').trim();
+                    if (!rawRName) continue;
+                    const normR = normalizePlaceName(rawRName);
+                    const normTarget = normalizePlaceName(rawTargetName);
+                    if (normTarget !== normR) continue;
                 }
 
                 matches.push({
@@ -6336,21 +6358,32 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 const normName = normalizePlaceName(r.name);
                 if (!normName) return;
 
-                const addr = (r.road_address || r.location_large || '').trim().toLowerCase();
-                const district = (addr.match(/([가-힣]+(?:구|군|시))/g) || [])[0] || '';
-                const rX = parseFloat(r.x || 0);
-                const rY = parseFloat(r.y || 0);
-                const coordKey = (rX > 0 && rY > 0) ? `${rX.toFixed(2)}_${rY.toFixed(2)}` : district;
-                const groupKey = `${normName}_${coordKey}`;
+                // Strict matching across friends to combine into multi-friend overlay
+                let matchedEntry = null;
+                for (const existing of groupedMap.values()) {
+                    if (typeof isSameRestaurant === 'function' && isSameRestaurant(existing, r)) {
+                        matchedEntry = existing;
+                        break;
+                    }
+                }
 
-                if (!groupedMap.has(groupKey)) {
+                if (matchedEntry) {
+                    if (!matchedEntry.matchedFriends.some(mf => mf.friend.id === friend.id)) {
+                        matchedEntry.matchedFriends.push({ friend, restaurant: r });
+                    }
+                } else {
+                    // Strict check if user also saved this exact restaurant
                     let commonSaved = null;
                     if (Array.isArray(masterRestaurants)) {
                         commonSaved = masterRestaurants.find(m => {
-                            const normM = normalizePlaceName(m.name);
-                            return (normM === normName) || (normM.length >= 3 && normName.length >= 3 && (normM.includes(normName) || normName.includes(normM)));
+                            return typeof isSameRestaurant === 'function' ? isSameRestaurant(m, r) : false;
                         });
                     }
+
+                    const addr = (r.road_address || r.location_large || '').trim().toLowerCase();
+                    const rX = parseFloat(r.x || 0);
+                    const rY = parseFloat(r.y || 0);
+                    const groupKey = `${normName}_${rX.toFixed(3)}_${rY.toFixed(3)}_${groupedMap.size}`;
 
                     groupedMap.set(groupKey, {
                         name: r.name,
@@ -6366,11 +6399,6 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         commonSaved: commonSaved || null,
                         matchedFriends: [{ friend, restaurant: r }]
                     });
-                } else {
-                    const entry = groupedMap.get(groupKey);
-                    if (!entry.matchedFriends.some(mf => mf.friend.id === friend.id)) {
-                        entry.matchedFriends.push({ friend, restaurant: r });
-                    }
                 }
             });
         });
@@ -6758,7 +6786,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         : (f.id === 'friend_seoulnamzaa'
                             ? '<span style="font-size:10px; color:#EA580C; font-weight:700; background:#FFF7ED; padding:1px 5px; border-radius:4px; border:1px solid #FFEDD5;">서울사는남자 🚶</span>'
                             : (f.id === 'friend_todaydessert'
-                                ? '<span style="font-size:10px; color:#DB2777; font-weight:700; background:#FDF2F8; padding:1px 5px; border-radius:4px; border:1px solid #FBCFE8;">투데이디저트 🍰</span>'
+                                ? '<span style="font-size:10px; color:#7C3AED; font-weight:700; background:#F5F3FF; padding:1px 5px; border-radius:4px; border:1px solid #DDD6FE;">투데이디저트 🍰</span>'
                                 : (isDemo 
                             ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">추천 채널</span>' 
                             : (isFollowing 
@@ -8924,7 +8952,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             (fInfo.restaurants || []).forEach(fItem => {
                 const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
                 const mMatch = masterNormMap.get(fNorm);
-                if (mMatch) {
+                const isMatch = mMatch && (typeof isSameRestaurant === 'function' ? isSameRestaurant(mMatch, fItem) : true);
+                if (isMatch) {
                     mMatch.isOverlapping = true;
                     if (!mMatch.overlappingUsers) mMatch.overlappingUsers = ['나'];
                     if (!mMatch.overlappingUsers.includes(fInfo.name)) mMatch.overlappingUsers.push(fInfo.name);

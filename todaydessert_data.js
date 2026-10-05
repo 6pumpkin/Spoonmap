@@ -5,7 +5,7 @@ const TODAY_DESSERT_FRIEND_DATA = {
   "nickname": "투데이디저트",
   "avatarText": "디",
   "avatarEmoji": "🍰",
-  "color": "#DB2777",
+  "color": "#8B5CF6",
   "comment": "100% 숏츠 기반! 전국 방방곡곡 숨겨진 찐 디저트 & 베이커리 핫플 (134곳)",
   "restaurants": [
     {
