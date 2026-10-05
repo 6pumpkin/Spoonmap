@@ -1,4 +1,4 @@
-// ─── Firebase Cloud Sync Module (Firestore Realtime Multi-Device Sync) ───
+﻿// ─── Firebase Cloud Sync Module (Firestore Realtime Multi-Device Sync) ───
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBYzyzAjtazA0R-VKU6psbnormWExi0NFM",
     authDomain: "spoonmap-3df1a.firebaseapp.com",
@@ -5644,8 +5644,42 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             rate: rateStr,
             comment: item.comment || item.review || item.memo || fallbackComment || '미식가의 추천 맛집',
             map_url: mapUrl,
-            x: item.x || '126.9780',
-            y: item.y || '37.5665',
+            x: (() => {
+                const rawX = item.x ? String(item.x).trim() : '';
+                if (rawX && rawX !== '0') return rawX;
+                const loc = ((item.location_large || '') + ' ' + (item.location_small || '') + ' ' + (item.road_address || '')).toLowerCase();
+                if (loc.includes('\uC131\uB3D9') || loc.includes('\uC131\uC218')) return '127.0436';
+                if (loc.includes('\uC548\uC0B0') || loc.includes('\uB300\uBD80')) return '126.8309';
+                if (loc.includes('\uAC15\uB0A8')) return '127.0276';
+                if (loc.includes('\uB9C8\uD3EC') || loc.includes('\uD64D\uB300')) return '126.9245';
+                if (loc.includes('\uC885\uB85C')) return '126.9918';
+                if (loc.includes('\uC6A9\uC0B0') || loc.includes('\uC774\uD0DC\uC6D0')) return '126.9904';
+                if (loc.includes('\uC601\uB4F1\uD3EC') || loc.includes('\uC5EC\uC758\uB3C4')) return '126.9242';
+                if (loc.includes('\uC1A1\uD30C') || loc.includes('\uC7A0\uC2E4')) return '127.1001';
+                if (loc.includes('\uBD80\uC0B0')) return '129.0756';
+                if (loc.includes('\uC81C\uC8FC')) return '126.5312';
+                if (loc.includes('\uC778\uCC9C')) return '126.7052';
+                if (loc.includes('\uC218\uC6D0')) return '127.0286';
+                return '126.9780';
+            })(),
+            y: (() => {
+                const rawY = item.y ? String(item.y).trim() : '';
+                if (rawY && rawY !== '0') return rawY;
+                const loc = ((item.location_large || '') + ' ' + (item.location_small || '') + ' ' + (item.road_address || '')).toLowerCase();
+                if (loc.includes('\uC131\uB3D9') || loc.includes('\uC131\uC218')) return '37.5447';
+                if (loc.includes('\uC548\uC0B0') || loc.includes('\uB300\uBD80')) return '37.3219';
+                if (loc.includes('\uAC15\uB0A8')) return '37.4979';
+                if (loc.includes('\uB9C8\uD3EC') || loc.includes('\uD64D\uB300')) return '37.5567';
+                if (loc.includes('\uC885\uB85C')) return '37.5724';
+                if (loc.includes('\uC6A9\uC0B0') || loc.includes('\uC774\uD0DC\uC6D0')) return '37.5345';
+                if (loc.includes('\uC601\uB4F1\uD3EC') || loc.includes('\uC5EC\uC758\uB3C4')) return '37.5218';
+                if (loc.includes('\uC1A1\uD30C') || loc.includes('\uC7A0\uC2E4')) return '37.5133';
+                if (loc.includes('\uBD80\uC0B0')) return '35.1796';
+                if (loc.includes('\uC81C\uC8FC')) return '33.4996';
+                if (loc.includes('\uC778\uCC9C')) return '37.4563';
+                if (loc.includes('\uC218\uC6D0')) return '37.2636';
+                return '37.5665';
+            })(),
             visit_count: item.visit_count || (isWish ? 0 : 1),
             date: item.date || '',
             isWishlist: isWish
@@ -5756,6 +5790,47 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
         } catch (e) {
             console.warn('Error fetching following user restaurants:', e);
+        }
+
+        // Robust REST API Fallback for any client environment or SDK delay
+        if (list.length === 0 && cleanId && cleanId !== 'master') {
+            try {
+                const restDocKeys = ['user_' + cleanId, cleanId, 'user_' + rawId, rawId];
+                for (const rk of restDocKeys) {
+                    if (list.length > 0) break;
+                    const restUrl = 'https://firestore.googleapis.com/v1/projects/spoonmap-3df1a/databases/(default)/documents/spoonmap_users/' + rk + '?key=AIzaSyBYzyzAjtazA0R-VKU6psbnormWExi0NFM';
+                    const resp = await fetch(restUrl);
+                    if (!resp.ok) continue;
+                    const docJson = await resp.json();
+                    if (!docJson || !docJson.fields) continue;
+                    const f = docJson.fields;
+                    const seenNames = new Set();
+                    const parseRestArray = (arrField, fallbackComment, isWish) => {
+                        if (!arrField || !arrField.arrayValue || !Array.isArray(arrField.arrayValue.values)) return;
+                        arrField.arrayValue.values.forEach(v => {
+                            if (!v || !v.mapValue || !v.mapValue.fields) return;
+                            const mf = v.mapValue.fields;
+                            const rawItem = {};
+                            Object.keys(mf).forEach(k => {
+                                const valObj = mf[k];
+                                rawItem[k] = valObj.stringValue !== undefined ? valObj.stringValue :
+                                             valObj.integerValue !== undefined ? parseInt(valObj.integerValue, 10) :
+                                             valObj.booleanValue !== undefined ? valObj.booleanValue : '';
+                            });
+                            const item = normalizeFollowedRestaurant(rawItem, fallbackComment, isWish);
+                            if (item && !seenNames.has(item.name.toLowerCase())) {
+                                seenNames.add(item.name.toLowerCase());
+                                list.push(item);
+                            }
+                        });
+                    };
+                    parseRestArray(f.diary, '\uCE5C\uAD6C\uC758 \uBC29\uBB38 \uAE30\uB85D \uB9DB\uC9D1', false);
+                    parseRestArray(f.wishlist, '\uCE5C\uAD6C\uAC00 \uCC1C\uD55C \uB9DB\uC9D1', true);
+                    parseRestArray(f.restaurants, '\uCE5C\uAD6C\uAC00 \uB4F1\uB85D\uD55C \uB9DB\uC9D1', false);
+                }
+            } catch (err) {
+                console.warn('REST fallback query error:', err);
+            }
         }
 
         candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, list));
@@ -6032,6 +6107,12 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 showDiaryToast(`⏳ [${friend.name}] 님의 맛집 정보를 불러오는 중...`);
                 const fetched = await fetchFollowingUserRestaurants(friend.realUserId);
                 friend.restaurants = fetched;
+
+        const rawFid = String(userId || '').replace(/^following_/, '');
+        const cleanFid = rawFid.replace(/^user_/, '');
+        [userId, rawFid, cleanFid, 'user_' + cleanFid, 'following_' + cleanFid, 'following_' + rawFid, friend.id].forEach(k => {
+            if (window.followingRestaurantsCache) window.followingRestaurantsCache.set(String(k), fetched);
+        });
             }
 
             // Activate
@@ -6137,6 +6218,18 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const friends = getFriendsList();
         const activeFriends = friends.filter(f => activeIds.includes(f.id));
         if (activeFriends.length === 0) return;
+
+        activeFriends.forEach(f => {
+            if (!f.restaurants || !Array.isArray(f.restaurants) || f.restaurants.length === 0) {
+                const cId = String(f.realUserId || f.id).replace(/^following_/, '').replace(/^user_/, '');
+                const rawF = String(f.realUserId || f.id);
+                f.restaurants = window.followingRestaurantsCache?.get(cId) || 
+                                window.followingRestaurantsCache?.get('user_' + cId) || 
+                                window.followingRestaurantsCache?.get('following_' + cId) || 
+                                window.followingRestaurantsCache?.get(rawF) || 
+                                window.followingRestaurantsCache?.get(String(f.id)) || [];
+            }
+        });
 
         const masterRestaurants = (typeof getMasterRestaurantList === 'function') 
             ? getMasterRestaurantList() 
@@ -8891,7 +8984,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     window.currentViewingGourmet = {
                         id: currentFilters.gourmet.join(','),
                         name: names.join(' · '),
-                        restaurants: existingRests
+                        restaurants: existingRests || (window.currentViewingGourmet && Array.isArray(window.currentViewingGourmet.restaurants) ? window.currentViewingGourmet.restaurants : null)
                     };
                 }
             }
@@ -15918,6 +16011,12 @@ window.viewGourmetMap = async function(userId, evt) {
         showDiaryToast(`⏳ ${friend.name} 님의 맛집 지도를 불러오는 중...`);
         const fetched = await fetchFollowingUserRestaurants(friend.realUserId || userId);
         friend.restaurants = fetched;
+
+        const rawFid = String(userId || '').replace(/^following_/, '');
+        const cleanFid = rawFid.replace(/^user_/, '');
+        [userId, rawFid, cleanFid, 'user_' + cleanFid, 'following_' + cleanFid, 'following_' + rawFid, friend.id].forEach(k => {
+            if (window.followingRestaurantsCache) window.followingRestaurantsCache.set(String(k), fetched);
+        });
     }
 
     // 1. Activate ONLY this friend on map overlay
@@ -16119,6 +16218,13 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
         setGourmetFilter(String(userId), true);
     } else if (typeof window.setGourmetFilter === 'function') {
         window.setGourmetFilter(String(userId), true);
+
+    if (window.currentViewingGourmet) {
+        window.currentViewingGourmet.restaurants = userRestaurants;
+    }
+    if (typeof render === 'function') {
+        render();
+    }
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
