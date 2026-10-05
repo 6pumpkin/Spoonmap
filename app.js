@@ -5644,42 +5644,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             rate: rateStr,
             comment: item.comment || item.review || item.memo || fallbackComment || '미식가의 추천 맛집',
             map_url: mapUrl,
-            x: (() => {
-                const rawX = item.x ? String(item.x).trim() : '';
-                if (rawX && rawX !== '0') return rawX;
-                const loc = ((item.location_large || '') + ' ' + (item.location_small || '') + ' ' + (item.road_address || '')).toLowerCase();
-                if (loc.includes('\uC131\uB3D9') || loc.includes('\uC131\uC218')) return '127.0436';
-                if (loc.includes('\uC548\uC0B0') || loc.includes('\uB300\uBD80')) return '126.8309';
-                if (loc.includes('\uAC15\uB0A8')) return '127.0276';
-                if (loc.includes('\uB9C8\uD3EC') || loc.includes('\uD64D\uB300')) return '126.9245';
-                if (loc.includes('\uC885\uB85C')) return '126.9918';
-                if (loc.includes('\uC6A9\uC0B0') || loc.includes('\uC774\uD0DC\uC6D0')) return '126.9904';
-                if (loc.includes('\uC601\uB4F1\uD3EC') || loc.includes('\uC5EC\uC758\uB3C4')) return '126.9242';
-                if (loc.includes('\uC1A1\uD30C') || loc.includes('\uC7A0\uC2E4')) return '127.1001';
-                if (loc.includes('\uBD80\uC0B0')) return '129.0756';
-                if (loc.includes('\uC81C\uC8FC')) return '126.5312';
-                if (loc.includes('\uC778\uCC9C')) return '126.7052';
-                if (loc.includes('\uC218\uC6D0')) return '127.0286';
-                return '126.9780';
-            })(),
-            y: (() => {
-                const rawY = item.y ? String(item.y).trim() : '';
-                if (rawY && rawY !== '0') return rawY;
-                const loc = ((item.location_large || '') + ' ' + (item.location_small || '') + ' ' + (item.road_address || '')).toLowerCase();
-                if (loc.includes('\uC131\uB3D9') || loc.includes('\uC131\uC218')) return '37.5447';
-                if (loc.includes('\uC548\uC0B0') || loc.includes('\uB300\uBD80')) return '37.3219';
-                if (loc.includes('\uAC15\uB0A8')) return '37.4979';
-                if (loc.includes('\uB9C8\uD3EC') || loc.includes('\uD64D\uB300')) return '37.5567';
-                if (loc.includes('\uC885\uB85C')) return '37.5724';
-                if (loc.includes('\uC6A9\uC0B0') || loc.includes('\uC774\uD0DC\uC6D0')) return '37.5345';
-                if (loc.includes('\uC601\uB4F1\uD3EC') || loc.includes('\uC5EC\uC758\uB3C4')) return '37.5218';
-                if (loc.includes('\uC1A1\uD30C') || loc.includes('\uC7A0\uC2E4')) return '37.5133';
-                if (loc.includes('\uBD80\uC0B0')) return '35.1796';
-                if (loc.includes('\uC81C\uC8FC')) return '33.4996';
-                if (loc.includes('\uC778\uCC9C')) return '37.4563';
-                if (loc.includes('\uC218\uC6D0')) return '37.2636';
-                return '37.5665';
-            })(),
+            x: (item.x && String(item.x).trim() !== '0' && item._resolvedActual) ? String(item.x).trim() : '',
+            y: (item.y && String(item.y).trim() !== '0' && item._resolvedActual) ? String(item.y).trim() : '',
             visit_count: item.visit_count || (isWish ? 0 : 1),
             date: item.date || '',
             isWishlist: isWish
@@ -5689,11 +5655,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
     async function resolveRestaurantCoordinates(rest) {
         if (!rest) return rest;
-        const curX = parseFloat(rest.x || 0);
-        const curY = parseFloat(rest.y || 0);
-        if (curX >= 124 && curX <= 132 && curY >= 33 && curY <= 39) {
-            return rest;
-        }
+        if (rest._resolvedActual) return rest;
 
         const urlStr = rest.map_url || rest.kakao_url || rest.place_url || '';
         const placeId = (typeof extractKakaoPlaceId === 'function') 
@@ -5707,10 +5669,12 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             if (v1 >= 33 && v1 <= 39 && v2 >= 124 && v2 <= 132) {
                 rest.y = String(v1);
                 rest.x = String(v2);
+                rest._resolvedActual = true;
                 return rest;
             } else if (v2 >= 33 && v2 <= 39 && v1 >= 124 && v1 <= 132) {
                 rest.x = String(v1);
                 rest.y = String(v2);
+                rest._resolvedActual = true;
                 return rest;
             }
         }
@@ -5727,7 +5691,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     resolve(rest);
                 }
             };
-            const timer = setTimeout(done, 800);
+            const timer = setTimeout(done, 1200);
 
             try {
                 const ps = new kakao.maps.services.Places();
@@ -5762,6 +5726,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                             rest.y = String(matched.y);
                             if (matched.road_address_name) rest.road_address = matched.road_address_name;
                             if (matched.address_name && !rest.address) rest.address = matched.address_name;
+                            rest._resolvedActual = true;
                         }
                         clearTimeout(timer);
                         done();
@@ -5780,6 +5745,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                                         rest.x = String(fMatched.x);
                                         rest.y = String(fMatched.y);
                                         if (fMatched.road_address_name) rest.road_address = fMatched.road_address_name;
+                                        rest._resolvedActual = true;
                                     }
                                 }
                                 clearTimeout(timer);
@@ -5797,7 +5763,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
         });
     }
-    window.resolveRestaurantCoordinates = resolveRestaurantCoordinates;
+
+        window.resolveRestaurantCoordinates = resolveRestaurantCoordinates;
 
 
     async function fetchFollowingUserRestaurants(userId) {
@@ -16221,9 +16188,12 @@ window.viewGourmetMap = async function(userId, evt) {
     showDiaryToast(`📍 ${friend.nickname || friend.name} 님의 맛집 지도 불러오는 중...`);
 
     // 3. 식당 데이터 및 정확한 좌표 비동기 확보
-    if ((!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
+    if (typeof fetchFollowingUserRestaurants === 'function') {
         const fetched = await fetchFollowingUserRestaurants(friend.realUserId || cleanId || userId);
         friend.restaurants = fetched;
+    }
+    if (Array.isArray(friend.restaurants) && friend.restaurants.length > 0) {
+        await Promise.all(friend.restaurants.map(r => resolveRestaurantCoordinates(r)));
     }
 
     [userId, rawId, cleanId, `user_${cleanId}`, `following_${cleanId}`, `following_${rawId}`, targetFriendId].forEach(k => {
