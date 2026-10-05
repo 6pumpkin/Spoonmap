@@ -5689,24 +5689,67 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
     async function resolveRestaurantCoordinates(rest) {
         if (!rest) return rest;
+        const curX = parseFloat(rest.x || 0);
+        const curY = parseFloat(rest.y || 0);
+        if (curX >= 124 && curX <= 132 && curY >= 33 && curY <= 39) {
+            return rest;
+        }
+
+        const urlStr = rest.map_url || rest.kakao_url || rest.place_url || '';
         const placeId = (typeof extractKakaoPlaceId === 'function') 
-            ? extractKakaoPlaceId(rest.map_url || rest.kakao_url || rest.place_url) 
+            ? extractKakaoPlaceId(urlStr) 
             : null;
+
+        const coordMatch = urlStr.match(/(\d+\.\d+)[,\s/]+(\d+\.\d+)/);
+        if (coordMatch) {
+            const v1 = parseFloat(coordMatch[1]);
+            const v2 = parseFloat(coordMatch[2]);
+            if (v1 >= 33 && v1 <= 39 && v2 >= 124 && v2 <= 132) {
+                rest.y = String(v1);
+                rest.x = String(v2);
+                return rest;
+            } else if (v2 >= 33 && v2 <= 39 && v1 >= 124 && v1 <= 132) {
+                rest.x = String(v1);
+                rest.y = String(v2);
+                return rest;
+            }
+        }
 
         if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services || !kakao.maps.services.Places) {
             return rest;
         }
 
         return new Promise(resolve => {
+            let finished = false;
+            const done = () => {
+                if (!finished) {
+                    finished = true;
+                    resolve(rest);
+                }
+            };
+            const timer = setTimeout(done, 800);
+
             try {
                 const ps = new kakao.maps.services.Places();
-                const query = ((rest.location_large || '') + ' ' + (rest.name || '')).trim() || rest.name;
+                const primaryQuery = (rest.name || '').trim();
+                if (!primaryQuery) {
+                    clearTimeout(timer);
+                    return done();
+                }
 
-                ps.keywordSearch(query, (data, status) => {
+                ps.keywordSearch(primaryQuery, (data, status) => {
+                    if (finished) return;
                     if (status === kakao.maps.services.Status.OK && Array.isArray(data) && data.length > 0) {
                         let matched = null;
                         if (placeId) {
                             matched = data.find(p => String(p.id) === String(placeId) || (p.place_url && p.place_url.includes(String(placeId))));
+                        }
+                        if (!matched && rest.location_large) {
+                            const locKey = rest.location_large.replace(/\s+/g, '');
+                            matched = data.find(p => {
+                                const addr = (p.road_address_name || p.address_name || '').replace(/\s+/g, '');
+                                return addr.includes(locKey);
+                            });
                         }
                         if (!matched) {
                             matched = data.find(p => p.place_name === rest.name || p.place_name.includes(rest.name) || rest.name.includes(p.place_name));
@@ -5717,18 +5760,40 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         if (matched && matched.x && matched.y) {
                             rest.x = String(matched.x);
                             rest.y = String(matched.y);
-                            if (matched.road_address_name) {
-                                rest.road_address = matched.road_address_name;
-                            }
-                            if (matched.address_name && !rest.address) {
-                                rest.address = matched.address_name;
-                            }
+                            if (matched.road_address_name) rest.road_address = matched.road_address_name;
+                            if (matched.address_name && !rest.address) rest.address = matched.address_name;
+                        }
+                        clearTimeout(timer);
+                        done();
+                    } else {
+                        const fallbackQuery = ((rest.location_large || '') + ' ' + primaryQuery).trim();
+                        if (fallbackQuery && fallbackQuery !== primaryQuery) {
+                            ps.keywordSearch(fallbackQuery, (fData, fStatus) => {
+                                if (finished) return;
+                                if (fStatus === kakao.maps.services.Status.OK && Array.isArray(fData) && fData.length > 0) {
+                                    let fMatched = null;
+                                    if (placeId) {
+                                        fMatched = fData.find(p => String(p.id) === String(placeId) || (p.place_url && p.place_url.includes(String(placeId))));
+                                    }
+                                    if (!fMatched) fMatched = fData[0];
+                                    if (fMatched && fMatched.x && fMatched.y) {
+                                        rest.x = String(fMatched.x);
+                                        rest.y = String(fMatched.y);
+                                        if (fMatched.road_address_name) rest.road_address = fMatched.road_address_name;
+                                    }
+                                }
+                                clearTimeout(timer);
+                                done();
+                            });
+                        } else {
+                            clearTimeout(timer);
+                            done();
                         }
                     }
-                    resolve(rest);
                 });
             } catch (_) {
-                resolve(rest);
+                clearTimeout(timer);
+                done();
             }
         });
     }
@@ -6436,13 +6501,70 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             attachMarkerEvents(marker, item, place, isCommon, false, coords);
         });
 
-        window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
-
-        if (zoomFriendId && !bounds.isEmpty()) {
-            map.setBounds(bounds);
-        }
-    };
-
+        window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
+
+        if (zoomFriendId) {
+            const friendListItems = [];
+            groupedMap.forEach(entry => {
+                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId)) {
+                    const firstMatch = entry.matchedFriends[0];
+                    const item = {
+                        name: entry.name,
+                        category: entry.category,
+                        location_large: entry.location_large,
+                        rate: entry.isCommon && entry.commonSaved ? entry.commonSaved.rate : firstMatch.restaurant.rate,
+                        visit_count: entry.isCommon && entry.commonSaved ? (entry.commonSaved.visit_count || 1) : 1,
+                        map_url: entry.map_url || entry.kakao_url,
+                        friendInfo: {
+                            friendId: firstMatch.friend.id,
+                            friendName: firstMatch.friend.nickname || firstMatch.friend.name,
+                            avatarText: firstMatch.friend.avatarText || '👤',
+                            color: firstMatch.friend.color || '#6366F1',
+                            comment: firstMatch.restaurant.comment || '',
+                            rate: firstMatch.restaurant.rate || '🥄🥄🥄🥄',
+                            isCommon: entry.isCommon
+                        }
+                    };
+                    const place = {
+                        place_name: entry.name,
+                        category_name: entry.category,
+                        address_name: entry.road_address,
+                        road_address_name: entry.road_address,
+                        x: entry.x,
+                        y: entry.y,
+                        place_url: entry.map_url || entry.kakao_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
+                    };
+                    friendListItems.push({
+                        item: item,
+                        place: place,
+                        isSaved: false,
+                        isWishlist: false
+                    });
+                }
+            });
+
+            if (friendListItems.length > 0 && typeof renderPaginatedList === 'function') {
+                renderPaginatedList(friendListItems, 1);
+                const resultsList = document.getElementById('map-results-list');
+                if (resultsList) resultsList.style.display = 'block';
+                const detailPanel = document.getElementById('map-place-detail');
+                if (detailPanel) detailPanel.style.display = 'none';
+            }
+
+            if (!bounds.isEmpty()) {
+                if (friendListItems.length === 1 && friendListItems[0].place) {
+                    const soleCoords = new kakao.maps.LatLng(friendListItems[0].place.y, friendListItems[0].place.x);
+                    map.setCenter(soleCoords);
+                    map.setLevel(4);
+                } else {
+                    map.setBounds(bounds);
+                }
+            }
+        }
+    };
+
+
+
     // Backward-compatible alias
     function renderFriendMarkers(friend, bounds = null, shouldExtend = false) {
         renderAllActiveFriendOverlays();
@@ -16066,37 +16188,9 @@ window.viewGourmetMap = async function(userId, evt) {
         return;
     }
 
-    if ((!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
-        showDiaryToast(`⏳ ${friend.name} 님의 맛집 지도를 불러오는 중...`);
-        const fetched = await fetchFollowingUserRestaurants(friend.realUserId || cleanId || userId);
-        friend.restaurants = fetched;
-    }
-
-    // Cache into all keys
     const targetFriendId = friend.id;
-    [userId, rawId, cleanId, `user_${cleanId}`, `following_${cleanId}`, `following_${rawId}`, targetFriendId].forEach(k => {
-        if (window.followingRestaurantsCache) window.followingRestaurantsCache.set(String(k), friend.restaurants);
-    });
 
-    // 1. Activate ONLY this friend on map overlay
-    if (typeof saveActiveFriendIds === 'function') {
-        saveActiveFriendIds([targetFriendId]);
-    } else {
-        localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify([targetFriendId]));
-    }
-
-    // 2. Hide user's visited and wishlist overlays to view ONLY friend's map
-    if (typeof hideMyVisitedPlacesOnMap === 'function') {
-        hideMyVisitedPlacesOnMap();
-    }
-    const btnWish = document.getElementById('btn-show-wishlist');
-    if (btnWish) btnWish.classList.remove('active');
-    const switchWish = document.getElementById('switch-wishlist-toggle');
-    if (switchWish) switchWish.checked = false;
-    const switchMy = document.getElementById('switch-my-restaurants-toggle');
-    if (switchMy) switchMy.checked = false;
-
-    // 3. Switch to MAP Tab on both PC & Mobile
+    // 1. 즉시 MAP 탭으로 화면 전환 - 모바일 및 PC 100% 즉시 이동
     window.location.hash = '#map';
     if (typeof switchTabUI === 'function') switchTabUI('map');
     else if (typeof window.switchTabUI === 'function') window.switchTabUI('map');
@@ -16108,7 +16202,35 @@ window.viewGourmetMap = async function(userId, evt) {
         c.classList.toggle('active', c.id === 'map-view');
     });
 
-    // 4. Render friend markers and zoom to friend bounds
+    // 2. 다른 레이어 끄고 오직 이 친구 지도만 활성화
+    if (typeof saveActiveFriendIds === 'function') {
+        saveActiveFriendIds([targetFriendId]);
+    } else {
+        localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify([targetFriendId]));
+    }
+    if (typeof hideMyVisitedPlacesOnMap === 'function') {
+        hideMyVisitedPlacesOnMap();
+    }
+    const btnWish = document.getElementById('btn-show-wishlist');
+    if (btnWish) btnWish.classList.remove('active');
+    const switchWish = document.getElementById('switch-wishlist-toggle');
+    if (switchWish) switchWish.checked = false;
+    const switchMy = document.getElementById('switch-my-restaurants-toggle');
+    if (switchMy) switchMy.checked = false;
+
+    showDiaryToast(`📍 ${friend.nickname || friend.name} 님의 맛집 지도 불러오는 중...`);
+
+    // 3. 식당 데이터 및 정확한 좌표 비동기 확보
+    if ((!friend.restaurants || friend.restaurants.length === 0) && typeof fetchFollowingUserRestaurants === 'function') {
+        const fetched = await fetchFollowingUserRestaurants(friend.realUserId || cleanId || userId);
+        friend.restaurants = fetched;
+    }
+
+    [userId, rawId, cleanId, `user_${cleanId}`, `following_${cleanId}`, `following_${rawId}`, targetFriendId].forEach(k => {
+        if (window.followingRestaurantsCache) window.followingRestaurantsCache.set(String(k), friend.restaurants);
+    });
+
+    // 4. 지도 리사이즈 및 마커 렌더링 + 사이드바 바텀시트 목록 노출
     const renderOverlayNow = () => {
         if (map && typeof map.relayout === 'function') {
             map.relayout();
@@ -16127,117 +16249,59 @@ window.viewGourmetMap = async function(userId, evt) {
         }
     };
 
-    setTimeout(renderOverlayNow, 80);
-    setTimeout(renderOverlayNow, 280);
+    setTimeout(renderOverlayNow, 50);
+    setTimeout(renderOverlayNow, 250);
 
     showDiaryToast(`📍 ${friend.nickname || friend.name} 님의 맛집 지도`);
 };
-
-
+
+
 window.viewGourmetRestaurantList = async function(userId, evt) {
     if (evt && evt.currentTarget && typeof evt.currentTarget.blur === 'function') evt.currentTarget.blur();
     if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
-    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
-        ? window.MASTER_MOCK_GOURMETS 
-        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
 
     const rawId = String(userId || '').replace(/^following_/, '');
     const cleanId = rawId.replace(/^user_/, '');
-    let targetUser = null;
-    let userRestaurants = [];
 
-    // 1. Check Master Mock Gourmets directly first
+    // 1. 대상 유저 신속 식별
+    const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
+        ? window.MASTER_MOCK_GOURMETS 
+        : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
     const directMock = mockList.find(m => String(m.id) === String(userId) || String(m.id) === rawId || String(m.id) === cleanId);
-    if (directMock) {
-        targetUser = directMock;
-        userRestaurants = Array.isArray(directMock.restaurants) ? [...directMock.restaurants] : [];
-    } else {
-        targetUser = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers))
-            ? cachedDiscoveredUsers.find(u => {
-                const uClean = String(u.id || '').replace(/^user_/, '');
-                return uClean === cleanId || String(u.id) === rawId || String(u.id) === String(userId);
-            })
-            : null;
-        if (targetUser && Array.isArray(targetUser.restaurants) && targetUser.restaurants.length > 0) {
-            userRestaurants = [...targetUser.restaurants];
-        }
-    }
 
-    if (!targetUser && isFirebaseReady && db) {
-        try {
-            let doc = await db.collection('spoonmap_public_profiles').doc(cleanId).get();
-            if (!doc.exists) doc = await db.collection('spoonmap_public_profiles').doc(rawId).get();
-            if (!doc.exists) doc = await db.collection('spoonmap_public_profiles').doc(String(userId)).get();
-            if (doc.exists) {
-                targetUser = doc.data();
-                if (targetUser && Array.isArray(targetUser.restaurants) && targetUser.restaurants.length > 0) {
-                    userRestaurants = [...targetUser.restaurants];
-                }
-            }
-        } catch (e) {}
-    }
+    const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+    const directFriend = friends.find(f => String(f.id) === String(userId) || String(f.realUserId) === cleanId || String(f.id) === `following_${cleanId}`);
 
-    if (!targetUser) {
-        if (cleanId === 'master' || String(userId).includes('master')) {
-            targetUser = {
-                id: 'master',
-                name: '박준호',
-                handle: '@junho_spoon',
-                isMaster: true
-            };
-            userRestaurants = getMasterRestaurantList();
-        } else {
-            showDiaryToast('해당 미식가 정보를 찾을 수 없습니다.');
-            return;
-        }
-    }
+    const cachedUsers = (typeof cachedDiscoveredUsers !== 'undefined' && Array.isArray(cachedDiscoveredUsers)) ? cachedDiscoveredUsers : [];
+    const directCached = cachedUsers.find(u => {
+        const uClean = String(u.id || '').replace(/^user_/, '');
+        return uClean === cleanId || String(u.id) === rawId || String(u.id) === String(userId);
+    });
 
-    showDiaryToast(`🍽️ ${targetUser.name} 님의 맛집 목록을 불러오는 중...`);
+    let targetUser = directMock || directFriend || directCached || null;
+    const targetName = targetUser?.nickname || targetUser?.name || '미식가';
 
-    // 2. Fetch restaurants: Master or regular user from Firestore
-    if (userRestaurants.length === 0 && !targetUser.isMasterMock) {
-        const isMaster = targetUser.isMaster === true || 
-                         targetUser.name === '박준호' || 
-                         targetUser.handle === '@junho_spoon' || 
-                         cleanId === 'master' || 
-                         String(targetUser.id) === 'master';
+    // 2. 즉시 LIST 탭으로 화면 전환 - 모바일 및 PC 100% 즉시 이동
+    window.location.hash = '#list';
+    window.currentViewingGourmet = {
+        id: String(userId),
+        name: targetName,
+        handle: targetUser?.handle || '',
+        restaurants: []
+    };
 
-        if (isMaster) {
-            userRestaurants = getMasterRestaurantList();
-        } else {
-            userRestaurants = await fetchFollowingUserRestaurants(cleanId || rawId);
-        }
-    }
+    if (typeof switchTabUI === 'function') switchTabUI('list');
+    else if (typeof window.switchTabUI === 'function') window.switchTabUI('list');
 
-    // Apply privacy settings of target gourmet safely
-    const targetPriv = targetUser.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
-    if (Array.isArray(targetPriv.allowedSpoons) && targetPriv.allowedSpoons.length > 0) {
-        userRestaurants = userRestaurants.filter(r => {
-            if (r.isWishlist) return true;
-            const spoonStr = typeof r.rate === 'string' ? r.rate : '';
-            const match = spoonStr.match(/🥄/g);
-            const spoonCount = match ? match.length : (typeof r.rate === 'number' ? Math.round(r.rate) : 3);
-            return targetPriv.allowedSpoons.includes(spoonCount || 1);
-        });
-    }
-    if (targetPriv.showVisitDate === false) {
-        userRestaurants = userRestaurants.map(r => ({ ...r, date: '' }));
-    }
+    document.querySelectorAll('.tab-btn, .mobile-tab-btn, .mobile-bnav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === 'list');
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.toggle('active', c.id === 'list-view');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (userRestaurants.length === 0) {
-        showDiaryToast(`ℹ️ ${targetUser.name} 님이 등록한 공개 맛집이 아직 없습니다.`);
-        return;
-    }
-
-    // Cache into followingRestaurantsCache and targetUser
-    if (window.followingRestaurantsCache) {
-        [String(userId), rawId, cleanId, `user_${cleanId}`, `following_${cleanId}`, `following_${rawId}`].forEach(k => {
-            window.followingRestaurantsCache.set(String(k), userRestaurants);
-        });
-    }
-    targetUser.restaurants = userRestaurants;
-
-    // 3. Reset all filters completely so friend's restaurants show 100%
+    // 3. 모든 필터 완전 초기화
     if (typeof currentFilters !== 'undefined') {
         currentFilters.searchQuery = '';
         currentFilters.category = [];
@@ -16260,42 +16324,78 @@ window.viewGourmetRestaurantList = async function(userId, evt) {
     if (typeof updateFilterButtonsUI === 'function') updateFilterButtonsUI();
     if (typeof syncRegionUI === 'function') syncRegionUI();
 
-    // 4. Set Gourmet Filter directly
+    showDiaryToast(`🍽️ ${targetName} 님의 맛집 목록을 불러오는 중...`);
+
+    // 4. 식당 데이터 취득
+    let userRestaurants = [];
+    if (directMock && Array.isArray(directMock.restaurants) && directMock.restaurants.length > 0) {
+        userRestaurants = [...directMock.restaurants];
+    } else if (directFriend && Array.isArray(directFriend.restaurants) && directFriend.restaurants.length > 0) {
+        userRestaurants = [...directFriend.restaurants];
+    } else if (directCached && Array.isArray(directCached.restaurants) && directCached.restaurants.length > 0) {
+        userRestaurants = [...directCached.restaurants];
+    }
+
+    if (userRestaurants.length === 0) {
+        const isMaster = cleanId === 'master' || targetUser?.isMaster || targetName === '박준호';
+        if (isMaster) {
+            userRestaurants = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
+        } else if (typeof fetchFollowingUserRestaurants === 'function') {
+            userRestaurants = await fetchFollowingUserRestaurants(cleanId || rawId);
+        }
+    }
+
+    // 5. 비공개 설정 반영
+    const targetPriv = targetUser?.privacySettings || { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] };
+    if (Array.isArray(targetPriv.allowedSpoons) && targetPriv.allowedSpoons.length > 0) {
+        userRestaurants = userRestaurants.filter(r => {
+            if (r.isWishlist) return true;
+            const spoonStr = typeof r.rate === 'string' ? r.rate : '';
+            const match = spoonStr.match(/🥄/g);
+            const spoonCount = match ? match.length : (typeof r.rate === 'number' ? Math.round(r.rate) : 3);
+            return targetPriv.allowedSpoons.includes(spoonCount || 1);
+        });
+    }
+    if (targetPriv.showVisitDate === false) {
+        userRestaurants = userRestaurants.map(r => ({ ...r, date: '' }));
+    }
+
+    // 6. 캐시 및 currentViewingGourmet 동기화
+    if (window.followingRestaurantsCache) {
+        [String(userId), rawId, cleanId, `user_${cleanId}`, `following_${cleanId}`, `following_${rawId}`].forEach(k => {
+            window.followingRestaurantsCache.set(String(k), userRestaurants);
+        });
+    }
+    if (targetUser) targetUser.restaurants = userRestaurants;
+
+    window.currentViewingGourmet = {
+        id: String(userId),
+        name: targetName,
+        handle: targetUser?.handle || '',
+        restaurants: userRestaurants
+    };
+
     if (typeof setGourmetFilter === 'function') {
         setGourmetFilter(String(userId), true);
     } else if (typeof window.setGourmetFilter === 'function') {
         window.setGourmetFilter(String(userId), true);
     }
 
-    // 5. Guarantee currentViewingGourmet is explicitly attached with restaurants
-    window.currentViewingGourmet = {
-        id: String(userId),
-        name: targetUser.name,
-        handle: targetUser.handle,
-        restaurants: userRestaurants
-    };
-
-    // 6. Force Switch to LIST Tab on both PC & Mobile
-    window.location.hash = '#list';
-    if (typeof switchTabUI === 'function') switchTabUI('list');
-    else if (typeof window.switchTabUI === 'function') window.switchTabUI('list');
-
-    document.querySelectorAll('.tab-btn, .mobile-tab-btn, .mobile-bnav-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === 'list');
-    });
-    document.querySelectorAll('.tab-content').forEach(c => {
-        c.classList.toggle('active', c.id === 'list-view');
-    });
-
-    // 7. Force render and scroll to top
+    // 7. 확정 렌더링
     if (typeof render === 'function') {
         render();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showDiaryToast(`🍽️ ${targetUser.name} 님의 추천 맛집 둘러보기`);
+
+    if (userRestaurants.length === 0) {
+        showDiaryToast(`ℹ️ ${targetName} 님이 등록한 공개 맛집이 아직 없습니다.`);
+    } else {
+        showDiaryToast(`🍽️ ${targetName} 님의 맛집 ${userRestaurants.length}곳`);
+    }
 };
-
-
+
+
+
 window.exitGourmetViewingMode = function() {
     if (typeof setGourmetFilter === 'function') {
         setGourmetFilter('me', true);
