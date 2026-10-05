@@ -5991,6 +5991,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         if (typeof window !== 'undefined' && window.SEOUL_NAMZAA_FRIEND_DATA) {
             base.push(window.SEOUL_NAMZAA_FRIEND_DATA);
         }
+        if (typeof window !== 'undefined' && window.TODAY_DESSERT_FRIEND_DATA) {
+            base.push(window.TODAY_DESSERT_FRIEND_DATA);
+        }
         base.push(...DEFAULT_DEMO_FRIENDS);
         const following = getFollowingFriendsAsOverlay();
         return [...base, ...custom, ...following];
@@ -6743,7 +6746,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         }
 
         listEl.innerHTML = filteredFriends.map(f => {
-            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang' || f.id === 'friend_seoulnamzaa';
+            const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang' || f.id === 'friend_seoulnamzaa' || f.id === 'friend_todaydessert';
             const isFollowing = !!f.isFollowingUser;
             const isActive = activeIds.includes(f.id);
             const badgeTag = f.id === 'friend_ddoganzip'
@@ -6754,11 +6757,13 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         ? '<span style="font-size:10px; color:#059669; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">정육왕 추천 🥩</span>'
                         : (f.id === 'friend_seoulnamzaa'
                             ? '<span style="font-size:10px; color:#EA580C; font-weight:700; background:#FFF7ED; padding:1px 5px; border-radius:4px; border:1px solid #FFEDD5;">서울사는남자 🚶</span>'
-                            : (isDemo 
+                            : (f.id === 'friend_todaydessert'
+                                ? '<span style="font-size:10px; color:#DB2777; font-weight:700; background:#FDF2F8; padding:1px 5px; border-radius:4px; border:1px solid #FBCFE8;">투데이디저트 🍰</span>'
+                                : (isDemo 
                             ? '<span style="font-size:10px; color:#6366F1; font-weight:normal;">추천 채널</span>' 
                             : (isFollowing 
                                 ? '<span style="font-size:10px; color:#10B981; font-weight:700; background:#ECFDF5; padding:1px 5px; border-radius:4px; border:1px solid #A7F3D0;">미식가 🥄</span>' 
-                                : '')))));
+                                : ''))))));
             return `
                 <div class="friend-modal-item">
                     <div class="friend-item-left">
