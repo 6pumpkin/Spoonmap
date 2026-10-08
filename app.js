@@ -3137,7 +3137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            const masterData = getUnifiedRestaurantData();
+            const masterData = getUnifiedRestaurantData(true).filter(r => !r.closed);
 
             // Supplementary Search: If station/region query, category query, or few food places found, also fetch '[query] 맛집' to discover real restaurants!
             const isStationOrArea = /(?:역|동|구|군|시|거리|길|로|\d+가)$/.test(query.trim()) || 
@@ -4958,8 +4958,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
         window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
 
-        const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
-        const myPlaces = allData.filter(r => (r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist);
+        const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
+        const myPlaces = allData.filter(r => !r.closed && ((r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist));
 
         const filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
         const unresolvedMyItems = [];
@@ -6052,7 +6052,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     window.normalizeFollowedRestaurant = normalizeFollowedRestaurant;
 
     async function resolveRestaurantCoordinates(rest) {
-        if (!rest) return rest;
+        if (!rest || rest.closed) return rest;
         window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
         window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
         const cacheKey = `${(rest.name || '').trim().toLowerCase()}|${(rest.location_large || rest.road_address || '').trim().toLowerCase()}`;
@@ -6126,23 +6126,22 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
                 ps.keywordSearch(primaryQuery, (data, status) => {
                     if (finished) return;
+                    const matchRegion = (p) => {
+                        if (!rest.location_large || rest.location_large === '기타') return true;
+                        const addr = (p.road_address_name || p.address_name || '').replace(/\s+/g, '');
+                        const parts = rest.location_large.trim().split(/\s+/).filter(Boolean);
+                        return parts.every(pt => addr.includes(pt.slice(0, 2)));
+                    };
                     if (status === kakao.maps.services.Status.OK && Array.isArray(data) && data.length > 0) {
                         let matched = null;
                         if (placeId) {
                             matched = data.find(p => String(p.id) === String(placeId) || (p.place_url && p.place_url.includes(String(placeId))));
                         }
                         if (!matched && rest.location_large) {
-                            const locKey = rest.location_large.replace(/\s+/g, '');
-                            matched = data.find(p => {
-                                const addr = (p.road_address_name || p.address_name || '').replace(/\s+/g, '');
-                                return addr.includes(locKey);
-                            });
+                            matched = data.find(p => matchRegion(p) && (p.place_name === rest.name || p.place_name.includes(rest.name) || rest.name.includes(p.place_name)));
                         }
                         if (!matched) {
-                            matched = data.find(p => p.place_name === rest.name || p.place_name.includes(rest.name) || rest.name.includes(p.place_name));
-                        }
-                        if (!matched) {
-                            matched = data[0];
+                            matched = data.find(p => matchRegion(p));
                         }
                         if (matched && matched.x && matched.y) {
                             rest.x = String(matched.x);
@@ -6164,7 +6163,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                                     if (placeId) {
                                         fMatched = fData.find(p => String(p.id) === String(placeId) || (p.place_url && p.place_url.includes(String(placeId))));
                                     }
-                                    if (!fMatched) fMatched = fData[0];
+                                    if (!fMatched) fMatched = fData.find(p => matchRegion(p));
                                     if (fMatched && fMatched.x && fMatched.y) {
                                         rest.x = String(fMatched.x);
                                         rest.y = String(fMatched.y);
@@ -6311,6 +6310,24 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                             if (item && !seenNames.has(item.name.toLowerCase())) {
                                 seenNames.add(item.name.toLowerCase());
                                 list.push(item);
+                            }
+                        });
+                    }
+                    if (userDocData.overrides && typeof userDocData.overrides === 'object') {
+                        Object.keys(userDocData.overrides).forEach(rawKey => {
+                            const ov = userDocData.overrides[rawKey];
+                            if (!ov) return;
+                            const targetKey = rawKey.trim().toLowerCase();
+                            const existing = list.find(it => it && it.name && it.name.trim().toLowerCase() === targetKey);
+                            if (existing) {
+                                if (ov.category) existing.category = ov.category;
+                                if (ov.rate) existing.rate = ov.rate;
+                                if (ov.location_large) existing.location_large = ov.location_large;
+                                if (ov.location_small) existing.location_small = ov.location_small;
+                                if (ov.map_url) existing.map_url = ov.map_url;
+                                if (ov.menu && ov.menu.length > 0) {
+                                    existing.menu = Array.isArray(ov.menu) ? ov.menu : String(ov.menu).split(',').map(m => m.trim()).filter(Boolean);
+                                }
                             }
                         });
                     }
@@ -6476,6 +6493,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         let savedMatchRef = null;
         const isSaved = isSavedParam || (Array.isArray(myOwnRestaurants) && myOwnRestaurants.some(m => {
+            if (m && m.closed) return false;
             if (typeof isSameRestaurant === 'function' ? isSameRestaurant(m, targetObj) : isSavedRestaurantMatch(m, targetObj)) {
                 savedMatchRef = m;
                 return true;
@@ -6867,6 +6885,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         let commonSaved = null;
                         if (!isSelfFriend && Array.isArray(myOwnRestaurants) && myOwnRestaurants.length > 0) {
                             commonSaved = myOwnRestaurants.find(m => {
+                                if (m && m.closed) return false;
                                 return typeof isSameRestaurant === 'function' ? isSameRestaurant(m, r) : false;
                             });
                         }
@@ -9279,7 +9298,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     }
     window.getUnifiedDiaryEntries = getUnifiedDiaryEntries;
 
-    function getUnifiedRestaurantData() {
+    function getUnifiedRestaurantData(forceOwnOnly = false) {
         if (window.isSharedMapMode && window.sharedMapData && Array.isArray(window.sharedMapData.restaurants)) {
             return window.sharedMapData.restaurants;
         }
@@ -9490,7 +9509,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         id: m.id,
                         name: m.name,
                         handle: m.handle,
-                        restaurants: m.restaurants
+                        restaurants: m.restaurants.map(r => r ? { ...r, menu: Array.isArray(r.menu) ? [...r.menu] : r.menu } : r)
                     });
                 }
             });
@@ -9523,11 +9542,15 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 rests = window.currentViewingGourmet.restaurants;
             }
 
+            const clonedRests = Array.isArray(rests)
+                ? rests.map(r => r ? { ...r, menu: Array.isArray(r.menu) ? [...r.menu] : r.menu } : r)
+                : [];
+
             const fEntry = {
                 id: nId,
                 name: ff.name,
                 handle: ff.nickname || '',
-                restaurants: rests
+                restaurants: clonedRests
             };
             friendsRestaurantsMap.set(fid, fEntry);
             friendsRestaurantsMap.set(cleanFid, fEntry);
@@ -9543,6 +9566,17 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const myNormId = currentU && currentU.id ? normFriendId(currentU.id) : null;
         const seenFEntries = new Set();
 
+        const parseSpoonCount = (rateVal) => {
+            if (typeof rateVal === 'number' && rateVal >= 1 && rateVal <= 5) return rateVal;
+            const s = String(rateVal || '');
+            const m = s.match(/CLR|🥄/g) || s.match(/🥄/g);
+            if (m && m.length > 0) return m.length;
+            const num = parseFloat(s);
+            return (num >= 1 && num <= 5) ? num : 0;
+        };
+
+        const matchedFriendPairs = [];
+
         // Cross-check overlaps between current user (unified) and friends
         friendsRestaurantsMap.forEach(fInfo => {
             if (!fInfo || seenFEntries.has(fInfo)) return;
@@ -9557,17 +9591,45 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     mMatch.isOverlapping = true;
                     if (!mMatch.overlappingUsers) mMatch.overlappingUsers = ['나'];
                     if (!mMatch.overlappingUsers.includes(fInfo.name)) mMatch.overlappingUsers.push(fInfo.name);
+                    if (!mMatch.overlappingFriendRatings) mMatch.overlappingFriendRatings = [];
+                    const fSpoon = parseSpoonCount(fItem.rate);
+                    if (fSpoon > 0 && !mMatch.overlappingFriendRatings.some(r => r.id === fInfo.id)) {
+                        mMatch.overlappingFriendRatings.push({ id: fInfo.id, name: fInfo.name, spoonCount: fSpoon });
+                    }
 
                     fItem.isOverlapping = true;
                     fItem.overlappingUsers = ['나', fInfo.name];
+                    matchedFriendPairs.push({ fItem, mMatch, fInfo });
                 } else {
                     fItem.isOverlapping = false;
                     delete fItem.overlappingUsers;
+                    delete fItem.overlappingFriendRatings;
                 }
                 fItem.sourceUserId = fInfo.id;
                 fItem.sourceUserName = fInfo.name;
             });
         });
+
+        matchedFriendPairs.forEach(({ fItem, mMatch, fInfo }) => {
+            if (Array.isArray(mMatch.overlappingUsers)) {
+                fItem.overlappingUsers = [...mMatch.overlappingUsers];
+            }
+            const otherRatings = [];
+            const mySpoon = parseSpoonCount(mMatch.rate);
+            if (mySpoon > 0) {
+                otherRatings.push({ id: 'me', name: '나', spoonCount: mySpoon });
+            }
+            if (Array.isArray(mMatch.overlappingFriendRatings)) {
+                mMatch.overlappingFriendRatings.forEach(r => {
+                    if (r.id !== fInfo.id) otherRatings.push(r);
+                });
+            }
+            fItem.overlappingFriendRatings = otherRatings;
+        });
+
+        if (forceOwnOnly) {
+            return unified;
+        }
 
         let activeGourmetList = [];
         if (Array.isArray(currentFilters && currentFilters.gourmet)) {
@@ -9586,22 +9648,34 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 if (targetGid === viewGid || String(activeGourmetList[0]) === String(window.currentViewingGourmet.id)) {
                     const vName = window.currentViewingGourmet.name || '미식가';
                     const isSelfView = myNormId && viewGid === myNormId;
-                    window.currentViewingGourmet.restaurants.forEach(fItem => {
-                        if (!fItem || !fItem.name) return;
+                    const viewRests = window.currentViewingGourmet.restaurants.map(origItem => {
+                        if (!origItem || !origItem.name) return origItem;
+                        const fItem = { ...origItem, menu: Array.isArray(origItem.menu) ? [...origItem.menu] : origItem.menu };
                         const fNorm = (typeof normalizePlaceName === 'function') ? normalizePlaceName(fItem.name) : fItem.name.replace(/\s+/g, '').toLowerCase();
                         const mMatch = !isSelfView ? masterNormMap.get(fNorm) : null;
                         const isMatch = mMatch && (typeof isSameRestaurant === 'function' ? isSameRestaurant(mMatch, fItem) : true);
                         if (isMatch) {
                             fItem.isOverlapping = true;
-                            fItem.overlappingUsers = ['나', vName];
+                            fItem.overlappingUsers = Array.isArray(mMatch.overlappingUsers) ? [...mMatch.overlappingUsers] : ['나', vName];
+                            const otherRatings = [];
+                            const mySpoon = parseSpoonCount(mMatch.rate);
+                            if (mySpoon > 0) otherRatings.push({ id: 'me', name: '나', spoonCount: mySpoon });
+                            if (Array.isArray(mMatch.overlappingFriendRatings)) {
+                                mMatch.overlappingFriendRatings.forEach(r => {
+                                    if (normFriendId(r.id) !== viewGid) otherRatings.push(r);
+                                });
+                            }
+                            fItem.overlappingFriendRatings = otherRatings;
                         } else {
                             fItem.isOverlapping = false;
                             delete fItem.overlappingUsers;
+                            delete fItem.overlappingFriendRatings;
                         }
                         fItem.sourceUserId = window.currentViewingGourmet.id;
                         fItem.sourceUserName = vName;
+                        return fItem;
                     });
-                    return window.currentViewingGourmet.restaurants;
+                    return viewRests;
                 }
             }
         }
@@ -10272,8 +10346,14 @@ function openRestaurantDetailModal(item) {
     // Always start in View Mode
     switchDetailModalMode('view');
 
-    // Load and render photos for this restaurant
-    if (typeof refreshListModalPhotoGrid === 'function') {
+    const isOtherGourmetItem = Boolean(item.sourceUserId && item.sourceUserId !== 'me');
+
+    // Load and render photos for this restaurant (only for own restaurant)
+    const photoSection = document.getElementById('list-detail-photo-section');
+    if (photoSection) {
+        photoSection.style.display = isOtherGourmetItem ? 'none' : '';
+    }
+    if (!isOtherGourmetItem && typeof refreshListModalPhotoGrid === 'function') {
         refreshListModalPhotoGrid(item.name);
     }
 
@@ -10282,7 +10362,7 @@ function openRestaurantDetailModal(item) {
         nameEl.innerHTML = item.closed ? `<s>${item.name}</s> <span class="badge-closed">폐점</span>` : item.name;
     }
     
-    const visits = getAllVisitsForRestaurant(item.name);
+    const visits = isOtherGourmetItem ? [] : getAllVisitsForRestaurant(item.name);
     const totalCount = visits.length || item.visit_count || 1;
 
     if (badgeEl) {
@@ -10306,10 +10386,18 @@ function openRestaurantDetailModal(item) {
         }
     }
 
-    // 2. Spoon Rate
+    // 2. Spoon Rate + Overlapping Friends' Average Spoon Rating
     const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
     if (rateEl) {
-        rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">수저 평점 ${spoonCount}개</span>`;
+        let friendAvgHtml = '';
+        if (item.isOverlapping && Array.isArray(item.overlappingFriendRatings) && item.overlappingFriendRatings.length > 0) {
+            const sum = item.overlappingFriendRatings.reduce((acc, r) => acc + (Number(r.spoonCount) || 0), 0);
+            const avg = sum / item.overlappingFriendRatings.length;
+            const rounded = Math.round(avg * 10) / 10;
+            const avgStr = Number.isInteger(rounded) ? String(Math.round(rounded)) : rounded.toFixed(1);
+            friendAvgHtml = ` <span class="detail-friend-avg-rate">겹치는 친구 평균 🥄 ${avgStr}개</span>`;
+        }
+        rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">수저 평점 ${spoonCount}개</span>${friendAvgHtml}`;
     }
 
     // 3. Notion-style Tags: Category
@@ -10425,9 +10513,11 @@ function openRestaurantDetailModal(item) {
             });
         } else {
             const shortLatest = (item.date && item.date.length === 10) ? item.date.slice(2) : (item.date || '기록 없음');
+            const gourmetMemo = isOtherGourmetItem ? (item.comment || item.memo || '') : '';
             historyListEl.innerHTML = `
                 <div class="history-item-card" style="text-align:center; color:var(--text-muted); padding:0.8rem;">
                     📅 최근 방문: ${shortLatest}
+                    ${gourmetMemo ? `<div class="history-item-memo" style="margin-top:0.45rem; text-align:left;"><span class="memo-icon">📝</span><span class="memo-text">${gourmetMemo}</span></div>` : ''}
                 </div>
             `;
         }
@@ -10437,14 +10527,27 @@ function openRestaurantDetailModal(item) {
     const addDiaryBtn = document.getElementById('btn-add-diary-for-this-restaurant');
     const editRestaurantBtn = document.getElementById('btn-edit-restaurant-info');
     const scrapeBtn = document.getElementById('btn-scrape-to-wishlist');
+    const actionBar = overlay.querySelector('.list-detail-action-bar');
 
     if (window.isSharedMapMode) {
         if (addDiaryBtn) addDiaryBtn.style.display = 'none';
         if (editRestaurantBtn) editRestaurantBtn.style.display = 'none';
+        if (actionBar) actionBar.classList.add('single-action-btn');
         if (scrapeBtn) {
             scrapeBtn.style.display = 'flex';
             scrapeBtn.onclick = () => scrapeCurrentRestaurantToWishlist(item);
         }
+    } else if (isOtherGourmetItem) {
+        if (addDiaryBtn) {
+            addDiaryBtn.style.display = '';
+            addDiaryBtn.onclick = () => addDiaryForRestaurant(item);
+        }
+        if (editRestaurantBtn) {
+            editRestaurantBtn.style.display = 'none';
+            editRestaurantBtn.onclick = null;
+        }
+        if (actionBar) actionBar.classList.add('single-action-btn');
+        if (scrapeBtn) scrapeBtn.style.display = 'none';
     } else {
         if (addDiaryBtn) {
             addDiaryBtn.style.display = '';
@@ -10454,6 +10557,7 @@ function openRestaurantDetailModal(item) {
             editRestaurantBtn.style.display = '';
             editRestaurantBtn.onclick = () => switchDetailModalMode('edit');
         }
+        if (actionBar) actionBar.classList.remove('single-action-btn');
         if (scrapeBtn) scrapeBtn.style.display = 'none';
     }
 
@@ -10509,6 +10613,9 @@ function closeRestaurantDetailModal(immediate = false) {
 
 // Switch between 'view' and 'edit' mode in the center modal
 function switchDetailModalMode(mode = 'view') {
+    if (mode === 'edit' && currentDetailModalItem && currentDetailModalItem.sourceUserId && currentDetailModalItem.sourceUserId !== 'me') {
+        return;
+    }
     const viewContainer = document.getElementById('list-detail-view-container');
     const editContainer = document.getElementById('list-detail-edit-container');
 
@@ -10572,6 +10679,7 @@ function populateModalEditForm(item) {
 
 function saveRestaurantMasterFromModal() {
     if (!currentDetailModalItem || !currentDetailModalItem.name) return;
+    if (currentDetailModalItem.sourceUserId && currentDetailModalItem.sourceUserId !== 'me') return;
     const name = currentDetailModalItem.name;
     const key = name.trim().toLowerCase();
 
@@ -10628,6 +10736,9 @@ function saveRestaurantMasterFromModal() {
             saveToCloud('diary', existing);
         }
     }
+    if (typeof publishPublicProfile === 'function') {
+        publishPublicProfile();
+    }
 
     // 3. Re-render List, Diary Calendar, Map, Insights & Roulette Categories
     if (window.renderApp) window.renderApp();
@@ -10636,7 +10747,7 @@ function saveRestaurantMasterFromModal() {
     renderDiaryCalendar();
 
     // 4. Update currentDetailModalItem & refresh View Mode
-    const allUnified = getUnifiedRestaurantData();
+    const allUnified = getUnifiedRestaurantData(true);
     const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key) || {
         ...currentDetailModalItem,
         category,
@@ -11094,7 +11205,7 @@ function initFoodInsightsTab() {
 
 
 function computeAndRenderFoodInsights() {
-    const masterData = getUnifiedRestaurantData();
+    const masterData = getUnifiedRestaurantData(true);
     if (!masterData || !masterData.length) {
         const summaryEl = document.getElementById('insights-total-summary');
         if (summaryEl) summaryEl.textContent = '아직 등록된 식사 일기나 맛집 데이터가 없습니다.';
@@ -14378,7 +14489,7 @@ function extractRegionFromAddress(address, roadAddress) {
 
 function findExistingRestaurant(query) {
     if (!query) return null;
-    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
     if (!unified || unified.length === 0) return null;
 
     const qKakaoId = query.kakaoId ? String(query.kakaoId).trim() : '';
@@ -14597,7 +14708,7 @@ function setupDiaryNameSearch() {
 
 function searchPlacesForDrawer(query, callback) {
     const results = [];
-    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
     const queryLower = query.toLowerCase();
 
     // 1. Local existing matches
@@ -15227,7 +15338,7 @@ function getCategoryEmoji(cat) {
 function openRestaurantDetailFromDiary(entry) {
     if (!entry || !entry.name) return;
     const key = entry.name.trim().toLowerCase();
-    const allUnified = typeof getUnifiedRestaurantData === 'function' ? getUnifiedRestaurantData() : [];
+    const allUnified = typeof getUnifiedRestaurantData === 'function' ? getUnifiedRestaurantData(true) : [];
     let item = allUnified.find(r => r.name && r.name.trim().toLowerCase() === key);
 
     if (!item) {
@@ -15699,7 +15810,7 @@ function saveDiaryEntry() {
         renderDiaryCalendar();
         if (window.renderApp) window.renderApp();
 
-        const allUnified = getUnifiedRestaurantData();
+        const allUnified = getUnifiedRestaurantData(true);
         const updatedItem = allUnified.find(r => r.name.trim().toLowerCase() === key);
         if (updatedItem) {
             openRestaurantDetailModal(updatedItem);
@@ -15985,14 +16096,16 @@ async function publishPublicProfile(profile) {
         let userPublicRests = [];
 
         if (isOwner) {
-            const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+            const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
             restCount = unified.length;
             userPublicRests = (typeof getMasterRestaurantList === 'function') ? getMasterRestaurantList() : [];
         } else {
             const diaryKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : null;
             const wishKey = typeof getUserWishlistKey === 'function' ? getUserWishlistKey() : null;
+            const ovKey = typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : null;
             const dList = diaryKey ? JSON.parse(localStorage.getItem(diaryKey) || '[]') : [];
             const wList = wishKey ? JSON.parse(localStorage.getItem(wishKey) || '[]') : [];
+            const uOverrides = ovKey ? JSON.parse(localStorage.getItem(ovKey) || '{}') : {};
             const seenPubNames = new Set();
 
             wList.forEach(w => {
@@ -16008,6 +16121,18 @@ async function publishPublicProfile(profile) {
                     seenPubNames.add(item.name.toLowerCase());
                     userPublicRests.push(item);
                 }
+            });
+            userPublicRests.forEach(r => {
+                const k = (r.name || '').trim().toLowerCase();
+                const ov = uOverrides[k];
+                if (!ov) return;
+                if (ov.category) r.category = ov.category;
+                if (ov.rate) r.rate = ov.rate;
+                if (Array.isArray(ov.menu) && ov.menu.length > 0) r.menu = ov.menu;
+                if (ov.location_large) r.location_large = ov.location_large;
+                if (ov.location_small) r.location_small = ov.location_small;
+                if (ov.map_url) r.map_url = ov.map_url;
+                if (ov.memo) r.comment = ov.memo;
             });
             if (typeof window.ensureListCoordinates === 'function' && userPublicRests.length > 0) {
                 await window.ensureListCoordinates(userPublicRests);
@@ -16459,7 +16584,7 @@ function renderProfileView() {
 
     let totalRestaurants = 0;
     if (isOwner) {
-        const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+        const unified = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
         totalRestaurants = unified.length;
     } else {
         totalRestaurants = (typeof getCurrentUserOwnRestaurants === 'function') ? getCurrentUserOwnRestaurants().length : getUserWishlist().length;
@@ -16796,6 +16921,7 @@ function getMasterRestaurantList() {
             if (existing) {
                 if (ov.category) existing.category = ov.category;
                 if (ov.rate) existing.rate = ov.rate;
+                if (Array.isArray(ov.menu) && ov.menu.length > 0) existing.menu = ov.menu;
                 if (ov.location_large) existing.location_large = ov.location_large;
                 if (ov.location_small) existing.location_small = ov.location_small;
                 if (ov.map_url) existing.map_url = ov.map_url;
@@ -16843,28 +16969,38 @@ function getCurrentUserOwnRestaurants() {
     const mapByName = new Map();
     const diaryKey = (typeof getDiaryStorageKey === 'function') ? getDiaryStorageKey() : `spoonmap_user_${u.id}_diary`;
     const wishKey = (typeof getUserWishlistKey === 'function') ? getUserWishlistKey() : `spoonmap_user_${u.id}_wishlist`;
+    const ovKey = (typeof getUserOverridesStorageKey === 'function') ? getUserOverridesStorageKey() : `spoonmap_user_${u.id}_overrides`;
     let diaryEntries = [];
     let wishEntries = [];
+    let userOverrides = {};
     try {
         diaryEntries = JSON.parse(localStorage.getItem(diaryKey) || '[]');
     } catch (_) {}
     try {
         wishEntries = JSON.parse(localStorage.getItem(wishKey) || '[]');
     } catch (_) {}
+    try {
+        userOverrides = JSON.parse(localStorage.getItem(ovKey) || '{}');
+    } catch (_) {}
 
     diaryEntries.forEach(d => {
         if (!d || !d.name) return;
         const key = d.name.trim().toLowerCase();
         const existing = mapByName.get(key);
+        const menuArr = Array.isArray(d.menu)
+            ? d.menu
+            : (typeof d.menu === 'string' ? d.menu.split(',').map(m => m.trim()).filter(Boolean) : []);
         if (existing) {
             existing.visit_count = (existing.visit_count || 1) + 1;
             if (d.rate) existing.rate = d.rate;
+            if (menuArr.length > 0) existing.menu = menuArr;
             if (d.map_url) existing.map_url = d.map_url;
         } else {
             mapByName.set(key, {
                 name: d.name.trim(),
                 category: d.category || '기타',
                 rate: d.rate || '🥄🥄🥄',
+                menu: menuArr,
                 location_large: d.location_large || d.location || '기타',
                 location_small: d.location_small || '',
                 road_address: d.road_address || d.address || '',
@@ -16885,6 +17021,7 @@ function getCurrentUserOwnRestaurants() {
                 name: w.name.trim(),
                 category: w.category || '음식점',
                 rate: w.rate || '🥄🥄🥄',
+                menu: Array.isArray(w.menu) ? w.menu : [],
                 location_large: w.location_large || w.location || '기타',
                 location_small: w.location_small || '',
                 road_address: w.road_address || w.address || '',
@@ -16894,6 +17031,21 @@ function getCurrentUserOwnRestaurants() {
                 visit_count: 0,
                 isWishlist: true
             });
+        }
+    });
+
+    Object.keys(userOverrides).forEach(rawKey => {
+        const key = rawKey.trim().toLowerCase();
+        const ov = userOverrides[rawKey];
+        if (!ov) return;
+        const existing = mapByName.get(key);
+        if (existing) {
+            if (ov.category) existing.category = ov.category;
+            if (ov.rate) existing.rate = ov.rate;
+            if (Array.isArray(ov.menu) && ov.menu.length > 0) existing.menu = ov.menu;
+            if (ov.location_large) existing.location_large = ov.location_large;
+            if (ov.location_small) existing.location_small = ov.location_small;
+            if (ov.map_url) existing.map_url = ov.map_url;
         }
     });
 
@@ -18200,7 +18352,7 @@ async function publishSharedMap(forceNew = false) {
     }
 
     const profile = getUserProfile();
-    const rawRestaurants = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
+    const rawRestaurants = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData(true) : [];
     
     // Privacy filter: Sanitize restaurants for public sharing (exclude private diary notes & apply privacy settings)
     const privacy = (profile && profile.privacySettings) ? profile.privacySettings : ((typeof getUserPrivacySettings === 'function') ? getUserPrivacySettings() : { showVisitDate: true, allowedSpoons: [1, 2, 3, 4, 5] });

@@ -1179,10 +1179,10 @@ main {
 }
 
 .map-reset-btn {
-    background: #1890ff;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
+    background: #FFEBE8;
+    color: #E65100;
+    border: 1.5px solid #FFC4BC;
+    border-radius: 8px;
     width: 34px;
     height: 34px;
     cursor: pointer;
@@ -1190,11 +1190,31 @@ main {
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    transition: opacity 0.2s;
+    flex-shrink: 0;
+    padding: 0;
+    transition: all 0.18s ease;
+}
+
+.map-reset-btn .map-refresh-svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    transition: transform 0.25s ease;
 }
 
 .map-reset-btn:hover {
-    opacity: 0.85;
+    background: #FFD8D2;
+    border-color: var(--coral-main, #FF4757);
+    color: #D84315;
+    box-shadow: 0 3px 10px rgba(230, 81, 0, 0.18);
+}
+
+.map-reset-btn:hover .map-refresh-svg {
+    transform: rotate(-45deg);
+}
+
+.map-reset-btn:active .map-refresh-svg {
+    transform: rotate(-180deg);
 }
 
 .map-results-list {
@@ -5075,6 +5095,25 @@ input[type="date"].drawer-input {
     font-size: 1.1rem;
     color: #F59E0B;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.detail-friend-avg-rate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #7C3AED;
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    padding: 2px 9px;
+    border-radius: 999px;
+    margin-left: 2px;
+    white-space: nowrap;
 }
 
 /* Detail Mode Container (View / Edit) */
@@ -5712,6 +5751,10 @@ input[type="date"].drawer-input {
     display: grid !important;
     grid-template-columns: 1.1fr 0.9fr !important;
     gap: 0.6rem !important;
+}
+
+.detail-action-two-btns.single-action-btn {
+    grid-template-columns: 1fr !important;
 }
 
 .detail-add-diary-btn {
@@ -8711,6 +8754,15 @@ span.desktop-only {
     .list-detail-rate-box {
         font-size: 0.95rem !important;
         margin-top: 2px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+    }
+
+    .detail-friend-avg-rate {
+        font-size: 0.72rem !important;
+        padding: 1.5px 7px !important;
     }
 
     .list-detail-body {
@@ -11040,24 +11092,27 @@ span.desktop-only {
     }
 
     .map-search-box .map-reset-btn {
-        background: transparent !important;
-        color: #64748B !important;
-        border: none !important;
+        background: #FFEBE8 !important;
+        color: #E65100 !important;
+        border: 1.5px solid #FFC4BC !important;
         border-radius: 8px !important;
-        width: 34px !important;
-        height: 34px !important;
+        width: 32px !important;
+        height: 32px !important;
         font-size: 1rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         cursor: pointer !important;
         flex-shrink: 0 !important;
-        transition: background 0.15s ease !important;
+        padding: 0 !important;
+        transition: all 0.18s ease !important;
     }
 
     .map-search-box .map-reset-btn:active {
-        background: #F1F5F9 !important;
-        color: #0F172A !important;
+        background: #FFD8D2 !important;
+        border-color: var(--coral-main, #FF4757) !important;
+        color: #D84315 !important;
+        transform: scale(0.94) !important;
     }
 
     /* 모바일에서 PC 전용 카테고리 메뉴 숨김 */
