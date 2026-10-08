@@ -2537,6 +2537,97 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.navigateToMapWithRestaurant = navigateToMapWithRestaurant;
 
+    // ─── Jump from LIST Detail Modal ('Map' button) to MAP Tab with Place Detail Open ───
+    function openListRestaurantOnMapTab(item) {
+        if (!item || !item.name) return;
+
+        if (typeof closeRestaurantDetailModal === 'function') {
+            closeRestaurantDetailModal();
+        }
+        if (typeof window.closeAllMobileMapPopovers === 'function') {
+            window.closeAllMobileMapPopovers();
+        }
+
+        switchTabUI('map');
+        window.location.hash = '#map';
+        initMap();
+
+        setTimeout(() => {
+            const searchInput = document.getElementById('map-search-input');
+            if (searchInput) searchInput.value = item.name;
+
+            if (typeof kakao === 'undefined' || !kakao.maps || !map) return;
+            if (typeof map.relayout === 'function') map.relayout();
+
+            if (window.rouletteMapHighlightOverlay) {
+                window.rouletteMapHighlightOverlay.setMap(null);
+                window.rouletteMapHighlightOverlay = null;
+            }
+            markers.forEach(m => m.setMap(null));
+            markers = [];
+
+            const isSaved = !item.sourceUserId || item.sourceUserId === 'me' || !!item.isOverlapping;
+            const isWishlist = !!item.isWishlist || (typeof isPlaceInWishlist === 'function' && isPlaceInWishlist(item.name, item));
+
+            const focusPlaceOnMap = (lat, lng, placeData) => {
+                const coords = new kakao.maps.LatLng(lat, lng);
+                map.setCenter(coords);
+                map.setLevel(3);
+
+                const placeObj = placeData || {
+                    place_name: item.name,
+                    category_name: item.category || '음식점',
+                    address_name: item.road_address || [item.location_large, item.location_small].filter(Boolean).join(' '),
+                    road_address_name: item.road_address || '',
+                    x: String(lng),
+                    y: String(lat),
+                    place_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`
+                };
+
+                renderSingleMarker(item, placeObj, isSaved, new kakao.maps.LatLngBounds(), false, isWishlist);
+                openPlaceOverlayAndDetail(item, placeObj, isSaved, isWishlist, coords);
+            };
+
+            const ps = new kakao.maps.services.Places();
+            const geocoderObj = new kakao.maps.services.Geocoder();
+            const searchKeyword = item.location_small
+                ? `${item.location_small.split('/').pop().trim()} ${item.name}`
+                : (item.location_large ? `${item.location_large} ${item.name}` : item.name);
+
+            ps.keywordSearch(searchKeyword, (data, status) => {
+                if (status === kakao.maps.services.Status.OK && data.length > 0) {
+                    const matched = data.find(d => isSavedRestaurantMatch(item, d));
+                    if (matched) {
+                        focusPlaceOnMap(parseFloat(matched.y), parseFloat(matched.x), matched);
+                        return;
+                    }
+                    if (item.x && item.y && !isNaN(parseFloat(item.y)) && !isNaN(parseFloat(item.x))) {
+                        focusPlaceOnMap(parseFloat(item.y), parseFloat(item.x), null);
+                        return;
+                    }
+                    focusPlaceOnMap(parseFloat(data[0].y), parseFloat(data[0].x), data[0]);
+                } else if (item.x && item.y && !isNaN(parseFloat(item.y)) && !isNaN(parseFloat(item.x))) {
+                    focusPlaceOnMap(parseFloat(item.y), parseFloat(item.x), null);
+                } else {
+                    const addrToSearch = item.road_address || item.location_small || item.location_large || item.name;
+                    geocoderObj.addressSearch(addrToSearch, (res, geoStatus) => {
+                        if (geoStatus === kakao.maps.services.Status.OK && res.length > 0) {
+                            focusPlaceOnMap(parseFloat(res[0].y), parseFloat(res[0].x), null);
+                        } else {
+                            ps.keywordSearch(item.name, (fallbackData, fbStatus) => {
+                                if (fbStatus === kakao.maps.services.Status.OK && fallbackData.length > 0) {
+                                    const target = fallbackData.find(d => isSavedRestaurantMatch(item, d)) || fallbackData[0];
+                                    focusPlaceOnMap(parseFloat(target.y), parseFloat(target.x), target);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }, 280);
+    }
+    window.openListRestaurantOnMapTab = openListRestaurantOnMapTab;
+
     function initMap() {
         if (map) {
             window.map = map;
@@ -10056,10 +10147,12 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             const locSmallColor = item.location_small ? getNotionTagColor(item.location_small) : { bg: '#F1F1EF', color: '#37352F' };
 
             let compactGourmetBadge = '';
-            if (item.isOverlapping) {
-                compactGourmetBadge = ` <span class="compact-visit-badge is-frequent" style="font-size:0.68rem; padding:1px 5px;" title="${(item.overlappingUsers || []).join(' · ')}">🔥 ${(item.overlappingUsers || []).join(' · ')}</span>`;
+            if (item.isOverlapping && Array.isArray(item.overlappingUsers) && item.overlappingUsers.length > 1) {
+                const u = item.overlappingUsers;
+                const compactLabel = u.length >= 3 ? `${u[0]} 외 ${u.length - 1}명` : `${u[0]}·${u[1]}`;
+                compactGourmetBadge = ` <span class="compact-visit-badge is-frequent" style="font-size:0.68rem; padding:1px 5px;" title="함께 등록한 맛집: ${u.join(' · ')}">🔥 ${compactLabel}</span>`;
             } else if ((Array.isArray(currentFilters.gourmet) ? (currentFilters.gourmet.includes('all') || currentFilters.gourmet.length > 1) : currentFilters.gourmet === 'all') && item.sourceUserName) {
-                compactGourmetBadge = ` <span class="compact-visit-badge" style="font-size:0.68rem; padding:1px 5px;">👤 ${item.sourceUserName}</span>`;
+                compactGourmetBadge = ` <span class="compact-visit-badge" style="font-size:0.68rem; padding:1px 5px;" title="${item.sourceUserName}">👤 ${item.sourceUserName}</span>`;
             }
 
             card.innerHTML = `
@@ -10096,19 +10189,23 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 ? item.menu.slice(0, 3).map(m => `<span class="menu-chip">🏷️ ${m}</span>`).join('') 
                 : '';
 
+            const primaryCategory = item.category ? item.category.split(',')[0].trim() : '기타';
             let gourmetBadgeHtml = '';
             if (item.isOverlapping && Array.isArray(item.overlappingUsers) && item.overlappingUsers.length > 1) {
-                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap">🔥 ${item.overlappingUsers.join(' · ')}</span>`;
+                const u = item.overlappingUsers;
+                const fullUsersTitle = u.join(' · ');
+                const overlapLabel = u.length >= 3 ? `${u[0]} 외 ${u.length - 1}명` : `${u[0]}·${u[1]}`;
+                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap" title="함께 등록한 맛집: ${fullUsersTitle}">🔥 ${overlapLabel}</span>`;
             } else if ((Array.isArray(currentFilters.gourmet) ? (currentFilters.gourmet.includes('all') || currentFilters.gourmet.length > 1) : currentFilters.gourmet === 'all') && item.sourceUserName) {
-                gourmetBadgeHtml = `<span class="card-gourmet-badge">👤 ${item.sourceUserName}</span>`;
+                gourmetBadgeHtml = `<span class="card-gourmet-badge" title="${item.sourceUserName}">👤 ${item.sourceUserName}</span>`;
             } else if (item.sourceUserId && item.sourceUserId !== 'me' && item.isOverlapping) {
-                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap">🔥 나도 등록한 맛집!</span>`;
+                gourmetBadgeHtml = `<span class="card-gourmet-badge is-overlap" title="나도 등록한 맛집">🔥 공통 맛집</span>`;
             }
 
             card.innerHTML = `
-                <div class="card-header">
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span class="category-badge">${item.category || '기타'}</span>
+                <div class="card-header ${gourmetBadgeHtml ? 'has-gourmet-badge' : ''}">
+                    <div class="card-header-left">
+                        <span class="category-badge" title="${item.category || '기타'}">${primaryCategory}</span>
                         ${gourmetBadgeHtml}
                     </div>
                     ${getSpoonBadgeHtml(item)}
@@ -10189,10 +10286,20 @@ function openRestaurantDetailModal(item) {
     const totalCount = visits.length || item.visit_count || 1;
 
     if (badgeEl) {
-        if (totalCount >= 2) {
+        const overlapText = (item.isOverlapping && Array.isArray(item.overlappingUsers) && item.overlappingUsers.length > 1)
+            ? `🔥 ${item.overlappingUsers.join(' · ')}`
+            : '';
+        if (totalCount >= 2 && overlapText) {
+            let icon = totalCount >= 10 ? '👑' : '🔥';
+            badgeEl.innerHTML = `${icon} ${totalCount}회 방문 · ${overlapText}`;
+            badgeEl.style.display = 'inline-flex';
+        } else if (totalCount >= 2) {
             let icon = '🔥';
             if (totalCount >= 10) icon = '👑';
             badgeEl.innerHTML = `${icon} ${totalCount}회 방문 · 또간집`;
+            badgeEl.style.display = 'inline-flex';
+        } else if (overlapText) {
+            badgeEl.innerHTML = `${overlapText} 공통 맛집`;
             badgeEl.style.display = 'inline-flex';
         } else {
             badgeEl.style.display = 'none';
@@ -10261,7 +10368,17 @@ function openRestaurantDetailModal(item) {
     };
     if (naverBtn) naverBtn.href = mapUrls.naverUrl;
     if (kakaoBtn) kakaoBtn.href = mapUrls.kakaoUrl;
-    if (routeBtn) routeBtn.href = getKakaoDirectionsUrl(item);
+    if (routeBtn) {
+        routeBtn.href = 'javascript:void(0)';
+        routeBtn.removeAttribute('target');
+        routeBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof window.openListRestaurantOnMapTab === 'function') {
+                window.openListRestaurantOnMapTab(item);
+            }
+        };
+    }
 
     // 7. Visit History Timeline with rich memo & clickable date
     if (historyCountEl) historyCountEl.textContent = `총 ${totalCount}회`;
@@ -18860,7 +18977,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610082315', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610082340', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});

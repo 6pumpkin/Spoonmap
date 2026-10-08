@@ -523,6 +523,7 @@ main {
     justify-content: center;
     width: 38px;
     height: 38px;
+    padding: 0;
     border-radius: 50%;
     border: 1.5px solid #FFC4BC;
     background: #FFEBE8;
@@ -534,12 +535,23 @@ main {
     z-index: 10;
 }
 
+.sidebar-toggle-btn .filter-sliders-svg,
+.mobile-filter-icon-btn .filter-sliders-svg {
+    display: block;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
 .sidebar-toggle-btn:hover {
     background: #FFD8D2;
     border-color: var(--coral-main);
     color: #D84315;
     box-shadow: 0 4px 14px rgba(230, 81, 0, 0.25);
     transform: translateY(-1px);
+}
+
+.sidebar-toggle-btn:hover .filter-sliders-svg circle {
+    fill: #FFD8D2;
 }
 
 .sidebar-toggle-btn.collapsed-state {
@@ -873,9 +885,21 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.4rem;
+    gap: 5px;
     margin-bottom: 0.8rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    flex-wrap: nowrap;
 }
 
 .category-badge {
@@ -889,6 +913,36 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 0;
+}
+
+/* Compact header sizing when gourmet/overlap badge is shown alongside category + spoon + visit badges */
+.card-header.has-gourmet-badge {
+    gap: 4px;
+}
+
+.card-header.has-gourmet-badge .card-header-left {
+    gap: 4px;
+}
+
+.card-header.has-gourmet-badge .category-badge {
+    font-size: 0.72rem;
+    padding: 3px 7px;
+}
+
+.card-header.has-gourmet-badge .spoon-badge {
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    gap: 3px;
+}
+
+.card-header.has-gourmet-badge .spoon-icons {
+    font-size: 0.72rem;
+}
+
+.card-header.has-gourmet-badge .visit-count-tag {
+    font-size: 0.68rem;
+    padding: 1px 4px;
+    margin-left: 1px;
 }
 
 /* Spoon Badge & Visit Count Tier Design */
@@ -1578,20 +1632,23 @@ main {
 /* Map Place Detail Actions (네이버 지도, 카카오맵 아래 위치) */
 .place-detail-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-top: 10px;
     width: 100%;
     box-sizing: border-box;
+    align-items: stretch;
 }
 
 .btn-add-to-diary {
-    flex: 1;
+    flex: 1.65;
+    min-width: 0;
+    white-space: nowrap;
     background: var(--coral-main, #FF5A5F);
     color: #FFFFFF;
     border: none;
     border-radius: 14px;
     padding: 12px 10px;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
     cursor: pointer;
     text-align: center;
@@ -1606,13 +1663,15 @@ main {
 }
 
 .btn-toggle-wishlist {
-    flex: 1;
+    flex: 0.72;
+    min-width: 72px;
+    white-space: nowrap;
     background: #FFFFFF;
     color: #4B5563;
     border: 1.5px solid #D1D5DB;
     border-radius: 14px;
-    padding: 12px 10px;
-    font-size: 0.95rem;
+    padding: 12px 8px;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
     text-align: center;
@@ -6185,16 +6244,22 @@ input[type="date"].drawer-input {
 
 /* Card Gourmet Badges (When viewing combined list or showing overlap) */
 .card-gourmet-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1.3;
     font-size: 0.7rem;
-    padding: 2px 7px;
+    padding: 2px 6px;
     border-radius: 6px;
     font-weight: 700;
     background: #F3F4F6;
     color: #4B5563;
     border: 1px solid #E5E7EB;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    min-width: 0;
+    flex-shrink: 1;
 }
 .card-gourmet-badge.is-overlap {
     background: linear-gradient(135deg, #FFF7ED 0%, #FEF2F2 100%);
@@ -9386,15 +9451,26 @@ span.desktop-only {
     .mobile-filter-icon-btn {
         width: 36px !important;
         height: 36px !important;
+        padding: 0 !important;
         border-radius: 50% !important;
-        border: 1.5px solid var(--border-subtle, #CBD5E1) !important;
-        background: #F8FAFC !important;
+        border: 1.5px solid #FFC4BC !important;
+        background: #FFEBE8 !important;
+        color: #E65100 !important;
         font-size: 1.05rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         flex-shrink: 0 !important;
         cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(230, 81, 0, 0.12) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .mobile-filter-icon-btn:active {
+        background: #FFD8D2 !important;
+        border-color: var(--coral-main, #FF4757) !important;
+        color: #D84315 !important;
+        transform: scale(0.95) !important;
     }
 
     .mobile-cat-scroll {
@@ -9528,7 +9604,20 @@ span.desktop-only {
         justify-content: space-between !important;
         align-items: center !important;
         margin-bottom: 3px !important;
-        gap: 6px !important;
+        gap: 5px !important;
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .restaurant-card .card-header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+        flex-wrap: nowrap !important;
     }
 
     .restaurant-card .category-badge {
@@ -9537,6 +9626,18 @@ span.desktop-only {
         padding: 2px 7px !important;
         border-radius: 10px !important;
         line-height: 1.2 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .restaurant-card .card-gourmet-badge {
+        font-size: 0.68rem !important;
+        padding: 2px 6px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
     }
 
     .restaurant-card .spoon-badge {
@@ -11911,6 +12012,7 @@ span.desktop-only {
         padding: 11px !important;
         font-size: 0.92rem !important;
         font-weight: 800 !important;
+        white-space: nowrap !important;
         border-radius: 12px !important;
         background: linear-gradient(135deg, #FF4757, #E0484D) !important;
         box-shadow: 0 3px 12px rgba(255, 71, 87, 0.28) !important;
