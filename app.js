@@ -2046,7 +2046,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentCatVal = catSelect.value;
         const currentLocVal = locSelect.value;
 
-        const masterData = getUnifiedRestaurantData();
+        const masterData = getUnifiedRestaurantData(true).filter(item => !item.closed);
         const categories = new Set();
         const locations = new Set();
 
@@ -2128,6 +2128,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!spinBtn) return;
 
+        function syncKakaoAllControlState() {
+            const isAllMap = !!(kakaoAllCheck && kakaoAllCheck.checked);
+            if (rateSelect) {
+                rateSelect.disabled = isAllMap;
+                rateSelect.style.opacity = isAllMap ? '0.5' : '1';
+                rateSelect.style.pointerEvents = isAllMap ? 'none' : '';
+            }
+            if (locSelect) {
+                locSelect.disabled = isAllMap;
+                locSelect.style.opacity = isAllMap ? '0.5' : '1';
+                locSelect.style.pointerEvents = isAllMap ? 'none' : '';
+            }
+        }
+
+        if (spinBtn.dataset.bound === 'true') {
+            populateRecommendCategories();
+            syncKakaoAllControlState();
+            return;
+        }
+        spinBtn.dataset.bound = 'true';
+
         // Haversine Distance Calculator (meters)
         function getDistanceMeters(lat1, lon1, lat2, lon2) {
             const R = 6371000;
@@ -2176,25 +2197,21 @@ document.addEventListener('DOMContentLoaded', () => {
             visitedCheck.addEventListener('change', () => {
                 if (visitedCheck.checked) {
                     kakaoAllCheck.checked = false;
-                    rateSelect.disabled = false;
-                    rateSelect.style.opacity = '1';
                 }
+                syncKakaoAllControlState();
             });
 
             kakaoAllCheck.addEventListener('change', () => {
                 if (kakaoAllCheck.checked) {
                     visitedCheck.checked = false;
-                    rateSelect.disabled = true;
-                    rateSelect.style.opacity = '0.5';
-                } else {
-                    rateSelect.disabled = false;
-                    rateSelect.style.opacity = '1';
                 }
+                syncKakaoAllControlState();
             });
         }
 
         // Populate Category & Location Selects Initially
         populateRecommendCategories();
+        syncKakaoAllControlState();
 
         // Execute Spin Reel Animation
         function runSpinAnimation(candidates) {
@@ -2268,17 +2285,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedLoc = locSelect.value;
             const minRate = parseInt(rateSelect.value, 10) || 0;
             const onlyVisited = visitedCheck ? visitedCheck.checked : false;
-            const isKakaoAll = kakaoAllCheck ? kakaoAllCheck.checked : false;
+            let isKakaoAll = kakaoAllCheck ? kakaoAllCheck.checked : false;
 
             const centerText = centerInput ? centerInput.value.trim() : '';
             const radiusVal = radiusSelect ? radiusSelect.value : 'all';
             const radiusMeters = radiusVal !== 'all' ? parseInt(radiusVal, 10) : null;
 
             if (!isOwnerUser() && !isKakaoAll) {
-                alert('🔒 저장된 내 맛집 데이터 기반 추천은 카카오 로그인 후 이용하실 수 있습니다.\n카카오 전체 식당 검색 모드로 추천을 진행합니다! 🎲');
+                alert('🔒 저장된 내 맛집 데이터 기반 추천은 카카오 로그인 후 이용하실 수 있습니다.\n지도 전체 식당 검색 모드로 추천을 진행합니다! 🎲');
                 isKakaoAll = true;
                 if (kakaoAllCheck) kakaoAllCheck.checked = true;
                 if (visitedCheck) visitedCheck.checked = false;
+                syncKakaoAllControlState();
             }
 
             function proceedSpin(centerCoords) {
@@ -2289,7 +2307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const spinTextEl = spinBtn.querySelector('.spin-text');
-                    if (spinTextEl) spinTextEl.textContent = '🔍 카카오 지도 탐색 중...';
+                    if (spinTextEl) spinTextEl.textContent = '🔍 지도 탐색 중...';
                     spinBtn.disabled = true;
 
                     const catText = selectedCat !== 'all' ? selectedCat : '맛집';
@@ -2324,22 +2342,28 @@ document.addEventListener('DOMContentLoaded', () => {
                                     displayDistance: distText ? `${distText} 거리` : '',
                                     rate: '',
                                     map_url: place.place_url || `https://map.kakao.com/link/map/${place.id}`,
+                                    kakao_id: place.id || '',
+                                    road_address: place.road_address_name || place.address_name || '',
+                                    x: place.x || '',
+                                    y: place.y || '',
+                                    rawPlace: place,
                                     visit_count: 0,
                                     isExternal: true,
-                                    menu: [place.phone ? `📞 ${place.phone}` : '카카오 지도 추천 식당']
+                                    menu: [place.phone ? `📞 ${place.phone}` : '지도 추천 식당']
                                 };
                             });
                             runSpinAnimation(candidates);
                         } else {
-                            alert(`선택하신 반경 범위 안에서 '${searchKeyword}' 카카오 지도 검색 결과가 없습니다. 반경을 넓히거나 장소를 변경해 보세요!`);
+                            alert(`선택하신 반경 범위 안에서 '${searchKeyword}' 지도 검색 결과가 없습니다. 반경을 넓히거나 장소를 변경해 보세요!`);
                         }
                     }, searchOptions);
                     return;
                 }
 
-                // Visited dataset candidates using unified master data (includes user-added new/custom restaurants!)
-                const masterData = getUnifiedRestaurantData();
+                // Visited dataset candidates using user's own unified master data (independent of LIST tab gourmet filters & excluding closed places!)
+                const masterData = getUnifiedRestaurantData(true);
                 let candidates = masterData.filter(item => {
+                    if (item.closed) return false;
                     if (!item.map_url) return false;
                     if (selectedCat !== 'all') {
                         if (!item.category) return false;
@@ -2441,7 +2465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spinBtn.addEventListener('click', startSpin);
         if (reSpinBtn) reSpinBtn.addEventListener('click', startSpin);
 
-        // View on map action with automatic map pan & pin highlight
+        // View on map action with automatic map pan, current MAP tab pin & place detail panel
         if (viewOnMapBtn) {
             viewOnMapBtn.addEventListener('click', () => {
                 if (!currentWinnerItem) return;
@@ -2454,90 +2478,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let markers = [];
     let geocoder = null;
 
-    // ─── Navigate to MAP Tab & Highlight Pin/Marker ───
+    // ─── Navigate to MAP Tab & Open Current Pin + Place Detail Panel ───
     function navigateToMapWithRestaurant(item) {
-        if (!item || !item.name) return;
-
-        // 1. Switch to MAP tab UI
-        switchTabUI('map');
-        window.location.hash = '#map';
-
-        // 2. Ensure map is initialized
-        initMap();
-
-        // 3. Pan to location & show pulsing highlight marker overlay
-        setTimeout(() => {
-            const searchInput = document.getElementById('map-search-input');
-            if (searchInput) searchInput.value = item.name;
-
-            if (typeof kakao !== 'undefined' && kakao.maps && map) {
-                const ps = new kakao.maps.services.Places();
-                const geocoderObj = new kakao.maps.services.Geocoder();
-                const searchKeyword = item.location_small ? `${item.location_small.split('/').pop().trim()} ${item.name}` : item.name;
-
-                const handleCoordsFound = (lat, lng, name, address, placeUrl) => {
-                    const moveLatLng = new kakao.maps.LatLng(lat, lng);
-                    map.setCenter(moveLatLng);
-                    map.setLevel(3); // Zoom in close for maximum clarity
-
-                    // Remove any previous highlight overlay
-                    if (window.rouletteMapHighlightOverlay) {
-                        window.rouletteMapHighlightOverlay.setMap(null);
-                    }
-
-                    const spoonCount = (item.rate ? (item.rate.match(/CLR|🥄/g) || item.rate.match(/🥄/g) || []).length : 0) || 1;
-                    const catDisplay = item.category ? item.category.split(',')[0].trim() : '기타';
-
-                    const content = document.createElement('div');
-                    content.className = 'custom-overlay map-winner-pulse-marker';
-                    content.style.cssText = 'position:relative; bottom:60px; z-index:1000; animation: popoverFadeIn 0.3s ease-out;';
-                    content.innerHTML = `
-                        <div class="overlay-card" style="background:#FFFFFF; border:2.5px solid #EF4444; border-radius:16px; padding:0.95rem 1.2rem; box-shadow:0 14px 30px rgba(239,68,68,0.4); text-align:center; min-width:210px;">
-                            <div style="font-size:0.78rem; font-weight:800; color:#EF4444; margin-bottom:3px;">🎯 룰렛 추천 맛집!</div>
-                            <h4 style="margin:0; font-size:1.1rem; font-weight:900; color:#111827;">${name}</h4>
-                            <div style="font-size:0.82rem; margin:5px 0; color:#4B5563; font-weight:700;">
-                                <span>🏷️ ${catDisplay}</span> · <span>${'🥄'.repeat(spoonCount)}</span>
-                            </div>
-                            <div style="font-size:0.75rem; color:#9CA3AF; margin-bottom:10px;">${address || ''}</div>
-                            <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="${(typeof getPlaceMapUrls === 'function' ? getPlaceMapUrls(item, { place_url: placeUrl }).kakaoUrl : (placeUrl || item.map_url || '#'))}" target="_blank" rel="noopener noreferrer" style="background:#FEE2E2; color:#DC2626; text-decoration:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:800;">카카오맵 📍</a>
-                                <button type="button" onclick="this.closest('.map-winner-pulse-marker').remove()" style="background:#F3F4F6; color:#4B5563; border:none; padding:5px 12px; border-radius:12px; font-size:0.78rem; font-weight:700; cursor:pointer;">닫기</button>
-                            </div>
-                        </div>
-                    `;
-
-                    const customOverlay = new kakao.maps.CustomOverlay({
-                        position: moveLatLng,
-                        content: content,
-                        yAnchor: 1
-                    });
-                    customOverlay.setMap(map);
-                    window.rouletteMapHighlightOverlay = customOverlay;
-                };
-
-                ps.keywordSearch(searchKeyword, (data, status) => {
-                    if (status === kakao.maps.services.Status.OK && data.length > 0) {
-                        const target = data.find(d => isSavedRestaurantMatch(item, d)) || data[0];
-                        handleCoordsFound(parseFloat(target.y), parseFloat(target.x), target.place_name, target.address_name, target.place_url);
-                    } else {
-                        const addrToSearch = item.location_small || item.location_large || item.name;
-                        geocoderObj.addressSearch(addrToSearch, (res, geoStatus) => {
-                            if (geoStatus === kakao.maps.services.Status.OK && res.length > 0) {
-                                handleCoordsFound(parseFloat(res[0].y), parseFloat(res[0].x), item.name, res[0].address_name, item.map_url);
-                            } else {
-                                if (typeof searchSavedPlacesOnMap === 'function') searchSavedPlacesOnMap(item.name);
-                            }
-                        });
-                    }
-                });
-            } else {
-                if (typeof searchSavedPlacesOnMap === 'function') searchSavedPlacesOnMap(item.name);
-            }
-        }, 350);
+        openListRestaurantOnMapTab(item);
     }
     window.navigateToMapWithRestaurant = navigateToMapWithRestaurant;
 
-    // ─── Jump from LIST Detail Modal ('Map' button) to MAP Tab with Place Detail Open ───
+    // ─── Jump from LIST Detail Modal ('Map' button) or ROULETTE ('지도에서 위치 보기') to MAP Tab with Place Detail Open ───
     function openListRestaurantOnMapTab(item) {
         if (!item || !item.name) return;
 
@@ -2549,15 +2496,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         switchTabUI('map');
-        window.location.hash = '#map';
+        history.replaceState(null, '', `#map/place?name=${encodeURIComponent(item.name)}`);
         initMap();
 
-        setTimeout(() => {
+        let retryCount = 0;
+        const tryFocusOnMap = () => {
+            if (typeof kakao === 'undefined' || !kakao.maps || !map) {
+                if (retryCount < 25) {
+                    retryCount++;
+                    setTimeout(tryFocusOnMap, 120);
+                }
+                return;
+            }
+            if (typeof map.relayout === 'function') map.relayout();
+
             const searchInput = document.getElementById('map-search-input');
             if (searchInput) searchInput.value = item.name;
-
-            if (typeof kakao === 'undefined' || !kakao.maps || !map) return;
-            if (typeof map.relayout === 'function') map.relayout();
 
             if (window.rouletteMapHighlightOverlay) {
                 window.rouletteMapHighlightOverlay.setMap(null);
@@ -2566,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             markers.forEach(m => m.setMap(null));
             markers = [];
 
-            const isSaved = !item.sourceUserId || item.sourceUserId === 'me' || !!item.isOverlapping;
+            const isSaved = !item.isExternal && (!item.sourceUserId || item.sourceUserId === 'me' || !!item.isOverlapping);
             const isWishlist = !!item.isWishlist || (typeof isPlaceInWishlist === 'function' && isPlaceInWishlist(item.name, item));
 
             const focusPlaceOnMap = (lat, lng, placeData) => {
@@ -2584,14 +2538,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     place_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`
                 };
 
+                if (typeof renderPaginatedList === 'function') {
+                    renderPaginatedList([{ item, place: placeObj, isSaved, isWishlist, friendInfo: item.friendInfo || null }], 1);
+                }
                 renderSingleMarker(item, placeObj, isSaved, new kakao.maps.LatLngBounds(), false, isWishlist);
                 openPlaceOverlayAndDetail(item, placeObj, isSaved, isWishlist, coords);
             };
 
+            if (item.rawPlace && item.rawPlace.y && item.rawPlace.x && !isNaN(parseFloat(item.rawPlace.y)) && !isNaN(parseFloat(item.rawPlace.x))) {
+                focusPlaceOnMap(parseFloat(item.rawPlace.y), parseFloat(item.rawPlace.x), item.rawPlace);
+                return;
+            }
+
             const ps = new kakao.maps.services.Places();
             const geocoderObj = new kakao.maps.services.Geocoder();
-            const searchKeyword = item.location_small
-                ? `${item.location_small.split('/').pop().trim()} ${item.name}`
+            const cleanSmall = item.location_small ? item.location_small.replace(/^📍\s*기준지에서.*$/, '').split('/').pop().trim() : '';
+            const searchKeyword = cleanSmall
+                ? `${cleanSmall} ${item.name}`
                 : (item.location_large ? `${item.location_large} ${item.name}` : item.name);
 
             ps.keywordSearch(searchKeyword, (data, status) => {
@@ -2609,7 +2572,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (item.x && item.y && !isNaN(parseFloat(item.y)) && !isNaN(parseFloat(item.x))) {
                     focusPlaceOnMap(parseFloat(item.y), parseFloat(item.x), null);
                 } else {
-                    const addrToSearch = item.road_address || item.location_small || item.location_large || item.name;
+                    const addrToSearch = item.road_address || cleanSmall || item.location_large || item.name;
                     geocoderObj.addressSearch(addrToSearch, (res, geoStatus) => {
                         if (geoStatus === kakao.maps.services.Status.OK && res.length > 0) {
                             focusPlaceOnMap(parseFloat(res[0].y), parseFloat(res[0].x), null);
@@ -2624,7 +2587,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             });
-        }, 280);
+        };
+
+        setTimeout(tryFocusOnMap, 280);
     }
     window.openListRestaurantOnMapTab = openListRestaurantOnMapTab;
 
@@ -4211,6 +4176,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide list, show detail
         resultsList.style.display = 'none';
         detailPanel.style.display = 'flex';
+        detailPanel.style.transform = '';
+        detailPanel.classList.remove('collapsed-peek');
         detailPanel.scrollTop = 0;
 
         const mapDetailHash = `#map/place?name=${encodeURIComponent(item.name)}`;
@@ -10395,7 +10362,7 @@ function openRestaurantDetailModal(item) {
             const avg = sum / item.overlappingFriendRatings.length;
             const rounded = Math.round(avg * 10) / 10;
             const avgStr = Number.isInteger(rounded) ? String(Math.round(rounded)) : rounded.toFixed(1);
-            friendAvgHtml = ` <span class="detail-friend-avg-rate">겹치는 친구 평균 🥄 ${avgStr}개</span>`;
+            friendAvgHtml = ` <span class="detail-friend-avg-rate">평균 ${avgStr}개</span>`;
         }
         rateEl.innerHTML = `${'🥄'.repeat(spoonCount)} <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:600;">수저 평점 ${spoonCount}개</span>${friendAvgHtml}`;
     }
@@ -19129,7 +19096,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610082340', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610090120', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
