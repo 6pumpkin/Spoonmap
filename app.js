@@ -528,11 +528,8 @@ async function syncFromCloud() {
                 await saveToCloud('custom_friends', JSON.parse(localStorage.getItem('spoonmap_custom_friends') || '[]'));
             }
 
-            // Sync Active Friend IDs (켜진 친구 지도 상태)
-            if (Array.isArray(cloudData.active_friend_ids)) {
-                localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify(cloudData.active_friend_ids));
-                hasChanges = true;
-            }
+            // Map tab active friend overlays always start reset on new session
+            localStorage.setItem('spoonmap_active_friend_ids', '[]');
         } else {
             // First time cloud initialization: Upload all existing local data! (Auto-Migration)
             console.log('[Spoonmap] First-time cloud sync: Uploading local data to Firestore...');
@@ -544,7 +541,7 @@ async function syncFromCloud() {
                 profile: (typeof getUserProfile === 'function') ? getUserProfile() : null,
                 following: (typeof getUserFollowingList === 'function') ? getUserFollowingList() : null,
                 custom_friends: (typeof getCustomFriends === 'function') ? getCustomFriends() : [],
-                active_friend_ids: (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [],
+                active_friend_ids: [],
                 updated_at: new Date().toISOString(),
                 user_info: getCurrentUser()
             }, { merge: true });
@@ -3309,7 +3306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Build current page items
         pageItems.forEach(res => {
             const { item, place } = res;
-            const isSaved = isOwnerUser() ? res.isSaved : false;
+            const isSaved = (isOwnerUser() || (typeof isUserLoggedIn === 'function' && isUserLoggedIn())) ? res.isSaved : false;
             const isWishlist = res.isWishlist || isPlaceInWishlist(item.name || place.place_name, place);
             const coords = new kakao.maps.LatLng(place.y, place.x);
             const visits = isSaved ? (item.visit_count || 1) : 0;
@@ -4418,6 +4415,54 @@ document.addEventListener('DOMContentLoaded', () => {
         resetMapSearchToInitial();
     });
 
+    window.activeMyRestaurantListItems = [];
+    window.activeFriendOverlayListItems = [];
+
+    window.syncActiveOverlayResultsList = function() {
+        const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
+        const switchWishlistEl = document.getElementById('switch-wishlist-toggle');
+        const isWishlistActive = !!(switchWishlistEl && switchWishlistEl.checked);
+        const hasSearchOrCategory = !!(mapSearchVal || window.currCategory || window.currSubKeyword || isWishlistActive || (window.isSharedMapMode && window.sharedMapData));
+
+        if (hasSearchOrCategory) return;
+
+        const myItems = (window.isMyRestaurantsActive && Array.isArray(window.activeMyRestaurantListItems))
+            ? window.activeMyRestaurantListItems
+            : [];
+        const friendItems = Array.isArray(window.activeFriendOverlayListItems)
+            ? window.activeFriendOverlayListItems
+            : [];
+
+        const combined = [...friendItems];
+        myItems.forEach(myEntry => {
+            const alreadyIncluded = combined.some(fEntry =>
+                typeof isSameRestaurant === 'function' && isSameRestaurant(fEntry.item, myEntry.item)
+            );
+            if (!alreadyIncluded) {
+                combined.push(myEntry);
+            }
+        });
+
+        const resultsList = document.getElementById('map-results-list');
+        const detailPanel = document.getElementById('map-place-detail');
+        const paginateFn = (typeof renderPaginatedList === 'function') ? renderPaginatedList : window.renderPaginatedList;
+
+        if (combined.length > 0 && typeof paginateFn === 'function') {
+            paginateFn(combined, 1);
+            if (resultsList) {
+                resultsList.style.display = 'block';
+                resultsList.style.transform = 'translateY(0)';
+                resultsList.classList.remove('collapsed-peek');
+            }
+            if (detailPanel) detailPanel.style.display = 'none';
+        } else {
+            if (resultsList) {
+                resultsList.style.display = 'none';
+                resultsList.innerHTML = '';
+            }
+        }
+    };
+
     window.resetMapSearchToInitial = function() {
         const input = document.getElementById('map-search-input');
         if (input) input.value = '';
@@ -4450,6 +4495,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const catClear = document.getElementById('cat-chip-clear');
         if (catClear) catClear.style.display = 'none';
 
+        const switchWish = document.getElementById('switch-wishlist-toggle');
+        if (switchWish) switchWish.checked = false;
+        const btnWish = document.getElementById('btn-show-wishlist');
+        if (btnWish) btnWish.classList.remove('active');
+
+        const quickFilters = document.querySelector('.map-quick-filters');
+        if (quickFilters) quickFilters.style.removeProperty('display');
+
         const detailPanel = document.getElementById('map-place-detail');
         if (detailPanel) detailPanel.style.display = 'none';
         const resultsList = document.getElementById('map-results-list');
@@ -4468,6 +4521,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeFriendIds.length > 0 && typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
         }
+        if (window.isMyRestaurantsActive && typeof window.renderMyRestaurantsOverlay === 'function') {
+            window.renderMyRestaurantsOverlay();
+        }
+        if (typeof window.syncActiveOverlayResultsList === 'function') {
+            window.syncActiveOverlayResultsList();
+        }
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
+        }
     };
 
     window.handleBackFromPlaceDetail = function() {
@@ -4477,7 +4539,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');
         const quickFilters = document.querySelector('.map-quick-filters');
-        const searchInput = document.getElementById('map-search-input');
 
         if (detailPanel) detailPanel.style.display = 'none';
         if (resultsList) {
@@ -4488,15 +4549,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultsList.style.display = 'none';
             }
         }
-
-        const isSearchEmpty = (!searchInput || !searchInput.value.trim()) && !window.currCategory && !window.currSubKeyword;
-        const hasEmptyState = resultsList.querySelector('.map-empty-state');
         if (quickFilters) {
-            if (isSearchEmpty && hasEmptyState) {
-                quickFilters.style.display = 'flex';
-            } else {
-                quickFilters.style.display = 'none';
-            }
+            quickFilters.style.removeProperty('display');
         }
     };
 
@@ -4504,17 +4558,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function showWishlistPlacesOnMap() {
         if (!isUserLoggedIn()) {
             alert('카카오 로그인 후 찜 목록을 확인하실 수 있습니다.');
+            const switchWish = document.getElementById('switch-wishlist-toggle');
+            if (switchWish) switchWish.checked = false;
             return;
         }
 
         const wishlist = getUserWishlist();
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');
-        const quickFilters = document.querySelector('.map-quick-filters');
 
         if (detailPanel) detailPanel.style.display = 'none';
-        if (resultsList) resultsList.style.display = 'block';
-        if (quickFilters) quickFilters.style.display = 'none';
+        if (resultsList) {
+            resultsList.style.display = 'block';
+            resultsList.style.transform = 'translateY(0)';
+            resultsList.classList.remove('collapsed-peek');
+        }
 
         markers.forEach(m => m.setMap(null));
         markers = [];
@@ -4709,20 +4767,34 @@ document.addEventListener('DOMContentLoaded', () => {
     window.activeMyRestaurantMarkers = [];
 
     function renderMyRestaurantsOverlay() {
-        if (!map) return;
+        let activeMap = map || window.map;
+        if (!activeMap && typeof initMap === 'function') {
+            initMap();
+            activeMap = map || window.map;
+        }
 
         // 1. 기존 내 식당 마커 제거
         if (Array.isArray(window.activeMyRestaurantMarkers)) {
             window.activeMyRestaurantMarkers.forEach(m => m.setMap(null));
         }
         window.activeMyRestaurantMarkers = [];
+        window.activeMyRestaurantListItems = [];
 
-        if (!window.isMyRestaurantsActive) return;
+        if (!window.isMyRestaurantsActive) {
+            if (typeof window.syncActiveOverlayResultsList === 'function') {
+                window.syncActiveOverlayResultsList();
+            }
+            return;
+        }
+
+        if (!activeMap) return;
 
         const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
         const myPlaces = allData.filter(r => (r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist);
 
         const filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
+        const unresolvedMyItems = [];
+        const myListItems = [];
 
         myPlaces.forEach(item => {
             if (typeof isFriendRestaurantAllowedByFilters === 'function' && !isFriendRestaurantAllowedByFilters(item, filterSettings)) {
@@ -4731,20 +4803,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const x = parseFloat(item.x || 0);
             const y = parseFloat(item.y || 0);
-            if (!x || !y) return;
+            const hasValidXY = x > 124 && x < 132 && y > 33 && y < 39 &&
+                !(Math.abs(x - 126.9780) < 0.0005 && Math.abs(y - 37.5665) < 0.0005);
 
-            const coords = new kakao.maps.LatLng(y, x);
+            if (!hasValidXY && !item._resolvingNow && unresolvedMyItems.length < 60 && typeof resolveRestaurantCoordinates === 'function') {
+                unresolvedMyItems.push(item);
+            }
 
             const place = {
                 place_name: item.name,
                 category_name: item.category || '음식점',
                 address_name: item.road_address || [item.location_large, item.location_small].filter(Boolean).join(' '),
                 road_address_name: item.road_address || '',
-                x: String(x),
-                y: String(y),
-                place_url: item.map_url || ''
+                x: hasValidXY ? String(x) : '126.9780',
+                y: hasValidXY ? String(y) : '37.5665',
+                place_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`
             };
 
+            myListItems.push({
+                item: item,
+                place: place,
+                isSaved: true,
+                isWishlist: false
+            });
+
+            if (!hasValidXY) return;
+
+            const coords = new kakao.maps.LatLng(y, x);
             const svgUri = getModernMarkerSvg('saved', item.category, false, null, null, item.name);
             let markerImg = null;
             if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
@@ -4752,7 +4837,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const markerOptions = {
-                map: map,
+                map: activeMap,
                 position: coords,
                 zIndex: 115
             };
@@ -4763,6 +4848,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             attachMarkerEvents(marker, item, place, true, false, coords);
         });
+
+        window.activeMyRestaurantListItems = myListItems;
+        if (typeof window.syncActiveOverlayResultsList === 'function') {
+            window.syncActiveOverlayResultsList();
+        }
+
+        if (unresolvedMyItems.length > 0 && typeof resolveRestaurantCoordinates === 'function') {
+            unresolvedMyItems.forEach(r => { r._resolvingNow = true; });
+            Promise.all(unresolvedMyItems.map(r => resolveRestaurantCoordinates(r))).then(() => {
+                unresolvedMyItems.forEach(r => { r._resolvingNow = false; });
+                if (window.isMyRestaurantsActive) {
+                    renderMyRestaurantsOverlay();
+                }
+            });
+        }
     }
     window.renderMyRestaurantsOverlay = renderMyRestaurantsOverlay;
 
@@ -4776,8 +4876,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const switchMy = document.getElementById('switch-my-restaurants-toggle');
         if (switchMy) switchMy.checked = true;
 
-        if (typeof updateStarChipHighlight === 'function') {
-            updateStarChipHighlight();
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
         }
     }
     window.showMyVisitedPlacesOnMap = showMyVisitedPlacesOnMap;
@@ -4792,8 +4892,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const switchMy = document.getElementById('switch-my-restaurants-toggle');
         if (switchMy) switchMy.checked = false;
 
-        if (typeof updateStarChipHighlight === 'function') {
-            updateStarChipHighlight();
+        if (typeof window.updateMobileStarChipHighlight === 'function') {
+            window.updateMobileStarChipHighlight();
         }
     }
     window.hideMyVisitedPlacesOnMap = hideMyVisitedPlacesOnMap;
@@ -6256,9 +6356,6 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
     function saveActiveFriendIds(ids) {
         localStorage.setItem('spoonmap_active_friend_ids', JSON.stringify(ids));
-        if (typeof saveToCloud === 'function' && typeof isUserLoggedIn === 'function' && isUserLoggedIn()) {
-            saveToCloud('active_friend_ids', ids);
-        }
     }
     window.saveActiveFriendIds = saveActiveFriendIds;
 
@@ -6435,21 +6532,17 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
             window.activeFriendMarkersMap.clear();
         }
+        window.activeFriendOverlayListItems = [];
 
-        const clearFriendResultsListIfNeeded = () => {
-            const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
-            if (!mapSearchVal && !window.currCategory && !window.currSubKeyword && !(window.isSharedMapMode && window.sharedMapData)) {
-                const resultsList = document.getElementById('map-results-list');
-                if (resultsList) {
-                    resultsList.style.display = 'none';
-                    resultsList.innerHTML = '';
-                }
+        const syncListIfNeeded = () => {
+            if (typeof window.syncActiveOverlayResultsList === 'function') {
+                window.syncActiveOverlayResultsList();
             }
         };
 
         const activeIds = getActiveFriendIds();
         if (!activeIds || activeIds.length === 0) {
-            clearFriendResultsListIfNeeded();
+            syncListIfNeeded();
             return;
         }
         const activeNormSet = new Set(activeIds.map(id => normFriendId(id)));
@@ -6457,7 +6550,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const friends = getFriendsList();
         const activeFriends = friends.filter(f => activeIds.includes(f.id) || (f.isFollowingUser && activeNormSet.has(normFriendId(f.id))));
         if (activeFriends.length === 0) {
-            clearFriendResultsListIfNeeded();
+            syncListIfNeeded();
             return;
         }
 
@@ -6578,7 +6671,6 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             buildGroupedRestaurants(null);
         }
 
-        const bounds = new kakao.maps.LatLngBounds();
         const allCreatedMarkers = [];
         const zoomNorm = zoomFriendId ? normFriendId(zoomFriendId) : null;
 
@@ -6669,78 +6761,35 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             const marker = new kakao.maps.Marker(markerOptions);
             allCreatedMarkers.push(marker);
 
-            if (entry.hasValidXY) {
-                if (!zoomFriendId || entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
-                    bounds.extend(coords);
-                }
-            }
-
             attachMarkerEvents(marker, item, place, isCommon, false, coords);
         });
 
         window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
 
-        // Populate #map-results-list on both PC and Mobile whenever friend overlays are active
-        const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
-        const hasSearchOrCategory = !!(mapSearchVal || window.currCategory || window.currSubKeyword);
-        if (groupedMap.size > 0 && (zoomFriendId || !hasSearchOrCategory)) {
-            const friendListItems = [];
-            groupedMap.forEach(entry => {
-                if (!zoomFriendId || entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
-                    friendListItems.push({
-                        item: entry._builtItem,
-                        place: entry._builtPlace,
-                        isSaved: entry.isCommon,
-                        isWishlist: false
-                    });
-                }
-            });
-
-            if (friendListItems.length === 0) {
-                groupedMap.forEach(entry => {
-                    friendListItems.push({
-                        item: entry._builtItem,
-                        place: entry._builtPlace,
-                        isSaved: entry.isCommon,
-                        isWishlist: false
-                    });
+        // Build friendListItems and sync #map-results-list on both PC and Mobile without altering map zoom/center
+        const friendListItems = [];
+        groupedMap.forEach(entry => {
+            if (!zoomFriendId || entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
+                friendListItems.push({
+                    item: entry._builtItem,
+                    place: entry._builtPlace,
+                    isSaved: entry.isCommon,
+                    isWishlist: false
                 });
             }
-
-            const paginateFn = (typeof renderPaginatedList === 'function') ? renderPaginatedList : window.renderPaginatedList;
-            if (friendListItems.length > 0 && typeof paginateFn === 'function') {
-                paginateFn(friendListItems, 1);
-                const resultsList = document.getElementById('map-results-list');
-                if (resultsList) {
-                    resultsList.style.display = 'block';
-                    resultsList.style.transform = 'translateY(0)';
-                    resultsList.classList.remove('collapsed-peek');
-                }
-                const detailPanel = document.getElementById('map-place-detail');
-                if (detailPanel) detailPanel.style.display = 'none';
-                const qf = document.querySelector('.map-quick-filters');
-                if (qf) qf.style.display = 'flex';
-            }
-        }
-
-        if (zoomFriendId && !bounds.isEmpty()) {
-            if (typeof activeMap.relayout === 'function') {
-                activeMap.relayout();
-            }
-            const zoomMatches = [];
+        });
+        if (friendListItems.length === 0) {
             groupedMap.forEach(entry => {
-                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
-                    zoomMatches.push(entry);
-                }
+                friendListItems.push({
+                    item: entry._builtItem,
+                    place: entry._builtPlace,
+                    isSaved: entry.isCommon,
+                    isWishlist: false
+                });
             });
-            if (zoomMatches.length === 1 && zoomMatches[0]._builtPlace) {
-                const soleCoords = new kakao.maps.LatLng(zoomMatches[0]._builtPlace.y, zoomMatches[0]._builtPlace.x);
-                activeMap.setCenter(soleCoords);
-                activeMap.setLevel(4);
-            } else {
-                activeMap.setBounds(bounds);
-            }
         }
+        window.activeFriendOverlayListItems = friendListItems;
+        syncListIfNeeded();
     };
 
 
@@ -7013,6 +7062,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     };
 
     window.openFriendManageModal = function() {
+        if (typeof window.closeAllMobileMapPopovers === 'function') {
+            window.closeAllMobileMapPopovers();
+        }
         const modal = document.getElementById('friend-manage-modal');
         if (!modal) return;
         renderFriendFilterCategoryChips();
@@ -7348,6 +7400,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     function initMobileMapChipsAndPopovers() {
         const catChip = document.getElementById('btn-cat-chip');
         const starChip = document.getElementById('btn-star-chip');
+        const pcStarBtn = document.getElementById('btn-pc-star-menu');
         const popCat = document.getElementById('popover-cat-menu');
         const popStar = document.getElementById('popover-star-menu');
         const backdrop = document.getElementById('map-popover-backdrop');
@@ -7367,6 +7420,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             if (backdrop) backdrop.classList.remove('show');
             catChip.classList.remove('open');
             starChip.classList.remove('open');
+            if (pcStarBtn) pcStarBtn.classList.remove('open');
             popCat.style.removeProperty('display');
             popStar.style.removeProperty('display');
             if (backdrop) backdrop.style.removeProperty('display');
@@ -7398,6 +7452,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#btn-cat-chip') && 
                 !e.target.closest('#btn-star-chip') && 
+                !e.target.closest('#btn-pc-star-menu') && 
                 !e.target.closest('#popover-cat-menu') && 
                 !e.target.closest('#popover-star-menu')) {
                 closeAllPopovers();
@@ -7491,54 +7546,79 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     const c = i.querySelector('.check-mark');
                     if (c) c.remove();
                 });
-                const sheet = document.getElementById('map-results-list');
-                if (sheet) {
-                    sheet.style.display = 'none';
-                    sheet.innerHTML = '';
-                }
                 closeAllPopovers();
                 updateMapMarkers();
+                if (typeof window.syncActiveOverlayResultsList === 'function') {
+                    window.syncActiveOverlayResultsList();
+                }
             });
         }
 
-        // 2. Star Chip Click
-        starChip.addEventListener('click', (e) => {
+        // 2. Star Chip / PC Star Button Click
+        const handleToggleStarMenu = (e, triggerBtn) => {
             e.stopPropagation();
             const isOpen = popStar.classList.contains('show');
             closeAllPopovers();
             if (!isOpen) {
                 popStar.classList.add('show');
-                starChip.classList.add('open');
+                if (triggerBtn) triggerBtn.classList.add('open');
                 if (backdrop) backdrop.classList.add('show');
                 renderMobileFriendsListInPopover();
                 updateStarChipHighlight();
             }
-        });
+        };
+
+        starChip.addEventListener('click', (e) => handleToggleStarMenu(e, starChip));
+        if (pcStarBtn) {
+            pcStarBtn.addEventListener('click', (e) => handleToggleStarMenu(e, pcStarBtn));
+        }
 
         // My Restaurants Toggle
         const switchMyRestaurants = document.getElementById('switch-my-restaurants-toggle');
+        const popRowMyRestaurants = document.getElementById('pop-row-my-restaurants');
         if (switchMyRestaurants) {
             switchMyRestaurants.addEventListener('change', () => {
                 if (switchMyRestaurants.checked) {
                     if (switchWishlist) switchWishlist.checked = false;
                     showMyVisitedPlacesOnMap();
+                    closeAllPopovers();
                 } else {
                     hideMyVisitedPlacesOnMap();
                 }
                 updateStarChipHighlight();
             });
         }
+        if (popRowMyRestaurants && switchMyRestaurants) {
+            popRowMyRestaurants.style.cursor = 'pointer';
+            popRowMyRestaurants.addEventListener('click', (e) => {
+                if (e.target.closest('.toggle-switch-sm')) return;
+                switchMyRestaurants.checked = !switchMyRestaurants.checked;
+                switchMyRestaurants.dispatchEvent(new Event('change'));
+            });
+        }
 
         // Wishlist Toggle
+        const popRowWishlist = document.getElementById('pop-row-wishlist');
         if (switchWishlist) {
             switchWishlist.addEventListener('change', () => {
                 if (switchWishlist.checked) {
-                    if (switchMyRestaurants) switchMyRestaurants.checked = false;
+                    if (switchMyRestaurants && switchMyRestaurants.checked) {
+                        hideMyVisitedPlacesOnMap();
+                    }
                     showWishlistPlacesOnMap();
+                    closeAllPopovers();
                 } else {
-                    updateMapMarkers();
+                    resetMapSearchToInitial();
                 }
                 updateStarChipHighlight();
+            });
+        }
+        if (popRowWishlist && switchWishlist) {
+            popRowWishlist.style.cursor = 'pointer';
+            popRowWishlist.addEventListener('click', (e) => {
+                if (e.target.closest('.toggle-switch-sm')) return;
+                switchWishlist.checked = !switchWishlist.checked;
+                switchWishlist.dispatchEvent(new Event('change'));
             });
         }
 
@@ -7581,22 +7661,28 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         }
 
         function updateStarChipHighlight() {
-            starChip.classList.remove('star-active', 'friend-active', 'both-active', 'my-active');
+            const targets = [starChip, pcStarBtn].filter(Boolean);
+            targets.forEach(btn => btn.classList.remove('star-active', 'friend-active', 'both-active', 'my-active'));
+
             const myOn = switchMyRestaurants && switchMyRestaurants.checked;
             const wishOn = switchWishlist && switchWishlist.checked;
             const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
             const friendOn = activeIds.length > 0;
 
+            let activeCls = '';
             if (myOn && friendOn) {
-                starChip.classList.add('both-active');
+                activeCls = 'both-active';
             } else if (myOn) {
-                starChip.classList.add('my-active');
+                activeCls = 'my-active';
             } else if (wishOn && friendOn) {
-                starChip.classList.add('both-active');
+                activeCls = 'both-active';
             } else if (wishOn) {
-                starChip.classList.add('star-active');
+                activeCls = 'star-active';
             } else if (friendOn) {
-                starChip.classList.add('friend-active');
+                activeCls = 'friend-active';
+            }
+            if (activeCls) {
+                targets.forEach(btn => btn.classList.add(activeCls));
             }
         }
         window.updateMobileStarChipHighlight = updateStarChipHighlight;
@@ -7670,6 +7756,71 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             });
         }
         window.renderMobileFriendsListInPopover = renderMobileFriendsListInPopover;
+
+        window.resetMapTabFullState = function() {
+            localStorage.setItem('spoonmap_active_friend_ids', '[]');
+            window.isMyRestaurantsActive = false;
+            window.activeMyRestaurantListItems = [];
+            window.activeFriendOverlayListItems = [];
+
+            if (Array.isArray(window.activeMyRestaurantMarkers)) {
+                window.activeMyRestaurantMarkers.forEach(m => m.setMap(null));
+            }
+            window.activeMyRestaurantMarkers = [];
+
+            if (window.activeFriendMarkersMap) {
+                for (const [, markerList] of window.activeFriendMarkersMap.entries()) {
+                    if (Array.isArray(markerList)) {
+                        markerList.forEach(m => m.setMap(null));
+                    }
+                }
+                window.activeFriendMarkersMap.clear();
+            }
+
+            const switchMy = document.getElementById('switch-my-restaurants-toggle');
+            if (switchMy) switchMy.checked = false;
+            const switchWish = document.getElementById('switch-wishlist-toggle');
+            if (switchWish) switchWish.checked = false;
+            const btnShowMy = document.getElementById('btn-show-my-restaurants');
+            if (btnShowMy) btnShowMy.classList.remove('active');
+            const btnWish = document.getElementById('btn-show-wishlist');
+            if (btnWish) btnWish.classList.remove('active');
+            const btnFriends = document.getElementById('btn-toggle-friends-panel');
+            if (btnFriends) btnFriends.classList.remove('active');
+            const friendsBar = document.getElementById('map-friends-bar');
+            if (friendsBar) friendsBar.style.display = 'none';
+
+            closeAllPopovers();
+            if (typeof window.resetMapSearchToInitial === 'function') {
+                window.resetMapSearchToInitial();
+            }
+            if (typeof window.renderFriendChips === 'function') {
+                window.renderFriendChips();
+            }
+            renderMobileFriendsListInPopover();
+            updateStarChipHighlight();
+            if (typeof window.renderFriendModalList === 'function') {
+                window.renderFriendModalList();
+            }
+        };
+
+        // Reset Map tab state on initial load and whenever screen/app/web is closed or backgrounded
+        window.resetMapTabFullState();
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted && typeof window.resetMapTabFullState === 'function') {
+                window.resetMapTabFullState();
+            }
+        });
+        window.addEventListener('pagehide', () => {
+            if (typeof window.resetMapTabFullState === 'function') {
+                window.resetMapTabFullState();
+            }
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && typeof window.resetMapTabFullState === 'function') {
+                window.resetMapTabFullState();
+            }
+        });
     }
     initMobileMapChipsAndPopovers();
 
@@ -18559,7 +18710,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610081800', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610082230', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
