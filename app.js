@@ -3178,8 +3178,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.isSharedMapMode && window.sharedMapData) {
                 renderSharedMapOnMap();
             } else {
-                resultsList.style.display = 'none';
-                resultsList.innerHTML = '';
+                const activeFriendIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                if (activeFriendIds.length > 0 && typeof window.renderAllActiveFriendOverlays === 'function') {
+                    window.renderAllActiveFriendOverlays();
+                } else {
+                    resultsList.style.display = 'none';
+                    resultsList.innerHTML = '';
+                }
             }
         }
     }
@@ -4458,6 +4463,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.currentMapOverlay) {
             window.currentMapOverlay.setMap(null);
             window.currentMapOverlay = null;
+        }
+        const activeFriendIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+        if (activeFriendIds.length > 0 && typeof window.renderAllActiveFriendOverlays === 'function') {
+            window.renderAllActiveFriendOverlays();
         }
     };
 
@@ -6288,6 +6297,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     window.renderFriendChips = renderFriendChips;
 
     window.toggleFriendOverlay = async function(friendId) {
+        if (!map && !window.map && typeof initMap === 'function') {
+            initMap();
+        }
         let activeIds = getActiveFriendIds();
         const targetNorm = normFriendId(friendId);
         const friends = getFriendsList();
@@ -6407,7 +6419,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
     }
 
     window.renderAllActiveFriendOverlays = function(zoomFriendId = null) {
-        const activeMap = map || window.map;
+        let activeMap = map || window.map;
+        if (!activeMap && typeof initMap === 'function') {
+            initMap();
+            activeMap = map || window.map;
+        }
         if (!activeMap) return;
 
         // 1. Clear all existing friend markers
@@ -6420,13 +6436,30 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             window.activeFriendMarkersMap.clear();
         }
 
+        const clearFriendResultsListIfNeeded = () => {
+            const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
+            if (!mapSearchVal && !window.currCategory && !window.currSubKeyword && !(window.isSharedMapMode && window.sharedMapData)) {
+                const resultsList = document.getElementById('map-results-list');
+                if (resultsList) {
+                    resultsList.style.display = 'none';
+                    resultsList.innerHTML = '';
+                }
+            }
+        };
+
         const activeIds = getActiveFriendIds();
-        if (!activeIds || activeIds.length === 0) return;
+        if (!activeIds || activeIds.length === 0) {
+            clearFriendResultsListIfNeeded();
+            return;
+        }
         const activeNormSet = new Set(activeIds.map(id => normFriendId(id)));
 
         const friends = getFriendsList();
         const activeFriends = friends.filter(f => activeIds.includes(f.id) || (f.isFollowingUser && activeNormSet.has(normFriendId(f.id))));
-        if (activeFriends.length === 0) return;
+        if (activeFriends.length === 0) {
+            clearFriendResultsListIfNeeded();
+            return;
+        }
 
         const unresolvedItems = [];
         activeFriends.forEach(f => {
@@ -6479,60 +6512,71 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         // Group restaurants across active friends to detect intersections
         const groupedMap = new Map();
 
-        const filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
-        activeFriends.forEach(friend => {
-            if (!friend.restaurants || !Array.isArray(friend.restaurants)) return;
-            const isSelfFriend = myNormId && friend.isFollowingUser && normFriendId(friend.realUserId || friend.id) === myNormId;
-            friend.restaurants.forEach(r => {
-                if (typeof isFriendRestaurantAllowedByFilters === 'function' && !isFriendRestaurantAllowedByFilters(r, filterSettings)) return;
-                const normName = normalizePlaceName(r.name);
-                if (!normName) return;
+        let filterSettings = (typeof getFriendFilterSettings === 'function') ? getFriendFilterSettings() : null;
+        const buildGroupedRestaurants = (activeFilters) => {
+            groupedMap.clear();
+            activeFriends.forEach(friend => {
+                if (!friend.restaurants || !Array.isArray(friend.restaurants)) return;
+                const isSelfFriend = myNormId && friend.isFollowingUser && normFriendId(friend.realUserId || friend.id) === myNormId;
+                friend.restaurants.forEach(r => {
+                    if (activeFilters && typeof isFriendRestaurantAllowedByFilters === 'function' && !isFriendRestaurantAllowedByFilters(r, activeFilters)) return;
+                    const normName = normalizePlaceName(r.name);
+                    if (!normName) return;
 
-                // Strict matching across friends to combine into multi-friend overlay
-                let matchedEntry = null;
-                for (const existing of groupedMap.values()) {
-                    if (typeof isSameRestaurant === 'function' && isSameRestaurant(existing, r)) {
-                        matchedEntry = existing;
-                        break;
+                    // Strict matching across friends to combine into multi-friend overlay
+                    let matchedEntry = null;
+                    for (const existing of groupedMap.values()) {
+                        if (typeof isSameRestaurant === 'function' && isSameRestaurant(existing, r)) {
+                            matchedEntry = existing;
+                            break;
+                        }
                     }
-                }
 
-                if (matchedEntry) {
-                    if (!matchedEntry.matchedFriends.some(mf => normFriendId(mf.friend.id) === normFriendId(friend.id))) {
-                        matchedEntry.matchedFriends.push({ friend, restaurant: r });
-                    }
-                } else {
-                    // Strict check if currently logged-in user also saved this exact restaurant
-                    let commonSaved = null;
-                    if (!isSelfFriend && Array.isArray(myOwnRestaurants) && myOwnRestaurants.length > 0) {
-                        commonSaved = myOwnRestaurants.find(m => {
-                            return typeof isSameRestaurant === 'function' ? isSameRestaurant(m, r) : false;
+                    if (matchedEntry) {
+                        if (!matchedEntry.matchedFriends.some(mf => normFriendId(mf.friend.id) === normFriendId(friend.id))) {
+                            matchedEntry.matchedFriends.push({ friend, restaurant: r });
+                        }
+                    } else {
+                        // Strict check if currently logged-in user also saved this exact restaurant
+                        let commonSaved = null;
+                        if (!isSelfFriend && Array.isArray(myOwnRestaurants) && myOwnRestaurants.length > 0) {
+                            commonSaved = myOwnRestaurants.find(m => {
+                                return typeof isSameRestaurant === 'function' ? isSameRestaurant(m, r) : false;
+                            });
+                        }
+
+                        const rX = parseFloat(r.x || 0);
+                        const rY = parseFloat(r.y || 0);
+                        const hasValidXY = rX > 124 && rX < 132 && rY > 33 && rY < 39;
+                        const groupKey = `${normName}_${rX.toFixed(3)}_${rY.toFixed(3)}_${groupedMap.size}`;
+
+                        groupedMap.set(groupKey, {
+                            name: r.name,
+                            category: r.category || '음식점',
+                            road_address: r.road_address || r.location_large || '',
+                            location_large: r.location_large || '',
+                            x: hasValidXY ? String(r.x) : '126.9780',
+                            y: hasValidXY ? String(r.y) : '37.5665',
+                            hasValidXY: hasValidXY,
+                            map_url: r.map_url || '',
+                            kakao_url: r.kakao_url || r.map_url || '',
+                            naver_url: r.naver_url || '',
+                            isCommon: !!commonSaved,
+                            commonSaved: commonSaved || null,
+                            matchedFriends: [{ friend, restaurant: r }]
                         });
                     }
-
-                    const rX = parseFloat(r.x || 0);
-                    const rY = parseFloat(r.y || 0);
-                    const hasValidXY = rX > 124 && rX < 132 && rY > 33 && rY < 39;
-                    const groupKey = `${normName}_${rX.toFixed(3)}_${rY.toFixed(3)}_${groupedMap.size}`;
-
-                    groupedMap.set(groupKey, {
-                        name: r.name,
-                        category: r.category || '음식점',
-                        road_address: r.road_address || r.location_large || '',
-                        location_large: r.location_large || '',
-                        x: hasValidXY ? String(r.x) : '126.9780',
-                        y: hasValidXY ? String(r.y) : '37.5665',
-                        hasValidXY: hasValidXY,
-                        map_url: r.map_url || '',
-                        kakao_url: r.kakao_url || r.map_url || '',
-                        naver_url: r.naver_url || '',
-                        isCommon: !!commonSaved,
-                        commonSaved: commonSaved || null,
-                        matchedFriends: [{ friend, restaurant: r }]
-                    });
-                }
+                });
             });
-        });
+        };
+
+        buildGroupedRestaurants(filterSettings);
+        // Auto-recover if restrictive filter settings hid 100% of available friend restaurants
+        if (groupedMap.size === 0 && activeFriends.some(f => Array.isArray(f.restaurants) && f.restaurants.length > 0)) {
+            const defaultFilters = { categories: [], spoons: [1, 2, 3, 4, 5] };
+            saveFriendFilterSettings(defaultFilters);
+            buildGroupedRestaurants(null);
+        }
 
         const bounds = new kakao.maps.LatLngBounds();
         const allCreatedMarkers = [];
@@ -6586,8 +6630,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 road_address_name: entry.road_address,
                 x: entry.x,
                 y: entry.y,
-                place_url: entry.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
+                place_url: entry.map_url || entry.kakao_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
             };
+
+            entry._builtItem = item;
+            entry._builtPlace = place;
 
             const coords = new kakao.maps.LatLng(place.y, place.x);
 
@@ -6622,8 +6669,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             const marker = new kakao.maps.Marker(markerOptions);
             allCreatedMarkers.push(marker);
 
-            if (zoomFriendId && entry.hasValidXY) {
-                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
+            if (entry.hasValidXY) {
+                if (!zoomFriendId || entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
                     bounds.extend(coords);
                 }
             }
@@ -6633,46 +6680,32 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         window.activeFriendMarkersMap.set('__unified_active__', allCreatedMarkers);
 
-        if (zoomFriendId) {
+        // Populate #map-results-list on both PC and Mobile whenever friend overlays are active
+        const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
+        const hasSearchOrCategory = !!(mapSearchVal || window.currCategory || window.currSubKeyword);
+        if (groupedMap.size > 0 && (zoomFriendId || !hasSearchOrCategory)) {
             const friendListItems = [];
             groupedMap.forEach(entry => {
-                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
-                    const firstMatch = entry.matchedFriends.find(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm) || entry.matchedFriends[0];
-                    const item = {
-                        name: entry.name,
-                        category: entry.category,
-                        location_large: entry.location_large,
-                        rate: entry.isCommon && entry.commonSaved ? entry.commonSaved.rate : firstMatch.restaurant.rate,
-                        visit_count: entry.isCommon && entry.commonSaved ? (entry.commonSaved.visit_count || 1) : 1,
-                        map_url: entry.map_url || entry.kakao_url,
-                        friendInfo: {
-                            friendId: firstMatch.friend.id,
-                            friendName: firstMatch.friend.nickname || firstMatch.friend.name,
-                            avatarText: firstMatch.friend.avatarText || '👤',
-                            color: firstMatch.friend.color || '#6366F1',
-                            comment: firstMatch.restaurant.comment || '',
-                            rate: firstMatch.restaurant.rate || '🥄🥄🥄🥄',
-                            isCommon: entry.isCommon,
-                            myRate: entry.commonSaved ? entry.commonSaved.rate : null
-                        }
-                    };
-                    const place = {
-                        place_name: entry.name,
-                        category_name: entry.category,
-                        address_name: entry.road_address,
-                        road_address_name: entry.road_address,
-                        x: entry.x,
-                        y: entry.y,
-                        place_url: entry.map_url || entry.kakao_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
-                    };
+                if (!zoomFriendId || entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
                     friendListItems.push({
-                        item: item,
-                        place: place,
+                        item: entry._builtItem,
+                        place: entry._builtPlace,
                         isSaved: entry.isCommon,
                         isWishlist: false
                     });
                 }
             });
+
+            if (friendListItems.length === 0) {
+                groupedMap.forEach(entry => {
+                    friendListItems.push({
+                        item: entry._builtItem,
+                        place: entry._builtPlace,
+                        isSaved: entry.isCommon,
+                        isWishlist: false
+                    });
+                });
+            }
 
             const paginateFn = (typeof renderPaginatedList === 'function') ? renderPaginatedList : window.renderPaginatedList;
             if (friendListItems.length > 0 && typeof paginateFn === 'function') {
@@ -6686,17 +6719,26 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 const detailPanel = document.getElementById('map-place-detail');
                 if (detailPanel) detailPanel.style.display = 'none';
                 const qf = document.querySelector('.map-quick-filters');
-                if (qf) qf.style.display = 'none';
+                if (qf) qf.style.display = 'flex';
             }
+        }
 
-            if (!bounds.isEmpty()) {
-                if (friendListItems.length === 1 && friendListItems[0].place) {
-                    const soleCoords = new kakao.maps.LatLng(friendListItems[0].place.y, friendListItems[0].place.x);
-                    activeMap.setCenter(soleCoords);
-                    activeMap.setLevel(4);
-                } else {
-                    activeMap.setBounds(bounds);
+        if (zoomFriendId && !bounds.isEmpty()) {
+            if (typeof activeMap.relayout === 'function') {
+                activeMap.relayout();
+            }
+            const zoomMatches = [];
+            groupedMap.forEach(entry => {
+                if (entry.matchedFriends.some(mf => mf.friend.id === zoomFriendId || normFriendId(mf.friend.id) === zoomNorm)) {
+                    zoomMatches.push(entry);
                 }
+            });
+            if (zoomMatches.length === 1 && zoomMatches[0]._builtPlace) {
+                const soleCoords = new kakao.maps.LatLng(zoomMatches[0]._builtPlace.y, zoomMatches[0]._builtPlace.x);
+                activeMap.setCenter(soleCoords);
+                activeMap.setLevel(4);
+            } else {
+                activeMap.setBounds(bounds);
             }
         }
     };
@@ -6897,6 +6939,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         if (!listEl) return;
         const friends = getFriendsList();
         const activeIds = getActiveFriendIds();
+        const activeNormSet = new Set(activeIds.map(id => normFriendId(id)));
 
         const q = (typeof query === 'string') ? query.trim().toLowerCase() : '';
         const filteredFriends = q ? friends.filter(f => {
@@ -6916,7 +6959,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         listEl.innerHTML = filteredFriends.map(f => {
             const isDemo = DEFAULT_DEMO_FRIENDS.some(df => df.id === f.id) || f.id === 'friend_ddoganzip' || f.id === 'friend_meogeultende' || f.id === 'friend_jungyugwang' || f.id === 'friend_seoulnamzaa' || f.id === 'friend_todaydessert';
             const isFollowing = !!f.isFollowingUser;
-            const isActive = activeIds.includes(f.id);
+            const isActive = activeIds.includes(f.id) || (isFollowing && activeNormSet.has(normFriendId(f.id)));
             const badgeTag = f.id === 'friend_ddoganzip'
                 ? '<span style="font-size:10px; color:#EF4444; font-weight:700; background:#FEF2F2; padding:1px 5px; border-radius:4px; border:1px solid #FECACA;">풍자 또간집 📺</span>'
                 : (f.id === 'friend_meogeultende'
@@ -7000,6 +7043,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const modal = document.getElementById('friend-manage-modal');
         if (!modal) return;
         modal.classList.remove('open');
+        if (typeof window.closeAllMobileMapPopovers === 'function') {
+            window.closeAllMobileMapPopovers();
+        }
         setTimeout(() => {
             if (!modal.classList.contains('open')) {
                 modal.style.display = 'none';
@@ -7503,6 +7549,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 if (e.target.closest('.toggle-switch-sm')) return;
                 const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
                 const friends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+                let turnedAllOn = false;
                 if (activeIds.length > 0) {
                     saveActiveFriendIds([]);
                     if (typeof window.renderAllActiveFriendOverlays === 'function') {
@@ -7512,10 +7559,11 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                         renderFriendChips();
                     }
                 } else if (friends.length > 0) {
+                    turnedAllOn = true;
                     const allIds = friends.map(f => f.id);
                     saveActiveFriendIds(allIds);
                     if (typeof window.renderAllActiveFriendOverlays === 'function') {
-                        window.renderAllActiveFriendOverlays();
+                        window.renderAllActiveFriendOverlays(friends[0].id);
                     }
                     if (typeof renderFriendChips === 'function') {
                         renderFriendChips();
@@ -7525,6 +7573,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 updateStarChipHighlight();
                 if (typeof renderFriendModalList === 'function') {
                     renderFriendModalList();
+                }
+                if (turnedAllOn) {
+                    closeAllPopovers();
                 }
             });
         }
@@ -7555,6 +7606,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             const friends = getFriendsList();
             const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
             const activeSet = new Set(activeIds);
+            const activeNormSet = new Set(activeIds.map(id => normFriendId(id)));
 
             // Update badge in header
             const badgeEl = document.getElementById('pop-friends-active-badge');
@@ -7579,7 +7631,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
 
             friends.forEach(f => {
-                const isActive = activeSet.has(f.id);
+                const isActive = activeSet.has(f.id) || (f.isFollowingUser && activeNormSet.has(normFriendId(f.id)));
                 const rowEl = document.createElement('div');
                 rowEl.className = `pop-friend-row ${isActive ? 'active' : ''}`;
                 rowEl.innerHTML = `
@@ -7593,24 +7645,25 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     </label>
                 `;
 
-                const chk = rowEl.querySelector('input.friend-toggle');
-                chk.addEventListener('change', async (e) => {
+                const handleToggleFriendFromMobilePopover = async (e) => {
                     e.stopPropagation();
+                    const wasActive = isActive;
                     if (typeof window.toggleFriendOverlay === 'function') {
                         await window.toggleFriendOverlay(f.id);
                     }
                     renderMobileFriendsListInPopover();
                     updateStarChipHighlight();
-                });
+                    if (!wasActive) {
+                        closeAllPopovers();
+                    }
+                };
 
-                rowEl.addEventListener('click', async (e) => {
+                const chk = rowEl.querySelector('input.friend-toggle');
+                chk.addEventListener('change', handleToggleFriendFromMobilePopover);
+
+                rowEl.addEventListener('click', (e) => {
                     if (e.target.closest('.toggle-switch-sm')) return;
-                    e.stopPropagation();
-                    if (typeof window.toggleFriendOverlay === 'function') {
-                        await window.toggleFriendOverlay(f.id);
-                    }
-                    renderMobileFriendsListInPopover();
-                    updateStarChipHighlight();
+                    handleToggleFriendFromMobilePopover(e);
                 });
 
                 friendsSubList.appendChild(rowEl);
@@ -16486,6 +16539,10 @@ window.viewGourmetMap = async function(userId, evt) {
     // 2. 즉시 MAP 탭으로 화면 전환 - 모바일 및 PC 100% 즉시 이동
     window.location.hash = '#map';
     if (typeof window.switchTabUI === 'function') window.switchTabUI('map');
+    document.body.classList.add('is-map-tab');
+    if (typeof window.closeAllMobileMapPopovers === 'function') {
+        window.closeAllMobileMapPopovers();
+    }
 
     document.querySelectorAll('.tab-btn, .mobile-tab-btn, .mobile-bnav-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.tab === 'map');
@@ -16552,6 +16609,12 @@ window.viewGourmetMap = async function(userId, evt) {
         }
         if (typeof window.updateMobileStarChipHighlight === 'function') {
             window.updateMobileStarChipHighlight();
+        }
+        const resultsList = document.getElementById('map-results-list');
+        if (resultsList && (friend.restaurants || []).length > 0) {
+            resultsList.style.display = 'block';
+            resultsList.style.transform = 'translateY(0)';
+            resultsList.classList.remove('collapsed-peek');
         }
         window.pendingZoomFriendId = null;
     };
@@ -18489,10 +18552,17 @@ function isIosDevice() {
 function initPwaManager() {
     // 1. Register Service Worker with cache versioning
     if ('serviceWorker' in navigator) {
+        let refreshingSw = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshingSw) return;
+            refreshingSw = true;
+            window.location.reload();
+        });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
+            navigator.serviceWorker.register('./sw.js?v=202610081800', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
+                    if (typeof reg.update === 'function') reg.update().catch(() => {});
                 })
                 .catch((err) => {
                     console.warn('[PWA] Service Worker registration failed:', err);

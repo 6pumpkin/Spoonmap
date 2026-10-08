@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spoonmap-v7';
+const CACHE_NAME = 'spoonmap-v8';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -48,9 +48,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Network-first strategy for app files: guarantees latest updates, with offline fallback
+    // Network-first strategy for app files: bypass HTTP disk cache on mobile to guarantee latest updates, with offline fallback
     event.respondWith(
-        fetch(event.request)
+        fetch(event.request, { cache: 'no-cache' })
             .then((networkResponse) => {
                 if (networkResponse && networkResponse.status === 200) {
                     const responseClone = networkResponse.clone();
