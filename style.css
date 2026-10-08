@@ -5410,6 +5410,7 @@ input[type="date"].drawer-input {
     border-radius: 10px;
     padding: 3px;
     gap: 3px;
+    margin-left: auto;
 }
 
 .view-mode-btn {
@@ -5436,30 +5437,7 @@ input[type="date"].drawer-input {
 }
 
 .list-filter-reset-btn {
-    background: none;
-    border: none;
-    font-size: 1.05rem;
-    color: #64748B;
-    cursor: pointer;
-    padding: 3px 6px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    margin-left: auto;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-.list-filter-reset-btn:hover {
-    background: #F1F5F9;
-    color: var(--coral-main);
-    transform: rotate(-45deg);
-}
-
-.list-filter-reset-btn:active {
-    transform: scale(0.92) rotate(-90deg);
+    display: none;
 }
 
 /* 3. Notion Database Standard Table / Compact Row View (.compact-view) */
@@ -9467,6 +9445,36 @@ span.desktop-only {
         margin: 8px 0 4px 0 !important;
         padding: 4px 14px !important;
         border-bottom: none !important;
+    }
+
+    .list-filter-reset-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        border: 1.5px solid #FFC4BC !important;
+        background: #FFEBE8 !important;
+        color: #E65100 !important;
+        font-size: 1rem !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        padding: 0 !important;
+        margin-left: auto !important;
+        flex-shrink: 0 !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(230, 81, 0, 0.12) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .list-filter-reset-btn:hover,
+    .list-filter-reset-btn:active {
+        background: #FFD8D2 !important;
+        border-color: var(--coral-main, #FF4757) !important;
+        color: #D84315 !important;
+        box-shadow: 0 4px 12px rgba(230, 81, 0, 0.22) !important;
+        transform: scale(0.94) rotate(-45deg) !important;
     }
 
     .result-count-info {

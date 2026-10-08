@@ -2605,6 +2605,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     researchBtn.addEventListener('click', () => {
                         researchBtn.style.display = 'none';
                         updateMapMarkers();
+                        if (typeof window.syncActiveOverlayResultsList === 'function') {
+                            window.syncActiveOverlayResultsList();
+                        }
                     });
                 }
 
@@ -2653,8 +2656,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Map drag: show "현 위치에서 재검색" button instead of auto re-searching
+                // Map drag: show "현 위치에서 재검색" button and re-prioritize overlay results list for new viewport
                 kakao.maps.event.addListener(map, 'dragend', () => {
+                    if (typeof window.syncActiveOverlayResultsList === 'function') {
+                        const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
+                        if (window.isMyRestaurantsActive || activeIds.length > 0) {
+                            window.syncActiveOverlayResultsList();
+                        }
+                    }
                     if (window.isGlobalSearchActive) return;
                     if (researchBtn) {
                         researchBtn.style.display = 'inline-flex';
@@ -4418,7 +4427,28 @@ document.addEventListener('DOMContentLoaded', () => {
     window.activeMyRestaurantListItems = [];
     window.activeFriendOverlayListItems = [];
 
-    window.syncActiveOverlayResultsList = function() {
+    window.clearActiveMapPlaceSelection = function() {
+        if (window.currentHoverOverlay) {
+            window.currentHoverOverlay.setMap(null);
+            window.currentHoverOverlay = null;
+        }
+        if (window.currentMapOverlay) {
+            window.currentMapOverlay.setMap(null);
+            window.currentMapOverlay = null;
+        }
+        window.currentSelectedPlaceData = null;
+        const detailPanel = document.getElementById('map-place-detail');
+        if (detailPanel) {
+            detailPanel.style.display = 'none';
+            detailPanel.style.transform = '';
+            detailPanel.classList.remove('collapsed-peek');
+        }
+        document.querySelectorAll('#map-results-list .map-result-item.selected').forEach(el => {
+            el.classList.remove('selected');
+        });
+    };
+
+    window.syncActiveOverlayResultsList = function(preserveScroll = false) {
         const mapSearchVal = (document.getElementById('map-search-input')?.value || '').trim();
         const switchWishlistEl = document.getElementById('switch-wishlist-toggle');
         const isWishlistActive = !!(switchWishlistEl && switchWishlistEl.checked);
@@ -4443,19 +4473,65 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Prioritize restaurants inside the current map viewport and closest to the current map center
+        const activeMap = map || window.map;
+        if (combined.length > 1 && activeMap && typeof activeMap.getCenter === 'function') {
+            try {
+                const center = activeMap.getCenter();
+                const cLat = center.getLat();
+                const cLng = center.getLng();
+                const bounds = (typeof activeMap.getBounds === 'function') ? activeMap.getBounds() : null;
+
+                const getSortMeta = (entry) => {
+                    const p = entry?.place || {};
+                    const lat = parseFloat(p.y || entry?.item?.y || 0);
+                    const lng = parseFloat(p.x || entry?.item?.x || 0);
+                    const hasCoord = (p._hasValidXY !== undefined)
+                        ? !!p._hasValidXY
+                        : (lat > 33 && lat < 39 && lng > 124 && lng < 132 && !(Math.abs(lng - 126.9780) < 0.0005 && Math.abs(lat - 37.5665) < 0.0005));
+                    if (!hasCoord) {
+                        return { inBounds: false, hasCoord: false, distSq: Infinity };
+                    }
+                    const distSq = (lat - cLat) * (lat - cLat) + (lng - cLng) * (lng - cLng);
+                    let inBounds = false;
+                    if (bounds && typeof kakao !== 'undefined' && kakao.maps && kakao.maps.LatLng) {
+                        try {
+                            inBounds = bounds.contain(new kakao.maps.LatLng(lat, lng));
+                        } catch (_) {}
+                    }
+                    return { inBounds, hasCoord: true, distSq };
+                };
+
+                combined.sort((a, b) => {
+                    const ma = getSortMeta(a);
+                    const mb = getSortMeta(b);
+                    if (ma.inBounds !== mb.inBounds) return ma.inBounds ? -1 : 1;
+                    if (ma.hasCoord !== mb.hasCoord) return ma.hasCoord ? -1 : 1;
+                    return ma.distSq - mb.distSq;
+                });
+            } catch (_) {}
+        }
+
         const resultsList = document.getElementById('map-results-list');
         const detailPanel = document.getElementById('map-place-detail');
         const paginateFn = (typeof renderPaginatedList === 'function') ? renderPaginatedList : window.renderPaginatedList;
 
         if (combined.length > 0 && typeof paginateFn === 'function') {
+            const prevScroll = (preserveScroll && resultsList) ? resultsList.scrollTop : 0;
             paginateFn(combined, 1);
             if (resultsList) {
                 resultsList.style.display = 'block';
                 resultsList.style.transform = 'translateY(0)';
                 resultsList.classList.remove('collapsed-peek');
+                if (preserveScroll && prevScroll > 0) {
+                    resultsList.scrollTop = prevScroll;
+                }
             }
-            if (detailPanel) detailPanel.style.display = 'none';
+            if (detailPanel && !preserveScroll) detailPanel.style.display = 'none';
         } else {
+            if (typeof window.clearActiveMapPlaceSelection === 'function') {
+                window.clearActiveMapPlaceSelection();
+            }
             if (resultsList) {
                 resultsList.style.display = 'none';
                 resultsList.innerHTML = '';
@@ -4503,6 +4579,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const quickFilters = document.querySelector('.map-quick-filters');
         if (quickFilters) quickFilters.style.removeProperty('display');
 
+        if (typeof window.clearActiveMapPlaceSelection === 'function') {
+            window.clearActiveMapPlaceSelection();
+        }
         const detailPanel = document.getElementById('map-place-detail');
         if (detailPanel) detailPanel.style.display = 'none';
         const resultsList = document.getElementById('map-results-list');
@@ -4513,10 +4592,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         markers.forEach(m => m.setMap(null));
         markers = [];
-        if (window.currentMapOverlay) {
-            window.currentMapOverlay.setMap(null);
-            window.currentMapOverlay = null;
-        }
         const activeFriendIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
         if (activeFriendIds.length > 0 && typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
@@ -4766,7 +4841,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.isMyRestaurantsActive = false;
     window.activeMyRestaurantMarkers = [];
 
-    function renderMyRestaurantsOverlay() {
+    function renderMyRestaurantsOverlay(preserveScroll = false) {
         let activeMap = map || window.map;
         if (!activeMap && typeof initMap === 'function') {
             initMap();
@@ -4789,6 +4864,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!activeMap) return;
 
+        window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
+        window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
+
         const allData = (typeof getUnifiedRestaurantData === 'function') ? getUnifiedRestaurantData() : [];
         const myPlaces = allData.filter(r => (r.visit_count && r.visit_count > 0) || (r.rate && r.rate.length > 0) || !r.isWishlist);
 
@@ -4801,12 +4879,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const cacheKey = `${(item.name || '').trim().toLowerCase()}|${(item.location_large || item.road_address || '').trim().toLowerCase()}`;
+            if (window._resolvedCoordsCache.has(cacheKey)) {
+                const cached = window._resolvedCoordsCache.get(cacheKey);
+                item.x = cached.x;
+                item.y = cached.y;
+                if (cached.road_address && !item.road_address) item.road_address = cached.road_address;
+            }
+
             const x = parseFloat(item.x || 0);
             const y = parseFloat(item.y || 0);
             const hasValidXY = x > 124 && x < 132 && y > 33 && y < 39 &&
                 !(Math.abs(x - 126.9780) < 0.0005 && Math.abs(y - 37.5665) < 0.0005);
 
-            if (!hasValidXY && !item._resolvingNow && unresolvedMyItems.length < 60 && typeof resolveRestaurantCoordinates === 'function') {
+            if (!hasValidXY && !window._coordAttemptedKeys.has(cacheKey) && !item._resolvingNow && unresolvedMyItems.length < 60 && typeof resolveRestaurantCoordinates === 'function') {
                 unresolvedMyItems.push(item);
             }
 
@@ -4817,6 +4903,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 road_address_name: item.road_address || '',
                 x: hasValidXY ? String(x) : '126.9780',
                 y: hasValidXY ? String(y) : '37.5665',
+                _hasValidXY: hasValidXY,
                 place_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`
             };
 
@@ -4851,15 +4938,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.activeMyRestaurantListItems = myListItems;
         if (typeof window.syncActiveOverlayResultsList === 'function') {
-            window.syncActiveOverlayResultsList();
+            window.syncActiveOverlayResultsList(preserveScroll);
         }
 
         if (unresolvedMyItems.length > 0 && typeof resolveRestaurantCoordinates === 'function') {
             unresolvedMyItems.forEach(r => { r._resolvingNow = true; });
             Promise.all(unresolvedMyItems.map(r => resolveRestaurantCoordinates(r))).then(() => {
-                unresolvedMyItems.forEach(r => { r._resolvingNow = false; });
-                if (window.isMyRestaurantsActive) {
-                    renderMyRestaurantsOverlay();
+                let anyNewlyResolved = false;
+                unresolvedMyItems.forEach(r => {
+                    r._resolvingNow = false;
+                    const rx = parseFloat(r.x || 0);
+                    const ry = parseFloat(r.y || 0);
+                    if (rx > 124 && rx < 132 && ry > 33 && ry < 39 && !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005)) {
+                        anyNewlyResolved = true;
+                    }
+                });
+                if (anyNewlyResolved && window.isMyRestaurantsActive) {
+                    renderMyRestaurantsOverlay(true);
                 }
             });
         }
@@ -4884,6 +4979,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function hideMyVisitedPlacesOnMap() {
         window.isMyRestaurantsActive = false;
+        if (typeof window.clearActiveMapPlaceSelection === 'function') {
+            window.clearActiveMapPlaceSelection();
+        }
         renderMyRestaurantsOverlay();
 
         const btnShowMy = document.getElementById('btn-show-my-restaurants');
@@ -5864,14 +5962,30 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
     async function resolveRestaurantCoordinates(rest) {
         if (!rest) return rest;
+        window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
+        window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
+        const cacheKey = `${(rest.name || '').trim().toLowerCase()}|${(rest.location_large || rest.road_address || '').trim().toLowerCase()}`;
+
+        if (window._resolvedCoordsCache.has(cacheKey)) {
+            const cached = window._resolvedCoordsCache.get(cacheKey);
+            rest.x = cached.x;
+            rest.y = cached.y;
+            if (cached.road_address && !rest.road_address) rest.road_address = cached.road_address;
+            rest._resolvedActual = true;
+            return rest;
+        }
+
         const existX = parseFloat(rest.x || 0);
         const existY = parseFloat(rest.y || 0);
         if (existX > 124 && existX < 132 && existY > 33 && existY < 39 &&
             !(Math.abs(existX - 126.9780) < 0.0005 && Math.abs(existY - 37.5665) < 0.0005)) {
             rest._resolvedActual = true;
+            window._resolvedCoordsCache.set(cacheKey, { x: String(existX), y: String(existY), road_address: rest.road_address || '' });
             return rest;
         }
         if (rest._resolvedActual && existX > 124 && existY > 33) return rest;
+        if (window._coordAttemptedKeys.has(cacheKey)) return rest;
+        window._coordAttemptedKeys.add(cacheKey);
 
         const urlStr = rest.map_url || rest.kakao_url || rest.place_url || '';
         const placeId = (typeof extractKakaoPlaceId === 'function') 
@@ -5886,11 +6000,13 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 rest.y = String(v1);
                 rest.x = String(v2);
                 rest._resolvedActual = true;
+                window._resolvedCoordsCache.set(cacheKey, { x: rest.x, y: rest.y, road_address: rest.road_address || '' });
                 return rest;
             } else if (v2 >= 33 && v2 <= 39 && v1 >= 124 && v1 <= 132) {
                 rest.x = String(v1);
                 rest.y = String(v2);
                 rest._resolvedActual = true;
+                window._resolvedCoordsCache.set(cacheKey, { x: rest.x, y: rest.y, road_address: rest.road_address || '' });
                 return rest;
             }
         }
@@ -5943,6 +6059,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                             if (matched.road_address_name) rest.road_address = matched.road_address_name;
                             if (matched.address_name && !rest.address) rest.address = matched.address_name;
                             rest._resolvedActual = true;
+                            window._resolvedCoordsCache.set(cacheKey, { x: rest.x, y: rest.y, road_address: rest.road_address || '' });
                         }
                         clearTimeout(timer);
                         done();
@@ -5962,6 +6079,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                                         rest.y = String(fMatched.y);
                                         if (fMatched.road_address_name) rest.road_address = fMatched.road_address_name;
                                         rest._resolvedActual = true;
+                                        window._resolvedCoordsCache.set(cacheKey, { x: rest.x, y: rest.y, road_address: rest.road_address || '' });
                                     }
                                 }
                                 clearTimeout(timer);
@@ -6411,6 +6529,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             // Deactivate
             activeIds = activeIds.filter((id, i) => i !== existingIdx && !(friend.isFollowingUser && normFriendId(id) === targetNorm));
             saveActiveFriendIds(activeIds);
+            if (typeof window.clearActiveMapPlaceSelection === 'function') {
+                window.clearActiveMapPlaceSelection();
+            }
             showDiaryToast(`👥 [${friend.nickname || friend.name}] 맛집 마커 숨김`);
         } else {
             // If this is a following user, ensure restaurants and their coordinates are loaded
@@ -6515,7 +6636,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         return true;
     }
 
-    window.renderAllActiveFriendOverlays = function(zoomFriendId = null) {
+    window.renderAllActiveFriendOverlays = function(zoomFriendId = null, preserveScroll = false) {
         let activeMap = map || window.map;
         if (!activeMap && typeof initMap === 'function') {
             initMap();
@@ -6536,7 +6657,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
         const syncListIfNeeded = () => {
             if (typeof window.syncActiveOverlayResultsList === 'function') {
-                window.syncActiveOverlayResultsList();
+                window.syncActiveOverlayResultsList(preserveScroll);
             }
         };
 
@@ -6553,6 +6674,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             syncListIfNeeded();
             return;
         }
+
+        window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
+        window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
 
         const unresolvedItems = [];
         activeFriends.forEach(f => {
@@ -6575,11 +6699,19 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
             if (Array.isArray(f.restaurants) && f.restaurants.length <= 60) {
                 f.restaurants.forEach(r => {
+                    if (!r) return;
+                    const cacheKey = `${(r.name || '').trim().toLowerCase()}|${(r.location_large || r.road_address || '').trim().toLowerCase()}`;
+                    if (window._resolvedCoordsCache.has(cacheKey)) {
+                        const cached = window._resolvedCoordsCache.get(cacheKey);
+                        r.x = cached.x;
+                        r.y = cached.y;
+                        if (cached.road_address && !r.road_address) r.road_address = cached.road_address;
+                    }
                     const rx = parseFloat(r?.x || 0);
                     const ry = parseFloat(r?.y || 0);
                     const valid = rx > 124 && rx < 132 && ry > 33 && ry < 39 &&
                         !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005);
-                    if (!valid && r && !r._resolvingNow) {
+                    if (!valid && !window._coordAttemptedKeys.has(cacheKey) && !r._resolvingNow) {
                         unresolvedItems.push(r);
                     }
                 });
@@ -6589,8 +6721,18 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         if (unresolvedItems.length > 0) {
             unresolvedItems.forEach(r => { r._resolvingNow = true; });
             Promise.all(unresolvedItems.map(r => resolveRestaurantCoordinates(r))).then(() => {
-                unresolvedItems.forEach(r => { r._resolvingNow = false; });
-                window.renderAllActiveFriendOverlays(zoomFriendId);
+                let anyNewlyResolved = false;
+                unresolvedItems.forEach(r => {
+                    r._resolvingNow = false;
+                    const rx = parseFloat(r?.x || 0);
+                    const ry = parseFloat(r?.y || 0);
+                    if (rx > 124 && rx < 132 && ry > 33 && ry < 39 && !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005)) {
+                        anyNewlyResolved = true;
+                    }
+                });
+                if (anyNewlyResolved && getActiveFriendIds().length > 0) {
+                    window.renderAllActiveFriendOverlays(zoomFriendId, true);
+                }
             });
         }
 
@@ -6640,7 +6782,8 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
 
                         const rX = parseFloat(r.x || 0);
                         const rY = parseFloat(r.y || 0);
-                        const hasValidXY = rX > 124 && rX < 132 && rY > 33 && rY < 39;
+                        const hasValidXY = rX > 124 && rX < 132 && rY > 33 && rY < 39 &&
+                            !(Math.abs(rX - 126.9780) < 0.0005 && Math.abs(rY - 37.5665) < 0.0005);
                         const groupKey = `${normName}_${rX.toFixed(3)}_${rY.toFixed(3)}_${groupedMap.size}`;
 
                         groupedMap.set(groupKey, {
@@ -6722,6 +6865,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 road_address_name: entry.road_address,
                 x: entry.x,
                 y: entry.y,
+                _hasValidXY: entry.hasValidXY,
                 place_url: entry.map_url || entry.kakao_url || `https://map.kakao.com/link/search/${encodeURIComponent(entry.name)}`
             };
 
@@ -6965,6 +7109,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             saveActiveFriendIds(allIds);
         } else {
             saveActiveFriendIds([]);
+            if (typeof window.clearActiveMapPlaceSelection === 'function') {
+                window.clearActiveMapPlaceSelection();
+            }
         }
         if (typeof window.renderAllActiveFriendOverlays === 'function') {
             window.renderAllActiveFriendOverlays();
@@ -7632,6 +7779,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 let turnedAllOn = false;
                 if (activeIds.length > 0) {
                     saveActiveFriendIds([]);
+                    if (typeof window.clearActiveMapPlaceSelection === 'function') {
+                        window.clearActiveMapPlaceSelection();
+                    }
                     if (typeof window.renderAllActiveFriendOverlays === 'function') {
                         window.renderAllActiveFriendOverlays();
                     }
@@ -18710,7 +18860,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610082230', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610082315', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
