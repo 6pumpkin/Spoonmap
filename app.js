@@ -6212,7 +6212,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             }
         }
 
-        // 2. Mock Gourmet Check
+        // 2. Mock Gourmet & Built-in Friend Check
         const mockList = (typeof window !== 'undefined' && window.MASTER_MOCK_GOURMETS) 
             ? window.MASTER_MOCK_GOURMETS 
             : ((typeof MASTER_MOCK_GOURMETS !== 'undefined') ? MASTER_MOCK_GOURMETS : []);
@@ -6221,6 +6221,13 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             await ensureListCoordinates(mockG.restaurants);
             candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, mockG.restaurants));
             return mockG.restaurants;
+        }
+        const builtInFriends = (typeof getFriendsList === 'function') ? getFriendsList() : [];
+        const matchedFriend = builtInFriends.find(f => !f.isFollowingUser && (String(f.id) === cleanId || String(f.id) === rawId));
+        if (matchedFriend && Array.isArray(matchedFriend.restaurants) && matchedFriend.restaurants.length > 0) {
+            await ensureListCoordinates(matchedFriend.restaurants);
+            candidateKeys.forEach(k => window.followingRestaurantsCache.set(k, matchedFriend.restaurants));
+            return matchedFriend.restaurants;
         }
 
         let list = [];
@@ -6697,7 +6704,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 if (c === '패스트푸드') return cat.includes('패스트푸드') || cat.includes('버거');
                 if (c === '아시안') return cat.includes('아시안') || cat.includes('아시아') || cat.includes('베트남') || cat.includes('태국');
                 if (c === '샐러드') return cat.includes('샐러드') || cat.includes('포케');
-                if (c === '기타') return cat.includes('기타') || !cat;
+                if (c === '기타') return cat.includes('기타') || cat.includes('뷔페') || !cat;
                 return cat.includes(c);
             });
             if (!match) return false;
@@ -19096,7 +19103,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610090120', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610091455', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
