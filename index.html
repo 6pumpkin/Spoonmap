@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610090120">
+    <link rel="stylesheet" href="style.css?v=202610091605">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -560,9 +560,14 @@
                     <div class="sommelier-chips-wrapper">
                         <div class="chips-header desktop-only">
                             <span class="chips-label">💡 추천 질문 샘플:</span>
-                            <button id="btn-toggle-chips" class="chips-more-btn" onclick="toggleChipsExpand()">
-                                <span id="chips-toggle-text">+ 질문 더보기</span> <span id="chips-toggle-icon">▾</span>
-                            </button>
+                            <div class="chips-header-actions">
+                                <button type="button" class="chips-reset-btn" onclick="resetSommelierChat()" title="대화 초기화">
+                                    <span>↺ 대화 초기화</span>
+                                </button>
+                                <button id="btn-toggle-chips" class="chips-more-btn" onclick="toggleChipsExpand()">
+                                    <span id="chips-toggle-text">+ 질문 더보기</span> <span id="chips-toggle-icon">▾</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="chips-list">
                             <!-- 기본 4개 칩 -->
@@ -1656,7 +1661,7 @@
     <script src="jungyugwang_data.js?v=202610050035"></script>
     <script src="seoulnamzaa_data.js?v=202610091455"></script>
     <script src="todaydessert_data.js?v=202610060240"></script>
-    <script src="app.js?v=202610091455"></script>
+    <script src="app.js?v=202610091605"></script>
 </body>
 
 </html>

@@ -3603,6 +3603,32 @@ main {
     display: inline-block;
 }
 
+.chips-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chips-reset-btn {
+    background: #F1F5F9;
+    border: 1px solid #CBD5E1;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+}
+
+.chips-reset-btn:hover {
+    background: #E2E8F0;
+    color: #1E293B;
+}
+
 .chips-more-btn {
     background: #FFF0F2;
     border: 1px solid var(--border-hover);
@@ -3877,6 +3903,36 @@ main {
     padding: 3px 8px;
     border-radius: 8px;
     border: 1px solid #FDE68A;
+}
+
+.sommelier-followup-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(226, 232, 240, 0.9);
+}
+
+.sommelier-followup-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FFF1F2;
+    color: var(--coral-main, #FF4757);
+    border: 1px solid rgba(255, 71, 87, 0.25);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 0.79rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.sommelier-followup-chip:hover {
+    background: var(--coral-main, #FF4757);
+    color: #FFFFFF;
+    transform: translateY(-1px);
 }
 
 .chat-input-bar {
@@ -12480,6 +12536,49 @@ span.desktop-only {
         justify-content: center !important;
         text-align: center !important;
         white-space: nowrap !important;
+    }
+
+    .sommelier-tips-box {
+        padding: 9px 11px !important;
+        margin-top: 8px !important;
+        border-radius: 10px !important;
+    }
+
+    .sommelier-tips-box .tips-title {
+        font-size: 11.5px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .sommelier-tips-box .tips-list {
+        font-size: 11px !important;
+        line-height: 1.45 !important;
+        gap: 3px !important;
+    }
+
+    .sommelier-visit-badge {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+        border-radius: 6px !important;
+    }
+
+    .sommelier-followup-bar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        margin-top: 8px !important;
+        padding-top: 7px !important;
+    }
+
+    .sommelier-followup-chip {
+        font-size: 10.5px !important;
+        padding: 4px 9px !important;
+        border-radius: 12px !important;
+    }
+
+    .sommelier-followup-chip:active {
+        background: var(--coral-main, #FF4757) !important;
+        color: #FFFFFF !important;
+        transform: scale(0.96) !important;
     }
 
     /* Guide prompts message styles */
