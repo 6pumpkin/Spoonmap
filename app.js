@@ -1638,6 +1638,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardSel: '#insight-modal .insight-modal-card',
                 overlaySel: '#insight-modal',
                 closeFn: () => (typeof window.closeInsightModal === 'function' ? window.closeInsightModal() : null)
+            },
+            {
+                handleSel: '#import-places-modal .bottom-sheet-handle',
+                cardSel: '#import-places-modal .import-modal-card',
+                overlaySel: '#import-places-modal',
+                closeFn: () => (typeof window.closeImportPlacesModal === 'function' ? window.closeImportPlacesModal() : null)
             }
         ];
 
@@ -9970,7 +9976,10 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     <div class="empty-icon">🥄</div>
                     <h4>아직 등록된 나만의 맛집이 없습니다</h4>
                     <p>지도(MAP)에서 마음에 드는 식당을 <b>[내 맛집에 추가]</b>하거나 <b>[찜하기]</b>로 나만의 맛집 리스트를 만들어보세요!</p>
-                    <button class="empty-reset-btn" onclick="window.location.hash='#map'">지도에서 맛집 찾기 📍</button>
+                    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;">
+                        <button class="empty-reset-btn" onclick="openImportPlacesModal()" style="background:#FFF5F4; color:#D9381E; border:1.5px solid #FFC4BC;">📥 맛집 가져오기</button>
+                        <button class="empty-reset-btn" onclick="window.location.hash='#map'">지도에서 맛집 찾기 📍</button>
+                    </div>
                 </div>
             `;
         } else if (filtered.length === 0) {
@@ -19596,7 +19605,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610091605', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610212330', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -19721,3 +19730,758 @@ window.closeIosInstallModal = function() {
 
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════════════
+// ─── [맛집 가져오기] 네이버/카카오 지도 URL 임포트 & 스푼맵 표준 정규화 엔진 ───
+// ═══════════════════════════════════════════════════════════════════════════════════
+
+window.importedPlacesQueue = [];
+let isImportParsingInProgress = false;
+
+// 1. 모달 제어 (열기 / 닫기 / 리셋)
+function openImportPlacesModal() {
+    const modal = document.getElementById('import-places-modal');
+    if (!modal) return;
+
+    // 모바일 팝오버 및 배경 닫기
+    if (typeof window.closeAllMobileMapPopovers === 'function') {
+        window.closeAllMobileMapPopovers();
+    }
+
+    // 초기 상태 리셋
+    window.importedPlacesQueue = [];
+    isImportParsingInProgress = false;
+
+    const inputGroup = document.getElementById('import-input-group');
+    const loadingState = document.getElementById('import-loading-state');
+    const previewSection = document.getElementById('import-preview-section');
+    const parseBtn = document.getElementById('btn-import-parse');
+    const saveBtn = document.getElementById('btn-import-save');
+    const textarea = document.getElementById('import-url-input');
+
+    if (inputGroup) inputGroup.style.display = 'flex';
+    if (loadingState) loadingState.style.display = 'none';
+    if (previewSection) previewSection.style.display = 'none';
+    if (parseBtn) {
+        parseBtn.style.display = 'inline-flex';
+        parseBtn.disabled = false;
+    }
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (textarea) {
+        textarea.value = '';
+        setTimeout(() => textarea.focus(), 150);
+    }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+window.openImportPlacesModal = openImportPlacesModal;
+
+function closeImportPlacesModal(immediate = false) {
+    const modal = document.getElementById('import-places-modal');
+    if (!modal) return;
+
+    const isMobile = window.innerWidth <= 768;
+    const card = modal.querySelector('.import-modal-card');
+
+    if (isMobile && card && !immediate) {
+        card.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+        card.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            card.style.transform = '';
+            card.style.transition = '';
+            document.body.style.overflow = '';
+        }, 250);
+    } else {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+window.closeImportPlacesModal = closeImportPlacesModal;
+
+function clearImportUrlInput() {
+    const textarea = document.getElementById('import-url-input');
+    if (textarea) {
+        textarea.value = '';
+        textarea.focus();
+    }
+}
+window.clearImportUrlInput = clearImportUrlInput;
+
+function resetImportToInputState() {
+    const inputGroup = document.getElementById('import-input-group');
+    const loadingState = document.getElementById('import-loading-state');
+    const previewSection = document.getElementById('import-preview-section');
+    const parseBtn = document.getElementById('btn-import-parse');
+    const saveBtn = document.getElementById('btn-import-save');
+    const textarea = document.getElementById('import-url-input');
+
+    if (inputGroup) inputGroup.style.display = 'flex';
+    if (loadingState) loadingState.style.display = 'none';
+    if (previewSection) previewSection.style.display = 'none';
+    if (parseBtn) {
+        parseBtn.style.display = 'inline-flex';
+        parseBtn.disabled = false;
+    }
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (textarea) textarea.focus();
+}
+window.resetImportToInputState = resetImportToInputState;
+
+// 2. 텍스트 내 네이버/카카오 지도 URL 추출기
+function extractMapUrls(rawText) {
+    if (!rawText || typeof rawText !== 'string') return [];
+    
+    // 카카오맵 및 네이버 지도 관련 정규식 패턴
+    const urlPattern = /(?:https?:\/\/|kakaomap:\/\/|nmap:\/\/)[^\s\)\],<>"'\\]+/gi;
+    const matches = rawText.match(urlPattern) || [];
+
+    const validUrls = [];
+    const seen = new Set();
+
+    matches.forEach(rawUrl => {
+        let clean = rawUrl.trim().replace(/[.,;:]+$/, '');
+        if (!clean) return;
+
+        const isKakao = clean.includes('kakao.com') || clean.includes('kakaomap.page.link') || clean.startsWith('kakaomap://');
+        const isNaver = clean.includes('naver.me') || clean.includes('map.naver.com') || clean.includes('place.naver.com') || clean.startsWith('nmap://');
+
+        if ((isKakao || isNaver) && !seen.has(clean)) {
+            seen.add(clean);
+            validUrls.push(clean);
+        }
+    });
+
+    return validUrls;
+}
+window.extractMapUrls = extractMapUrls;
+
+// 3. CORS 프록시 다중 Fallback 요청기
+async function fetchHtmlViaCorsProxy(targetUrl) {
+    const proxies = [
+        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+        (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+    ];
+
+    for (const makeProxyUrl of proxies) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            const proxyUrl = makeProxyUrl(targetUrl);
+            const res = await fetch(proxyUrl, {
+                signal: controller.signal,
+                headers: { 'Accept': 'text/html,application/xhtml+xml,application/json' }
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const text = await res.text();
+                if (text && text.length > 50) {
+                    return text;
+                }
+            }
+        } catch (_) {
+            // 다음 프록시로 계속 시도
+        }
+    }
+    return null;
+}
+
+// 4. 단일 URL 분석 및 메타데이터 추출기
+async function parseSingleMapUrl(url) {
+    const result = {
+        name: '',
+        addressHint: '',
+        categoryRaw: '',
+        kakaoId: null,
+        naverId: null,
+        menuRaw: [],
+        originalUrl: url,
+        items: []
+    };
+
+    const isKakao = url.includes('kakao.com') || url.includes('kakaomap.page.link') || url.startsWith('kakaomap://');
+    const isNaver = url.includes('naver.me') || url.includes('map.naver.com') || url.includes('place.naver.com') || url.startsWith('nmap://');
+
+    // ── A. 카카오맵 분석 ──
+    if (isKakao) {
+        // Place ID 직접 추출
+        const placeId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(url) : null;
+        if (placeId) result.kakaoId = placeId;
+
+        // URL 내 이름 매칭 시도 (예: /link/map/식당명,12345)
+        const nameMatch = url.match(/\/link\/(?:map|to)\/([^,\/?#]+)/i);
+        if (nameMatch && nameMatch[1] && !/^\d+$/.test(nameMatch[1])) {
+            try {
+                result.name = decodeURIComponent(nameMatch[1]).trim();
+            } catch (_) {
+                result.name = nameMatch[1].trim();
+            }
+        }
+
+        // 단축 링크이거나 이름/주소를 더 알아내야 하는 경우 HTML fetch
+        if (!result.name || !result.kakaoId || url.includes('page.link') || url.includes('folder')) {
+            const html = await fetchHtmlViaCorsProxy(url);
+            if (html) {
+                // 폴더/즐겨찾기 내 다수 항목 확인
+                const folderItems = extractFolderItemsFromHtml(html, 'kakao');
+                if (folderItems.length > 0) {
+                    result.items = folderItems;
+                    return result;
+                }
+
+                // og:title 파싱: "카라멘야 - 카카오맵" or "카라멘야 | 카카오맵"
+                const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+                                     html.match(/<title>([^<]+)<\/title>/i);
+                if (ogTitleMatch && ogTitleMatch[1]) {
+                    const rawTitle = ogTitleMatch[1].replace(/\s*[-|]\s*카카오맵.*$/i, '').trim();
+                    if (rawTitle && !rawTitle.includes('카카오맵')) {
+                        result.name = rawTitle;
+                    }
+                }
+
+                // og:description 파싱: 주소 추출
+                const ogDescMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i);
+                if (ogDescMatch && ogDescMatch[1]) {
+                    result.addressHint = ogDescMatch[1].trim();
+                }
+
+                // og:url 또는 HTML 본문에서 카카오 Place ID 재추출
+                const ogUrlMatch = html.match(/<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/i);
+                if (ogUrlMatch && ogUrlMatch[1]) {
+                    const extractedId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(ogUrlMatch[1]) : null;
+                    if (extractedId) result.kakaoId = extractedId;
+                }
+            }
+        }
+    }
+
+    // ── B. 네이버 지도 분석 ──
+    if (isNaver) {
+        // Place ID 추출 (예: /entry/place/12345678, /restaurant/12345678)
+        const nIdMatch = url.match(/place\/(?:restaurant\/)?(\d+)/i) || url.match(/restaurant\/(\d+)/i);
+        if (nIdMatch && nIdMatch[1]) {
+            result.naverId = nIdMatch[1];
+        }
+
+        // 검색 URL인 경우 상호명 추출 (예: /p/search/을지로보석)
+        const searchMatch = url.match(/\/search\/([^/?#]+)/i);
+        if (searchMatch && searchMatch[1]) {
+            try {
+                result.name = decodeURIComponent(searchMatch[1]).trim();
+            } catch (_) {
+                result.name = searchMatch[1].trim();
+            }
+        }
+
+        // naver.me 단축 링크 또는 상세 정보 추출을 위한 HTML fetch
+        const html = await fetchHtmlViaCorsProxy(url);
+        if (html) {
+            // 폴더/저장목록 다수 항목 확인
+            const folderItems = extractFolderItemsFromHtml(html, 'naver');
+            if (folderItems.length > 0) {
+                result.items = folderItems;
+                return result;
+            }
+
+            // og:title 파싱: "카라멘야 : 네이버 플레이스" or "카라멘야 : 네이버 지도"
+            const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+                                 html.match(/<title>([^<]+)<\/title>/i);
+            if (ogTitleMatch && ogTitleMatch[1]) {
+                const rawTitle = ogTitleMatch[1]
+                    .replace(/\s*:\s*네이버\s*(?:플레이스|지도).*$/i, '')
+                    .replace(/\s*-\s*네이버\s*(?:플레이스|지도).*$/i, '')
+                    .trim();
+                if (rawTitle && !rawTitle.includes('네이버')) {
+                    result.name = rawTitle;
+                }
+            }
+
+            // og:description 파싱 (주소 등)
+            const ogDescMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i);
+            if (ogDescMatch && ogDescMatch[1]) {
+                result.addressHint = ogDescMatch[1].trim();
+            }
+
+            // JSON-LD (Schema.org / FoodEstablishment) 파싱 시도
+            const ldMatch = html.match(/<script\s+type=["']application\/ld\+json["']>([^<]+)<\/script>/i);
+            if (ldMatch && ldMatch[1]) {
+                try {
+                    const ld = JSON.parse(ldMatch[1]);
+                    if (ld.name && !result.name) result.name = ld.name;
+                    if (ld.address) {
+                        const addr = typeof ld.address === 'string' ? ld.address : (ld.address.streetAddress || ld.address.addressLocality || '');
+                        if (addr) result.addressHint = addr;
+                    }
+                    if (ld.servesCuisine) result.categoryRaw = ld.servesCuisine;
+                    if (Array.isArray(ld.hasMenu)) {
+                        result.menuRaw = ld.hasMenu.map(m => m.name).filter(Boolean);
+                    }
+                } catch (_) {}
+            }
+        }
+    }
+
+    return result;
+}
+
+// 폴더/저장 목록 공유 HTML에서 하위 식당 항목들 다수 추출
+function extractFolderItemsFromHtml(html, type) {
+    const items = [];
+    if (!html) return items;
+
+    if (type === 'kakao') {
+        const placeMatches = html.matchAll(/place\.map\.kakao\.com\/(?:m\/)?(\d+)/gi);
+        const seenIds = new Set();
+        for (const m of placeMatches) {
+            const id = m[1];
+            if (!seenIds.has(id)) {
+                seenIds.add(id);
+                items.push({ kakaoId: id, originalUrl: `https://place.map.kakao.com/${id}` });
+            }
+        }
+    } else if (type === 'naver') {
+        const placeMatches = html.matchAll(/m\.place\.naver\.com\/restaurant\/(\d+)/gi);
+        const seenIds = new Set();
+        for (const m of placeMatches) {
+            const id = m[1];
+            if (!seenIds.has(id)) {
+                seenIds.add(id);
+                items.push({ naverId: id, originalUrl: `https://m.place.naver.com/restaurant/${id}` });
+            }
+        }
+    }
+    return items;
+}
+
+// 5. 카카오 Places SDK를 통한 공식 장소 및 좌표/도로명주소 검색
+function queryKakaoPlaceData(name, addressHint, kakaoId) {
+    return new Promise((resolve) => {
+        if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
+            resolve(null);
+            return;
+        }
+
+        const ps = new kakao.maps.services.Places();
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        // 1차 검색 키워드: 주소 힌트의 시/구/동 + 상호명
+        let cleanAddrPrefix = '';
+        if (addressHint) {
+            const tokens = addressHint.split(/\s+/).filter(t => !/^\d/.test(t));
+            cleanAddrPrefix = tokens.slice(0, 2).join(' ');
+        }
+        const searchKeyword = cleanAddrPrefix && name ? `${cleanAddrPrefix} ${name}`.trim() : (name || addressHint || '');
+
+        if (!searchKeyword) {
+            resolve(null);
+            return;
+        }
+
+        ps.keywordSearch(searchKeyword, (data, status) => {
+            if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                // Kakao ID가 있으면 해당 ID 우선 매칭
+                if (kakaoId) {
+                    const idMatch = data.find(d => String(d.id).trim() === String(kakaoId).trim());
+                    if (idMatch) {
+                        resolve(idMatch);
+                        return;
+                    }
+                }
+                // 이름 일치 항목 우선 매칭
+                if (name) {
+                    const exactMatch = data.find(d => d.place_name.trim().toLowerCase() === name.trim().toLowerCase());
+                    if (exactMatch) {
+                        resolve(exactMatch);
+                        return;
+                    }
+                }
+                resolve(data[0]);
+            } else {
+                // 키워드 검색 실패 시: 상호명만으로 재검색
+                if (name && name !== searchKeyword) {
+                    ps.keywordSearch(name, (fallbackData, fbStatus) => {
+                        if (fbStatus === kakao.maps.services.Status.OK && fallbackData && fallbackData.length > 0) {
+                            if (kakaoId) {
+                                const idMatch = fallbackData.find(d => String(d.id).trim() === String(kakaoId).trim());
+                                if (idMatch) {
+                                    resolve(idMatch);
+                                    return;
+                                }
+                            }
+                            resolve(fallbackData[0]);
+                        } else {
+                            // 지오코더 주소 검색 시도
+                            if (addressHint) {
+                                geocoder.addressSearch(addressHint, (geoData, geoStatus) => {
+                                    if (geoStatus === kakao.maps.services.Status.OK && geoData && geoData.length > 0) {
+                                        const g = geoData[0];
+                                        resolve({
+                                            place_name: name || g.address_name,
+                                            road_address_name: g.road_address ? g.road_address.address_name : g.address_name,
+                                            address_name: g.address_name,
+                                            x: g.x,
+                                            y: g.y,
+                                            category_name: '음식점',
+                                            place_url: `https://map.kakao.com/link/search/${encodeURIComponent(name || g.address_name)}`
+                                        });
+                                    } else {
+                                        resolve(null);
+                                    }
+                                });
+                            } else {
+                                resolve(null);
+                            }
+                        }
+                    });
+                } else {
+                    resolve(null);
+                }
+            }
+        });
+    });
+}
+
+// 6. 스푼맵 표준 포맷 변환 (데이터 정규화 엔진)
+async function normalizeToSpoonmapRestaurant(rawInfo) {
+    let placeData = null;
+
+    if (rawInfo.name || rawInfo.addressHint || rawInfo.kakaoId) {
+        placeData = await queryKakaoPlaceData(rawInfo.name, rawInfo.addressHint, rawInfo.kakaoId);
+    }
+
+    // 기본 이름 확정
+    const finalName = placeData?.place_name || rawInfo.name || '가져온 맛집';
+    const rawAddress = placeData?.road_address_name || placeData?.address_name || rawInfo.addressHint || '';
+
+    // ── 1. 식당 분류 (category): 16대 표준 카테고리 자동 맵핑 ──
+    const catRaw = placeData?.category_name || rawInfo.categoryRaw || '';
+    let finalCategory = '🍚한식';
+    if (typeof mapKakaoCategoryToStandard === 'function') {
+        finalCategory = mapKakaoCategoryToStandard(catRaw, finalName);
+    }
+
+    // ── 2. 위치 정규화 (location_large / location_small / road_address) ──
+    let locLarge = '';
+    let locSmall = '';
+    if (rawAddress && typeof parseStandardLocation === 'function') {
+        const parsed = parseStandardLocation(rawAddress, '');
+        locLarge = parsed.large || '';
+        locSmall = parsed.small || '';
+    }
+    if (typeof standardizeLocation === 'function' && (locLarge || locSmall)) {
+        const std = standardizeLocation(locLarge, locSmall, finalName);
+        locLarge = std.large || locLarge;
+        locSmall = std.small || locSmall;
+    }
+    if (!locLarge) locLarge = '기타';
+
+    // ── 3. 주요 메뉴 (menu) 가공 및 추출 ──
+    const menuList = [];
+    if (Array.isArray(rawInfo.menuRaw) && rawInfo.menuRaw.length > 0) {
+        menuList.push(...rawInfo.menuRaw.slice(0, 3));
+    }
+    // DEFAULT_MENUS 매칭 시도
+    if (menuList.length === 0 && typeof DEFAULT_MENUS !== 'undefined') {
+        const matchedMenu = DEFAULT_MENUS.find(m => finalName.includes(m) || catRaw.includes(m));
+        if (matchedMenu) menuList.push(matchedMenu);
+    }
+
+    // ── 4. 지도 URL ──
+    const kakaoMapUrl = placeData?.place_url || 
+                        (placeData?.id ? `https://place.map.kakao.com/${placeData.id}` : 
+                        (rawInfo.kakaoId ? `https://place.map.kakao.com/${rawInfo.kakaoId}` : 
+                        (rawInfo.originalUrl.includes('kakao.com') ? rawInfo.originalUrl : `https://map.kakao.com/link/search/${encodeURIComponent(finalName)}`)));
+    
+    const naverMapUrl = rawInfo.originalUrl.includes('naver.') ? rawInfo.originalUrl : '';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // ── 5. 스푼맵 표준 레코드 생성 (미평가, 0회 방문 공란 처리 사양 완벽 준수) ──
+    return {
+        name: finalName,
+        category: finalCategory,
+        location_large: locLarge,
+        location_small: locSmall,
+        road_address: rawAddress,
+        menu: menuList,
+        rate: '',               // 수저 평점: 공란 (미평가 상태)
+        visit_count: 0,         // 방문 횟수: 0회
+        visits: [],             // 방문 기록: 공란
+        date: todayStr,
+        map_url: kakaoMapUrl,
+        naver_url: naverMapUrl,
+        x: placeData?.x || '',
+        y: placeData?.y || '',
+        kakao_id: placeData?.id || rawInfo.kakaoId || '',
+        closed: false,
+        isImported: true
+    };
+}
+
+// 7. URL 분석 시작 핸들러
+async function handleStartImportParse() {
+    if (isImportParsingInProgress) return;
+
+    const textarea = document.getElementById('import-url-input');
+    const rawText = textarea ? textarea.value.trim() : '';
+
+    if (!rawText) {
+        alert('네이버 지도 또는 카카오 지도 링크를 하나 이상 입력해주세요.');
+        if (textarea) textarea.focus();
+        return;
+    }
+
+    const urls = extractMapUrls(rawText);
+    if (urls.length === 0) {
+        alert('입력된 내용에서 유효한 네이버 지도 또는 카카오 지도 링크를 찾을 수 없습니다.\n지원 형식: place.map.kakao.com, kakaomap.page.link, naver.me, map.naver.com 등');
+        return;
+    }
+
+    isImportParsingInProgress = true;
+
+    // UI 상태: 로딩 스피너 활성화
+    const inputGroup = document.getElementById('import-input-group');
+    const loadingState = document.getElementById('import-loading-state');
+    const loadingTitle = document.getElementById('import-loading-title');
+    const loadingDesc = document.getElementById('import-loading-desc');
+    const parseBtn = document.getElementById('btn-import-parse');
+
+    if (inputGroup) inputGroup.style.display = 'none';
+    if (loadingState) loadingState.style.display = 'flex';
+    if (parseBtn) parseBtn.disabled = true;
+
+    window.importedPlacesQueue = [];
+    const normalizedPlaces = [];
+
+    for (let i = 0; i < urls.length; i++) {
+        const targetUrl = urls[i];
+        if (loadingTitle) loadingTitle.textContent = `링크 분석 중... (${i + 1} / ${urls.length})`;
+        if (loadingDesc) loadingDesc.textContent = targetUrl;
+
+        try {
+            const rawMeta = await parseSingleMapUrl(targetUrl);
+
+            // 단일 장소이거나 하위 항목들이 있는 경우
+            if (rawMeta.items && rawMeta.items.length > 0) {
+                for (let j = 0; j < rawMeta.items.length; j++) {
+                    const subItem = rawMeta.items[j];
+                    if (loadingDesc) loadingDesc.textContent = `저장 목록 분석 중... (${j + 1}/${rawMeta.items.length})`;
+                    const subMeta = await parseSingleMapUrl(subItem.originalUrl);
+                    const normalized = await normalizeToSpoonmapRestaurant(subMeta);
+                    if (normalized && normalized.name) {
+                        normalizedPlaces.push(normalized);
+                    }
+                }
+            } else {
+                const normalized = await normalizeToSpoonmapRestaurant(rawMeta);
+                if (normalized && normalized.name) {
+                    normalizedPlaces.push(normalized);
+                }
+            }
+        } catch (e) {
+            console.warn('[Spoonmap Import] Error parsing url:', targetUrl, e);
+        }
+    }
+
+    isImportParsingInProgress = false;
+
+    if (normalizedPlaces.length === 0) {
+        alert('링크에서 식당 정보를 추출하지 못했습니다.\n링크 주소가 올바른지 확인해주세요.');
+        resetImportToInputState();
+        return;
+    }
+
+    // 중복 제거 (이름 기준)
+    const uniqueMap = new Map();
+    normalizedPlaces.forEach(p => {
+        const k = p.name.trim().toLowerCase();
+        if (!uniqueMap.has(k)) {
+            uniqueMap.set(k, p);
+        }
+    });
+
+    window.importedPlacesQueue = Array.from(uniqueMap.values());
+    renderImportPreviewList();
+}
+window.handleStartImportParse = handleStartImportParse;
+
+// 8. 파싱 결과 미리보기 렌더링
+function renderImportPreviewList() {
+    const loadingState = document.getElementById('import-loading-state');
+    const previewSection = document.getElementById('import-preview-section');
+    const countBadge = document.getElementById('import-preview-count');
+    const listContainer = document.getElementById('import-preview-list');
+    const parseBtn = document.getElementById('btn-import-parse');
+    const saveBtn = document.getElementById('btn-import-save');
+
+    if (loadingState) loadingState.style.display = 'none';
+    if (previewSection) previewSection.style.display = 'flex';
+    if (parseBtn) parseBtn.style.display = 'none';
+    if (saveBtn) {
+        saveBtn.style.display = 'inline-flex';
+        saveBtn.innerHTML = `스푼맵에 등록하기 (${window.importedPlacesQueue.length}곳) 💾`;
+    }
+
+    if (countBadge) countBadge.textContent = `${window.importedPlacesQueue.length}곳`;
+
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    window.importedPlacesQueue.forEach((place, idx) => {
+        const card = document.createElement('div');
+        card.className = 'import-preview-card';
+        card.innerHTML = `
+            <div class="import-preview-main">
+                <div class="import-preview-title-row">
+                    <strong class="import-preview-name">${place.name}</strong>
+                    <span class="import-cat-badge">${place.category}</span>
+                </div>
+                <div class="import-preview-loc-row">
+                    <span class="import-loc-badge">📍 ${place.location_large} ${place.location_small || ''}</span>
+                    <span>${place.road_address || '도로명 주소 자동 변환'}</span>
+                </div>
+                <div class="import-preview-bottom-row">
+                    ${place.menu && place.menu.length > 0 ? `<span class="import-menu-badge">🍴 ${place.menu.join(', ')}</span>` : ''}
+                    <span class="import-unrated-badge">🥄 수저 평점: 미평가 (등록 후 수정 가능)</span>
+                </div>
+            </div>
+            <button type="button" class="btn-remove-preview-item" onclick="window.removeImportPreviewItem(${idx})" title="목록에서 제외">&times;</button>
+        `;
+        listContainer.appendChild(card);
+    });
+}
+
+function removeImportPreviewItem(index) {
+    if (index >= 0 && index < window.importedPlacesQueue.length) {
+        window.importedPlacesQueue.splice(index, 1);
+        if (window.importedPlacesQueue.length === 0) {
+            resetImportToInputState();
+        } else {
+            renderImportPreviewList();
+        }
+    }
+}
+window.removeImportPreviewItem = removeImportPreviewItem;
+
+// 9. 일괄 저장 & 화면(MAP/LIST) 즉시 반영
+async function handleConfirmImportSave() {
+    if (!window.importedPlacesQueue || window.importedPlacesQueue.length === 0) {
+        alert('저장할 맛집이 없습니다.');
+        return;
+    }
+
+    const placesToSave = [...window.importedPlacesQueue];
+    const isOwner = (typeof isOwnerUser === 'function') && isOwnerUser();
+
+    // 키 가져오기
+    const overridesKey = isOwner ? 'spoonmap_restaurant_overrides' : 
+        ((typeof getUserOverridesStorageKey === 'function') ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides');
+    const wishlistKey = isOwner ? 'spoonmap_user_wishlist' : 
+        ((typeof getUserWishlistKey === 'function') ? getUserWishlistKey() : 'spoonmap_user_wishlist');
+
+    let overrides = {};
+    let wishlist = [];
+
+    try {
+        overrides = JSON.parse(localStorage.getItem(overridesKey) || '{}');
+    } catch (_) {}
+
+    try {
+        wishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
+    } catch (_) {}
+
+    // 각 식당 반영
+    placesToSave.forEach(place => {
+        const k = place.name.trim().toLowerCase();
+
+        // Overrides 등록
+        overrides[k] = {
+            name: place.name,
+            category: place.category,
+            location_large: place.location_large,
+            location_small: place.location_small,
+            road_address: place.road_address,
+            menu: place.menu,
+            rate: '',
+            visit_count: 0,
+            visits: [],
+            map_url: place.map_url,
+            naver_url: place.naver_url,
+            x: place.x,
+            y: place.y,
+            kakao_id: place.kakao_id,
+            closed: false,
+            updated_at: new Date().toISOString()
+        };
+
+        // Wishlist에도 등록하여 내 맛집 리스트 및 지도에 100% 즉시 표시되도록 보장
+        const existingWishIdx = wishlist.findIndex(w => (w.name || '').trim().toLowerCase() === k);
+        const wishObj = {
+            name: place.name,
+            category: place.category,
+            location_large: place.location_large,
+            location_small: place.location_small,
+            location: place.location_large,
+            road_address: place.road_address,
+            menu: place.menu,
+            rate: '',
+            map_url: place.map_url,
+            naver_url: place.naver_url,
+            x: place.x,
+            y: place.y,
+            kakao_id: place.kakao_id,
+            visit_count: 0,
+            isWishlist: true,
+            date: place.date
+        };
+
+        if (existingWishIdx >= 0) {
+            wishlist[existingWishIdx] = wishObj;
+        } else {
+            wishlist.unshift(wishObj);
+        }
+
+        // 마스터인 경우 기본 restaurantData 배열에도 메모리 추가
+        if (isOwner && typeof restaurantData !== 'undefined' && Array.isArray(restaurantData)) {
+            const masterIdx = restaurantData.findIndex(r => (r.name || '').trim().toLowerCase() === k);
+            if (masterIdx >= 0) {
+                restaurantData[masterIdx] = { ...restaurantData[masterIdx], ...place };
+            } else {
+                restaurantData.unshift({ ...place });
+            }
+        }
+    });
+
+    // 1. 로컬 스토리지 저장
+    localStorage.setItem(overridesKey, JSON.stringify(overrides));
+    localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
+
+    // 2. 클라우드(Firestore) 즉시 동기화
+    if (typeof saveToCloud === 'function') {
+        try {
+            await saveToCloud('overrides', overrides);
+            await saveToCloud('wishlist', wishlist);
+        } catch (e) {
+            console.warn('[Spoonmap Import] Cloud sync warning:', e);
+        }
+    }
+
+    // 3. 화면 즉시 반영 (LIST 탭 카드 및 MAP 탭 마커 리렌더링)
+    if (typeof window.renderApp === 'function') {
+        window.renderApp();
+    }
+    if (typeof window.updateMapMarkers === 'function') {
+        window.updateMapMarkers();
+    }
+
+    // 4. 모달 닫기 및 완료 안내
+    closeImportPlacesModal(true);
+
+    const count = placesToSave.length;
+    alert(`🎉 ${count}곳의 맛집을 성공적으로 가져왔습니다!\nLIST 탭과 MAP 탭에서 확인하세요.\n(상세 모달에서 언제든 수저 평점과 방문 기록을 추가할 수 있습니다.)`);
+}
+window.handleConfirmImportSave = handleConfirmImportSave;

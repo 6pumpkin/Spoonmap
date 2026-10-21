@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610091605">
+    <link rel="stylesheet" href="style.css?v=202610212330">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -309,11 +309,16 @@
 
                 <div class="list-header-controls">
                     <div class="result-count-info" id="result-count-info">Total <strong id="total-count-num">0</strong></div>
-                    <div class="view-mode-toggle-group">
-                        <button id="view-mode-grid" class="view-mode-btn active" title="카드 그리드 뷰">📱 큰 카드</button>
-                        <button id="view-mode-compact" class="view-mode-btn" title="컴팩트 한줄 목록 뷰">☰ 한줄 목록</button>
+                    <div class="list-controls-right-wrap">
+                        <button type="button" id="btn-list-import-places" class="list-import-places-btn" onclick="openImportPlacesModal()" title="네이버/카카오 지도에서 맛집 가져오기">
+                            📥 맛집 가져오기
+                        </button>
+                        <div class="view-mode-toggle-group">
+                            <button id="view-mode-grid" class="view-mode-btn active" title="카드 그리드 뷰">📱 큰 카드</button>
+                            <button id="view-mode-compact" class="view-mode-btn" title="컴팩트 한줄 목록 뷰">☰ 한줄 목록</button>
+                        </div>
+                        <button type="button" id="btn-list-filter-reset" class="list-filter-reset-btn" onclick="resetAllFilters()" title="필터 초기화">↺</button>
                     </div>
-                    <button type="button" id="btn-list-filter-reset" class="list-filter-reset-btn" onclick="resetAllFilters()" title="필터 초기화">↺</button>
                 </div>
 
                 <!-- Gourmet Viewing Banner (When exploring a followed user's list) -->
@@ -980,6 +985,7 @@
                                 <div class="profile-action-left">
                                     <button class="profile-btn btn-edit-profile" onclick="openProfileEditModal()">✏️ 프로필 수정</button>
                                     <button class="profile-btn btn-share-profile" onclick="handleShareMyMap()">🔗 내 맛집 공유</button>
+                                    <button class="profile-btn btn-import-places" onclick="openImportPlacesModal()">📥 맛집 가져오기</button>
                                 </div>
                                 <div class="profile-action-right">
                                     <button class="profile-btn btn-insight-open" onclick="openInsightModal()" title="나의 미식 분석 데이터 보기">
@@ -1578,6 +1584,81 @@
             </div>
         </div>
     </div>
+
+    <!-- ─── [맛집 가져오기] 네이버/카카오 지도 URL 임포트 모달 ─── -->
+    <div id="import-places-modal" class="list-detail-modal-overlay" style="display:none;" onclick="if(event.target===this)window.closeImportPlacesModal()">
+        <div class="list-detail-modal-card import-modal-card">
+            <!-- Mobile Slide Down Handlebar -->
+            <div id="import-places-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="맛집 가져오기 창 닫기"><div class="handle-bar"></div></div>
+            <button class="list-detail-close-btn" onclick="window.closeImportPlacesModal()" title="닫기">&times;</button>
+            
+            <div class="modal-header import-modal-header">
+                <div class="import-title-wrap">
+                    <span class="import-badge-pill">URL 자동 변환</span>
+                    <h2 class="import-title">📥 맛집 가져오기</h2>
+                    <p class="import-desc">네이버 지도 및 카카오 지도 URL(공유 링크/저장 목록)을 붙여넣으면 스푼맵 규격에 맞게 자동 변환하여 내 맛집으로 등록합니다.</p>
+                </div>
+            </div>
+
+            <div class="import-modal-body">
+                <!-- 1. 안내 팁 박스 -->
+                <div class="import-guide-box">
+                    <div class="import-guide-header">
+                        <span class="guide-icon">💡</span>
+                        <strong>지원되는 지도 링크 형식</strong>
+                    </div>
+                    <ul class="import-guide-list">
+                        <li><b>카카오맵:</b> 장소 링크 (<code>place.map.kakao.com/...</code>), 단축 링크 (<code>kakaomap.page.link</code>), 즐겨찾기 폴더</li>
+                        <li><b>네이버 지도:</b> 공유 단축 링크 (<code>naver.me/...</code>), 플레이스 링크 (<code>map.naver.com</code>, <code>m.place.naver.com</code>), MY플레이스 저장 목록</li>
+                        <li>여러 개의 링크는 <b>엔터(줄바꿈)</b>로 구분하여 한 번에 여러 개를 입력할 수 있습니다.</li>
+                    </ul>
+                </div>
+
+                <!-- 2. 링크 입력 폼 -->
+                <div class="import-input-group" id="import-input-group">
+                    <div class="import-label-row">
+                        <label for="import-url-input" class="import-input-label">지도 링크 붙여넣기</label>
+                        <button type="button" class="btn-clear-import-text" onclick="window.clearImportUrlInput()">지우기</button>
+                    </div>
+                    <textarea id="import-url-input" class="import-url-textarea" rows="4" placeholder="예시:&#10;https://naver.me/5vI8KQzp&#10;https://place.map.kakao.com/1025832828&#10;https://kakaomap.page.link/..." autocomplete="off" spellcheck="false"></textarea>
+                </div>
+
+                <!-- 3. 진행 상황 알림 박스 (로딩 스피너) -->
+                <div id="import-loading-state" class="import-loading-state" style="display:none;">
+                    <div class="import-spinner-circle"></div>
+                    <div class="import-loading-texts">
+                        <strong id="import-loading-title">링크를 분석하고 있습니다...</strong>
+                        <span id="import-loading-desc">카카오 & 네이버 장소 데이터 및 도로명 주소를 정규화 중입니다.</span>
+                    </div>
+                </div>
+
+                <!-- 4. 파싱된 식당 미리보기 리스트 -->
+                <div id="import-preview-section" class="import-preview-section" style="display:none;">
+                    <div class="import-preview-header">
+                        <div class="preview-count-wrap">
+                            <span class="preview-count-label">가져올 맛집 목록</span>
+                            <span id="import-preview-count" class="preview-count-badge">0곳</span>
+                        </div>
+                        <button type="button" class="btn-import-reinput" onclick="window.resetImportToInputState()">+ 추가 링크 입력</button>
+                    </div>
+                    <div id="import-preview-list" class="import-preview-list">
+                        <!-- 동적으로 파싱된 카드들이 렌더링됨 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 모달 푸터 액션 버튼 바 -->
+            <div class="import-modal-footer">
+                <button type="button" class="btn-import-cancel" onclick="window.closeImportPlacesModal()">취소</button>
+                <button type="button" id="btn-import-parse" class="btn-import-action parse-btn" onclick="window.handleStartImportParse()">
+                    <span>URL 분석 및 변환 🔍</span>
+                </button>
+                <button type="button" id="btn-import-save" class="btn-import-action save-btn" onclick="window.handleConfirmImportSave()" style="display:none;">
+                    <span>스푼맵에 등록하기 💾</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- Smart PWA Install Floating Banner -->
     <div id="pwa-install-banner" class="pwa-floating-banner">
         <div class="pwa-banner-left">
@@ -1661,7 +1742,7 @@
     <script src="jungyugwang_data.js?v=202610050035"></script>
     <script src="seoulnamzaa_data.js?v=202610091455"></script>
     <script src="todaydessert_data.js?v=202610060240"></script>
-    <script src="app.js?v=202610091605"></script>
+    <script src="app.js?v=202610212330"></script>
 </body>
 
 </html>
