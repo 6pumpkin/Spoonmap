@@ -1,4 +1,4 @@
-// ─── Firebase Cloud Sync Module (Firestore Realtime Multi-Device Sync) ───
+﻿// ─── Firebase Cloud Sync Module (Firestore Realtime Multi-Device Sync) ───
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBYzyzAjtazA0R-VKU6psbnormWExi0NFM",
     authDomain: "spoonmap-3df1a.firebaseapp.com",
@@ -17086,6 +17086,17 @@ function renderProfileView() {
     if (followerStatEl) followerStatEl.textContent = totalFollowers;
     if (followingStatEl) followingStatEl.textContent = followingList.length;
     if (badgeCountEl) badgeCountEl.textContent = `${followingList.length}명`;
+    // 2.5 맛집 가져오기 버튼 분기 (PC / Mobile 공통):
+    // 상단 버튼은 등록 맛집 1개 이상인 사용자 전용,
+    // 하단 큰 배너 카드는 등록 맛집 0개인 사용자 전용
+    const upperImportBtn = document.querySelector('.btn-import-places');
+    const lowerImportBanner = document.getElementById('profile-import-places-row');
+    if (upperImportBtn) {
+        upperImportBtn.style.display = totalRestaurants > 0 ? '' : 'none';
+    }
+    if (lowerImportBanner) {
+        lowerImportBanner.style.display = totalRestaurants === 0 ? 'flex' : 'none';
+    }
 
     // 3. Auto-publish latest profile to cloud
     publishPublicProfile(profile);
@@ -19605,7 +19616,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610212345', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610220005', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -19770,10 +19781,16 @@ function openImportPlacesModal() {
     if (saveBtn) saveBtn.style.display = 'none';
     if (textarea) {
         textarea.value = '';
-        setTimeout(() => textarea.focus(), 150);
+        // 紐⑤컮?쇱뿉?쒕뒗 媛???ㅻ낫?쒓? 紐⑤떖 ?붾㈃??媛由ъ? ?딅룄濡??먮룞 ?ъ빱???쒖쇅 (PC?먯꽌留??ъ빱??
+        if (window.innerWidth > 768) {
+            setTimeout(() => textarea.focus(), 150);
+        }
     }
 
+    // ?ㅻ쾭?덉씠 ?쒖떆 諛?.open ?대옒??遺??(?щ챸 ?곹깭 ?댁젣 ?꾩닔)
     modal.style.display = 'flex';
+    void modal.offsetHeight;
+    modal.classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 window.openImportPlacesModal = openImportPlacesModal;
@@ -19782,6 +19799,7 @@ function closeImportPlacesModal(immediate = false) {
     const modal = document.getElementById('import-places-modal');
     if (!modal) return;
 
+    modal.classList.remove('open');
     const isMobile = window.innerWidth <= 768;
     const card = modal.querySelector('.import-modal-card');
 
@@ -19793,10 +19811,12 @@ function closeImportPlacesModal(immediate = false) {
             card.style.transform = '';
             card.style.transition = '';
             document.body.style.overflow = '';
-        }, 250);
+        }, 260);
     } else {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }, immediate ? 0 : 200);
     }
 }
 window.closeImportPlacesModal = closeImportPlacesModal;
