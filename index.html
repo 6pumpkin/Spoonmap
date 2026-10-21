@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610212330">
+    <link rel="stylesheet" href="style.css?v=202610212345">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -100,6 +100,7 @@
                     <h3 class="desktop-only">Filter</h3>
                     <span class="sidebar-header-title mobile-only">Filter</span>
                     <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="sidebar-import-btn" onclick="openImportPlacesModal()" title="네이버/카카오 지도에서 맛집 가져오기">📥 가져오기</button>
                         <button id="btn-reset-all-filters" class="all-filters-reset-btn" title="모든 검색 및 필터 초기화">
                             <span class="desktop-only">↺</span>
                             <span class="mobile-only">↺ 초기화</span>
@@ -995,6 +996,18 @@
                             </div>
                         </div>
 
+                        <!-- Profile Import Places Action Row (Always visible prominent card) -->
+                        <div id="profile-import-places-row" class="profile-import-places-row" onclick="openImportPlacesModal()" title="네이버/카카오 지도에서 맛집 가져오기">
+                            <div class="profile-import-left">
+                                <span class="profile-import-icon">📥</span>
+                                <div class="profile-import-info">
+                                    <span class="profile-import-title">맛집 가져오기 (네이버 · 카카오 지도)</span>
+                                    <span class="profile-import-sub">지도 공유 링크나 저장 폴더 URL을 넣으면 나만의 맛집으로 자동 등록됩니다</span>
+                                </div>
+                            </div>
+                            <span class="profile-import-badge">가져오기 ↗</span>
+                        </div>
+
                         <!-- Profile PWA Install Action Row -->
                         <div id="profile-pwa-install-row" class="profile-pwa-install-row" onclick="window.triggerPwaInstall()">
                             <div class="profile-pwa-left">
@@ -1742,7 +1755,7 @@
     <script src="jungyugwang_data.js?v=202610050035"></script>
     <script src="seoulnamzaa_data.js?v=202610091455"></script>
     <script src="todaydessert_data.js?v=202610060240"></script>
-    <script src="app.js?v=202610212330"></script>
+    <script src="app.js?v=202610212345"></script>
 </body>
 
 </html>

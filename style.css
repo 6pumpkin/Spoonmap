@@ -14471,6 +14471,106 @@ span.desktop-only {
     background: #1E293B;
 }
 
+/* Profile Tab Import Places Action Row */
+.profile-import-places-row {
+    background: linear-gradient(135deg, #FFF7F5 0%, #FFFFFF 100%);
+    border: 1.5px solid #FFD8D1;
+    border-radius: 16px;
+    padding: 13px 16px;
+    margin: 14px 0 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(217, 56, 30, 0.08);
+}
+
+.profile-import-places-row:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 16px rgba(217, 56, 30, 0.16);
+    border-color: #FFB3A7;
+    background: linear-gradient(135deg, #FFEFEA 0%, #FFFFFF 100%);
+}
+
+.profile-import-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.profile-import-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    background: #FFEBE8;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-import-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.profile-import-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #0F172A;
+}
+
+.profile-import-sub {
+    font-size: 0.74rem;
+    color: #64748B;
+    margin-top: 2px;
+    line-height: 1.35;
+}
+
+.profile-import-badge {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    background: #D9381E;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 6px rgba(217, 56, 30, 0.25);
+    transition: background 0.15s ease;
+}
+
+.profile-import-places-row:hover .profile-import-badge {
+    background: #B91C1C;
+}
+
+/* Sidebar Header Import Button */
+.sidebar-import-btn {
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #D9381E;
+    background: #FFF5F4;
+    border: 1.5px solid #FFC4BC;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sidebar-import-btn:hover {
+    background: #FFEBE8;
+    border-color: #D9381E;
+    color: #B91C1C;
+}
+
 /* Profile Tab PWA Install Row */
 .profile-pwa-install-row {
     background: linear-gradient(135deg, #FFF5F6 0%, #FFFFFF 100%);
