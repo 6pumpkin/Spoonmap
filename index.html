@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610220005">
+    <link rel="stylesheet" href="style.css?v=202610220045">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -1620,11 +1620,14 @@
                         <span class="guide-icon">💡</span>
                         <strong>지원되는 지도 링크 형식</strong>
                     </div>
-                    <ul class="import-guide-list">
-                        <li><b>카카오맵:</b> 장소 링크 (<code>place.map.kakao.com/...</code>), 단축 링크 (<code>kakaomap.page.link</code>), 즐겨찾기 폴더</li>
-                        <li><b>네이버 지도:</b> 공유 단축 링크 (<code>naver.me/...</code>), 플레이스 링크 (<code>map.naver.com</code>, <code>m.place.naver.com</code>), MY플레이스 저장 목록</li>
+                    <ul class="import-guide-list pc-only-block">
+                        <li><b>카카오맵:</b> 공유 링크 (<code>kko.to/...</code>), 장소 링크 (<code>place.map.kakao.com/...</code>), 즐겨찾기 폴더</li>
+                        <li><b>네이버 지도:</b> 단축 링크 (<code>naver.me/...</code>), 플레이스 링크 (<code>map.naver.com</code>, <code>m.place.naver.com</code>), 저장 목록</li>
                         <li>여러 개의 링크는 <b>엔터(줄바꿈)</b>로 구분하여 한 번에 여러 개를 입력할 수 있습니다.</li>
                     </ul>
+                    <p class="import-guide-mobile-tip mobile-only-block">
+                        카카오맵(kko.to, 공유) 및 네이버 지도(naver.me) 링크를 줄바꿈으로 여러 개 붙여넣을 수 있습니다.
+                    </p>
                 </div>
 
                 <!-- 2. 링크 입력 폼 -->
@@ -1633,7 +1636,7 @@
                         <label for="import-url-input" class="import-input-label">지도 링크 붙여넣기</label>
                         <button type="button" class="btn-clear-import-text" onclick="window.clearImportUrlInput()">지우기</button>
                     </div>
-                    <textarea id="import-url-input" class="import-url-textarea" rows="4" placeholder="예시:&#10;https://naver.me/5vI8KQzp&#10;https://place.map.kakao.com/1025832828&#10;https://kakaomap.page.link/..." autocomplete="off" spellcheck="false"></textarea>
+                    <textarea id="import-url-input" class="import-url-textarea" rows="4" placeholder="예시:&#10;https://kko.to/...&#10;https://naver.me/...&#10;https://place.map.kakao.com/1025832828" autocomplete="off" spellcheck="false"></textarea>
                 </div>
 
                 <!-- 3. 진행 상황 알림 박스 (로딩 스피너) -->
@@ -1755,7 +1758,7 @@
     <script src="jungyugwang_data.js?v=202610050035"></script>
     <script src="seoulnamzaa_data.js?v=202610091455"></script>
     <script src="todaydessert_data.js?v=202610060240"></script>
-    <script src="app.js?v=202610220005"></script>
+    <script src="app.js?v=202610220045"></script>
 </body>
 
 </html>

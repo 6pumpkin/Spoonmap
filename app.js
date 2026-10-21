@@ -19616,7 +19616,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610220005', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610220045', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -19854,7 +19854,7 @@ window.resetImportToInputState = resetImportToInputState;
 function extractMapUrls(rawText) {
     if (!rawText || typeof rawText !== 'string') return [];
     
-    // 카카오맵 및 네이버 지도 관련 정규식 패턴
+    // 카카오맵 및 네이버 지도 관련 정규식 패턴 (단축 링크 kko.to, naver.me, me2.do 포함)
     const urlPattern = /(?:https?:\/\/|kakaomap:\/\/|nmap:\/\/)[^\s\)\],<>"'\\]+/gi;
     const matches = rawText.match(urlPattern) || [];
 
@@ -19865,8 +19865,16 @@ function extractMapUrls(rawText) {
         let clean = rawUrl.trim().replace(/[.,;:]+$/, '');
         if (!clean) return;
 
-        const isKakao = clean.includes('kakao.com') || clean.includes('kakaomap.page.link') || clean.startsWith('kakaomap://');
-        const isNaver = clean.includes('naver.me') || clean.includes('map.naver.com') || clean.includes('place.naver.com') || clean.startsWith('nmap://');
+        const isKakao = clean.includes('kakao.com') ||
+                        clean.includes('kko.to') ||
+                        clean.includes('daum.net') ||
+                        clean.includes('kakaomap.page.link') ||
+                        clean.startsWith('kakaomap://');
+
+        const isNaver = clean.includes('naver.me') ||
+                        clean.includes('me2.do') ||
+                        clean.includes('naver.com') ||
+                        clean.startsWith('nmap://');
 
         if ((isKakao || isNaver) && !seen.has(clean)) {
             seen.add(clean);
@@ -19881,19 +19889,19 @@ window.extractMapUrls = extractMapUrls;
 // 3. CORS 프록시 다중 Fallback 요청기
 async function fetchHtmlViaCorsProxy(targetUrl) {
     const proxies = [
+        (u) => `https://r.jina.ai/${u.startsWith('http') ? u : 'https://' + u}`,
         (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-        (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
         (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
     ];
 
     for (const makeProxyUrl of proxies) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
             const proxyUrl = makeProxyUrl(targetUrl);
             const res = await fetch(proxyUrl, {
                 signal: controller.signal,
-                headers: { 'Accept': 'text/html,application/xhtml+xml,application/json' }
+                headers: { 'Accept': 'text/html,application/xhtml+xml,application/json,text/plain' }
             });
             clearTimeout(timeoutId);
 
@@ -19923,17 +19931,43 @@ async function parseSingleMapUrl(url) {
         items: []
     };
 
-    const isKakao = url.includes('kakao.com') || url.includes('kakaomap.page.link') || url.startsWith('kakaomap://');
-    const isNaver = url.includes('naver.me') || url.includes('map.naver.com') || url.includes('place.naver.com') || url.startsWith('nmap://');
+    let targetUrl = url;
+
+    // 단축 링크 (kko.to, naver.me, me2.do 등)인 경우 빠른 unshorten 시도
+    if (url.includes('kko.to') || url.includes('naver.me') || url.includes('me2.do') || url.includes('page.link')) {
+        try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 3500);
+            const unshortRes = await fetch(`https://unshorten.me/json/${encodeURIComponent(url)}`, { signal: controller.signal });
+            clearTimeout(tid);
+            if (unshortRes.ok) {
+                const uData = await unshortRes.json();
+                if (uData && uData.success && uData.resolved_url) {
+                    targetUrl = uData.resolved_url;
+                }
+            }
+        } catch (_) {}
+    }
+
+    const isKakao = targetUrl.includes('kakao.com') ||
+                    targetUrl.includes('kko.to') ||
+                    targetUrl.includes('daum.net') ||
+                    targetUrl.includes('kakaomap.page.link') ||
+                    targetUrl.startsWith('kakaomap://');
+
+    const isNaver = targetUrl.includes('naver.me') ||
+                    targetUrl.includes('me2.do') ||
+                    targetUrl.includes('naver.com') ||
+                    targetUrl.startsWith('nmap://');
 
     // ── A. 카카오맵 분석 ──
     if (isKakao) {
         // Place ID 직접 추출
-        const placeId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(url) : null;
+        const placeId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(targetUrl) : null;
         if (placeId) result.kakaoId = placeId;
 
         // URL 내 이름 매칭 시도 (예: /link/map/식당명,12345)
-        const nameMatch = url.match(/\/link\/(?:map|to)\/([^,\/?#]+)/i);
+        const nameMatch = targetUrl.match(/\/link\/(?:map|to)\/([^,\/?#]+)/i);
         if (nameMatch && nameMatch[1] && !/^\d+$/.test(nameMatch[1])) {
             try {
                 result.name = decodeURIComponent(nameMatch[1]).trim();
@@ -19942,39 +19976,38 @@ async function parseSingleMapUrl(url) {
             }
         }
 
-        // 단축 링크이거나 이름/주소를 더 알아내야 하는 경우 HTML fetch
-        if (!result.name || !result.kakaoId || url.includes('page.link') || url.includes('folder')) {
-            const html = await fetchHtmlViaCorsProxy(url);
-            if (html) {
-                // 폴더/즐겨찾기 내 다수 항목 확인
-                const folderItems = extractFolderItemsFromHtml(html, 'kakao');
-                if (folderItems.length > 0) {
-                    result.items = folderItems;
-                    return result;
-                }
+        // HTML 또는 렌더링 텍스트 fetch
+        const html = await fetchHtmlViaCorsProxy(targetUrl);
+        if (html) {
+            // 폴더/즐겨찾기 내 다수 항목 확인
+            const folderItems = extractFolderItemsFromHtml(html, 'kakao');
+            if (folderItems.length > 0) {
+                result.items = folderItems;
+                return result;
+            }
 
-                // og:title 파싱: "카라멘야 - 카카오맵" or "카라멘야 | 카카오맵"
-                const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
-                                     html.match(/<title>([^<]+)<\/title>/i);
-                if (ogTitleMatch && ogTitleMatch[1]) {
-                    const rawTitle = ogTitleMatch[1].replace(/\s*[-|]\s*카카오맵.*$/i, '').trim();
-                    if (rawTitle && !rawTitle.includes('카카오맵')) {
-                        result.name = rawTitle;
-                    }
+            // 제목 파싱: Title: ... 또는 og:title
+            const titleMatch = html.match(/Title:\s*([^\n\r]+)/i) ||
+                               html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+                               html.match(/<title>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1]) {
+                const rawTitle = titleMatch[1].replace(/\s*[-|]\s*카카오맵.*$/i, '').trim();
+                if (rawTitle && !rawTitle.includes('카카오맵') && !rawTitle.includes('kakaomap')) {
+                    result.name = rawTitle;
                 }
+            }
 
-                // og:description 파싱: 주소 추출
-                const ogDescMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i);
-                if (ogDescMatch && ogDescMatch[1]) {
-                    result.addressHint = ogDescMatch[1].trim();
-                }
+            // og:description 파싱: 주소 추출
+            const ogDescMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i);
+            if (ogDescMatch && ogDescMatch[1]) {
+                result.addressHint = ogDescMatch[1].trim();
+            }
 
-                // og:url 또는 HTML 본문에서 카카오 Place ID 재추출
-                const ogUrlMatch = html.match(/<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/i);
-                if (ogUrlMatch && ogUrlMatch[1]) {
-                    const extractedId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(ogUrlMatch[1]) : null;
-                    if (extractedId) result.kakaoId = extractedId;
-                }
+            // og:url 또는 HTML 본문에서 카카오 Place ID 재추출
+            const ogUrlMatch = html.match(/<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/i);
+            if (ogUrlMatch && ogUrlMatch[1]) {
+                const extractedId = (typeof extractKakaoPlaceId === 'function') ? extractKakaoPlaceId(ogUrlMatch[1]) : null;
+                if (extractedId) result.kakaoId = extractedId;
             }
         }
     }
@@ -19982,13 +20015,13 @@ async function parseSingleMapUrl(url) {
     // ── B. 네이버 지도 분석 ──
     if (isNaver) {
         // Place ID 추출 (예: /entry/place/12345678, /restaurant/12345678)
-        const nIdMatch = url.match(/place\/(?:restaurant\/)?(\d+)/i) || url.match(/restaurant\/(\d+)/i);
+        const nIdMatch = targetUrl.match(/place\/(?:restaurant\/)?(\d+)/i) || targetUrl.match(/restaurant\/(\d+)/i);
         if (nIdMatch && nIdMatch[1]) {
             result.naverId = nIdMatch[1];
         }
 
         // 검색 URL인 경우 상호명 추출 (예: /p/search/을지로보석)
-        const searchMatch = url.match(/\/search\/([^/?#]+)/i);
+        const searchMatch = targetUrl.match(/\/search\/([^/?#]+)/i);
         if (searchMatch && searchMatch[1]) {
             try {
                 result.name = decodeURIComponent(searchMatch[1]).trim();
@@ -19997,8 +20030,7 @@ async function parseSingleMapUrl(url) {
             }
         }
 
-        // naver.me 단축 링크 또는 상세 정보 추출을 위한 HTML fetch
-        const html = await fetchHtmlViaCorsProxy(url);
+        const html = await fetchHtmlViaCorsProxy(targetUrl);
         if (html) {
             // 폴더/저장목록 다수 항목 확인
             const folderItems = extractFolderItemsFromHtml(html, 'naver');
@@ -20007,11 +20039,12 @@ async function parseSingleMapUrl(url) {
                 return result;
             }
 
-            // og:title 파싱: "카라멘야 : 네이버 플레이스" or "카라멘야 : 네이버 지도"
-            const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
-                                 html.match(/<title>([^<]+)<\/title>/i);
-            if (ogTitleMatch && ogTitleMatch[1]) {
-                const rawTitle = ogTitleMatch[1]
+            // 제목 파싱: Title: ... 또는 og:title
+            const titleMatch = html.match(/Title:\s*([^\n\r]+)/i) ||
+                               html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+                               html.match(/<title>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1]) {
+                const rawTitle = titleMatch[1]
                     .replace(/\s*:\s*네이버\s*(?:플레이스|지도).*$/i, '')
                     .replace(/\s*-\s*네이버\s*(?:플레이스|지도).*$/i, '')
                     .trim();
@@ -20048,35 +20081,54 @@ async function parseSingleMapUrl(url) {
     return result;
 }
 
-// 폴더/저장 목록 공유 HTML에서 하위 식당 항목들 다수 추출
+// 폴더/저장 목록 공유 HTML 또는 렌더링 텍스트에서 하위 식당 항목들 다수 추출
 function extractFolderItemsFromHtml(html, type) {
     const items = [];
     if (!html) return items;
 
-    if (type === 'kakao') {
-        const placeMatches = html.matchAll(/place\.map\.kakao\.com\/(?:m\/)?(\d+)/gi);
-        const seenIds = new Set();
-        for (const m of placeMatches) {
-            const id = m[1];
-            if (!seenIds.has(id)) {
-                seenIds.add(id);
+    // 1. 카카오맵 북마크/폴더 렌더링 텍스트 (Jina Reader 등 마크다운 형식)
+    // 예: *   - [x] 선택안됨 장소**[제주돈1848](...)** 서울 서대문구 명물길 27-7 1층 (창천동)
+    const kakaoJinaRegex = /(?:선택안됨\s*장소|\*\s*-\s*\[[ x]\][^*]*)\*\*\[([^\]]+)\]\([^\)]*\)\*\*\s*([^\n\r*]+)/gi;
+    let m;
+    while ((m = kakaoJinaRegex.exec(html)) !== null) {
+        const placeName = m[1].trim();
+        const address = m[2].replace(/\s*더보기.*$/, '').replace(/\[[^\]]*\]/g, '').trim();
+        if (placeName && !items.some(it => it.name === placeName)) {
+            items.push({
+                name: placeName,
+                addressHint: address,
+                originalUrl: `https://map.kakao.com/link/search/${encodeURIComponent(placeName)}`
+            });
+        }
+    }
+
+    // 2. 카카오 Place URL 링크들 (HTML 또는 마크다운)
+    const placeMatches = html.matchAll(/place\.map\.kakao\.com\/(?:m\/)?(\d+)/gi);
+    const seenIds = new Set();
+    for (const match of placeMatches) {
+        const id = match[1];
+        if (!seenIds.has(id)) {
+            seenIds.add(id);
+            if (!items.some(it => it.kakaoId === id)) {
                 items.push({ kakaoId: id, originalUrl: `https://place.map.kakao.com/${id}` });
             }
         }
-    } else if (type === 'naver') {
-        const placeMatches = html.matchAll(/m\.place\.naver\.com\/restaurant\/(\d+)/gi);
-        const seenIds = new Set();
-        for (const m of placeMatches) {
-            const id = m[1];
-            if (!seenIds.has(id)) {
-                seenIds.add(id);
+    }
+
+    // 3. 네이버 플레이스 링크들 (m.place.naver.com/restaurant/12345678)
+    const nPlaceMatches = html.matchAll(/(?:m\.)?place\.naver\.com\/(?:restaurant\/|place\/)?(\d+)/gi);
+    for (const match of nPlaceMatches) {
+        const id = match[1];
+        if (!seenIds.has(id)) {
+            seenIds.add(id);
+            if (!items.some(it => it.naverId === id)) {
                 items.push({ naverId: id, originalUrl: `https://m.place.naver.com/restaurant/${id}` });
             }
         }
     }
+
     return items;
 }
-
 // 5. 카카오 Places SDK를 통한 공식 장소 및 좌표/도로명주소 검색
 function queryKakaoPlaceData(name, addressHint, kakaoId) {
     return new Promise((resolve) => {

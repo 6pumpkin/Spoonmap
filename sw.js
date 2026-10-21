@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spoonmap-v18';
+const CACHE_NAME = 'spoonmap-v19';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -43,7 +43,9 @@ self.addEventListener('fetch', (event) => {
         url.hostname.includes('googleapis.com') ||
         url.hostname.includes('kakao.com') ||
         url.hostname.includes('kakaocdn.net') ||
-        url.hostname.includes('dicebear.com')
+        url.hostname.includes('dicebear.com') ||
+        url.hostname.includes('jina.ai') ||
+        url.hostname.includes('unshorten.me')
     ) {
         return;
     }

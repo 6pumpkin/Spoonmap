@@ -2309,13 +2309,33 @@ main {
     box-shadow: 0 3px 8px rgba(217, 56, 30, 0.14);
 }
 
-/* 맛집 가져오기 모달 카드 */
+/* 맛집 가져오기 모달 카드 (PC 데스크톱 기본: 중앙 플로팅 둥근 사각형) */
 .import-modal-card {
-    max-width: 580px !important;
-    width: 92% !important;
-    border-radius: 20px !important;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2) !important;
+    position: relative !important;
+    width: 520px !important;
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+    border-radius: 24px !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    margin: auto !important;
     overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transform: scale(0.94) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease !important;
+}
+
+.list-detail-modal-overlay.open .import-modal-card {
+    transform: scale(1) !important;
+}
+
+.pc-only-block {
+    display: block;
+}
+.mobile-only-block {
+    display: none;
 }
 
 .import-modal-header {
@@ -14955,8 +14975,20 @@ span.desktop-only {
         background: #F1F5F9;
         color: #0F172A;
     }
+} /* ─── END OF @media (min-width: 769px) ─── */
 
-    /* ─── [맛집 가져오기] 모바일 반응형 스타일 ─── */
+/* ==========================================================================
+   맛집 가져오기 모달 및 프로필 배너 모바일 전용 반응형 스타일 (<= 768px ONLY)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .pc-only-block {
+        display: none !important;
+    }
+
+    .mobile-only-block {
+        display: block !important;
+    }
+
     .list-controls-right-wrap {
         display: flex !important;
         align-items: center !important;
@@ -14970,7 +15002,7 @@ span.desktop-only {
         border-radius: 9999px !important;
     }
 
-    /* 紐⑤컮???꾨줈????[留쏆쭛 媛?몄삤湲? 諛곕꼫 移대뱶 ?붿옄??(湲???ш린 ???異뺤냼 & 鍮꾨? 理쒖쟻?? */
+    /* 모바일 프로필 탭 [맛집 가져오기] 배너 카드 디자인 */
     .profile-import-places-row {
         padding: 10px 14px !important;
         margin: 10px 0 8px 0 !important;
@@ -15019,6 +15051,7 @@ span.desktop-only {
         flex-shrink: 0 !important;
     }
 
+    /* 모바일 맛집 가져오기 바텀시트 플로팅 모달 (여백 낭비 제거 & 깔끔한 통일 디자인) */
     .import-modal-card {
         position: fixed !important;
         bottom: 0 !important;
@@ -15026,11 +15059,13 @@ span.desktop-only {
         right: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
-        max-height: 85vh !important;
-        border-radius: 20px 20px 0 0 !important;
+        max-height: 84vh !important;
+        border-radius: 24px 24px 0 0 !important;
         margin: 0 !important;
+        box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.18) !important;
         transform: translateY(100%) !important;
         transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        border: none !important;
     }
 
     .list-detail-modal-overlay.open .import-modal-card {
@@ -15038,7 +15073,7 @@ span.desktop-only {
     }
 
     .import-modal-header {
-        padding: 12px 16px 10px 16px !important;
+        padding: 10px 18px 8px 18px !important;
     }
 
     .import-title {
@@ -15047,34 +15082,71 @@ span.desktop-only {
 
     .import-desc {
         font-size: 0.76rem !important;
+        line-height: 1.35 !important;
     }
 
     .import-modal-body {
-        padding: 14px 16px !important;
-        max-height: calc(85vh - 140px) !important;
-        gap: 12px !important;
+        padding: 10px 18px 14px 18px !important;
+        max-height: calc(84vh - 140px) !important;
+        gap: 10px !important;
+    }
+
+    /* 모바일 안내 팁 박스: 여백 낭비 없도록 컴팩트한 1~2줄 팁 배너로 전환 */
+    .import-guide-box {
+        padding: 8px 12px !important;
+        border-radius: 10px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .import-guide-header {
+        margin-bottom: 3px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .import-guide-mobile-tip {
+        font-size: 0.74rem !important;
+        color: #475569 !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+    }
+
+    .import-input-group {
+        gap: 5px !important;
+    }
+
+    .import-input-label {
+        font-size: 0.8rem !important;
     }
 
     .import-url-textarea {
-        min-height: 90px !important;
-        font-size: 0.82rem !important;
+        min-height: 110px !important;
+        height: 110px !important;
+        font-size: 0.84rem !important;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
     }
 
     .import-modal-footer {
-        padding: 10px 16px 14px 16px !important;
+        padding: 10px 18px 16px 18px !important;
         display: flex !important;
         gap: 8px !important;
     }
 
     .btn-import-cancel {
         flex: 1 !important;
-        padding: 10px 0 !important;
+        padding: 12px 0 !important;
         text-align: center !important;
+        border-radius: 12px !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
     }
 
     .btn-import-action {
-        flex: 2 !important;
-        padding: 10px 0 !important;
+        flex: 2.2 !important;
+        padding: 12px 0 !important;
         text-align: center !important;
+        border-radius: 12px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
     }
 }
