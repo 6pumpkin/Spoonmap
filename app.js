@@ -19616,7 +19616,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610230005', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610230025', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -20348,7 +20348,7 @@ async function handleStartImportParse() {
 
     const urls = extractMapUrls(rawText);
     if (urls.length === 0) {
-        alert('\uC785\uB825\uB41C \uB0B4\uC6A9\uC5D0\uC11C \uC720\uD6A8\uD55C \uB124\uC774\uBC84 \uC9C0\uB3C4 \uB610\uB224 \uCE74\uCE74\uC624 \uC9C0\uB3C4 \uB9C1\uD06C\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.\n\uC9C0\uC6 outdoor \uD615\uC2DD: place.map.kakao.com, kko.to, naver.me, map.naver.com \uB4F1');
+        alert('입력된 내용에서 유효한 네이버 지도 또는 카카오 지도 링크를 찾을 수 없습니다.\n지원 형식: place.map.kakao.com, kko.to, naver.me, map.naver.com 등');
         return;
     }
 
