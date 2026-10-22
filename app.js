@@ -19616,7 +19616,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610220130', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610230005', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -19942,7 +19942,7 @@ async function parseSingleMapUrl(url) {
                                   targetUrl.match(/\/folder\/([a-f0-9]{20,})/i);
     if (naverFolderMatchDirect) {
         const shareId = naverFolderMatchDirect[1];
-        const bookmarkApiUrl = `https://pages.map.naver.com/save-pages/api/maps-bookmark/v3/shares/${shareId}/bookmarks`;
+        const bookmarkApiUrl = `https://pages.map.naver.com/save-pages/api/maps-bookmark/v3/shares/${shareId}/bookmarks?start=0&limit=5000`;
         const bookmarkHtml = await fetchHtmlViaCorsProxy(bookmarkApiUrl);
         if (bookmarkHtml) {
             const jsonMatch = bookmarkHtml.match(/\{[\s\S]*"bookmarkList"[\s\S]*\}/);
@@ -20046,7 +20046,7 @@ async function parseSingleMapUrl(url) {
                                 effectiveUrl.match(/\/folder\/([a-f0-9]{20,})/i);
             if (folderMatch) {
                 const shareId = folderMatch[1];
-                const bookmarkApiUrl = `https://pages.map.naver.com/save-pages/api/maps-bookmark/v3/shares/${shareId}/bookmarks`;
+                const bookmarkApiUrl = `https://pages.map.naver.com/save-pages/api/maps-bookmark/v3/shares/${shareId}/bookmarks?start=0&limit=5000`;
                 const bookmarkHtml = await fetchHtmlViaCorsProxy(bookmarkApiUrl);
                 if (bookmarkHtml) {
                     const jsonMatch = bookmarkHtml.match(/\{[\s\S]*"bookmarkList"[\s\S]*\}/);
