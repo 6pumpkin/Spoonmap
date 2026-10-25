@@ -1049,6 +1049,782 @@ function saveUserWishlist(list) {
 }
 
 // ─── Kakao Place ID & Restaurant Precise Matching Utilities ───
+// ??? Multiple Wishlist Groups Module (?ㅼ쨷 李??앸떦 洹몃９) ???
+const WISHLIST_PALETTE_COLORS = [
+    '#FFB800',
+    '#FF5A5F',
+    '#EC4899',
+    '#8B5CF6',
+    '#3B82F6',
+    '#06B6D4',
+    '#10B981',
+    '#F97316',
+    '#6366F1',
+    '#14B8A6'
+];
+
+function getUserWishlistGroupsKey() {
+    const u = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    return u && u.id ? `spoonmap_user_${u.id}_wishlist_groups` : 'spoonmap_guest_wishlist_groups';
+}
+
+function getUserWishlistGroups() {
+    try {
+        const saved = localStorage.getItem(getUserWishlistGroupsKey());
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed;
+            }
+        }
+    } catch (_) {}
+
+    return [
+        { id: 'default', name: '??李??앸떦', color: '#FFB800', isDefault: true }
+    ];
+}
+
+function saveUserWishlistGroups(groups) {
+    if (!Array.isArray(groups) || groups.length === 0) {
+        groups = [{ id: 'default', name: '??李??앸떦', color: '#FFB800', isDefault: true }];
+    }
+    localStorage.setItem(getUserWishlistGroupsKey(), JSON.stringify(groups));
+    if (typeof saveToCloud === 'function') {
+        saveToCloud('wishlist_groups', groups);
+    }
+}
+
+function getUserActiveWishlistGroupIdsKey() {
+    const u = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    return u && u.id ? `spoonmap_user_${u.id}_active_wishlist_group_ids` : 'spoonmap_guest_active_wishlist_group_ids';
+}
+
+function getUserActiveWishlistGroupIds() {
+    try {
+        const saved = localStorage.getItem(getUserActiveWishlistGroupIdsKey());
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+        }
+    } catch (_) {}
+    return [];
+}
+
+function saveUserActiveWishlistGroupIds(activeIds) {
+    localStorage.setItem(getUserActiveWishlistGroupIdsKey(), JSON.stringify(activeIds || []));
+}
+
+function addUserWishlistGroup(name, color = '#FFB800') {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return null;
+    const groups = getUserWishlistGroups();
+    const newGroup = {
+        id: 'wish_grp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: trimmed,
+        color: color || '#FFB800',
+        isDefault: false,
+        createdAt: new Date().toISOString()
+    };
+    groups.push(newGroup);
+    saveUserWishlistGroups(groups);
+    return newGroup;
+}
+
+function deleteUserWishlistGroup(groupId) {
+    if (!groupId || groupId === 'default') return false;
+    let groups = getUserWishlistGroups();
+    groups = groups.filter(g => g.id !== groupId);
+    saveUserWishlistGroups(groups);
+
+    let activeIds = getUserActiveWishlistGroupIds();
+    activeIds = activeIds.filter(id => id !== groupId);
+    saveUserActiveWishlistGroupIds(activeIds);
+
+    let list = getUserWishlist();
+    let changed = false;
+    list.forEach(item => {
+        if (Array.isArray(item.group_ids) && item.group_ids.includes(groupId)) {
+            item.group_ids = item.group_ids.filter(id => id !== groupId);
+            if (item.group_ids.length === 0) {
+                item.group_ids = ['default'];
+            }
+            changed = true;
+        }
+    });
+    if (changed) {
+        saveUserWishlist(list);
+    }
+    return true;
+}
+
+function getPlaceWishlistGroupIds(name, place = null) {
+    if (!name) return [];
+    const list = getUserWishlist();
+    if (!list || list.length === 0) return [];
+
+    const pPlaceId = place ? (place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url || place.map_url)) : null;
+    const placeAddr = place ? (((place.address_name || '') + ' ' + (place.road_address_name || '')).replace(/\s/g, '').toLowerCase()) : '';
+
+    const found = list.find(wItem => {
+        const wPlaceId = extractKakaoPlaceId(wItem.map_url);
+        if (wPlaceId && pPlaceId) {
+            return wPlaceId === pPlaceId;
+        }
+        const wn = (wItem.name || '').replace(/\s/g, '').toLowerCase();
+        const pn = (name || '').replace(/\s/g, '').toLowerCase();
+        if (wn === pn || pn.includes(wn) || wn.includes(pn)) {
+            if (wItem.location && placeAddr) {
+                const wLoc = wItem.location.replace(/\s/g, '').toLowerCase();
+                return placeAddr.includes(wLoc) || wLoc.includes(placeAddr);
+            }
+            return wn === pn;
+        }
+        return false;
+    });
+
+    if (!found) return [];
+    return (Array.isArray(found.group_ids) && found.group_ids.length > 0) ? found.group_ids : ['default'];
+}
+
+// ??? Wishlist Modals and UI Management ???
+window.selectedWishlistGroupColor = '#FFB800';
+window.currentAddWishlistCallback = null;
+window.currentWishlistSelectTarget = null;
+window.selectedImportWishlistGroupIds = ['default'];
+
+function renderWishlistGroupColorPalette() {
+    const palette = document.getElementById('wishlist-group-color-palette');
+    if (!palette) return;
+    palette.innerHTML = WISHLIST_PALETTE_COLORS.map(c => `
+        <span class="color-palette-dot ${c === window.selectedWishlistGroupColor ? 'active' : ''}" 
+              data-color="${c}" 
+              style="background:${c};"
+              onclick="window.selectWishlistGroupColor('${c}')">
+            ${c === window.selectedWishlistGroupColor ? '\u2713' : ''}
+        </span>
+    `).join('');
+}
+
+window.selectWishlistGroupColor = function(color) {
+    window.selectedWishlistGroupColor = color;
+    renderWishlistGroupColorPalette();
+};
+
+window.openAddWishlistGroupModal = function(callback = null) {
+    window.currentAddWishlistCallback = (typeof callback === 'function') ? callback : null;
+    const modal = document.getElementById('modal-add-wishlist-group');
+    if (!modal) return;
+    
+    if (typeof window.closeAllMobileMapPopovers === 'function') {
+        window.closeAllMobileMapPopovers();
+    }
+
+    const nameInput = document.getElementById('new-wishlist-group-name');
+    if (nameInput) {
+        nameInput.value = '';
+    }
+    window.selectedWishlistGroupColor = '#FFB800';
+    renderWishlistGroupColorPalette();
+
+    modal.style.display = 'flex';
+    void modal.offsetHeight;
+    modal.classList.add('open');
+
+    if (nameInput) {
+        setTimeout(() => nameInput.focus(), 100);
+    }
+};
+
+window.closeAddWishlistGroupModal = function() {
+    const modal = document.getElementById('modal-add-wishlist-group');
+    if (!modal) return;
+    modal.classList.remove('open');
+    setTimeout(() => {
+        if (!modal.classList.contains('open')) {
+            modal.style.display = 'none';
+        }
+    }, 220);
+};
+
+window.handleConfirmAddWishlistGroup = function() {
+    const nameInput = document.getElementById('new-wishlist-group-name');
+    const name = (nameInput?.value || '').trim();
+    if (!name) {
+        alert('紐⑸줉 ?대쫫???낅젰?댁＜?몄슂.');
+        if (nameInput) nameInput.focus();
+        return;
+    }
+
+    const color = window.selectedWishlistGroupColor || '#FFB800';
+    const newGroup = addUserWishlistGroup(name, color);
+    if (!newGroup) return;
+
+    window.closeAddWishlistGroupModal();
+
+    if (typeof showDiaryToast === 'function') {
+        showDiaryToast(`狩?[${name}] 李?紐⑸줉??異붽??섏뿀?듬땲??`);
+    }
+
+    if (typeof window.currentAddWishlistCallback === 'function') {
+        window.currentAddWishlistCallback(newGroup);
+        window.currentAddWishlistCallback = null;
+    }
+
+    renderMobileWishlistInPopover();
+    renderPcWishlistChips();
+    if (typeof window.renderImportWishlistSelector === 'function') {
+        window.renderImportWishlistSelector();
+    }
+};
+
+window.handleDeleteWishlistGroup = function(groupId) {
+    const groups = getUserWishlistGroups();
+    const g = groups.find(item => item.id === groupId);
+    if (!g || g.isDefault) return;
+
+    if (!confirm(`'${g.name}' 李?紐⑸줉????젣?섏떆寃좎뒿?덇퉴?\n(?앸떦? 湲곕낯 李?紐⑸줉?쇰줈 ?좎??⑸땲??)`)) return;
+
+    deleteUserWishlistGroup(groupId);
+    if (typeof showDiaryToast === 'function') {
+        showDiaryToast(`?뿊截?[${g.name}] 李?紐⑸줉????젣?섏뿀?듬땲??`);
+    }
+
+    if (typeof window.renderAllActiveWishlistOverlays === 'function') {
+        window.renderAllActiveWishlistOverlays();
+    }
+    renderMobileWishlistInPopover();
+    renderPcWishlistChips();
+    if (typeof window.renderImportWishlistSelector === 'function') {
+        window.renderImportWishlistSelector();
+    }
+};
+
+// ??? Wishlist Group Selection Modal (Place Detail / Map Search) ???
+window.openWishlistGroupSelectModal = function(placeInfo) {
+    if (!isUserLoggedIn()) {
+        alert('移댁뭅??濡쒓렇?????댁슜?섏떎 ???덉뒿?덈떎.');
+        return;
+    }
+    window.currentWishlistSelectTarget = placeInfo;
+    const modal = document.getElementById('modal-select-wishlist-group');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('wishlist-select-modal-place-name');
+    if (titleEl) {
+        titleEl.textContent = placeInfo.name ? `狩?'${placeInfo.name}' 李쒗븯湲? : '狩??앸떦 李쒗븯湲?;
+    }
+
+    window.refreshWishlistSelectModalGroups();
+
+    modal.style.display = 'flex';
+    void modal.offsetHeight;
+    modal.classList.add('open');
+};
+
+window.closeWishlistGroupSelectModal = function() {
+    const modal = document.getElementById('modal-select-wishlist-group');
+    if (!modal) return;
+    modal.classList.remove('open');
+    setTimeout(() => {
+        if (!modal.classList.contains('open')) {
+            modal.style.display = 'none';
+        }
+    }, 220);
+};
+
+window.refreshWishlistSelectModalGroups = function(newlyCreatedGroup = null) {
+    const container = document.getElementById('wishlist-select-groups-list');
+    if (!container) return;
+
+    const target = window.currentWishlistSelectTarget;
+    const currentGids = target ? getPlaceWishlistGroupIds(target.name, target) : [];
+    const selectedSet = new Set(currentGids);
+
+    if (newlyCreatedGroup && newlyCreatedGroup.id) {
+        selectedSet.add(newlyCreatedGroup.id);
+    } else if (selectedSet.size === 0) {
+        selectedSet.add('default');
+    }
+
+    const groups = getUserWishlistGroups();
+    const allWishlist = getUserWishlist();
+
+    container.innerHTML = groups.map(g => {
+        const isChecked = selectedSet.has(g.id);
+        const count = allWishlist.filter(w => {
+            const gids = (Array.isArray(w.group_ids) && w.group_ids.length > 0) ? w.group_ids : ['default'];
+            return gids.includes(g.id);
+        }).length;
+
+        return `
+            <div class="wishlist-select-row ${isChecked ? 'selected' : ''}" data-group-id="${g.id}" onclick="window.toggleWishlistSelectRow(this, '${g.id}')">
+                <div class="wishlist-select-row-left">
+                    <span class="wishlist-select-color-dot" style="background:${g.color || '#FFB800'};">狩?/span>
+                    <span class="wishlist-select-group-name">${g.name}</span>
+                    <span class="wishlist-select-count">(${count})</span>
+                </div>
+                <input type="checkbox" class="wishlist-select-checkbox" value="${g.id}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); window.toggleWishlistSelectRow(this.closest('.wishlist-select-row'), '${g.id}', this.checked)">
+            </div>
+        `;
+    }).join('');
+};
+
+window.toggleWishlistSelectRow = function(rowEl, groupId, forcedState = null) {
+    if (!rowEl) return;
+    const chk = rowEl.querySelector('input.wishlist-select-checkbox');
+    if (!chk) return;
+    const newState = (forcedState !== null) ? forcedState : !chk.checked;
+    chk.checked = newState;
+    rowEl.classList.toggle('selected', newState);
+};
+
+window.handleConfirmWishlistSelection = async function() {
+    const target = window.currentWishlistSelectTarget;
+    if (!target || !target.name) {
+        window.closeWishlistGroupSelectModal();
+        return;
+    }
+
+    const container = document.getElementById('wishlist-select-groups-list');
+    const checkedCheckboxes = container ? container.querySelectorAll('input.wishlist-select-checkbox:checked') : [];
+    const checkedGroupIds = Array.from(checkedCheckboxes).map(cb => cb.value);
+
+    let list = getUserWishlist();
+    const existingIdx = list.findIndex(w => w.name === target.name);
+    let isNowWishlisted = false;
+
+    if (checkedGroupIds.length > 0) {
+        if (existingIdx > -1) {
+            list[existingIdx].group_ids = checkedGroupIds;
+            if (target.category) list[existingIdx].category = target.category;
+            if (target.location) list[existingIdx].location = target.location;
+            if (target.mapUrl) list[existingIdx].map_url = target.mapUrl;
+            if (target.x) list[existingIdx].x = String(target.x);
+            if (target.y) list[existingIdx].y = String(target.y);
+        } else {
+            list.push({
+                name: target.name,
+                category: target.category || '?뚯떇??,
+                location: target.location || '',
+                map_url: target.mapUrl || '',
+                x: target.x ? String(target.x) : '',
+                y: target.y ? String(target.y) : '',
+                group_ids: checkedGroupIds,
+                savedAt: new Date().toISOString()
+            });
+        }
+        isNowWishlisted = true;
+        if (typeof showDiaryToast === 'function') {
+            showDiaryToast(`狩?'${target.name}' ?앸떦??李?紐⑸줉????ν뻽?듬땲??`);
+        }
+    } else {
+        if (existingIdx > -1) {
+            list.splice(existingIdx, 1);
+        }
+        isNowWishlisted = false;
+        if (typeof showDiaryToast === 'function') {
+            showDiaryToast(`'${target.name}' ?앸떦??李?紐⑸줉?먯꽌 ?쒖쇅?덉뒿?덈떎.`);
+        }
+    }
+
+    saveUserWishlist(list);
+    window.closeWishlistGroupSelectModal();
+
+    const btn = document.getElementById('btn-wishlist-toggle');
+    if (btn) {
+        const label = isNowWishlisted ? (checkedGroupIds.length > 1 ? `狩?李?(${checkedGroupIds.length})` : '狩?李??꾨즺') : '狩?李쒗븯湲?;
+        btn.textContent = label;
+        btn.classList.toggle('active', isNowWishlisted);
+    }
+    const mobileWishBtn = document.querySelector('.mobile-only-wish-btn');
+    if (mobileWishBtn) {
+        mobileWishBtn.classList.toggle('active', isNowWishlisted);
+        mobileWishBtn.title = isNowWishlisted ? '李??섏젙' : '李쒗븯湲?;
+    }
+
+    const activeGroupIds = getUserActiveWishlistGroupIds();
+    if (activeGroupIds.length > 0 && typeof window.renderAllActiveWishlistOverlays === 'function') {
+        window.renderAllActiveWishlistOverlays();
+    }
+    renderMobileWishlistInPopover();
+    renderPcWishlistChips();
+};
+
+// ??? Import Places Wishlist Selector ???
+window.renderImportWishlistSelector = function() {
+    const container = document.getElementById('import-wishlist-chips');
+    if (!container) return;
+
+    if (!window.selectedImportWishlistGroupIds || window.selectedImportWishlistGroupIds.length === 0) {
+        window.selectedImportWishlistGroupIds = ['default'];
+    }
+
+    const groups = getUserWishlistGroups();
+    container.innerHTML = groups.map(g => {
+        const isChecked = window.selectedImportWishlistGroupIds.includes(g.id);
+        return `
+            <button type="button" class="import-wishlist-chip ${isChecked ? 'active' : ''}" 
+                data-group-id="${g.id}" 
+                style="--chip-color:${g.color || '#FFB800'};"
+                onclick="window.toggleImportWishlistGroup('${g.id}')">
+                <span class="chip-color-dot" style="background:${g.color || '#FFB800'};"></span>
+                <span class="chip-name">${g.name}</span>
+                <span class="chip-check-icon">${isChecked ? '\u2713' : '+'}</span>
+            </button>
+        `;
+    }).join('');
+};
+
+window.refreshImportWishlistChips = function(newGroup = null) {
+    if (newGroup && newGroup.id) {
+        if (!Array.isArray(window.selectedImportWishlistGroupIds)) {
+            window.selectedImportWishlistGroupIds = ['default'];
+        }
+        if (!window.selectedImportWishlistGroupIds.includes(newGroup.id)) {
+            window.selectedImportWishlistGroupIds.push(newGroup.id);
+        }
+    }
+    window.renderImportWishlistSelector();
+};
+
+window.toggleImportWishlistGroup = function(groupId) {
+    if (!Array.isArray(window.selectedImportWishlistGroupIds)) {
+        window.selectedImportWishlistGroupIds = ['default'];
+    }
+    const idx = window.selectedImportWishlistGroupIds.indexOf(groupId);
+    if (idx > -1) {
+        if (window.selectedImportWishlistGroupIds.length > 1) {
+            window.selectedImportWishlistGroupIds.splice(idx, 1);
+        }
+    } else {
+        window.selectedImportWishlistGroupIds.push(groupId);
+    }
+    window.renderImportWishlistSelector();
+};
+
+// ??? Map Overlays Rendering for Wishlist Groups ???
+window.activeWishlistMarkersMap = new Map();
+window.activeWishlistOverlayListItems = [];
+
+window.renderAllActiveWishlistOverlays = async function(zoomTargetGroupId = null, preserveScroll = false) {
+    let activeMap = map || window.map;
+    if (!activeMap && typeof initMap === 'function') {
+        initMap();
+        activeMap = map || window.map;
+    }
+    if (!activeMap) return;
+
+    if (window.activeWishlistMarkersMap) {
+        for (const [, markerList] of window.activeWishlistMarkersMap.entries()) {
+            if (Array.isArray(markerList)) {
+                markerList.forEach(m => m.setMap(null));
+            }
+        }
+        window.activeWishlistMarkersMap.clear();
+    }
+    window.activeWishlistOverlayListItems = [];
+
+    const activeIds = getUserActiveWishlistGroupIds();
+    if (!activeIds || activeIds.length === 0) {
+        if (typeof window.syncActiveOverlayResultsList === 'function') {
+            window.syncActiveOverlayResultsList(preserveScroll);
+        }
+        if (typeof updateStarChipHighlight === 'function') {
+            updateStarChipHighlight();
+        }
+        return;
+    }
+
+    const groups = getUserWishlistGroups();
+    const groupMap = new Map(groups.map(g => [g.id, g]));
+    const wishlist = getUserWishlist();
+
+    const activePlaces = wishlist.filter(wItem => {
+        const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
+        return gids.some(gid => activeIds.includes(gid));
+    });
+
+    if (activePlaces.length === 0) {
+        if (typeof window.syncActiveOverlayResultsList === 'function') {
+            window.syncActiveOverlayResultsList(preserveScroll);
+        }
+        return;
+    }
+
+    const bounds = new kakao.maps.LatLngBounds();
+    let hasTargetBounds = false;
+    const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
+    const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
+
+    const resolveWishItem = (wItem) => {
+        return new Promise((resolve) => {
+            const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
+            const activeGid = gids.find(id => activeIds.includes(id)) || 'default';
+            const grp = groupMap.get(activeGid) || { color: '#FFB800', name: '??李??앸떦' };
+
+            const renderItemMarker = (coords, place) => {
+                const item = {
+                    name: wItem.name,
+                    category: wItem.category || (place.category_name ? mapKakaoCategoryToStandard(place.category_name, wItem.name) : '?뚯떇??),
+                    location_large: wItem.location || place.address_name || '',
+                    location_small: wItem.location_small || place.road_address_name || place.address_name || '',
+                    map_url: wItem.map_url || place.place_url || '',
+                    rate: '',
+                    visit_count: 0,
+                    isWishlist: true,
+                    wishlistGroup: grp
+                };
+
+                const svgUri = getModernMarkerSvg('wishlist', item.category, false, null, null, item.name, grp.color);
+                const markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
+                const marker = new kakao.maps.Marker({
+                    map: activeMap,
+                    position: coords,
+                    zIndex: 92,
+                    image: markerImg
+                });
+
+                attachMarkerEvents(marker, item, place, false, true, coords);
+
+                if (!window.activeWishlistMarkersMap.has(activeGid)) {
+                    window.activeWishlistMarkersMap.set(activeGid, []);
+                }
+                window.activeWishlistMarkersMap.get(activeGid).push(marker);
+
+                window.activeWishlistOverlayListItems.push({
+                    item,
+                    place,
+                    isSaved: false,
+                    isWishlist: true
+                });
+
+                if (zoomTargetGroupId && (activeGid === zoomTargetGroupId || gids.includes(zoomTargetGroupId))) {
+                    bounds.extend(coords);
+                    hasTargetBounds = true;
+                }
+                resolve(true);
+            };
+
+            if (wItem.x && wItem.y && parseFloat(wItem.x) > 120 && parseFloat(wItem.y) > 30) {
+                const coords = new kakao.maps.LatLng(wItem.y, wItem.x);
+                const place = {
+                    place_name: wItem.name,
+                    x: wItem.x,
+                    y: wItem.y,
+                    address_name: wItem.location || '',
+                    road_address_name: wItem.location || '',
+                    category_name: wItem.category || '?뚯떇??,
+                    place_url: wItem.map_url || ''
+                };
+                renderItemMarker(coords, place);
+                return;
+            }
+
+            if (ps) {
+                const kw = wItem.location ? `${wItem.name} ${wItem.location}` : wItem.name;
+                ps.keywordSearch(kw, (data, status) => {
+                    if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                        const p = data[0];
+                        wItem.x = p.x;
+                        wItem.y = p.y;
+                        const coords = new kakao.maps.LatLng(p.y, p.x);
+                        renderItemMarker(coords, p);
+                    } else if (geocoder && wItem.location) {
+                        geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
+                            if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
+                                const p = {
+                                    place_name: wItem.name,
+                                    x: geoRes[0].x,
+                                    y: geoRes[0].y,
+                                    address_name: geoRes[0].address_name,
+                                    road_address_name: geoRes[0].road_address?.address_name || '',
+                                    category_name: wItem.category || '?뚯떇??,
+                                    place_url: wItem.map_url || ''
+                                };
+                                wItem.x = p.x;
+                                wItem.y = p.y;
+                                const coords = new kakao.maps.LatLng(p.y, p.x);
+                                renderItemMarker(coords, p);
+                            } else {
+                                resolve(false);
+                            }
+                        });
+                    } else {
+                        resolve(false);
+                    }
+                });
+            } else {
+                resolve(false);
+            }
+        });
+    };
+
+    await Promise.all(activePlaces.map(resolveWishItem));
+
+    if (typeof window.syncActiveOverlayResultsList === 'function') {
+        window.syncActiveOverlayResultsList(preserveScroll);
+    }
+
+    if (hasTargetBounds && activeMap && typeof activeMap.setBounds === 'function') {
+        activeMap.setBounds(bounds);
+        if (activePlaces.length === 1 && typeof activeMap.setLevel === 'function') {
+            activeMap.setLevel(3);
+        }
+    }
+};
+
+window.toggleWishlistGroupOverlay = async function(groupId) {
+    if (!map && !window.map && typeof initMap === 'function') {
+        initMap();
+    }
+    let activeIds = getUserActiveWishlistGroupIds();
+    const existingIdx = activeIds.indexOf(groupId);
+    let zoomTarget = null;
+
+    if (existingIdx > -1) {
+        activeIds.splice(existingIdx, 1);
+        saveUserActiveWishlistGroupIds(activeIds);
+    } else {
+        activeIds.push(groupId);
+        saveUserActiveWishlistGroupIds(activeIds);
+        zoomTarget = groupId;
+    }
+
+    await window.renderAllActiveWishlistOverlays(zoomTarget);
+    renderMobileWishlistInPopover();
+    renderPcWishlistChips();
+    if (typeof updateStarChipHighlight === 'function') {
+        updateStarChipHighlight();
+    }
+};
+
+window.toggleAllWishlistGroupsOverlay = async function(enableAll = null) {
+    const groups = getUserWishlistGroups();
+    let activeIds = getUserActiveWishlistGroupIds();
+    const shouldEnable = (enableAll !== null) ? enableAll : (activeIds.length === 0);
+
+    if (shouldEnable) {
+        activeIds = groups.map(g => g.id);
+    } else {
+        activeIds = [];
+    }
+
+    saveUserActiveWishlistGroupIds(activeIds);
+    await window.renderAllActiveWishlistOverlays(shouldEnable ? (groups[0]?.id || null) : null);
+    renderMobileWishlistInPopover();
+    renderPcWishlistChips();
+    if (typeof updateStarChipHighlight === 'function') {
+        updateStarChipHighlight();
+    }
+};
+
+function renderMobileWishlistInPopover() {
+    const subList = document.getElementById('pop-wishlist-sub-list');
+    const badgeEl = document.getElementById('pop-wishlist-active-badge');
+    const groups = getUserWishlistGroups();
+    const activeIds = getUserActiveWishlistGroupIds();
+    const allWishlist = getUserWishlist();
+
+    if (badgeEl) {
+        if (activeIds.length > 0) {
+            badgeEl.textContent = `${activeIds.length}媛?耳쒖쭚`;
+            badgeEl.style.color = '#D97706';
+            badgeEl.style.background = '#FFFBEB';
+            badgeEl.style.border = '1px solid #FCD34D';
+        } else {
+            badgeEl.textContent = '紐⑤몢 爰쇱쭚';
+            badgeEl.style.color = '#94A3B8';
+            badgeEl.style.background = '#F8FAFC';
+            badgeEl.style.border = '1px solid #E2E8F0';
+        }
+    }
+
+    if (!subList) return;
+    subList.innerHTML = '';
+
+    groups.forEach(g => {
+        const isActive = activeIds.includes(g.id);
+        const count = allWishlist.filter(w => {
+            const gids = (Array.isArray(w.group_ids) && w.group_ids.length > 0) ? w.group_ids : ['default'];
+            return gids.includes(g.id);
+        }).length;
+
+        const rowEl = document.createElement('div');
+        rowEl.className = `pop-wishlist-row ${isActive ? 'active' : ''}`;
+        rowEl.innerHTML = `
+            <div class="pop-wishlist-info">
+                <span class="pop-wishlist-avatar" style="background:${g.color || '#FFB800'};">狩?/span>
+                <span class="pop-wishlist-name" title="${g.name}">${g.name}</span>
+                <span class="pop-wishlist-count">(${count})</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+                ${!g.isDefault ? `<button type="button" class="pop-wishlist-del-btn" onclick="event.stopPropagation(); window.handleDeleteWishlistGroup('${g.id}')" title="??젣">&times;</button>` : ''}
+                <label class="toggle-switch-sm wishlist-toggle-label" onclick="event.stopPropagation();">
+                    <input type="checkbox" class="wishlist-toggle" data-group-id="${g.id}" ${isActive ? 'checked' : ''}>
+                    <span class="toggle-slider-sm" style="${isActive ? `background-color:${g.color || '#FFB800'} !important;` : ''}"></span>
+                </label>
+            </div>
+        `;
+
+        rowEl.addEventListener('click', (e) => {
+            if (e.target.closest('button, input, label')) return;
+            window.toggleWishlistGroupOverlay(g.id);
+        });
+
+        const chk = rowEl.querySelector('input.wishlist-toggle');
+        if (chk) {
+            chk.addEventListener('change', (e) => {
+                e.stopPropagation();
+                window.toggleWishlistGroupOverlay(g.id);
+            });
+        }
+
+        subList.appendChild(rowEl);
+    });
+}
+window.renderMobileWishlistInPopover = renderMobileWishlistInPopover;
+
+function renderPcWishlistChips() {
+    const chipsWrap = document.getElementById('map-wishlist-chips');
+    const badgeEl = document.getElementById('pc-wishlist-active-badge');
+    const groups = getUserWishlistGroups();
+    const activeIds = getUserActiveWishlistGroupIds();
+    const allWishlist = getUserWishlist();
+
+    if (badgeEl) {
+        if (activeIds.length > 0) {
+            badgeEl.textContent = `${activeIds.length}媛?耳쒖쭚`;
+            badgeEl.style.color = '#D97706';
+            badgeEl.style.background = '#FFFBEB';
+            badgeEl.style.border = '1px solid #FCD34D';
+        } else {
+            badgeEl.textContent = '0媛?耳쒖쭚';
+            badgeEl.style.color = '#94A3B8';
+            badgeEl.style.background = '#F8FAFC';
+            badgeEl.style.border = '1px solid #E2E8F0';
+        }
+    }
+
+    if (!chipsWrap) return;
+    chipsWrap.innerHTML = groups.map(g => {
+        const isActive = activeIds.includes(g.id);
+        const count = allWishlist.filter(w => {
+            const gids = (Array.isArray(w.group_ids) && w.group_ids.length > 0) ? w.group_ids : ['default'];
+            return gids.includes(g.id);
+        }).length;
+
+        return `
+            <div class="wishlist-chip ${isActive ? 'active' : ''}" style="--wish-color:${g.color || '#FFB800'};" onclick="window.toggleWishlistGroupOverlay('${g.id}')">
+                <span class="wish-chip-dot" style="background:${g.color || '#FFB800'};">狩?/span>
+                <span class="wish-chip-name">${g.name}</span>
+                <span class="wish-chip-count">(${count})</span>
+                ${!g.isDefault ? `<button type="button" class="wish-chip-del" onclick="event.stopPropagation(); window.handleDeleteWishlistGroup('${g.id}')" title="??젣">&times;</button>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+window.renderPcWishlistChips = renderPcWishlistChips;
+
 function extractKakaoPlaceId(url) {
     if (!url || typeof url !== 'string') return null;
     const str = url.trim();
@@ -1397,82 +2173,47 @@ function isFoodRelatedPlace(place, masterData = []) {
 }
 window.isFoodRelatedPlace = isFoodRelatedPlace;
 
-function isPlaceInWishlist(name, place = null) {
+function isPlaceInWishlist(name, place = null, targetGroupId = null) {
     if (!name) return false;
     const list = getUserWishlist();
     if (!list || list.length === 0) return false;
 
-    if (!place) {
-        return list.some(item => item.name === name);
-    }
-
-    const pPlaceId = place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url || place.map_url);
-    const placeAddr = ((place.address_name || '') + ' ' + (place.road_address_name || '')).replace(/\s/g, '').toLowerCase();
+    const pPlaceId = place ? (place.id ? String(place.id).trim() : extractKakaoPlaceId(place.place_url || place.map_url)) : null;
+    const placeAddr = place ? (((place.address_name || '') + ' ' + (place.road_address_name || '')).replace(/\s/g, '').toLowerCase()) : '';
 
     return list.some(wItem => {
+        let isMatch = false;
         const wPlaceId = extractKakaoPlaceId(wItem.map_url);
         if (wPlaceId && pPlaceId) {
-            return wPlaceId === pPlaceId;
+            isMatch = (wPlaceId === pPlaceId);
+        } else {
+            const wn = (wItem.name || '').replace(/\s/g, '').toLowerCase();
+            const pn = (name || '').replace(/\s/g, '').toLowerCase();
+            if (wn === pn || pn.includes(wn) || wn.includes(pn)) {
+                if (wItem.location && placeAddr) {
+                    const wLoc = wItem.location.replace(/\s/g, '').toLowerCase();
+                    isMatch = (placeAddr.includes(wLoc) || wLoc.includes(placeAddr));
+                } else {
+                    isMatch = (wn === pn);
+                }
+            }
         }
 
-        const wn = (wItem.name || '').replace(/\s/g, '').toLowerCase();
-        const pn = (name || '').replace(/\s/g, '').toLowerCase();
-        if (wn !== pn && !pn.includes(wn) && !wn.includes(pn)) {
-            return false;
-        }
+        if (!isMatch) return false;
+        if (!targetGroupId) return true;
 
-        if (wItem.location && placeAddr) {
-            const wLoc = wItem.location.replace(/\s/g, '').toLowerCase();
-            return placeAddr.includes(wLoc) || wLoc.includes(placeAddr);
-        }
-
-        return wn === pn;
+        const gIds = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
+        return gIds.includes(targetGroupId);
     });
 }
 
 window.handleToggleWishlist = function(name, category, location, mapUrl, x = '', y = '') {
     if (!isUserLoggedIn()) {
-        alert('카카오 로그인 후 이용하실 수 있습니다.');
+        alert('移댁뭅??濡쒓렇?????댁슜?섏떎 ???덉뒿?덈떎.');
         return;
     }
-
-    let list = getUserWishlist();
-    const existingIndex = list.findIndex(item => item.name === name);
-    let isNowWishlisted = false;
-
-    if (existingIndex > -1) {
-        list.splice(existingIndex, 1);
-        isNowWishlisted = false;
-        alert(`'${name}' 식당을 찜 목록에서 삭제했습니다.`);
-    } else {
-        list.push({
-            name,
-            category: category || '음식점',
-            location: location || '',
-            map_url: mapUrl || '',
-            x: x ? String(x) : '',
-            y: y ? String(y) : '',
-            savedAt: new Date().toISOString()
-        });
-        isNowWishlisted = true;
-        alert(`'${name}' 식당을 찜 목록에 저장했습니다!`);
-    }
-
-    saveUserWishlist(list);
-
-    // Update the button text & active class in place detail view (desktop + mobile)
-    const btn = document.getElementById('btn-wishlist-toggle');
-    if (btn) {
-        btn.textContent = isNowWishlisted ? '찜 취소' : '찜하기';
-        btn.classList.toggle('active', isNowWishlisted);
-    }
-    const mobileWishBtn = document.querySelector('.mobile-only-wish-btn');
-    if (mobileWishBtn) {
-        mobileWishBtn.classList.toggle('active', isNowWishlisted);
-        mobileWishBtn.title = isNowWishlisted ? '찜 취소' : '찜하기';
-    }
+    window.openWishlistGroupSelectModal({ name, category, location, mapUrl, x, y });
 };
-
 window.handleAddPlaceToDiary = function(name, category, location, mapUrl, locLarge = '', locSmall = '') {
     if (!isUserLoggedIn()) {
         alert('카카오 로그인 후 이용하실 수 있습니다.');
@@ -3542,7 +4283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const markerSvgCache = new Map();
 
-    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null, friendBadges = null, placeName = '') {
+    function getModernMarkerSvg(type, category = '', isFlame = false, friendBadge = null, friendBadges = null, placeName = '', customColor = null) {
         // Collect badges list
         let allBadges = [];
         if (Array.isArray(friendBadges) && friendBadges.length > 0) {
@@ -3555,7 +4296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const friendKey = allBadges.map(b => `${b.text || ''}_${b.color || ''}`).join(';');
         const safePlaceKey = (placeName || '').slice(0, 15);
-        const cacheKey = `c38_${type}_${category}_${safePlaceKey}_${isFlame}_${friendKey}`;
+        const cacheKey = `c38_${type}_${category}_${safePlaceKey}_${isFlame}_${friendKey}_${customColor || ""}`;
         if (markerSvgCache.has(cacheKey)) {
             return markerSvgCache.get(cacheKey);
         }
@@ -3621,7 +4362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${emoji}</text>`;
         } else if (type === 'wishlist') {
             innerBg = '#FFFFFF';
-            borderColor = '#F59E0B';
+            borderColor = customColor || '#F59E0B';
             iconContent = `<text x="19" y="19.5" font-size="14.5" text-anchor="middle" dominant-baseline="central" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">⭐</text>`;
         } else {
             // General Kakao search place
@@ -3920,7 +4661,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (isSaved) {
                 svgUri = getModernMarkerSvg('saved', item?.category || place.category_name, isFlame, null, null, item?.name || place?.place_name);
             } else if (isWishlist) {
-                svgUri = getModernMarkerSvg('wishlist', '', false, null, null, item?.name || place?.place_name);
+                let customWishColor = null;
+                if (typeof getPlaceWishlistGroupIds === 'function') {
+                    const pGids = getPlaceWishlistGroupIds(item?.name || place?.place_name, place);
+                    const allGroups = (typeof getUserWishlistGroups === 'function') ? getUserWishlistGroups() : [];
+                    const grp = allGroups.find(g => pGids.includes(g.id)) || allGroups[0];
+                    if (grp && grp.color) customWishColor = grp.color;
+                }
+                svgUri = getModernMarkerSvg('wishlist', '', false, null, null, item?.name || place?.place_name, customWishColor);
             } else {
                 svgUri = getModernMarkerSvg('search', item?.category || place.category_name, false, null, null, item?.name || place?.place_name);
             }
@@ -4284,6 +5032,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!standardCategory) standardCategory = displayCategory;
 
         const isWishlisted = isPlaceInWishlist(item.name, placeData);
+        const wishGroupIds = (typeof getPlaceWishlistGroupIds === 'function') ? getPlaceWishlistGroupIds(item.name, placeData) : [];
+        const wishBtnLabel = isWishlisted ? (wishGroupIds.length > 1 ? `⭐ 찜 (${wishGroupIds.length})` : '⭐ 찜 완료') : '⭐ 찜하기';
         const mapUrls = (typeof getPlaceMapUrls === 'function') ? getPlaceMapUrls(item, placeData) : {
             kakaoUrl: `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`,
             naverUrl: `https://map.naver.com/p/search/${encodeURIComponent(item.name)}`
@@ -4298,7 +5048,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionsHtml = `
             <div class="place-detail-actions">
                 <button type="button" class="btn-add-to-diary" onclick="handleAddPlaceToDiary('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${safeLarge}', '${safeSmall}')">➕ 내 맛집에 추가</button>
-                <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">${isWishlisted ? '찜 취소' : '찜하기'}</button>
+                <button type="button" id="btn-wishlist-toggle" class="btn-toggle-wishlist ${isWishlisted ? 'active' : ''}" onclick="handleToggleWishlist('${safeName}', '${safeCategory}', '${safeAddress}', '${safeUrl}', '${placeX}', '${placeY}')">${wishBtnLabel}</button>
             </div>
         `;
 
@@ -4577,13 +5327,24 @@ document.addEventListener('DOMContentLoaded', () => {
             ? window.activeFriendOverlayListItems
             : [];
 
-        const combined = [...friendItems];
+                const wishItems = Array.isArray(window.activeWishlistOverlayListItems)
+            ? window.activeWishlistOverlayListItems
+            : [];
+const combined = [...friendItems];
         myItems.forEach(myEntry => {
             const alreadyIncluded = combined.some(fEntry =>
                 typeof isSameRestaurant === 'function' && isSameRestaurant(fEntry.item, myEntry.item)
             );
             if (!alreadyIncluded) {
                 combined.push(myEntry);
+            }
+        });
+        wishItems.forEach(wEntry => {
+            const alreadyIncluded = combined.some(entry =>
+                typeof isSameRestaurant === 'function' && isSameRestaurant(entry.item, wEntry.item)
+            );
+            if (!alreadyIncluded) {
+                combined.push(wEntry);
             }
         });
 
@@ -7884,32 +8645,29 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             });
         }
 
-        // Wishlist Toggle
-        const popRowWishlist = document.getElementById('pop-row-wishlist');
-        if (switchWishlist) {
-            switchWishlist.addEventListener('change', () => {
-                if (switchWishlist.checked) {
-                    if (switchMyRestaurants && switchMyRestaurants.checked) {
-                        hideMyVisitedPlacesOnMap();
-                    }
-                    showWishlistPlacesOnMap();
-                    closeAllPopovers();
-                } else {
-                    resetMapSearchToInitial();
-                }
-                updateStarChipHighlight();
-            });
-        }
-        if (popRowWishlist && switchWishlist) {
-            popRowWishlist.style.cursor = 'pointer';
-            popRowWishlist.addEventListener('click', (e) => {
-                if (e.target.closest('.toggle-switch-sm')) return;
-                switchWishlist.checked = !switchWishlist.checked;
-                switchWishlist.dispatchEvent(new Event('change'));
+        // Wishlist Header & Popover rendering
+        const popRowWishlistHeader = document.getElementById('pop-row-wishlist-header');
+        if (popRowWishlistHeader) {
+            popRowWishlistHeader.addEventListener('click', (e) => {
+                if (e.target.closest('button, input, label')) return;
+                window.toggleAllWishlistGroupsOverlay();
             });
         }
 
-        // Friends Header Click (Toggle All On / All Off)
+        const btnPcShowWishlist = document.getElementById('btn-show-wishlist');
+        if (btnPcShowWishlist) {
+            btnPcShowWishlist.addEventListener('click', () => {
+                const bar = document.getElementById('map-wishlist-bar');
+                if (!bar) return;
+                const isShowing = bar.style.display !== 'none';
+                bar.style.display = isShowing ? 'none' : 'block';
+                btnPcShowWishlist.classList.toggle('active', !isShowing);
+                if (!isShowing) {
+                    renderPcWishlistChips();
+                }
+            });
+        }
+// Friends Header Click (Toggle All On / All Off)
         const popRowFriends = document.getElementById('pop-row-friends');
         if (popRowFriends) {
             popRowFriends.addEventListener('click', async (e) => {
@@ -7955,7 +8713,10 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             targets.forEach(btn => btn.classList.remove('star-active', 'friend-active', 'both-active', 'my-active'));
 
             const myOn = switchMyRestaurants && switchMyRestaurants.checked;
-            const wishOn = switchWishlist && switchWishlist.checked;
+            const activeWishGroupIds = (typeof getUserActiveWishlistGroupIds === 'function') ? getUserActiveWishlistGroupIds() : [];
+            const wishOn = activeWishGroupIds.length > 0;
+            const btnPcWish = document.getElementById('btn-show-wishlist');
+            if (btnPcWish) btnPcWish.classList.toggle('active', wishOn);
             const activeIds = (typeof getActiveFriendIds === 'function') ? getActiveFriendIds() : [];
             const friendOn = activeIds.length > 0;
 
@@ -8048,7 +8809,17 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         window.renderMobileFriendsListInPopover = renderMobileFriendsListInPopover;
 
         window.resetMapTabFullState = function() {
-            localStorage.setItem('spoonmap_active_friend_ids', '[]');
+            saveUserActiveWishlistGroupIds([]);
+            if (window.activeWishlistMarkersMap) {
+                for (const [, markerList] of window.activeWishlistMarkersMap.entries()) {
+                    if (Array.isArray(markerList)) markerList.forEach(m => m.setMap(null));
+                }
+                window.activeWishlistMarkersMap.clear();
+            }
+            window.activeWishlistOverlayListItems = [];
+            renderMobileWishlistInPopover();
+            renderPcWishlistChips();
+localStorage.setItem('spoonmap_active_friend_ids', '[]');
             window.isMyRestaurantsActive = false;
             window.activeMyRestaurantListItems = [];
             window.activeFriendOverlayListItems = [];
@@ -19770,7 +20541,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610252215', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610252300', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -20830,6 +21601,9 @@ function renderImportPreviewList() {
         `;
         listContainer.appendChild(card);
     });
+    if (typeof window.renderImportWishlistSelector === 'function') {
+        window.renderImportWishlistSelector();
+    }
 }
 
 function removeImportPreviewItem(index) {
@@ -20909,6 +21683,7 @@ async function handleConfirmImportSave() {
             kakao_id: place.kakao_id,
             visit_count: 0,
             isWishlist: true,
+            group_ids: (window.selectedImportWishlistGroupIds && window.selectedImportWishlistGroupIds.length > 0) ? [...window.selectedImportWishlistGroupIds] : ['default'],
             date: place.date
         };
 

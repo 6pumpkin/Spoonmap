@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="style.css?v=202610252215">
+    <link rel="stylesheet" href="style.css?v=202610252300">
 
     <!-- PWA & Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -905,16 +905,17 @@
                             </label>
                         </div>
                         <div class="pop-divider"></div>
-                        <div class="pop-section-row" id="pop-row-wishlist">
+                        <div class="pop-section-row pop-wishlist-header" id="pop-row-wishlist-header">
                             <div class="pop-row-left">
                                 <span>⭐</span>
                                 <span>내 찜 식당</span>
                             </div>
-                            <label class="toggle-switch-sm">
-                                <input type="checkbox" id="switch-wishlist-toggle">
-                                <span class="toggle-slider-sm"></span>
-                            </label>
+                            <div class="pop-row-right" style="display:flex; align-items:center; gap:6px;">
+                                <span id="pop-wishlist-active-badge" class="pop-wishlist-badge">모두 꺼짐</span>
+                                <button type="button" id="btn-add-wishlist-group" class="pop-add-wishlist-btn" onclick="event.stopPropagation(); window.openAddWishlistGroupModal();" title="새 찜 목록 추가">+ 추가</button>
+                            </div>
                         </div>
+                        <div id="pop-wishlist-sub-list" class="wishlist-sub-list"></div>
                         <div class="pop-divider"></div>
                         <div class="pop-section-row pop-friends-header" id="pop-row-friends">
                             <div class="pop-row-left">
@@ -930,6 +931,18 @@
                         </div>
                     </div>
 
+                    <div id="map-wishlist-bar" class="map-wishlist-bar" style="display:none;">
+                        <div class="wishlist-bar-header">
+                            <div class="wishlist-bar-title-wrap">
+                                <span class="wishlist-bar-title">⭐ 내 찜 식당 레이어</span>
+                                <span id="pc-wishlist-active-badge" class="wishlist-bar-badge">0개 켜짐</span>
+                            </div>
+                            <button id="pc-btn-add-wishlist-group" class="wishlist-add-chip-btn" type="button" onclick="window.openAddWishlistGroupModal()">+ 추가</button>
+                        </div>
+                        <div id="map-wishlist-chips" class="map-wishlist-chips">
+                            <!-- Injected dynamically via app.js -->
+                        </div>
+                    </div>
                     <div id="map-friends-bar" class="map-friends-bar" style="display:none;">
                         <div class="friends-bar-header">
                             <span class="friends-bar-title">👥 친구 맛집 레이어</span>
@@ -1657,6 +1670,15 @@
                         </div>
                         <button type="button" class="btn-import-reinput" onclick="window.resetImportToInputState()">+ 추가 링크 입력</button>
                     </div>
+                    <div class="import-wishlist-choice-wrap">
+                        <div class="import-wishlist-choice-header">
+                            <span class="import-wishlist-title">⭐ 저장할 찜 목록</span>
+                            <button type="button" class="btn-import-add-wishlist" onclick="window.openAddWishlistGroupModal(window.refreshImportWishlistChips)">+ 새 목록</button>
+                        </div>
+                        <div id="import-wishlist-chips" class="import-wishlist-chips-container">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
                     <div id="import-preview-list" class="import-preview-list">
                         <!-- 동적으로 파싱된 카드들이 렌더링됨 -->
                     </div>
@@ -1672,6 +1694,55 @@
                 <button type="button" id="btn-import-save" class="btn-import-action save-btn" onclick="window.handleConfirmImportSave()" style="display:none;">
                     <span>등록하기 💾</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── 새 찜 목록 추가 모달 ─── -->
+    <div id="modal-add-wishlist-group" class="list-detail-modal-overlay" style="display:none;" onclick="if(event.target===this)window.closeAddWishlistGroupModal()">
+        <div class="list-detail-modal-card wishlist-group-modal-card">
+            <div id="add-wishlist-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="창 닫기"><div class="handle-bar"></div></div>
+            <button class="list-detail-close-btn" onclick="window.closeAddWishlistGroupModal()" title="닫기">&times;</button>
+            <div class="wishlist-modal-header">
+                <h3 class="wishlist-modal-title">⭐ 새 찜 목록 추가</h3>
+            </div>
+            <div class="wishlist-modal-body">
+                <div class="wishlist-form-field">
+                    <label for="new-wishlist-group-name" class="wishlist-form-label">목록 이름</label>
+                    <input type="text" id="new-wishlist-group-name" class="wishlist-text-input" placeholder="예: 데이트 코스, 디저트, 모임" maxlength="20" autocomplete="off">
+                </div>
+                <div class="wishlist-form-field" style="margin-top:14px;">
+                    <label class="wishlist-form-label">지도 마커 색상</label>
+                    <div id="wishlist-group-color-palette" class="wishlist-color-palette">
+                        <!-- 10 Color dots injected dynamically via app.js -->
+                    </div>
+                </div>
+            </div>
+            <div class="wishlist-modal-footer">
+                <button type="button" class="btn-wishlist-modal-cancel" onclick="window.closeAddWishlistGroupModal()">취소</button>
+                <button type="button" class="btn-wishlist-modal-confirm" onclick="window.handleConfirmAddWishlistGroup()">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── 식당 찜 목록 선택 모달 (다중 선택) ─── -->
+    <div id="modal-select-wishlist-group" class="list-detail-modal-overlay" style="display:none;" onclick="if(event.target===this)window.closeWishlistGroupSelectModal()">
+        <div class="list-detail-modal-card wishlist-select-modal-card">
+            <div id="select-wishlist-sheet-handle" class="bottom-sheet-handle mobile-only" aria-label="창 닫기"><div class="handle-bar"></div></div>
+            <button class="list-detail-close-btn" onclick="window.closeWishlistGroupSelectModal()" title="닫기">&times;</button>
+            <div class="wishlist-modal-header">
+                <h3 class="wishlist-modal-title" id="wishlist-select-modal-place-name">식당 찜하기</h3>
+                <span class="wishlist-select-subbadge">저장할 찜 목록을 선택하세요 (중복 가능)</span>
+            </div>
+            <div class="wishlist-modal-body">
+                <div id="wishlist-select-groups-list" class="wishlist-select-groups-list">
+                    <!-- Checkbox rows dynamically populated via app.js -->
+                </div>
+                <button type="button" class="btn-inline-add-wishlist" onclick="window.openAddWishlistGroupModal(window.refreshWishlistSelectModalGroups)">+ 새 찜 목록 만들기</button>
+            </div>
+            <div class="wishlist-modal-footer">
+                <button type="button" class="btn-wishlist-modal-cancel" onclick="window.closeWishlistGroupSelectModal()">취소</button>
+                <button type="button" class="btn-wishlist-modal-confirm" onclick="window.handleConfirmWishlistSelection()">저장</button>
             </div>
         </div>
     </div>
@@ -1758,7 +1829,7 @@
     <script src="jungyugwang_data.js?v=202610050035"></script>
     <script src="seoulnamzaa_data.js?v=202610091455"></script>
     <script src="todaydessert_data.js?v=202610060240"></script>
-    <script src="app.js?v=202610252215"></script>
+    <script src="app.js?v=202610252300"></script>
 </body>
 
 </html>
