@@ -1740,214 +1740,20 @@ window.activeWishlistMarkersMap = new Map();
 window.activeWishlistOverlayListItems = [];
 
 window.renderAllActiveWishlistOverlays = async function(zoomTargetGroupId = null, preserveScroll = false) {
-    let activeMap = map || window.map;
-    if (!activeMap && typeof initMap === 'function') {
-        initMap();
-        activeMap = map || window.map;
-    }
-    if (!activeMap) return;
-
-    if (window.activeWishlistMarkersMap) {
-        for (const [, markerList] of window.activeWishlistMarkersMap.entries()) {
-            if (Array.isArray(markerList)) {
-                markerList.forEach(m => m.setMap(null));
-            }
-        }
-        window.activeWishlistMarkersMap.clear();
-    }
-    window.activeWishlistOverlayListItems = [];
-
-    const activeIds = getUserActiveWishlistGroupIds();
-    if (!activeIds || activeIds.length === 0) {
-        if (typeof window.syncActiveOverlayResultsList === 'function') {
-            window.syncActiveOverlayResultsList(preserveScroll);
-        }
-        if (typeof updateStarChipHighlight === 'function') {
-            updateStarChipHighlight();
-        }
-        return;
-    }
-
-    const groups = getUserWishlistGroups();
-    const groupMap = new Map(groups.map(g => [g.id, g]));
-    const wishlist = getUserWishlist();
-
-    const activePlaces = wishlist.filter(wItem => {
-        const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
-        return gids.some(gid => activeIds.includes(gid));
-    });
-
-    if (activePlaces.length === 0) {
-        if (typeof window.syncActiveOverlayResultsList === 'function') {
-            window.syncActiveOverlayResultsList(preserveScroll);
-        }
-        return;
-    }
-
-    const bounds = new kakao.maps.LatLngBounds();
-    let hasTargetBounds = false;
-    const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
-    const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
-
-    const resolveWishItem = (wItem) => {
-        return new Promise((resolve) => {
-            const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
-            const activeGid = gids.find(id => activeIds.includes(id)) || 'default';
-            const grp = groupMap.get(activeGid) || { color: '#FFB800', name: '내 찜 식당' };
-
-            const renderItemMarker = (coords, place) => {
-                const item = {
-                    name: wItem.name,
-                    category: wItem.category || (place.category_name ? mapKakaoCategoryToStandard(place.category_name, wItem.name) : '음식점'),
-                    location_large: wItem.location || place.address_name || '',
-                    location_small: wItem.location_small || place.road_address_name || place.address_name || '',
-                    map_url: wItem.map_url || place.place_url || '',
-                    rate: '',
-                    visit_count: 0,
-                    isWishlist: true,
-                    wishlistGroup: grp
-                };
-
-                const svgUri = getModernMarkerSvg('wishlist', item.category, false, null, null, item.name, grp.color);
-                const markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
-                const marker = new kakao.maps.Marker({
-                    map: activeMap,
-                    position: coords,
-                    zIndex: 92,
-                    image: markerImg
-                });
-
-                attachMarkerEvents(marker, item, place, false, true, coords);
-
-                if (!window.activeWishlistMarkersMap.has(activeGid)) {
-                    window.activeWishlistMarkersMap.set(activeGid, []);
-                }
-                window.activeWishlistMarkersMap.get(activeGid).push(marker);
-
-                window.activeWishlistOverlayListItems.push({
-                    item,
-                    place,
-                    isSaved: false,
-                    isWishlist: true
-                });
-
-                if (zoomTargetGroupId && (activeGid === zoomTargetGroupId || gids.includes(zoomTargetGroupId))) {
-                    bounds.extend(coords);
-                    hasTargetBounds = true;
-                }
-                resolve(true);
-            };
-
-            if (wItem.x && wItem.y && parseFloat(wItem.x) > 120 && parseFloat(wItem.y) > 30) {
-                const coords = new kakao.maps.LatLng(wItem.y, wItem.x);
-                const place = {
-                    place_name: wItem.name,
-                    x: wItem.x,
-                    y: wItem.y,
-                    address_name: wItem.location || '',
-                    road_address_name: wItem.location || '',
-                    category_name: wItem.category || '음식점',
-                    place_url: wItem.map_url || ''
-                };
-                renderItemMarker(coords, place);
-                return;
-            }
-
-            if (ps) {
-                const kw = wItem.location ? `${wItem.name} ${wItem.location}` : wItem.name;
-                ps.keywordSearch(kw, (data, status) => {
-                    if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                        const p = data[0];
-                        wItem.x = p.x;
-                        wItem.y = p.y;
-                        const coords = new kakao.maps.LatLng(p.y, p.x);
-                        renderItemMarker(coords, p);
-                    } else if (geocoder && wItem.location) {
-                        geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
-                            if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
-                                const p = {
-                                    place_name: wItem.name,
-                                    x: geoRes[0].x,
-                                    y: geoRes[0].y,
-                                    address_name: geoRes[0].address_name,
-                                    road_address_name: geoRes[0].road_address?.address_name || '',
-                                    category_name: wItem.category || '음식점',
-                                    place_url: wItem.map_url || ''
-                                };
-                                wItem.x = p.x;
-                                wItem.y = p.y;
-                                const coords = new kakao.maps.LatLng(p.y, p.x);
-                                renderItemMarker(coords, p);
-                            } else {
-                                resolve(false);
-                            }
-                        });
-                    } else {
-                        resolve(false);
-                    }
-                });
-            } else {
-                resolve(false);
-            }
-        });
-    };
-
-    await Promise.all(activePlaces.map(resolveWishItem));
-
-    if (typeof window.syncActiveOverlayResultsList === 'function') {
-        window.syncActiveOverlayResultsList(preserveScroll);
-    }
-
-    if (hasTargetBounds && activeMap && typeof activeMap.setBounds === 'function') {
-        activeMap.setBounds(bounds);
-        if (activePlaces.length === 1 && typeof activeMap.setLevel === 'function') {
-            activeMap.setLevel(3);
-        }
+    if (typeof window._internalRenderAllActiveWishlistOverlays === 'function') {
+        return window._internalRenderAllActiveWishlistOverlays(zoomTargetGroupId, preserveScroll);
     }
 };
 
 window.toggleWishlistGroupOverlay = async function(groupId) {
-    if (!map && !window.map && typeof initMap === 'function') {
-        initMap();
-    }
-    let activeIds = getUserActiveWishlistGroupIds();
-    const existingIdx = activeIds.indexOf(groupId);
-    let zoomTarget = null;
-
-    if (existingIdx > -1) {
-        activeIds.splice(existingIdx, 1);
-        saveUserActiveWishlistGroupIds(activeIds);
-    } else {
-        activeIds.push(groupId);
-        saveUserActiveWishlistGroupIds(activeIds);
-        zoomTarget = groupId;
-    }
-
-    await window.renderAllActiveWishlistOverlays(zoomTarget);
-    renderMobileWishlistInPopover();
-    renderPcWishlistChips();
-    if (typeof updateStarChipHighlight === 'function') {
-        updateStarChipHighlight();
+    if (typeof window._internalToggleWishlistGroupOverlay === 'function') {
+        return window._internalToggleWishlistGroupOverlay(groupId);
     }
 };
 
 window.toggleAllWishlistGroupsOverlay = async function(enableAll = null) {
-    const groups = getUserWishlistGroups();
-    let activeIds = getUserActiveWishlistGroupIds();
-    const shouldEnable = (enableAll !== null) ? enableAll : (activeIds.length === 0);
-
-    if (shouldEnable) {
-        activeIds = groups.map(g => g.id);
-    } else {
-        activeIds = [];
-    }
-
-    saveUserActiveWishlistGroupIds(activeIds);
-    await window.renderAllActiveWishlistOverlays(shouldEnable ? (groups[0]?.id || null) : null);
-    renderMobileWishlistInPopover();
-    renderPcWishlistChips();
-    if (typeof updateStarChipHighlight === 'function') {
-        updateStarChipHighlight();
+    if (typeof window._internalToggleAllWishlistGroupsOverlay === 'function') {
+        return window._internalToggleAllWishlistGroupsOverlay(enableAll);
     }
 };
 
@@ -4529,7 +4335,12 @@ document.addEventListener('DOMContentLoaded', () => {
             icon = '⭐';
             iconCircleClass = 'wishlist';
             cardClass = 'is-wishlist';
-            metaHtml = `<span class="capsule-badge-wish">⭐ 가고싶은 곳</span>`;
+            const grpName = item?.wishlistGroup?.name || '가고싶은 곳';
+            const grpColor = item?.wishlistGroup?.color || '#FFB800';
+            if (grpColor) {
+                iconCircleStyle = `background:${grpColor}; color:#ffffff;`;
+            }
+            metaHtml = `<span class="capsule-badge-wish" style="${grpColor ? `border-color:${grpColor}; color:${grpColor};` : ''}">⭐ ${grpName}</span>`;
         } else {
             icon = getCategoryEmoji(place?.category_name || item?.category, name);
             iconCircleClass = 'search';
@@ -7849,6 +7660,302 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         syncListIfNeeded();
     };
 
+    // ─── Map Overlays Rendering for Wishlist Groups (Scoped inside DOMContentLoaded) ───
+    window._internalRenderAllActiveWishlistOverlays = async function(zoomTargetGroupId = null, preserveScroll = false) {
+        let activeMap = map || window.map;
+        if (!activeMap && typeof initMap === 'function') {
+            initMap();
+            activeMap = map || window.map;
+        }
+        if (!activeMap) return;
+
+        // 1. Clear all existing wishlist markers
+        if (window.activeWishlistMarkersMap) {
+            for (const [, markerList] of window.activeWishlistMarkersMap.entries()) {
+                if (Array.isArray(markerList)) {
+                    markerList.forEach(m => m.setMap(null));
+                }
+            }
+            window.activeWishlistMarkersMap.clear();
+        }
+        window.activeWishlistOverlayListItems = [];
+
+        const syncListIfNeeded = () => {
+            if (typeof window.syncActiveOverlayResultsList === 'function') {
+                window.syncActiveOverlayResultsList(preserveScroll);
+            }
+        };
+
+        const activeIds = (typeof getUserActiveWishlistGroupIds === 'function') ? getUserActiveWishlistGroupIds() : [];
+        if (!activeIds || activeIds.length === 0) {
+            syncListIfNeeded();
+            if (typeof updateStarChipHighlight === 'function') {
+                updateStarChipHighlight();
+            }
+            return;
+        }
+
+        const groups = (typeof getUserWishlistGroups === 'function') ? getUserWishlistGroups() : [];
+        const groupMap = new Map(groups.map(g => [g.id, g]));
+        const wishlist = (typeof getUserWishlist === 'function') ? getUserWishlist() : [];
+
+        const activePlaces = wishlist.filter(wItem => {
+            if (!wItem || !wItem.name) return false;
+            const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
+            return gids.some(gid => activeIds.includes(gid));
+        });
+
+        if (activePlaces.length === 0) {
+            syncListIfNeeded();
+            return;
+        }
+
+        // Coordinate Resolution
+        window._resolvedCoordsCache = window._resolvedCoordsCache || new Map();
+        window._coordAttemptedKeys = window._coordAttemptedKeys || new Set();
+
+        const unresolvedWishItems = [];
+        activePlaces.forEach(wItem => {
+            const cacheKey = `${(wItem.name || '').trim().toLowerCase()}|${(wItem.location || wItem.location_large || wItem.road_address || '').trim().toLowerCase()}`;
+            if (window._resolvedCoordsCache.has(cacheKey)) {
+                const cached = window._resolvedCoordsCache.get(cacheKey);
+                wItem.x = cached.x;
+                wItem.y = cached.y;
+                if (cached.road_address && !wItem.road_address) wItem.road_address = cached.road_address;
+            }
+            const rx = parseFloat(wItem?.x || 0);
+            const ry = parseFloat(wItem?.y || 0);
+            const valid = rx > 124 && rx < 132 && ry > 33 && ry < 39 &&
+                !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005);
+            if (!valid && !window._coordAttemptedKeys.has(cacheKey) && !wItem._resolvingNow) {
+                unresolvedWishItems.push(wItem);
+            }
+        });
+
+        if (unresolvedWishItems.length > 0) {
+            unresolvedWishItems.forEach(r => { r._resolvingNow = true; });
+            if (typeof resolveRestaurantCoordinates === 'function') {
+                await Promise.all(unresolvedWishItems.map(r => resolveRestaurantCoordinates(r).catch(() => r)));
+            }
+            const stillUnresolved = unresolvedWishItems.filter(wItem => {
+                const rx = parseFloat(wItem?.x || 0);
+                const ry = parseFloat(wItem?.y || 0);
+                return !(rx > 124 && rx < 132 && ry > 33 && ry < 39 &&
+                    !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005));
+            });
+            if (stillUnresolved.length > 0) {
+                const ps = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Places() : null;
+                const geocoder = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) ? new kakao.maps.services.Geocoder() : null;
+                await Promise.all(stillUnresolved.map(wItem => new Promise(resolve => {
+                    const kw = wItem.location ? `${wItem.name} ${wItem.location}` : wItem.name;
+                    if (ps) {
+                        ps.keywordSearch(kw, (data, status) => {
+                            if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                                wItem.x = data[0].x;
+                                wItem.y = data[0].y;
+                                if (!wItem.road_address && (data[0].road_address_name || data[0].address_name)) {
+                                    wItem.road_address = data[0].road_address_name || data[0].address_name;
+                                }
+                                resolve(true);
+                            } else if (geocoder && wItem.location) {
+                                geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
+                                    if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
+                                        wItem.x = geoRes[0].x;
+                                        wItem.y = geoRes[0].y;
+                                        resolve(true);
+                                    } else {
+                                        resolve(false);
+                                    }
+                                });
+                            } else {
+                                resolve(false);
+                            }
+                        });
+                    } else if (geocoder && wItem.location) {
+                        geocoder.addressSearch(wItem.location, (geoRes, geoStatus) => {
+                            if (geoStatus === kakao.maps.services.Status.OK && geoRes && geoRes.length > 0) {
+                                wItem.x = geoRes[0].x;
+                                wItem.y = geoRes[0].y;
+                                resolve(true);
+                            } else {
+                                resolve(false);
+                            }
+                        });
+                    } else {
+                        resolve(false);
+                    }
+                })));
+            }
+            unresolvedWishItems.forEach(r => { r._resolvingNow = false; });
+        }
+
+        const bounds = new kakao.maps.LatLngBounds();
+        let hasTargetBounds = false;
+        const wishListItems = [];
+        let validMarkerCount = 0;
+
+        activePlaces.forEach(wItem => {
+            const gids = (Array.isArray(wItem.group_ids) && wItem.group_ids.length > 0) ? wItem.group_ids : ['default'];
+            const activeGid = gids.find(id => activeIds.includes(id)) || 'default';
+            const grp = groupMap.get(activeGid) || { color: '#FFB800', name: '내 찜 식당' };
+
+            const rx = parseFloat(wItem.x || 0);
+            const ry = parseFloat(wItem.y || 0);
+            const hasValidXY = rx > 124 && rx < 132 && ry > 33 && ry < 39 &&
+                !(Math.abs(rx - 126.9780) < 0.0005 && Math.abs(ry - 37.5665) < 0.0005);
+
+            const item = {
+                name: wItem.name,
+                category: wItem.category || '음식점',
+                location_large: wItem.location || wItem.location_large || '',
+                location_small: wItem.location_small || '',
+                map_url: wItem.map_url || wItem.kakao_url || '',
+                naver_url: wItem.naver_url || '',
+                rate: '',
+                visit_count: 0,
+                isWishlist: true,
+                wishlistGroup: grp
+            };
+
+            const place = {
+                place_name: wItem.name,
+                category_name: item.category,
+                address_name: item.location_large,
+                road_address_name: wItem.road_address || item.location_small || item.location_large,
+                x: hasValidXY ? String(wItem.x) : '126.9780',
+                y: hasValidXY ? String(wItem.y) : '37.5665',
+                _hasValidXY: hasValidXY,
+                place_url: item.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(item.name)}`
+            };
+
+            wishListItems.push({
+                item,
+                place,
+                isSaved: false,
+                isWishlist: true
+            });
+
+            if (hasValidXY) {
+                const coords = new kakao.maps.LatLng(ry, rx);
+                const svgUri = getModernMarkerSvg('wishlist', item.category, false, null, null, item.name, grp.color);
+                let markerImg = null;
+                if (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.MarkerImage) {
+                    markerImg = new kakao.maps.MarkerImage(svgUri, new kakao.maps.Size(38, 38), { offset: new kakao.maps.Point(19, 19) });
+                }
+
+                const markerOptions = {
+                    map: activeMap,
+                    position: coords,
+                    zIndex: 92
+                };
+                if (markerImg) markerOptions.image = markerImg;
+
+                const marker = new kakao.maps.Marker(markerOptions);
+                attachMarkerEvents(marker, item, place, false, true, coords);
+
+                if (!window.activeWishlistMarkersMap.has(activeGid)) {
+                    window.activeWishlistMarkersMap.set(activeGid, []);
+                }
+                window.activeWishlistMarkersMap.get(activeGid).push(marker);
+                validMarkerCount++;
+
+                if (zoomTargetGroupId) {
+                    if (activeGid === zoomTargetGroupId || gids.includes(zoomTargetGroupId)) {
+                        bounds.extend(coords);
+                        hasTargetBounds = true;
+                    }
+                } else {
+                    bounds.extend(coords);
+                    hasTargetBounds = true;
+                }
+            }
+        });
+
+        window.activeWishlistOverlayListItems = wishListItems;
+        syncListIfNeeded();
+
+        if (hasTargetBounds && activeMap && typeof activeMap.setBounds === 'function') {
+            activeMap.setBounds(bounds);
+            if (validMarkerCount === 1 && typeof activeMap.setLevel === 'function') {
+                activeMap.setLevel(3);
+            }
+        }
+    };
+    window.renderAllActiveWishlistOverlays = window._internalRenderAllActiveWishlistOverlays;
+
+    window._internalToggleWishlistGroupOverlay = async function(groupId) {
+        let activeMap = map || window.map;
+        if (!activeMap && typeof initMap === 'function') {
+            initMap();
+            activeMap = map || window.map;
+        }
+
+        let activeIds = getUserActiveWishlistGroupIds();
+        const existingIdx = activeIds.indexOf(groupId);
+        let zoomTarget = null;
+
+        const groups = getUserWishlistGroups();
+        const targetGroup = groups.find(g => g.id === groupId) || { name: '내 찜 식당' };
+
+        if (existingIdx > -1) {
+            activeIds.splice(existingIdx, 1);
+            saveUserActiveWishlistGroupIds(activeIds);
+            if (typeof showDiaryToast === 'function') {
+                showDiaryToast(`⭐ [${targetGroup.name}] 찜 식당 숨김`);
+            }
+        } else {
+            activeIds.push(groupId);
+            saveUserActiveWishlistGroupIds(activeIds);
+            zoomTarget = groupId;
+            if (typeof showDiaryToast === 'function') {
+                showDiaryToast(`⭐ [${targetGroup.name}] 찜 식당 지도 켜짐!`);
+            }
+        }
+
+        await window._internalRenderAllActiveWishlistOverlays(zoomTarget);
+        if (typeof renderMobileWishlistInPopover === 'function') {
+            renderMobileWishlistInPopover();
+        }
+        if (typeof renderPcWishlistChips === 'function') {
+            renderPcWishlistChips();
+        }
+        if (typeof updateStarChipHighlight === 'function') {
+            updateStarChipHighlight();
+        }
+    };
+    window.toggleWishlistGroupOverlay = window._internalToggleWishlistGroupOverlay;
+
+    window._internalToggleAllWishlistGroupsOverlay = async function(enableAll = null) {
+        const groups = getUserWishlistGroups();
+        let activeIds = getUserActiveWishlistGroupIds();
+        const shouldEnable = (enableAll !== null) ? enableAll : (activeIds.length === 0);
+
+        if (shouldEnable) {
+            activeIds = groups.map(g => g.id);
+            if (typeof showDiaryToast === 'function') {
+                showDiaryToast(`⭐ 모든 찜 식당 지도 켜짐! (${activeIds.length}개 그룹)`);
+            }
+        } else {
+            activeIds = [];
+            if (typeof showDiaryToast === 'function') {
+                showDiaryToast(`⭐ 모든 찜 식당 지도 숨김`);
+            }
+        }
+
+        saveUserActiveWishlistGroupIds(activeIds);
+        await window._internalRenderAllActiveWishlistOverlays(shouldEnable ? (groups[0]?.id || null) : null);
+        if (typeof renderMobileWishlistInPopover === 'function') {
+            renderMobileWishlistInPopover();
+        }
+        if (typeof renderPcWishlistChips === 'function') {
+            renderPcWishlistChips();
+        }
+        if (typeof updateStarChipHighlight === 'function') {
+            updateStarChipHighlight();
+        }
+    };
+    window.toggleAllWishlistGroupsOverlay = window._internalToggleAllWishlistGroupsOverlay;
+
 
 
     // Backward-compatible alias
@@ -8623,6 +8730,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 popStar.classList.add('show');
                 if (triggerBtn) triggerBtn.classList.add('open');
                 if (backdrop) backdrop.classList.add('show');
+                if (typeof renderMobileWishlistInPopover === 'function') {
+                    renderMobileWishlistInPopover();
+                }
                 renderMobileFriendsListInPopover();
                 updateStarChipHighlight();
             }
@@ -20554,7 +20664,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610252340', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610260010', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
