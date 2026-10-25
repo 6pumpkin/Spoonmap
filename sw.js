@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spoonmap-v22';
+const CACHE_NAME = 'spoonmap-v23';
 const STATIC_ASSETS = [
     './',
     './index.html',

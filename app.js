@@ -19616,7 +19616,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610230025', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610252135', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -19906,6 +19906,107 @@ async function fetchHtmlViaCorsProxy(targetUrl) {
     return null;
 }
 
+// 3-1. Address & Phonetic Normalization Helpers (Naver Overseas English & Raw Address Resolver)
+function extractCleanRoadAddress(addr) {
+    if (!addr || typeof addr !== 'string') return '';
+    const m = addr.match(/^((?:[가-힣]+(?:시|도|군|구)\s+)+[가-힣0-9]+(?:로|길)\s*[\d]+(?:-[\d]+)?)/);
+    if (m) return m[1].trim();
+    const m2 = addr.match(/^((?:[가-힣]+(?:시|도|군|구)\s+)+[가-힣0-9]+(?:동|리|읍|면)\s*[\d]+(?:-[\d]+)?)/);
+    if (m2) return m2[1].trim();
+    return addr.trim();
+}
+
+function extractTrailingNameFromAddress(addr) {
+    if (!addr || typeof addr !== 'string') return '';
+    const cleanAddr = extractCleanRoadAddress(addr);
+    if (cleanAddr && addr.length > cleanAddr.length) {
+        let remainder = addr.slice(cleanAddr.length).trim();
+        remainder = remainder.replace(/^(?:지하\s*)?[\d]+(?:층|호|동)?\s*/, '').trim();
+        remainder = remainder.replace(/^\([^\)]+\)/, '').trim();
+        if (remainder && remainder.length >= 2 && !/^\d+$/.test(remainder)) {
+            return remainder;
+        }
+    }
+    return '';
+}
+
+function romanizeHangul(str) {
+    if (!str || typeof str !== 'string') return '';
+    const CHO = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+    const JUNG = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+    const JONG = ['','g','kk','gs','n','nj','nh','d','l','lg','lm','lb','ls','lt','lp','lh','m','b','bs','s','ss','ng','j','ch','k','t','p','h'];
+
+    let res = '';
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        if (c >= 0xAC00 && c <= 0xD7A3) {
+            const code = c - 0xAC00;
+            const jong = code % 28;
+            const jung = ((code - jong) / 28) % 21;
+            const cho = (((code - jong) / 28) - jung) / 21;
+            res += CHO[cho] + JUNG[jung] + JONG[jong];
+        } else if (/[a-zA-Z0-9]/.test(str[i])) {
+            res += str[i].toLowerCase();
+        }
+    }
+    return res;
+}
+
+function normalizePhonetic(s) {
+    if (!s || typeof s !== 'string') return '';
+    return s.toLowerCase()
+        .replace(/z/g, 'j')
+        .replace(/c(?=[eiy])/g, 's')
+        .replace(/c/g, 'k')
+        .replace(/sh/g, 's')
+        .replace(/oo/g, 'u')
+        .replace(/ee/g, 'i')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function matchHangulScore(engName, korName) {
+    if (!engName || !korName) return 0;
+    const rKor = normalizePhonetic(romanizeHangul(korName));
+    const cleanEng = normalizePhonetic(engName)
+        .replace(/softtofu|tofu/g, 'sundubu')
+        .replace(/mainbranch|branch/g, 'bonjeom')
+        .replace(/coffee|cafe/g, 'kape')
+        .replace(/stand/g, '')
+        .replace(/pension/g, 'pensyeon');
+
+    let score = 0;
+    for (let len = 3; len <= 8; len++) {
+        for (let i = 0; i <= rKor.length - len; i++) {
+            const sub = rKor.substr(i, len);
+            if (cleanEng.includes(sub)) {
+                score += len * len;
+            }
+        }
+    }
+    if (cleanEng.includes(korName.toLowerCase())) score += 50;
+    return score;
+}
+
+function pickBestPlace(docs, engName) {
+    if (!docs || docs.length === 0) return null;
+    if (!engName || /[가-힣]/.test(engName)) return docs[0];
+
+    let bestDoc = docs[0];
+    let maxScore = -1;
+
+    for (const d of docs) {
+        const score = matchHangulScore(engName, d.place_name);
+        const isFoodOrCafe = d.category_group_code === 'FD6' || d.category_group_code === 'CE7' || (d.category_name && (d.category_name.includes('음식점') || d.category_name.includes('카페') || d.category_name.includes('BAR')));
+        const bonus = isFoodOrCafe ? 10 : 0;
+        const total = score + bonus;
+        if (total > maxScore) {
+            maxScore = total;
+            bestDoc = d;
+        }
+    }
+    return bestDoc;
+}
+
 // 4. Single URL Parser
 async function parseSingleMapUrl(url) {
     const result = {
@@ -19958,6 +20059,8 @@ async function parseSingleMapUrl(url) {
                             memo: b.memo || '',
                             x: b.px || '',
                             y: b.py || '',
+                            type: b.type || (b.mcidName === '주소/위치' || b.mcid === 'ADDRESS' ? 'address' : 'place'),
+                            trailingKoreanName: extractTrailingNameFromAddress(b.address || ''),
                             originalUrl: b.sid ? `https://m.place.naver.com/restaurant/${b.sid}` : targetUrl
                         }));
                         return result;
@@ -20062,6 +20165,8 @@ async function parseSingleMapUrl(url) {
                                     memo: b.memo || '',
                                     x: b.px || '',
                                     y: b.py || '',
+                                    type: b.type || (b.mcidName === '주소/위치' || b.mcid === 'ADDRESS' ? 'address' : 'place'),
+                                    trailingKoreanName: extractTrailingNameFromAddress(b.address || ''),
                                     originalUrl: b.sid ? `https://m.place.naver.com/restaurant/${b.sid}` : effectiveUrl
                                 }));
                                 return result;
@@ -20174,7 +20279,7 @@ function extractFolderItemsFromHtml(html, type) {
 }
 
 // 6. Query Kakao Place Data via SDK
-function queryKakaoPlaceData(name, addressHint, kakaoId) {
+function queryKakaoPlaceData(name, addressHint, kakaoId, x, y, rawInfo = {}) {
     return new Promise((resolve) => {
         if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
             resolve(null);
@@ -20184,75 +20289,153 @@ function queryKakaoPlaceData(name, addressHint, kakaoId) {
         const ps = new kakao.maps.services.Places();
         const geocoder = new kakao.maps.services.Geocoder();
 
+        const cleanAddr = extractCleanRoadAddress(addressHint);
+        const trailingName = rawInfo.trailingKoreanName || extractTrailingNameFromAddress(addressHint);
+        const hasKorean = /[가-힣]/.test(name || '');
+        const isAddressName = rawInfo.type === 'address' || 
+                              rawInfo.categoryRaw === '주소/위치' || 
+                              /^(?:서울|경기|인천|강원|충남|충북|전남|전북|경남|경북|제주|세종|부산|대구|광주|대전|울산).*?(?:로|길|동|리)\s*\d+/.test(name || '');
+
         let cleanAddrPrefix = '';
-        if (addressHint) {
-            const tokens = addressHint.split(/\s+/).filter(t => !/^\d/.test(t));
+        if (cleanAddr || addressHint) {
+            const tokens = (cleanAddr || addressHint).split(/\s+/).filter(t => !/^\d/.test(t));
             cleanAddrPrefix = tokens.slice(0, 2).join(' ');
         }
-        const searchKeyword = cleanAddrPrefix && name ? `${cleanAddrPrefix} ${name}`.trim() : (name || addressHint || '');
 
-        if (!searchKeyword) {
-            resolve(null);
-            return;
-        }
-
-        ps.keywordSearch(searchKeyword, (data, status) => {
-            if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
-                if (kakaoId) {
-                    const idMatch = data.find(d => String(d.id).trim() === String(kakaoId).trim());
-                    if (idMatch) {
-                        resolve(idMatch);
-                        return;
+        function tryCategorySearchAtCoords(px, py) {
+            return new Promise((catResolve) => {
+                if (!px || !py) { catResolve(null); return; }
+                ps.categorySearch('FD6', (fdData, fdStatus) => {
+                    if (fdStatus === kakao.maps.services.Status.OK && fdData && fdData.length > 0) {
+                        const nearest = pickBestPlace(fdData.filter(d => parseInt(d.distance || 999) <= 40), name) || fdData[0];
+                        if (nearest && parseInt(nearest.distance || 999) <= 40) {
+                            catResolve(nearest);
+                            return;
+                        }
                     }
-                }
-                if (name) {
-                    const exactMatch = data.find(d => d.place_name.trim().toLowerCase() === name.trim().toLowerCase());
-                    if (exactMatch) {
-                        resolve(exactMatch);
-                        return;
-                    }
-                }
-                resolve(data[0]);
-            } else {
-                if (name && name !== searchKeyword) {
-                    ps.keywordSearch(name, (fallbackData, fbStatus) => {
-                        if (fbStatus === kakao.maps.services.Status.OK && fallbackData && fallbackData.length > 0) {
-                            if (kakaoId) {
-                                const idMatch = fallbackData.find(d => String(d.id).trim() === String(kakaoId).trim());
-                                if (idMatch) {
-                                    resolve(idMatch);
-                                    return;
-                                }
-                            }
-                            resolve(fallbackData[0]);
-                        } else {
-                            if (addressHint) {
-                                geocoder.addressSearch(addressHint, (geoData, geoStatus) => {
-                                    if (geoStatus === kakao.maps.services.Status.OK && geoData && geoData.length > 0) {
-                                        const g = geoData[0];
-                                        resolve({
-                                            place_name: name || g.address_name,
-                                            road_address_name: g.road_address ? g.road_address.address_name : g.address_name,
-                                            address_name: g.address_name,
-                                            x: g.x,
-                                            y: g.y,
-                                            category_name: '\uC74C\uC2DD\uC810',
-                                            place_url: `https://map.kakao.com/link/search/${encodeURIComponent(name || g.address_name)}`
-                                        });
-                                    } else {
-                                        resolve(null);
-                                    }
-                                });
-                            } else {
-                                resolve(null);
+                    ps.categorySearch('CE7', (ceData, ceStatus) => {
+                        if (ceStatus === kakao.maps.services.Status.OK && ceData && ceData.length > 0) {
+                            const nearest = pickBestPlace(ceData.filter(d => parseInt(d.distance || 999) <= 40), name) || ceData[0];
+                            if (nearest && parseInt(nearest.distance || 999) <= 40) {
+                                catResolve(nearest);
+                                return;
                             }
                         }
+                        catResolve(null);
+                    }, { x: px, y: py, radius: 45, sort: kakao.maps.services.SortBy.DISTANCE });
+                }, { x: px, y: py, radius: 45, sort: kakao.maps.services.SortBy.DISTANCE });
+            });
+        }
+
+        function trySearchAtAddress(addrStr) {
+            return new Promise((addrResolve) => {
+                if (!addrStr) { addrResolve(null); return; }
+                ps.keywordSearch(addrStr, (docs, status) => {
+                    if (status === kakao.maps.services.Status.OK && docs && docs.length > 0) {
+                        const best = pickBestPlace(docs, name);
+                        addrResolve(best || docs[0]);
+                    } else {
+                        addrResolve(null);
+                    }
+                });
+            });
+        }
+
+        function fallbackGeocoder() {
+            if (!addressHint && !cleanAddr) {
+                resolve(null);
+                return;
+            }
+            geocoder.addressSearch(cleanAddr || addressHint, (geoData, geoStatus) => {
+                if (geoStatus === kakao.maps.services.Status.OK && geoData && geoData.length > 0) {
+                    const g = geoData[0];
+                    let chosenName = '';
+                    if (hasKorean && !isAddressName) {
+                        chosenName = name;
+                    } else if (trailingName) {
+                        chosenName = trailingName;
+                    } else if (g.road_address && g.road_address.building_name) {
+                        chosenName = g.road_address.building_name;
+                    } else {
+                        chosenName = (g.road_address ? g.road_address.address_name : g.address_name).replace(/\([^\)]+\)/g, '').trim();
+                    }
+
+                    resolve({
+                        place_name: chosenName,
+                        road_address_name: g.road_address ? g.road_address.address_name : g.address_name,
+                        address_name: g.address_name,
+                        x: g.x,
+                        y: g.y,
+                        category_name: rawInfo.categoryRaw || '음식점',
+                        place_url: `https://map.kakao.com/link/search/${encodeURIComponent(chosenName || g.address_name)}`
                     });
                 } else {
                     resolve(null);
                 }
-            }
-        });
+            });
+        }
+
+        // CASE A: The name is already Korean and NOT a pure address string
+        if (hasKorean && !isAddressName) {
+            const searchKeyword = cleanAddrPrefix && name ? `${cleanAddrPrefix} ${name}`.trim() : (name || addressHint || '');
+            ps.keywordSearch(searchKeyword, (data, status) => {
+                if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                    if (kakaoId) {
+                        const idMatch = data.find(d => String(d.id).trim() === String(kakaoId).trim());
+                        if (idMatch) { resolve(idMatch); return; }
+                    }
+                    const exactMatch = data.find(d => d.place_name.trim().toLowerCase() === name.trim().toLowerCase());
+                    if (exactMatch) { resolve(exactMatch); return; }
+                    resolve(data[0]);
+                } else {
+                    ps.keywordSearch(name, (fbData, fbStatus) => {
+                        if (fbStatus === kakao.maps.services.Status.OK && fbData && fbData.length > 0) {
+                            if (kakaoId) {
+                                const idMatch = fbData.find(d => String(d.id).trim() === String(kakaoId).trim());
+                                if (idMatch) { resolve(idMatch); return; }
+                            }
+                            resolve(fbData[0]);
+                        } else {
+                            fallbackGeocoder();
+                        }
+                    });
+                }
+            });
+            return;
+        }
+
+        // CASE B: The name is English-only OR an address string (e.g. from Naver shared folder overseas proxy)
+        // Step 1: If trailing Korean store name exists in address, search that first!
+        if (trailingName) {
+            const query = cleanAddr ? `${cleanAddr} ${trailingName}` : (cleanAddrPrefix ? `${cleanAddrPrefix} ${trailingName}` : trailingName);
+            ps.keywordSearch(query, (data, status) => {
+                if (status === kakao.maps.services.Status.OK && data && data.length > 0) {
+                    resolve(data[0]);
+                    return;
+                }
+                ps.keywordSearch(trailingName, async (data2, status2) => {
+                    if (status2 === kakao.maps.services.Status.OK && data2 && data2.length > 0) {
+                        resolve(data2[0]);
+                        return;
+                    }
+                    const atAddr = await trySearchAtAddress(cleanAddr);
+                    if (atAddr) { resolve(atAddr); return; }
+                    const atCoords = await tryCategorySearchAtCoords(x, y);
+                    if (atCoords) { resolve(atCoords); return; }
+                    fallbackGeocoder();
+                });
+            });
+            return;
+        }
+
+        // If no trailing name:
+        (async () => {
+            const atAddr = await trySearchAtAddress(cleanAddr);
+            if (atAddr) { resolve(atAddr); return; }
+            const atCoords = await tryCategorySearchAtCoords(x, y);
+            if (atCoords) { resolve(atCoords); return; }
+            fallbackGeocoder();
+        })();
     });
 }
 
@@ -20263,10 +20446,22 @@ async function normalizeToSpoonmapRestaurant(rawInfo) {
     let placeData = null;
 
     if (rawInfo.name || rawInfo.addressHint || rawInfo.kakaoId) {
-        placeData = await queryKakaoPlaceData(rawInfo.name, rawInfo.addressHint, rawInfo.kakaoId);
+        placeData = await queryKakaoPlaceData(rawInfo.name, rawInfo.addressHint, rawInfo.kakaoId, rawInfo.x, rawInfo.y, rawInfo);
     }
 
-    const finalName = placeData?.place_name || rawInfo.name;
+    const trailingName = rawInfo.trailingKoreanName || (typeof extractTrailingNameFromAddress === 'function' ? extractTrailingNameFromAddress(rawInfo.addressHint) : '');
+    const isEnglishOnly = (str) => str && !/[가-힣]/.test(str);
+
+    let finalName = placeData?.place_name || rawInfo.name;
+    // If finalName is still English but we have a Korean trailing name, use the Korean trailing name!
+    if (isEnglishOnly(finalName) && trailingName) {
+        finalName = trailingName;
+    }
+    // Clean up parenthetical jibun in address names: e.g. "마곡중앙로 36(마곡동 751)" -> "마곡중앙로 36"
+    if (finalName && /\([^\)]+\)/.test(finalName)) {
+        finalName = finalName.replace(/\s*\([^\)]+\)/g, '').trim();
+    }
+
     if (!finalName || finalName === '\uAC00\uC838\uC628 \uB9DB\uC9D1') {
         return null;
     }
