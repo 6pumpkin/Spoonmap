@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    Spoonmap - Warm Gourmet Sand & Coral Theme System
    ========================================================================== */
 
@@ -8523,6 +8523,42 @@ input[type="date"].drawer-input {
 
 .photo-thumb-wrap:hover {
     transform: scale(1.03);
+}
+
+.photo-thumb-wrap.is-other-photo {
+    border: 2px solid #FF8A00 !important;
+    box-shadow: 0 2px 8px rgba(255, 138, 0, 0.28) !important;
+}
+
+.photo-author-tag {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    background: rgba(230, 81, 0, 0.88);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+    line-height: 1.2;
+    z-index: 2;
+    letter-spacing: -0.2px;
+}
+
+.photo-author-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FFF3E0;
+    color: #E65100;
+    border: 1px solid #FFE0B2;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 6px;
+    vertical-align: middle;
 }
 
 .photo-thumb-img {

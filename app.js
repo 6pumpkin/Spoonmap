@@ -205,7 +205,9 @@ function mapKakaoCategoryToStandard(kakaoCat, placeName = '') {
 }
 
 function parseStandardLocation(addressName = '', roadAddressName = '') {
-    const raw = (addressName || roadAddressName || '').trim();
+    const jibun = (addressName || '').trim();
+    const road = (roadAddressName || '').trim();
+    const raw = jibun || road || '';
     if (!raw) return { large: '', small: '' };
 
     const parts = raw.split(/\s+/);
@@ -247,27 +249,61 @@ function parseStandardLocation(addressName = '', roadAddressName = '') {
     }
 
     let small = '';
-    for (let i = 2; i < parts.length; i++) {
-        const part = parts[i];
+    const fullText = `${jibun} ${road}`.trim();
+
+    // 1. Check jibun parts first (e.g. "서울 서대문구 창천동 57-19" -> "창천동")
+    const jibunParts = jibun.split(/\s+/);
+    for (let i = 2; i < jibunParts.length; i++) {
+        const part = jibunParts[i];
         if (part.endsWith('동') || part.endsWith('읍') || part.endsWith('면') || part.endsWith('리') || part.endsWith('가')) {
             small = part;
             break;
         }
     }
+
+    // 2. Check parentheses in road or jibun: e.g. "연세로5다길 40 (창천동)"
     if (!small) {
-        const parenMatch = raw.match(/\(([^)]+?)(?:동|읍|면|가)\)/);
+        const parenMatch = fullText.match(/\(([^)]+?)(?:동|읍|면|가)\)/);
         if (parenMatch && parenMatch[0]) {
             small = parenMatch[0].replace(/[()]/g, '').trim();
         }
     }
+
+    // 3. Match against official KOREA_REGIONS database for this large region
+    const validSmalls = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[large]) ? KOREA_REGIONS[large] : [];
+    if ((!small || !validSmalls.includes(small)) && validSmalls.length > 0) {
+        for (const vs of validSmalls) {
+            if (fullText.includes(vs)) {
+                small = vs;
+                break;
+            }
+        }
+    }
+
+    // 4. Fallback from general parts
     if (!small && parts.length >= 3) {
-        small = parts[2].replace(/[0-9]+.*$/, '');
+        for (let i = 2; i < parts.length; i++) {
+            const part = parts[i];
+            if (part.endsWith('동') || part.endsWith('읍') || part.endsWith('면') || part.endsWith('리') || part.endsWith('가')) {
+                small = part;
+                break;
+            }
+        }
+    }
+
+    // Never let small be identical to large or district (e.g. "서울 서대문구" or "서대문구")
+    if (small === large || small === p1 || small === p0) {
+        small = '';
     }
 
     if (typeof standardizeLocation === 'function') {
         const std = standardizeLocation(large, small, '');
         large = std.large || large;
         small = std.small || small;
+    }
+
+    if (small === large || small === p1 || small === p0) {
+        small = '';
     }
 
     return { large, small };
@@ -672,6 +708,20 @@ function getUserCustomOptionsKey() {
     if (!u || !u.id) return 'spoonmap_guest_custom_options';
     if (isOwnerUser()) return 'spoonmap_custom_options';
     return `spoonmap_user_${u.id}_custom_options`;
+}
+
+function getUserDeletedRestaurantsKey() {
+    const u = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    if (!u || !u.id) return 'spoonmap_guest_deleted_restaurants';
+    if (typeof isOwnerUser === 'function' && isOwnerUser()) return 'spoonmap_deleted_restaurants';
+    return `spoonmap_user_${u.id}_deleted_restaurants`;
+}
+
+function getUserDeletedDiaryKey() {
+    const u = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    if (!u || !u.id) return 'spoonmap_guest_deleted_diary';
+    if (typeof isOwnerUser === 'function' && isOwnerUser()) return 'spoonmap_deleted_diary';
+    return `spoonmap_user_${u.id}_deleted_diary`;
 }
 
 function getActiveRestaurantData() {
@@ -9202,9 +9252,9 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const isOwner = isOwnerUser();
         const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
         const localEntries = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
-        const deletedKey = 'spoonmap_deleted_diary';
+        const deletedKey = typeof getUserDeletedDiaryKey === 'function' ? getUserDeletedDiaryKey() : 'spoonmap_deleted_diary';
         const deletedIds = new Set(JSON.parse(localStorage.getItem(deletedKey) || '[]'));
-        const deletedRestKey = 'spoonmap_deleted_restaurants';
+        const deletedRestKey = typeof getUserDeletedRestaurantsKey === 'function' ? getUserDeletedRestaurantsKey() : 'spoonmap_deleted_restaurants';
         const deletedRestaurants = new Set(JSON.parse(localStorage.getItem(deletedRestKey) || '[]'));
 
         if (!isOwner || typeof diaryData === 'undefined' || !Array.isArray(diaryData)) {
@@ -9287,7 +9337,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
         const mapByName = new Map();
         const visitsByName = new Map();
         const datesByName = new Map();
-        const deletedRestKey = 'spoonmap_deleted_restaurants';
+        const deletedRestKey = typeof getUserDeletedRestaurantsKey === 'function' ? getUserDeletedRestaurantsKey() : 'spoonmap_deleted_restaurants';
         const deletedRestaurants = new Set(JSON.parse(localStorage.getItem(deletedRestKey) || '[]'));
 
         // Pass 1: Add base master restaurantData ONLY if Owner!
@@ -9370,13 +9420,23 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 if (!wItem.name) return;
                 const key = wItem.name.trim().toLowerCase();
                 if (!mapByName.has(key)) {
+                    const locLarge = wItem.location_large || wItem.location || '기타';
+                    let locSmall = (wItem.location_small && wItem.location_small !== locLarge) ? wItem.location_small : '';
+                    if (!locSmall && (wItem.road_address || wItem.address)) {
+                        const parsed = parseStandardLocation(wItem.address || '', wItem.road_address || '');
+                        if (parsed.small && parsed.small !== locLarge) locSmall = parsed.small;
+                    }
+                    if (typeof standardizeLocation === 'function' && (locLarge || locSmall)) {
+                        const std = standardizeLocation(locLarge, locSmall, wItem.name);
+                        locSmall = (std.small && std.small !== (std.large || locLarge)) ? std.small : '';
+                    }
                     mapByName.set(key, {
                         name: wItem.name,
                         category: wItem.category || '음식점',
                         rate: '',
                         menu: [],
-                        location_large: wItem.location || '기타',
-                        location_small: wItem.location || '',
+                        location_large: locLarge,
+                        location_small: locSmall,
                         map_url: wItem.map_url || `https://map.kakao.com/link/search/${encodeURIComponent(wItem.name)}`,
                         kakao_id: wItem.kakao_id || '',
                         road_address: wItem.road_address || '',
@@ -9406,7 +9466,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 ? standardizeLocation(ov.location_large, ov.location_small, ov.name || rawKey)
                 : { large: ov.location_large, small: ov.location_small };
             const locLarge = stdLoc.large || ov.location_large;
-            const locSmall = stdLoc.small || ov.location_small;
+            let locSmall = (stdLoc.small && stdLoc.small !== locLarge) ? stdLoc.small : (ov.location_small !== locLarge ? ov.location_small : '');
 
             if (existing) {
                 if (ov.category) existing.category = ov.category;
@@ -9415,8 +9475,10 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 if (locLarge) existing.location_large = locLarge;
                 const validForExisting = (typeof KOREA_REGIONS !== 'undefined' && KOREA_REGIONS[existing.location_large]) 
                     ? KOREA_REGIONS[existing.location_large] : [];
-                if (validForExisting.includes(locSmall) || !existing.location_small) {
+                if (locSmall && (validForExisting.includes(locSmall) || !existing.location_small || existing.location_small === existing.location_large)) {
                     existing.location_small = locSmall;
+                } else if (existing.location_small === existing.location_large) {
+                    existing.location_small = '';
                 }
                 if (ov.map_url) existing.map_url = ov.map_url;
                 if (ov.kakao_id) existing.kakao_id = ov.kakao_id;
@@ -9448,9 +9510,15 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
             if (deletedRestaurants.has(key)) return;
             const count = visitsByName.get(key) || item.visit_count || (item.isWishlist ? 0 : 1);
             const latestDate = datesByName.get(key) || item.date || '';
+            let rawSmall = (item.location_small && item.location_small !== item.location_large) ? item.location_small : '';
+            if (!rawSmall && (item.road_address || item.address)) {
+                const rep = parseStandardLocation(item.address || '', item.road_address || '');
+                if (rep.small && rep.small !== item.location_large) rawSmall = rep.small;
+            }
             const std = (typeof standardizeLocation === 'function') 
-                ? standardizeLocation(item.location_large, item.location_small, item.name)
-                : { large: item.location_large, small: item.location_small };
+                ? standardizeLocation(item.location_large, rawSmall, item.name)
+                : { large: item.location_large, small: rawSmall };
+            const finalSmall = (std.small && std.small !== (std.large || item.location_large)) ? std.small : '';
             unified.push({
                 ...item,
                 isOverlapping: false,
@@ -9458,7 +9526,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                 sourceUserId: 'me',
                 sourceUserName: '나',
                 location_large: std.large || item.location_large,
-                location_small: std.small || item.location_small,
+                location_small: finalSmall,
                 visit_count: count,
                 date: latestDate
             });
@@ -10271,7 +10339,7 @@ window.MASTER_MOCK_GOURMETS = MASTER_MOCK_GOURMETS;
                     <h2 class="card-title">${cardTitleHtml}</h2>
                     <div class="location-info">
                         <span class="loc-badge loc-large">${item.location_large}</span>
-                        ${item.location_small ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
+                        ${(item.location_small && item.location_small !== item.location_large) ? `<span class="loc-badge loc-small">${item.location_small}</span>` : ''}
                     </div>
                     ${menuTagsHtml ? `<div class="card-menu-list">${menuTagsHtml}</div>` : ''}
                 </div>
@@ -10400,8 +10468,10 @@ function openRestaurantDetailModal(item) {
     // 4. Locations
     if (locBox) {
         locBox.innerHTML = '';
-        const locs = [item.location_large, item.location_small].filter(Boolean);
-        locs.forEach(loc => {
+        const smallLoc = (item.location_small && item.location_small !== item.location_large) ? item.location_small : '';
+        const locs = [item.location_large, smallLoc].filter(Boolean);
+        const uniqueLocs = [...new Set(locs)];
+        uniqueLocs.forEach(loc => {
             const color = getNotionTagColor(loc);
             const span = document.createElement('span');
             span.className = 'diary-mini-tag';
@@ -10759,6 +10829,8 @@ function deleteRestaurantMasterFromModal() {
     const isOwner = isOwnerUser();
     const diaryStorageKey = typeof getDiaryStorageKey === 'function' ? getDiaryStorageKey() : (isOwner ? 'spoonmap_diary' : 'spoonmap_user_diary');
     const overridesKey = isOwner ? 'spoonmap_restaurant_overrides' : (typeof getUserOverridesStorageKey === 'function' ? getUserOverridesStorageKey() : 'spoonmap_restaurant_overrides');
+    const deletedRestKey = typeof getUserDeletedRestaurantsKey === 'function' ? getUserDeletedRestaurantsKey() : 'spoonmap_deleted_restaurants';
+    const deletedDiaryKey = typeof getUserDeletedDiaryKey === 'function' ? getUserDeletedDiaryKey() : 'spoonmap_deleted_diary';
 
     // 1. Remove from diary
     const existing = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
@@ -10774,17 +10846,15 @@ function deleteRestaurantMasterFromModal() {
     localStorage.setItem(overridesKey, JSON.stringify(overrides));
 
     // 3. Mark in deleted restaurants
-    const deletedRestKey = 'spoonmap_deleted_restaurants';
     const deletedRestaurants = JSON.parse(localStorage.getItem(deletedRestKey) || '[]');
     deletedRestaurants.push(key);
     const uniqueDeletedRest = [...new Set(deletedRestaurants)];
     localStorage.setItem(deletedRestKey, JSON.stringify(uniqueDeletedRest));
 
     // 4. Mark all visits in deleted diary (for CSV suppression)
-    const deletedDiaryKey = 'spoonmap_deleted_diary';
     const deletedDiary = JSON.parse(localStorage.getItem(deletedDiaryKey) || '[]');
     deletedDiary.push(`${key}|*`);
-    if (typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
+    if (isOwner && typeof diaryData !== 'undefined' && Array.isArray(diaryData)) {
         diaryData.forEach((entry, idx) => {
             if (entry.name && entry.name.trim().toLowerCase() === key) {
                 deletedDiary.push(entry.id || `csv-${idx}-${entry.date}`);
@@ -10801,9 +10871,22 @@ function deleteRestaurantMasterFromModal() {
         removeUserWishlist(name);
     }
 
-    // 6. Delete photos
+    // 6. Delete photos: if owner, clear all; if general user, only remove own photos!
     if (typeof saveRestaurantPhotosToStore === 'function') {
-        saveRestaurantPhotosToStore(name, []);
+        if (isOwner) {
+            saveRestaurantPhotosToStore(name, []);
+        } else {
+            const currentPhotos = getRestaurantPhotos(name);
+            const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+            const currentUserId = currentUser ? String(currentUser.id).replace(/^user_/, '') : '';
+            const remainingPhotos = currentPhotos.filter(p => {
+                const isMine = p.userId && (p.userId === currentUserId || p.userId === `user_${currentUserId}`);
+                return !isMine;
+            });
+            if (remainingPhotos.length !== currentPhotos.length) {
+                saveRestaurantPhotosToStore(name, remainingPhotos);
+            }
+        }
     }
 
     // 7. Cloud sync
@@ -16401,7 +16484,7 @@ function saveDiaryEntry() {
     localStorage.setItem(diaryStorageKey, JSON.stringify(existing));
 
     // Un-delete if this restaurant was previously marked deleted
-    const deletedRestKey = 'spoonmap_deleted_restaurants';
+    const deletedRestKey = typeof getUserDeletedRestaurantsKey === 'function' ? getUserDeletedRestaurantsKey() : 'spoonmap_deleted_restaurants';
     const deletedRestaurants = JSON.parse(localStorage.getItem(deletedRestKey) || '[]');
     if (deletedRestaurants.includes(key)) {
         const filtered = deletedRestaurants.filter(k => k !== key);
@@ -16410,7 +16493,7 @@ function saveDiaryEntry() {
             saveToCloud('deleted_restaurants', filtered);
         }
     }
-    const deletedDiaryKey = 'spoonmap_deleted_diary';
+    const deletedDiaryKey = typeof getUserDeletedDiaryKey === 'function' ? getUserDeletedDiaryKey() : 'spoonmap_deleted_diary';
     const deletedDiary = JSON.parse(localStorage.getItem(deletedDiaryKey) || '[]');
     if (deletedDiary.includes(`${key}|*`)) {
         const filteredDiary = deletedDiary.filter(d => d !== `${key}|*`);
@@ -19345,11 +19428,18 @@ window.syncPhotosFromCloud = syncPhotosFromCloud;
 async function addRestaurantPhotos(name, dataUrls) {
     if (!name || !dataUrls || dataUrls.length === 0) return [];
     const current = [...getRestaurantPhotos(name)];
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const isOwner = (typeof isOwnerUser === 'function') && isOwnerUser();
+    const currentUserId = currentUser ? String(currentUser.id).replace(/^user_/, '') : (isOwner ? 'master' : 'guest');
+    const currentUserName = currentUser ? (currentUser.nickname || '나') : (isOwner ? '박준호' : '나');
+
     dataUrls.forEach(url => {
         current.push({
             id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             url,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            userId: currentUserId,
+            userName: currentUserName
         });
     });
     await saveRestaurantPhotosToStore(name, current);
@@ -19359,7 +19449,17 @@ window.addRestaurantPhotos = addRestaurantPhotos;
 
 async function deleteRestaurantPhoto(name, photoId) {
     if (!name || !photoId) return [];
-    const current = getRestaurantPhotos(name).filter(p => String(p.id) !== String(photoId));
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const isOwner = (typeof isOwnerUser === 'function') && isOwnerUser();
+    const currentUserId = currentUser ? String(currentUser.id).replace(/^user_/, '') : (isOwner ? 'master' : 'guest');
+
+    const current = getRestaurantPhotos(name).filter(p => {
+        if (String(p.id) !== String(photoId)) return true;
+        const isMine = isOwner 
+            ? (!p.userId || p.userId === 'master' || p.userId === currentUserId)
+            : (p.userId && (p.userId === currentUserId || p.userId === `user_${currentUserId}`));
+        return !isMine;
+    });
     await saveRestaurantPhotosToStore(name, current);
     return current;
 }
@@ -19371,16 +19471,36 @@ function renderPhotoPreviewGrid(containerEl, restaurantName, photos, sourceConte
     const isDiary = sourceContext === 'diary';
     const inputId = isDiary ? 'diary-photo-file-input' : 'list-photo-file-input';
 
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const isOwner = (typeof isOwnerUser === 'function') && isOwnerUser();
+    const currentUserId = currentUser ? String(currentUser.id).replace(/^user_/, '') : (isOwner ? 'master' : 'guest');
+
     const itemsHtml = photos.map(p => {
         const safeUrl = p.url.replace(/'/g, "\\'");
         const safeName = (restaurantName || '').replace(/'/g, "\\'");
         const safeId = String(p.id).replace(/'/g, "\\'");
-        return `
-            <div class="photo-thumb-wrap" onclick="openPhotoLightbox('${safeUrl}', '${safeName}')" title="클릭하면 사진을 크게 봅니다">
-                <img src="${p.url}" alt="${restaurantName} 사진" class="photo-thumb-img">
-                <button type="button" class="photo-delete-btn" onclick="event.stopPropagation(); handleDeletePhotoClick('${safeName}', '${safeId}', '${sourceContext}')" title="사진 삭제">&times;</button>
-            </div>
-        `;
+
+        const isMine = isOwner 
+            ? (!p.userId || p.userId === 'master' || p.userId === currentUserId)
+            : (p.userId && (p.userId === currentUserId || p.userId === `user_${currentUserId}`));
+
+        const authorName = p.userName || (p.userId === 'master' || !p.userId ? '박준호' : '다른 사용자');
+
+        if (isMine) {
+            return `
+                <div class="photo-thumb-wrap is-my-photo" onclick="openPhotoLightbox('${safeUrl}', '${safeName}')" title="클릭하면 사진을 크게 봅니다">
+                    <img src="${p.url}" alt="${restaurantName} 사진" class="photo-thumb-img">
+                    <button type="button" class="photo-delete-btn" onclick="event.stopPropagation(); handleDeletePhotoClick('${safeName}', '${safeId}', '${sourceContext}')" title="사진 삭제">&times;</button>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="photo-thumb-wrap is-other-photo" onclick="openPhotoLightbox('${safeUrl}', '${safeName}')" title="${authorName}님이 등록한 사진">
+                    <img src="${p.url}" alt="${restaurantName} 사진" class="photo-thumb-img">
+                    <span class="photo-author-tag">👤 ${escapeHtml(authorName)}</span>
+                </div>
+            `;
+        }
     }).join('');
 
     const addBoxHtml = `
@@ -19420,10 +19540,44 @@ window.refreshDiaryPhotoGrid = refreshDiaryPhotoGrid;
 function refreshListModalPhotoGrid(restaurantName) {
     const gridEl = document.getElementById('list-photo-preview-grid');
     const countEl = document.getElementById('list-photo-count');
+    const labelEl = document.getElementById('list-photo-section-label');
     if (!gridEl) return;
     const name = restaurantName || currentDetailModalItem?.name || '';
     const photos = getRestaurantPhotos(name);
     if (countEl) countEl.textContent = `${photos.length}장`;
+
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const isOwner = (typeof isOwnerUser === 'function') && isOwnerUser();
+    const currentUserId = currentUser ? String(currentUser.id).replace(/^user_/, '') : (isOwner ? 'master' : 'guest');
+
+    let hasMyPhotos = false;
+    let hasOtherPhotos = false;
+    let otherAuthorName = '박준호';
+
+    photos.forEach(p => {
+        const isMine = isOwner 
+            ? (!p.userId || p.userId === 'master' || p.userId === currentUserId)
+            : (p.userId && (p.userId === currentUserId || p.userId === `user_${currentUserId}`));
+        if (isMine) {
+            hasMyPhotos = true;
+        } else {
+            hasOtherPhotos = true;
+            if (p.userName) otherAuthorName = p.userName;
+        }
+    });
+
+    if (labelEl) {
+        if (photos.length === 0) {
+            labelEl.innerHTML = `📷 나의 방문 사진 <span id="list-photo-count" class="photo-count-badge">0장</span>`;
+        } else if (hasOtherPhotos && !hasMyPhotos) {
+            labelEl.innerHTML = `📸 ${escapeHtml(otherAuthorName)}의 방문 사진 <span class="photo-author-header-badge">${escapeHtml(otherAuthorName)} 등록</span> <span id="list-photo-count" class="photo-count-badge">${photos.length}장</span>`;
+        } else if (hasOtherPhotos && hasMyPhotos) {
+            labelEl.innerHTML = `📸 방문 사진 (나 & ${escapeHtml(otherAuthorName)}) <span id="list-photo-count" class="photo-count-badge">${photos.length}장</span>`;
+        } else {
+            labelEl.innerHTML = `📷 나의 방문 사진 <span id="list-photo-count" class="photo-count-badge">0장</span>`;
+        }
+    }
+
     renderPhotoPreviewGrid(gridEl, name, photos, 'list');
 }
 window.refreshListModalPhotoGrid = refreshListModalPhotoGrid;
@@ -19616,7 +19770,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610252135', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610252215', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
@@ -20466,27 +20620,48 @@ async function normalizeToSpoonmapRestaurant(rawInfo) {
         return null;
     }
 
-    const rawAddress = placeData?.road_address_name || placeData?.address_name || rawInfo.addressHint || '';
+    const jibunAddress = placeData?.address_name || rawInfo.addressHint || '';
+    const roadAddress = placeData?.road_address_name || '';
+    const rawAddress = roadAddress || jibunAddress || '';
 
     const catRaw = placeData?.category_name || rawInfo.categoryRaw || '';
-    let finalCategory = '\uD83C\uDF5A\uD55C\uC2DD';
+    let finalCategory = '🍚한식';
     if (typeof mapKakaoCategoryToStandard === 'function') {
         finalCategory = mapKakaoCategoryToStandard(catRaw, finalName);
     }
 
     let locLarge = '';
     let locSmall = '';
-    if (rawAddress && typeof parseStandardLocation === 'function') {
-        const parsed = parseStandardLocation(rawAddress, '');
+    if (typeof parseStandardLocation === 'function') {
+        const parsed = parseStandardLocation(jibunAddress, roadAddress);
         locLarge = parsed.large || '';
         locSmall = parsed.small || '';
     }
+
+    if ((!locSmall || locSmall === locLarge) && placeData?.x && placeData?.y && typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services) {
+        try {
+            const geo = new kakao.maps.services.Geocoder();
+            const rDong = await new Promise((res) => {
+                geo.coord2RegionCode(placeData.x, placeData.y, (results, status) => {
+                    if (status === kakao.maps.services.Status.OK && results && results.length > 0) {
+                        const h = results.find(r => r.region_type === 'H') || results[0];
+                        res(h.region_3depth_name || '');
+                    } else {
+                        res('');
+                    }
+                });
+            });
+            if (rDong) locSmall = rDong;
+        } catch (_) {}
+    }
+
     if (typeof standardizeLocation === 'function' && (locLarge || locSmall)) {
         const std = standardizeLocation(locLarge, locSmall, finalName);
         locLarge = std.large || locLarge;
         locSmall = std.small || locSmall;
     }
-    if (!locLarge) locLarge = '\uAE30\uD0C0';
+    if (locSmall === locLarge) locSmall = '';
+    if (!locLarge) locLarge = '기타';
 
     const menuList = [];
     if (Array.isArray(rawInfo.menuRaw) && rawInfo.menuRaw.length > 0) {
