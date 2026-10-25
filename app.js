@@ -1975,6 +1975,15 @@ function renderMobileWishlistInPopover() {
     if (!subList) return;
     subList.innerHTML = '';
 
+    // 찜 목록이 적을 때는 스크롤바 없이 내용에 맞게 자연스럽게 표시 (잘림 방지)
+    if (groups.length <= 3) {
+        subList.style.overflowY = 'visible';
+        subList.style.maxHeight = 'none';
+    } else {
+        subList.style.overflowY = 'auto';
+        subList.style.maxHeight = '180px';
+    }
+
     groups.forEach(g => {
         const isActive = activeIds.includes(g.id);
         const count = allWishlist.filter(w => {
@@ -20545,7 +20554,7 @@ function initPwaManager() {
             window.location.reload();
         });
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js?v=202610252325', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('./sw.js?v=202610252340', { updateViaCache: 'none' })
                 .then((reg) => {
                     console.log('[PWA] Service Worker registered with scope:', reg.scope);
                     if (typeof reg.update === 'function') reg.update().catch(() => {});
